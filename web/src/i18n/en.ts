@@ -481,6 +481,7 @@ export const en: Dictionary = {
   sector_municipal_fleet: "Municipal fleet",
   sector_public_transport: "Public transport",
   sector_private_transport: "Private and commercial transport",
+  sector_transport: "Transport (all)",
   sector_other: "Other",
   unitMwhYear: "MWh/year",
   medium_gas: "Gas",

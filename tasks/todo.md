@@ -974,6 +974,18 @@ sloj i detalji, 10-5 registar stranica, 10-6 provjere i snimke.
 ruff, mypy --strict, ESLint, Prettier, actionlint — sve prolazi. Snimke: `pregled-faza8/` (7, 8) i
 `pregled-faza9-10/`.
 
+### Faza 10 — dopuna nakon prve prave obrade (2026-11-15)
+
+- 7. izdanje (2026_Seventh_release) čita se: list po prefiksu i zaglavlju, novi nazivi stupaca
+  (`baseline_year_flag`, `aggregated_sector`, `aggregated_carrier`, `population_in_the_inventory_year`),
+  veze plan → grad iz listova „2” i „3”. Provjereno na stvarnim datotekama: 3738 gradova (HR 95).
+- Novi sektor `transport` (pipeline `schema.Sector`, web `SECTORS`, HR/EN naziv): izdanje daje sav prijevoz
+  zajedno i ne dijeli ga. „Non-ETS” i „ETS” idu u industriju.
+- Otvoreno: u ovom izdanju nema zasebne javne rasvjete, voznog parka ni javnog prijevoza, pa su ti stupci
+  na stranicama `/gradovi/` prazni. Odlučiti: maknuti stupce ili ih zamijeniti zbirnim prijevozom.
+- Otvoreno: lokalne provjere na Windowsu nisu zelene (web: 7 `tsc` grešaka i 19 testova; pipeline: 26
+  testova, Python 3.14 i kodna stranica). Uzrok na webu nije istražen; blokira objavu stranice.
+
 ## Faza 11 — „živa slika": što još može biti uživo (pregled 2026-09-19, odgovor na pitanje)
 
 Cilj je da što više bude **uživo**. Ovo su izvori koji to stvarno omogućuju, složeni po tome što traže:

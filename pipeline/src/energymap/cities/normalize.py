@@ -31,8 +31,13 @@ SECTOR_RULES: tuple[tuple[str, Sector], ...] = (
     ("tertiary", Sector.TERTIARY),
     ("residential", Sector.RESIDENTIAL),
     ("industr", Sector.INDUSTRY),
+    # the 7th release reports industry as "Non-ETS" and "ETS (not recommended)"
+    ("non-ets", Sector.INDUSTRY),
+    ("ets (", Sector.INDUSTRY),
     ("private", Sector.PRIVATE_TRANSPORT),
     ("commercial transport", Sector.PRIVATE_TRANSPORT),
+    # ... and all transport as one "Transportation"; it is not split, because nothing says how
+    ("transportation", Sector.TRANSPORT),
 )
 #: activity_reporting_unit → factor to MWh
 UNIT_FACTORS: dict[str, float] = {
@@ -216,7 +221,9 @@ def _pick(inventories_of_city: list[Inventory]) -> tuple[Inventory, Inventory | 
         inventories_of_city,
         key=lambda inv: (inv.year, inv.monitoring, sum(s.total_mwh for s in inv.sectors.values())),
     )
-    baselines = [inv for inv in inventories_of_city if inv.baseline and inv is not shown]
+    # A city with several plans has a baseline inventory in each. When the one shown is itself a baseline
+    # there is nothing to compare it with: the record says "baseline" and carries no second figure.
+    baselines = [] if shown.baseline else [inv for inv in inventories_of_city if inv.baseline]
     baseline = min(baselines, key=lambda inv: inv.year) if baselines else None
     return shown, baseline
 

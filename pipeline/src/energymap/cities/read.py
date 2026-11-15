@@ -2,8 +2,10 @@
 
 The files are found by listing the release folder, because their names are irregular from release to
 release (spaces, non-breaking spaces, ``_final_`` suffixes). Sheets are found by the prefix of their
-name and columns by their header text; an unexpected layout fails with what was found, so that
-adapting to a new release is a change to ``LAYOUT`` with a test, never a silent zero.
+name **and** their header: the first sheet with that prefix whose header carries the required columns.
+Releases open with README and metadata sheets and name the data sheets "1", "2", "2D_1"..., so neither
+the position nor the name alone identifies a sheet. An unexpected layout fails with what was found, so
+that adapting to a new release is a change to the layouts below with a test, never a silent zero.
 """
 
 from __future__ import annotations
@@ -41,7 +43,8 @@ class CitiesDownloadError(RuntimeError):
 
 @dataclass(frozen=True, slots=True)
 class SheetLayout:
-    """A sheet found by name prefix, with the canonical fields it must provide (header spellings)."""
+    """The first sheet whose name starts with ``prefix`` and whose header provides the ``required``
+    canonical fields (``columns``: field → header spellings)."""
 
     prefix: str
     columns: Mapping[str, tuple[str, ...]]
@@ -49,7 +52,7 @@ class SheetLayout:
 
 
 SIGNATORIES = SheetLayout(
-    prefix="",  # the first sheet
+    prefix="",  # any sheet: "1" in the 7th release, after README and df1_METADATA
     columns={
         "organisation_id": ("organisation_id",),
         "name": ("organisation_name",),
@@ -66,11 +69,11 @@ _INVENTORY_COLUMNS: dict[str, tuple[str, ...]] = {
     "organisation_id": ("organisation_id",),
     "plan_id": ("action_plan_id", "monitoring_report_id"),
     "inventory_id": ("emission_inventory_id",),
-    "baseline": ("baseline_flag",),
+    "baseline": ("baseline_flag", "baseline_year_flag"),
     "year": ("inventory_year",),
-    "population": ("population",),
-    "sector": ("sector", "activity sector"),
-    "carrier": ("carrier", "type of energy carrier used", "energy_carrier"),
+    "population": ("population", "population_in_the_inventory_year"),
+    "sector": ("sector", "activity sector", "aggregated_sector"),
+    "carrier": ("carrier", "type of energy carrier used", "energy_carrier", "aggregated_carrier"),
     "unit": ("activity_reporting_unit",),
     "energy": ("energy_measure",),
 }
@@ -78,13 +81,14 @@ _INVENTORY_REQUIRED = frozenset({"plan_id", "year", "sector", "carrier", "energy
 PLAN_INVENTORIES = SheetLayout("2D_1", _INVENTORY_COLUMNS, _INVENTORY_REQUIRED)
 MONITORING_INVENTORIES = SheetLayout("3D_1", _INVENTORY_COLUMNS, _INVENTORY_REQUIRED)
 #: sheets that tie a plan or report to its organisation, for files whose inventory sheet lacks the id
+#: ("2" and "3" in the 7th release; "2A_1 ..." and "3A ..." in the layout of the data paper)
 PLAN_LINK = SheetLayout(
-    "2A_1",
+    "2",
     {"organisation_id": ("organisation_id",), "plan_id": ("action_plan_id",)},
     frozenset({"organisation_id", "plan_id"}),
 )
 MONITORING_LINK = SheetLayout(
-    "3A",
+    "3",
     {"organisation_id": ("organisation_id",), "plan_id": ("monitoring_report_id",)},
     frozenset({"organisation_id", "plan_id"}),
 )
@@ -105,14 +109,24 @@ def _positions(layout: SheetLayout, headers: Sequence[Any]) -> dict[str, int] | 
     return found if found.keys() >= layout.required else None
 
 
-def _sheet(workbook: Any, layout: SheetLayout, source: str) -> Any:
-    names = [sheet.title for sheet in workbook.worksheets]
-    if layout.prefix == "":
-        return workbook.worksheets[0]
-    for sheet in workbook.worksheets:
-        if sheet.title.startswith(layout.prefix):
-            return sheet
-    raise CitiesFormatError(f"{source}: no sheet starting with {layout.prefix!r}; sheets: {names}")
+def _header(sheet: Any, layout: SheetLayout) -> tuple[Any, dict[str, int] | None, list[Sequence[Any]]]:
+    """The sheet's rows positioned after its header, the header's column positions (None when no row
+    among the first ``HEADER_SCAN_ROWS`` provides the required fields) and the rows that were looked at."""
+    rows = sheet.iter_rows(values_only=True)
+    seen: list[Sequence[Any]] = []
+    for _ in range(HEADER_SCAN_ROWS):
+        header = next(rows, None)
+        if header is None:
+            break
+        positions = _positions(layout, header)
+        if positions is not None:
+            return rows, positions, seen
+        seen.append(header)
+    return rows, None, seen
+
+
+def _describe(seen: Sequence[Sequence[Any]]) -> str:
+    return "; ".join(", ".join(str(h) for h in row if h not in (None, "")) for row in seen) or "(none)"
 
 
 def read_sheet(path: Path, layout: SheetLayout) -> Iterator[dict[str, Any]]:
@@ -122,27 +136,24 @@ def read_sheet(path: Path, layout: SheetLayout) -> Iterator[dict[str, Any]]:
     except Exception as exc:  # openpyxl raises many unrelated types for broken files
         raise CitiesFormatError(f"{path.name} cannot be opened as an Excel workbook: {exc}") from exc
     try:
-        sheet = _sheet(workbook, layout, path.name)
-        rows = sheet.iter_rows(values_only=True)
-        seen: list[Sequence[Any]] = []
-        for _ in range(HEADER_SCAN_ROWS):
-            header = next(rows, None)
-            if header is None:
-                break
-            positions = _positions(layout, header)
-            if positions is not None:
-                for row in rows:
-                    if not any(cell not in (None, "") for cell in row):
-                        continue
-                    yield {
-                        name: (row[index] if index < len(row) else None) for name, index in positions.items()
-                    }
-                return
-            seen.append(header)
-        headers = "; ".join(", ".join(str(h) for h in row if h not in (None, "")) for row in seen)
+        candidates = [sheet for sheet in workbook.worksheets if sheet.title.startswith(layout.prefix)]
+        if not candidates:
+            names = [sheet.title for sheet in workbook.worksheets]
+            raise CitiesFormatError(f"{path.name}: no sheet starting with {layout.prefix!r}; sheets: {names}")
+        rejected: list[str] = []
+        for sheet in candidates:
+            rows, positions, seen = _header(sheet, layout)
+            if positions is None:
+                rejected.append(f"sheet {sheet.title!r} headers found: {_describe(seen)}")
+                continue
+            for row in rows:
+                if not any(cell not in (None, "") for cell in row):
+                    continue
+                yield {name: (row[index] if index < len(row) else None) for name, index in positions.items()}
+            return
         raise CitiesFormatError(
-            f"{path.name} sheet {sheet.title!r} lacks {sorted(layout.required)}; "
-            f"headers found: {headers or '(none)'}. Adjust energymap.cities.read layouts."
+            f"{path.name} has no sheet with {sorted(layout.required)}; "
+            f"{' | '.join(rejected)}. Adjust energymap.cities.read layouts."
         )
     finally:
         workbook.close()

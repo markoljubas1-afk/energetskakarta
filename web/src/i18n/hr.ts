@@ -476,6 +476,7 @@ export const hr = {
   sector_municipal_fleet: "Gradski vozni park",
   sector_public_transport: "Javni prijevoz",
   sector_private_transport: "Privatni i komercijalni prijevoz",
+  sector_transport: "Prijevoz (ukupno)",
   sector_other: "Ostalo",
   unitMwhYear: "MWh/god",
   medium_gas: "Plin",

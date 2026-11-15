@@ -43,6 +43,13 @@ def release(tmp_path: Path) -> Path:
         ("Municipal fleet", Sector.MUNICIPAL_FLEET),
         ("Public transport", Sector.PUBLIC_TRANSPORT),
         ("Private and commercial transport", Sector.PRIVATE_TRANSPORT),
+        # the aggregated sectors of the 7th release (2026)
+        ("Transportation", Sector.TRANSPORT),
+        ("Non-ETS", Sector.INDUSTRY),
+        ("ETS (not recommended)", Sector.INDUSTRY),
+        ("Industry Non-ETS", Sector.INDUSTRY),
+        ("Buildings, equipment/facilities non allocated", Sector.OTHER),
+        ("Waste/wastewater", Sector.OTHER),
         ("Agriculture", Sector.OTHER),
         (None, Sector.OTHER),
     ],
@@ -170,6 +177,105 @@ def test_fixture_release_loads_the_expected_cities(release: Path) -> None:
     assert Sector.OTHER in vzorec.sectors
 
 
+def _save(path: Path, sheets: dict[str, list[list[object]]]) -> None:
+    workbook = openpyxl.Workbook()
+    first = workbook.active
+    assert first is not None
+    workbook.remove(first)
+    for title, rows in sheets.items():
+        sheet = workbook.create_sheet(title)
+        for row in rows:
+            sheet.append(row)
+    workbook.save(path)
+
+
+def test_seventh_release_layout_is_read(tmp_path: Path) -> None:
+    """Sheet and column names copied from the 2026_Seventh_release files (values invented): README and
+    metadata sheets come first, data sheets are "1", "2", "2D_1", sectors and carriers are aggregated,
+    country codes are lower case and a city can have a baseline inventory in each of its plans."""
+    readme = [["Collection Acronym", "GCoM-MyCovenant"], ["Dataset", "7th Release"]]
+    metadata = [["Dataframe", "Content", "Name", "Type", "Description"], ["organisation_id", "string"]]
+    inventory_header = [
+        "emission_inventory_id",
+        "baseline_year_flag",
+        "inventory_year",
+        "population_in_the_inventory_year",
+        "aggregated_sector",
+        "aggregated_carrier",
+        "activity_reporting_unit",
+        "energy_measure",
+    ]
+    _save(
+        tmp_path / "signatories.xlsx",
+        {
+            "README": readme,
+            "df1_METADATA": metadata,
+            "1": [
+                [
+                    "organisation_id",
+                    "organisation_name",
+                    "country_code",
+                    "population_adhesion",
+                    "organisation_latitude",
+                    "organisation_longitude",
+                    "signatory_status",
+                ],
+                ["77", "Grad Primjer", "hr", 50000, 45.5, 16.0, "published"],
+            ],
+        },
+    )
+    _save(
+        tmp_path / "plans.xlsx",
+        {
+            "README": readme,
+            "df2_METADATA": metadata,
+            "2": [
+                ["organisation_id", "organisation_name", "action_plan_id"],
+                ["77", "Grad Primjer", "900"],
+                ["77", "Grad Primjer", "901"],
+            ],
+            "2A_1": [["action_plan_id", "base_year", "target_year"], ["900", 2008, 2020]],
+            "2D_1": [
+                ["action_plan_id", *inventory_header],
+                ["900", "1", "TRUE", 2008, 49000, "Transportation", "Fossil fuels", "MWh/year", 700],
+                ["901", "2", "TRUE", 2015, 51000, "Transportation", "Electricity", "MWh/year", 50],
+                ["901", "2", "TRUE", 2015, 51000, "Non-ETS", "Electricity", "MWh/year", 300],
+                [
+                    "901",
+                    "2",
+                    "TRUE",
+                    2015,
+                    51000,
+                    "Waste/wastewater",
+                    "Non-energy related emissions",
+                    "MWh/year",
+                    None,
+                ],
+            ],
+        },
+    )
+    _save(
+        tmp_path / "monitoring.xlsx",
+        {
+            "README": readme,
+            "3": [["organisation_id", "action_plan_id", "monitoring_report_id"], ["77", "901", "5000"]],
+            "3D_1": [
+                ["monitoring_report_id", *inventory_header],
+                ["5000", "3", "FALSE", 2012, 50000, "Residential buildings", "Electricity", "MWh/year", 10],
+            ],
+        },
+    )
+    loaded = load(tmp_path, SCOPE, NOW)
+    (city,) = loaded.cities
+    # the 2015 inventory of the second plan is shown; it is a baseline itself, so nothing rides along
+    assert (city.id, city.country, city.inventory_year, city.baseline) == ("com:77", "HR", 2015, True)
+    assert (city.baseline_year, city.baseline_electricity_mwh) == (None, None)
+    assert city.population == 51000
+    assert city.sectors[Sector.TRANSPORT].electricity_mwh == 50
+    assert city.sectors[Sector.INDUSTRY].total_mwh == 300
+    assert loaded.stats["plan_rows_unusable"] == 1  # the waste row has no energy
+
+
 def test_unknown_layout_fails_with_what_was_found(tmp_path: Path) -> None:
     workbook = openpyxl.Workbook()
     sheet = workbook.active
@@ -181,8 +287,10 @@ def test_unknown_layout_fails_with_what_was_found(tmp_path: Path) -> None:
     workbook.save(path)
     with pytest.raises(read.CitiesFormatError, match="headers found: completely, different, headers"):
         list(read.read_sheet(path, read.PLAN_INVENTORIES))
-    with pytest.raises(read.CitiesFormatError, match="no sheet starting with '2A_1'"):
+    with pytest.raises(read.CitiesFormatError, match=r"has no sheet with \['organisation_id', 'plan_id'\]"):
         list(read.read_sheet(path, read.PLAN_LINK))
+    with pytest.raises(read.CitiesFormatError, match="no sheet starting with '3D_1'"):
+        list(read.read_sheet(path, read.MONITORING_INVENTORIES))
     assert read.inspect(path) == {"2D_1 something": ["completely", "different", "headers"]}
 
 

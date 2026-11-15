@@ -12,3 +12,6 @@ __pycache__/
 
 # Visual Studio workspace cache (local, locked while VS is open)
 .vs/
+
+# Wrangler local cache
+.wrangler/

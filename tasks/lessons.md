@@ -330,3 +330,12 @@
 - Root cause: zajednička konstanta živjela je u Node modulu; jedinični testovi rade u Nodeu pa to ne vide.
 - Rule going forward: ovisnost ide samo u smjeru build → `src/`. Zajedničke konstante žive u `src/` u modulu bez
   uvoza (`src/data/weatherOrigins.ts`). Nakon promjene u `vite/` stranicu treba stvarno otvoriti u pregledniku.
+
+### L-064 — Čitač pisan prema opisu, ne prema datoteci (2026-11-15)
+- What happened: prvi pravi `osm-build` pao je na sloju gradova: 7. izdanje GCoM-a počinje listovima `README` i
+  `df*_METADATA`, podaci su u listovima „1”, „2”, „2D_1”, sektori i energenti su zbirni
+  (`aggregated_sector`: „Transportation”, „Non-ETS”), a grad s više planova ima više baznih inventara.
+- Root cause: `cities/read.py` i fixture pisani su prema znanstvenom radu o podacima, bez stvarne datoteke.
+- Rule going forward: list se bira po prefiksu imena **i** zaglavlju, nikad po položaju. Čitač vanjskog
+  izvora nije gotov dok jednom ne prođe na stvarnoj datoteci; test nosi imena listova i stupaca prepisana
+  iz nje (`test_seventh_release_layout_is_read`).

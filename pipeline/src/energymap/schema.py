@@ -336,6 +336,8 @@ class Sector(StrEnum):
     MUNICIPAL_FLEET = "municipal_fleet"
     PUBLIC_TRANSPORT = "public_transport"
     PRIVATE_TRANSPORT = "private_transport"
+    #: all transport together, for releases that do not split it into the three above
+    TRANSPORT = "transport"
     OTHER = "other"
 
 

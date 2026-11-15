@@ -109,6 +109,7 @@ export const SECTORS = [
   "municipal_fleet",
   "public_transport",
   "private_transport",
+  "transport",
   "other",
 ] as const;
 export type Sector = (typeof SECTORS)[number];
