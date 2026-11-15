@@ -104,7 +104,7 @@ test("a chart is passed on with its source: link to the card, citation, CSV and 
   const csv = page.waitForEvent("download");
   await card.getByRole("button", { name: "Preuzmi podatke (CSV)" }).click();
   expect((await csv).suggestedFilename()).toMatch(
-    /^proizvodnja-po-izvoru-i-potrosnja-hrvatska-mjesecno-\d{4}-\d{2}-\d{2}\.csv$/,
+    /^proizvodnja-po-izvoru-i-potrosnja-hrvatska-po-mjesecima-\d{4}-\d{2}-\d{2}\.csv$/,
   );
   const png = page.waitForEvent("download");
   await card.getByRole("button", { name: "Spremi sliku (PNG)" }).click();

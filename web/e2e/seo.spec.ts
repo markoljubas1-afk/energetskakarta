@@ -126,13 +126,12 @@ test("a topic page lists the country's assets of one kind and links each to its 
 }) => {
   await page.goto("/zemlja/hr/reverzibilne-hidroelektrane/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Reverzibilne hidroelektrane u Hrvatskoj");
-  await expect(page.getByRole("link", { name: "RHE Primjer" })).toHaveAttribute(
-    "href",
-    "/objekt/osm-way-109/",
-  );
+  // the planned unit of the same plant (known only to GEM) carries the same name and is listed too
+  const plant = page.locator('a[href="/objekt/osm-way-109/"]');
+  await expect(plant).toHaveText("RHE Primjer");
   const crumbs = page.getByRole("navigation", { name: "Putanja" });
   await expect(crumbs.getByRole("link", { name: "Hrvatska" })).toHaveAttribute("href", "/zemlja/hr/");
-  await page.getByRole("link", { name: "RHE Primjer" }).click();
+  await plant.click();
   await expect(page).toHaveTitle("RHE Primjer: reverzibilna hidroelektrana 276 MW, Hrvatska");
 });
 
