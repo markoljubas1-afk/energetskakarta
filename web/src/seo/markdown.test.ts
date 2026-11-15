@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-
 import { describe, expect, it } from "vitest";
 
 import { headersFile } from "../../vite/securityHeaders";
@@ -12,6 +10,7 @@ import { buildPages, type SiteData } from "./pages";
 import { staticFiles } from "./prerender";
 import { llmsTxt } from "./sitemap";
 import { SAMPLE_CURRENT } from "./site.fixture";
+import { readTemplate } from "../test/template";
 
 const current: Current = {
   ...SAMPLE_CURRENT,
@@ -78,7 +77,7 @@ describe("Markdown twins", () => {
   });
 
   it("are written next to each page, linked from its head and served as Markdown", () => {
-    const template = readFileSync(new URL("../../index.html", import.meta.url), "utf8");
+    const template = readTemplate();
     const files = staticFiles(site, undefined, { template });
     expect(files.get("zemlja/hr/index.md")).toMatch(/^# [^\n]*Hrvatska\n/);
     expect(files.get("en/grid-capacity/index.md")).toContain(

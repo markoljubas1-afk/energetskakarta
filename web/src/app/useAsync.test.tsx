@@ -76,8 +76,9 @@ describe("useAsync", () => {
       seen.push(state[0]);
       return state;
     });
+    // asked of every render, not of the latest one: on a slow machine 2 can already be replaced by 3
     await waitFor(() => {
-      expect(result.current[0]).toEqual({ status: "ready", value: 2 });
+      expect(seen).toContainEqual({ status: "ready", value: 2 });
     });
     // the failed third load leaves 2 on screen until the fourth brings 3
     await waitFor(() => {

@@ -2,7 +2,6 @@
  * SEO 2.0 (tasks/todo.md, Faza 16): topic pages, no orphan pages, breadcrumbs, titles with the key figure,
  * the home page head, the 404 page, a lastmod that only moves when content does, and the AI-facing files.
  */
-import { readFileSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
@@ -21,6 +20,7 @@ import {
   type SeoManifest,
 } from "./prerender";
 import { llmsTxt, robotsTxt } from "./sitemap";
+import { readTemplate } from "../test/template";
 
 const current: Current = {
   buildId: "20260919T074428Z",
@@ -78,7 +78,7 @@ const page = (path: string, of: SiteData = site): StaticPage => {
   return found;
 };
 
-const template = readFileSync(new URL("../../index.html", import.meta.url), "utf8");
+const template = readTemplate();
 
 describe("topic pages", () => {
   it("make one page per country and kind of asset, in both languages, largest first", () => {

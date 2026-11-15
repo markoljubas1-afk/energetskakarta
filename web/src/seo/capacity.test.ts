@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-
 import { describe, expect, it } from "vitest";
 
 import type { Current } from "../data/current";
@@ -11,6 +9,7 @@ import { buildPages, type SiteData, type StaticPage } from "./pages";
 import { staticFiles } from "./prerender";
 import { llmsTxt } from "./sitemap";
 import { SAMPLE_CURRENT } from "./site.fixture";
+import { readTemplate } from "../test/template";
 
 const current: Current = {
   ...SAMPLE_CURRENT,
@@ -127,7 +126,7 @@ describe("grid capacity pages", () => {
   });
 
   it("are reachable from the home page within three clicks", () => {
-    const template = readFileSync(new URL("../../index.html", import.meta.url), "utf8");
+    const template = readTemplate();
     const files = staticFiles(site, undefined, { template });
     const htmlOf = (path: string): string | undefined =>
       files.get(path === "/" ? "index.html" : `${path.slice(1)}index.html`);
