@@ -12,7 +12,11 @@ interface Props {
   mapCenter: { lat: number; lng: number } | null;
 }
 
-type Where = { lat: number; lon: number; source: "device" | "map" };
+interface Where {
+  lat: number;
+  lon: number;
+  source: "device" | "map";
+}
 
 const PVGIS = "https://re.jrc.ec.europa.eu/pvg_tools/en/";
 

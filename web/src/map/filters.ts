@@ -69,9 +69,11 @@ function lineCountries(state: StyleState): Expr | null {
   if (state.countries.size === 0) return null;
   return [
     "any",
-    ...SCOPE_COUNTRIES.filter((c) => state.countries.has(c)).map(
-      (c): Expr => ["in", c, ["get", "countries"]],
-    ),
+    ...SCOPE_COUNTRIES.filter((c) => state.countries.has(c)).map((c): Expr => [
+      "in",
+      c,
+      ["get", "countries"],
+    ]),
   ];
 }
 

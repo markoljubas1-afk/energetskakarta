@@ -152,9 +152,10 @@ export function officialSections(
 
   const years = doc.years.filter((y) => shareAt(doc, "HR", "REN", y) !== null).slice(-OFFICIAL_YEARS);
   const history = years.map((y) => RES_INDICATORS.map((indicator) => shareAt(doc, "HR", indicator, y)));
-  const historyRows = years.map(
-    (y, i): Row => [String(y), ...(history[i] ?? []).map((share) => shareCell(lang, share, y))],
-  );
+  const historyRows = years.map((y, i): Row => [
+    String(y),
+    ...(history[i] ?? []).map((share) => shareCell(lang, share, y)),
+  ]);
 
   /** the eight countries, linked to their pages, then the EU; each with its four shares */
   const named: { code: string; label: string; name: string }[] = [
@@ -196,9 +197,10 @@ export function officialSections(
         html:
           linkedTable(
             [k[0], k[1], k[2], k[3], k[4]],
-            compared.map(
-              (area): Row => [area.name, ...area.shares.map((share) => shareCell(lang, share, year))],
-            ),
+            compared.map((area): Row => [
+              area.name,
+              ...area.shares.map((share) => shareCell(lang, share, year)),
+            ]),
           ) +
           flagLegend(
             doc,
@@ -242,14 +244,12 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
           [c[0], c[1], c[2], c[3]],
           complete
             .slice(-SHARE_YEARS)
-            .map(
-              (y): Row => [
-                y.year,
-                i18n.energy(y.total ?? 0),
-                i18n.energy(y.renewable ?? 0),
-                y.share === null ? "" : i18n.percent(y.share),
-              ],
-            ),
+            .map((y): Row => [
+              y.year,
+              i18n.energy(y.total ?? 0),
+              i18n.energy(y.renewable ?? 0),
+              y.share === null ? "" : i18n.percent(y.share),
+            ]),
         ) + `<p>${e(copy.share.note)}</p>`,
     });
   }
@@ -291,16 +291,14 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
       html:
         linkedTable(
           [c[0], c[1], c[2], c[3], c[4], c[5]],
-          table.map(
-            ({ year, mw, total }): Row => [
-              String(year),
-              i18n.power(mw.hydro),
-              i18n.power(mw.wind),
-              i18n.power(mw.solar),
-              i18n.power(mw.other),
-              i18n.power(total),
-            ],
-          ),
+          table.map(({ year, mw, total }): Row => [
+            String(year),
+            i18n.power(mw.hydro),
+            i18n.power(mw.wind),
+            i18n.power(mw.solar),
+            i18n.power(mw.other),
+            i18n.power(total),
+          ]),
         ) + `<p>${e(copy.capacity.note(i18n.number(timeline.undated.HR?.plants ?? 0)))}</p>`,
     });
     const closed = timeline.retired
@@ -335,13 +333,11 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
           summary.technologies
             .filter((t) => t.pipelineMw > 0)
             .sort((a, b) => b.pipelineMw - a.pipelineMw)
-            .map(
-              (t): Row => [
-                e(i18n.technology(t.technology)),
-                i18n.power(t.operatingMw),
-                i18n.power(t.pipelineMw),
-              ],
-            ),
+            .map((t): Row => [
+              e(i18n.technology(t.technology)),
+              i18n.power(t.operatingMw),
+              i18n.power(t.pipelineMw),
+            ]),
         ),
     });
   }

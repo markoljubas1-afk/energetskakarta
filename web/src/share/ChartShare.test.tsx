@@ -19,6 +19,11 @@ const props = (over: Partial<ChartShareProps> = {}): ChartShareProps => ({
   ...over,
 });
 
+/** The options live in a menu that is closed until its button is pressed. */
+const openMenu = (): void => {
+  fireEvent.click(screen.getByRole("button", { name: "Podijeli: Proizvodnja po izvoru i potrošnja" }));
+};
+
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
@@ -39,6 +44,7 @@ describe("ChartShare", () => {
   it("copies a link to the card and offers three ready citations", async () => {
     const writeClipboard = vi.fn(() => Promise.resolve());
     renderWithI18n(<ChartShare {...props({ writeClipboard })} />);
+    openMenu();
     expect(screen.getByLabelText("Podijeli: Proizvodnja po izvoru i potrošnja")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Kopiraj poveznicu na graf" }));
     expect(writeClipboard).toHaveBeenCalledWith(expect.stringMatching(/#mix$/));
@@ -72,6 +78,7 @@ describe("ChartShare", () => {
     });
     const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
     renderWithI18n(<ChartShare {...props()} />);
+    openMenu();
     fireEvent.click(screen.getByRole("button", { name: "Preuzmi podatke (CSV)" }));
     expect(click).toHaveBeenCalledOnce();
     expect((click.mock.instances[0] as HTMLAnchorElement | undefined)?.download).toBe(
@@ -86,6 +93,7 @@ describe("ChartShare", () => {
 
   it("explains that a picture needs the chart view, and gives the embed code for the card alone", async () => {
     renderWithI18n(<ChartShare {...props()} />);
+    openMenu();
     await userEvent.click(screen.getByRole("button", { name: "Spremi sliku (PNG)" }));
     expect(screen.getByRole("status")).toHaveTextContent("Slika je dostupna u prikazu grafa.");
     await userEvent.click(screen.getByRole("button", { name: "Ugradi graf" }));
@@ -96,6 +104,7 @@ describe("ChartShare", () => {
   it("has no embed option for a card that cannot be embedded, and shows the text when copying fails", async () => {
     const writeClipboard = vi.fn(() => Promise.reject(new Error("denied")));
     renderWithI18n(<ChartShare {...props({ embed: null, writeClipboard })} />);
+    openMenu();
     expect(screen.queryByRole("button", { name: "Ugradi graf" })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Kopiraj poveznicu na graf" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Kopiranje nije uspjelo");

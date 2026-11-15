@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import type { Current } from "../data/current";
@@ -68,6 +68,7 @@ describe("StatusBar", () => {
         now={new Date()}
       />,
     );
+    fireEvent.click(screen.getByRole("button", { name: "Preuzmi bazu" })); // the downloads are in a menu
     expect(screen.getByRole("link", { name: "Elektrane" })).toHaveAttribute(
       "href",
       "https://data.test/builds/x/p.ndjson.gz",
@@ -92,6 +93,7 @@ describe("StatusBar", () => {
         now={new Date()}
       />,
     );
+    fireEvent.click(screen.getByRole("button", { name: "Preuzmi bazu" })); // the downloads are in a menu
     expect(screen.getByRole("link", { name: "Cjevovodi (more)" })).toHaveAttribute(
       "href",
       "https://data.test/builds/x/pl.ndjson.gz",

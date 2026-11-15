@@ -3,8 +3,13 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
 import { afterEach } from "vitest";
 
+import { installPopover, resetPopovers } from "./popover";
+
+installPopover();
+
 afterEach(() => {
   cleanup();
+  resetPopovers();
   window.history.replaceState(null, "", "/");
 });
 

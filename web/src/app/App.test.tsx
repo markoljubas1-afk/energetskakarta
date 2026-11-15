@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -37,7 +37,7 @@ vi.mock("../map/MapView", () => ({
   },
 }));
 
-const config = { dataBaseUrl: new URL("https://podaci.test/"), maptilerKey: null };
+const config = { dataBaseUrl: new URL("https://podaci.test/"), maptilerKey: null, support: false };
 const STATS = {
   version: 1,
   voltageClasses: ["380+", "220-379", "110-219", "60-109", "unknown"],
@@ -70,6 +70,7 @@ describe("App", () => {
       boundariesMaxZoom: 8,
     });
     expect(screen.getByText("Podaci od 16. rujna 2026.")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Preuzmi bazu" })); // the downloads are in a menu
     expect(screen.getByRole("link", { name: "Elektrane" })).toHaveAttribute(
       "href",
       "https://podaci.test/builds/20260916T120000Z/plants.ndjson.gz",

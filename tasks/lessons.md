@@ -339,3 +339,11 @@
 - Rule going forward: list se bira po prefiksu imena **i** zaglavlju, nikad po položaju. Čitač vanjskog
   izvora nije gotov dok jednom ne prođe na stvarnoj datoteci; test nosi imena listova i stupaca prepisana
   iz nje (`test_seventh_release_layout_is_read`).
+
+### L-065 — Provjere koje nikad nisu pokrenute zajedno (2026-11-15)
+- What happened: prvi `web` na GitHubu pao je na `tsc` (7 grešaka); iza toga su čekale 24 lint primjedbe i 16
+  testova koji su stavke tražili u izborniku prije nego što ga otvore (Popover API iz Faze 31; jsdom ga nema).
+- Root cause: `npm run check` staje na prvoj grešci, a nakon Faze 31 nije pokrenut do kraja ni jednom.
+- Rule going forward: faza nije gotova dok `npm run check` ne prođe cijeli. Testovi izbornik prvo otvore;
+  jsdom dobiva Popover API iz `src/test/popover.ts`. Automatski `eslint --fix` se pregleda u diffu (zamjena
+  `a && a.b !== null` u `a?.b !== null` mijenja značenje).

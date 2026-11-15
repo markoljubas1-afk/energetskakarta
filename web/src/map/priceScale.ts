@@ -50,11 +50,11 @@ export function priceFill(
   prices: Partial<Record<CountryCode, number>>,
   stops: PriceStops,
 ): ExpressionSpecification | null {
-  const pairs = Object.entries(prices).flatMap(([code, eur]) =>
-    eur === undefined ? [] : [code, priceColor(eur, stops)],
-  );
-  if (pairs.length === 0) return null;
-  return ["match", ["get", "code"], ...pairs, "rgba(0, 0, 0, 0)"] as ExpressionSpecification;
+  const pairs = Object.entries(prices).map(([code, eur]): [string, string] => [code, priceColor(eur, stops)]);
+  // a match expression needs at least one label and colour before the fallback
+  const [first, ...rest] = pairs;
+  if (first === undefined) return null;
+  return ["match", ["get", "code"], first[0], first[1], ...rest.flat(), "rgba(0, 0, 0, 0)"];
 }
 
 /** CSS gradient for the legend, with every stop at its place on the legend's range. */

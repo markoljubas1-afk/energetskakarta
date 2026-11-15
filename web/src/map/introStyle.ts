@@ -78,8 +78,7 @@ function shownBetween(layer: LayerSpecification): { from: number; until: number 
 }
 
 type Paint = Record<string, unknown>;
-const paintOf = (layer: LayerSpecification): Paint =>
-  "paint" in layer && layer.paint ? { ...layer.paint } : {};
+const paintOf = (layer: LayerSpecification): Paint => ("paint" in layer ? { ...layer.paint } : {});
 
 /** The layer with its opacities at 0, or at their own values (1 where none is set). */
 function staged(layer: LayerSpecification, shown: boolean): LayerSpecification {
@@ -88,7 +87,7 @@ function staged(layer: LayerSpecification, shown: boolean): LayerSpecification {
   const paint = paintOf(layer);
   for (const prop of props) paint[prop] = shown ? (paint[prop] ?? 1) : 0;
   // the paint keys are the type's own opacity properties, so the layer stays the same kind
-  return { ...layer, paint } as unknown as LayerSpecification;
+  return { ...layer, paint };
 }
 
 function glowBands(glow: LayerSpecification, stage: IntroStage, palette: Palette): LayerSpecification[] {
@@ -251,13 +250,11 @@ export function introStyle(style: StyleSpecification, options: IntroStyleOptions
   );
   const sources = { ...style.sources };
   if (names) {
-    const features = (Object.keys(COUNTRY_NAME_AT) as CountryCode[]).map(
-      (code): Feature<Point> => ({
-        type: "Feature",
-        properties: { name: names.label[code], home: code === "HR" },
-        geometry: { type: "Point", coordinates: COUNTRY_NAME_AT[code] },
-      }),
-    );
+    const features = (Object.keys(COUNTRY_NAME_AT) as CountryCode[]).map((code): Feature<Point> => ({
+      type: "Feature",
+      properties: { name: names.label[code], home: code === "HR" },
+      geometry: { type: "Point", coordinates: COUNTRY_NAME_AT[code] },
+    }));
     sources[INTRO_NAMES_SOURCE] = { type: "geojson", data: { type: "FeatureCollection", features } };
     layers.push(...nameLayers(names, stage, palette));
   }

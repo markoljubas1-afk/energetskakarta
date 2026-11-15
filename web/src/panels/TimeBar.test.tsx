@@ -14,7 +14,8 @@ describe("TimeBar", () => {
     renderWithI18n(
       <TimeBar data={data} year={1964} scope={scope} theme="light" onYear={vi.fn()} onRetry={vi.fn()} />,
     );
-    expect(screen.getByText("1964.")).toBeInTheDocument();
+    // the year itself, not its mention in the share menu
+    expect(screen.getByText("1964.", { selector: "output" })).toBeInTheDocument();
     expect(screen.getByText("U pogonu 1964.: 626 MW")).toBeInTheDocument();
     expect(
       screen.getByText(
@@ -30,7 +31,8 @@ describe("TimeBar", () => {
       <TimeBar data={data} year={2026} scope={scope} theme="dark" onYear={onYear} onRetry={vi.fn()} />,
     );
     // a year past the timeline shows its last year
-    expect(screen.getByText("1964.")).toBeInTheDocument();
+    // the year itself, not its mention in the share menu
+    expect(screen.getByText("1964.", { selector: "output" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Prethodna godina" }));
     expect(onYear).toHaveBeenLastCalledWith(1963);
     fireEvent.change(screen.getByRole("slider", { name: "Godina" }), { target: { value: "1961" } });
@@ -76,7 +78,7 @@ describe("TimeBar", () => {
     renderWithI18n(
       <TimeBar data={data} year={1964} scope={scope} theme="light" onYear={vi.fn()} onRetry={vi.fn()} />,
     );
-    expect(screen.getByLabelText("Podijeli: Vremeplov elektrana")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Podijeli: Vremeplov elektrana" }));
     expect(screen.getByRole("button", { name: "Preuzmi podatke (CSV)" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Spremi sliku (PNG)" })).not.toBeInTheDocument();
   });

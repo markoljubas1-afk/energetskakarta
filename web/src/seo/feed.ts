@@ -19,7 +19,7 @@ const FEED_TITLE: Record<Lang, string> = { hr: "Novo na karti", en: "What's new 
 
 /** Whether the build writes a feed: a site address and something to put in it (Faza 31). */
 export function hasFeed(site: SiteData): boolean {
-  return Boolean(site.siteUrl && (site.diff || reportMonths(site).length > 0));
+  return Boolean(site.siteUrl && (site.diff ?? reportMonths(site).length > 0));
 }
 
 /** A dated entry another page contributes to the feed. */

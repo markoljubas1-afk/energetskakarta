@@ -98,7 +98,7 @@ const capacityHistory: HepHistory = {
 };
 
 const site: SiteData = bareSite({ energy, capacityHistory });
-const plain = (value: string): string => value.replace(/[  ]/g, " ");
+const plain = (value: string): string => value.replace(/[\u00a0\u202f]/g, " ");
 const report = (path: string, data: SiteData = site): StaticPage => {
   const found = reportPages(data).find((p) => p.path === path);
   if (!found) throw new Error(`no page ${path}`);

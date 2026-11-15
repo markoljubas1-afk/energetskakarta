@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 export type AsyncState<T> =
-  | { status: "loading" }
-  | { status: "error"; error: Error }
-  | { status: "ready"; value: T };
+  { status: "loading" } | { status: "error"; error: Error } | { status: "ready"; value: T };
 
 export interface AsyncOptions {
   /**

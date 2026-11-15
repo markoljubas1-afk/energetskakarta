@@ -31,7 +31,7 @@ describe("timeline", () => {
 
   it("draws a retired plant as running, then as an outline, and not before it was built", () => {
     const phase = (year: number) =>
-      retiredFeatures(SAMPLE_TIMELINE, scope(), year).features.map((f) => f.properties?.phase);
+      retiredFeatures(SAMPLE_TIMELINE, scope(), year).features.map((f): unknown => f.properties?.phase);
     expect(phase(1961)).toEqual([]);
     expect(phase(1962)).toEqual(["running"]);
     expect(phase(1964)).toEqual(["closed"]);

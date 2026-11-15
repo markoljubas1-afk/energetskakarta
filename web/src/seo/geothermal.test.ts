@@ -18,7 +18,7 @@ const page = (lang: "hr" | "en"): StaticPage => {
   return found;
 };
 /** Intl writes non-breaking spaces in numbers (L-052); compare with plain spaces. */
-const plain = (value: string): string => value.replace(/[  ]/g, " ");
+const plain = (value: string): string => value.replace(/[\u00a0\u202f]/g, " ");
 const text = (p: StaticPage): string =>
   plain([p.lead, ...p.sections.map((s) => s.heading + s.html)].join(" "));
 

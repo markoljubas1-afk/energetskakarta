@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { defined } from "../test/defined";
 import { activeSteps, CASCADE, geothermalFeatures, totals } from "./geothermal";
 import { SAMPLE_GEOTHERMAL } from "./geothermal.fixture";
 
@@ -31,7 +32,7 @@ describe("geothermal", () => {
   });
 
   it("marks the cascade steps a site really uses", () => {
-    const topusko = DOC.sites[2]!;
+    const topusko = defined(DOC.sites[2]);
     expect([...activeSteps(topusko)].sort()).toEqual(["heating", "return", "spa", "well"]);
     expect(CASCADE.map((s) => s.use)).toEqual([
       "well",

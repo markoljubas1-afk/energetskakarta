@@ -384,8 +384,7 @@ export function matchOsm(
     const [best, second] = ranked;
     if (!best) continue;
     const tie =
-      second !== undefined &&
-      second.named === best.named &&
+      second?.named === best.named &&
       second.level === best.level &&
       second.distance - best.distance < MATCH_TIE_M;
     if (!tie) matches.set(station.id, best.osm);

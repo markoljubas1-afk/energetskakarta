@@ -64,14 +64,12 @@ describe("MixCard", () => {
     await waitFor(() => {
       expect(screen.getByText(/oko 1\.640 kWh godišnje po kW snage/)).toBeInTheDocument();
     });
-    expect(
-      fetchMock.mock.calls.every(([url]) => String(url).includes("latitude=45.81&longitude=15.98")),
-    ).toBe(true);
+    expect(fetchMock.mock.calls.every(([url]) => url.includes("latitude=45.81&longitude=15.98"))).toBe(true);
   });
 
   it("can be passed on with the hour's numbers and its source (Faza 27)", () => {
     renderWithI18n(<MixCard live={MIX_LIVE} index={0} theme="light" hourLabel={label} mapCenter={null} />);
-    expect(screen.getByLabelText(/^Podijeli: /)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /^Podijeli: / }));
     fireEvent.click(screen.getByRole("button", { name: "Citiraj" }));
     expect(screen.getByText(/prema podacima ENTSO-E Transparency Platform/)).toBeInTheDocument();
   });

@@ -147,7 +147,7 @@ describe("loadHep", () => {
     vi.stubGlobal("fetch", fetchMock);
     const load = await loadHep(base, new AbortController().signal, { history: false });
     expect(load.kind === "ready" && load.release.dataVersion).toBe(5);
-    expect(fetchMock.mock.calls.some(([url]) => String(url).includes("history"))).toBe(false);
+    expect(fetchMock.mock.calls.some(([url]) => url.includes("history"))).toBe(false);
   });
 
   it("reports a broken answer instead of showing nothing", async () => {

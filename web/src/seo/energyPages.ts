@@ -99,7 +99,7 @@ export function hasGenerationOverview(site: SiteData): boolean {
   if (!periods) return false;
   return generationCountries(periods).some((code) => {
     const last = lastComplete(yearRows(periods, code) ?? []);
-    return last !== null && last !== undefined && last.total !== null;
+    return last !== null && last.total !== null;
   });
 }
 
@@ -113,7 +113,7 @@ function overviewPage(site: SiteData, lang: Lang, periods: Periods): StaticPage 
   const i18n = createI18n(lang);
   const rows = generationCountries(periods).flatMap((code) => {
     const last = lastComplete(yearRows(periods, code) ?? []);
-    if (!last || last.total === null) return [];
+    if (last?.total == null) return [];
     const largest = largestSource(last);
     return [
       [
@@ -188,7 +188,7 @@ function generationDataset(
 function countryPage(site: SiteData, lang: Lang, periods: Periods, code: CountryCode): StaticPage | null {
   const rows = yearRows(periods, code);
   const last = rows ? lastComplete(rows) : null;
-  if (!rows || !last || last.total === null) return null;
+  if (!rows || last?.total == null) return null;
   const copy = ENERGY_COPY[lang].generation;
   const i18n = createI18n(lang);
   const name = i18n.country(code);
@@ -404,7 +404,7 @@ function pricesPage(site: SiteData, lang: Lang, live: Live): StaticPage | null {
     description: copy.description,
     heading: copy.heading(date),
     lead:
-      lead && lead.average !== null && lead.low && lead.high
+      lead?.low && lead.high && lead.average !== null
         ? `<p>${e(
             copy.lead(
               date,

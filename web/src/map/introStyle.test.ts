@@ -79,7 +79,7 @@ const names = { label, fonts: ["Noto Sans Regular"] };
 function styleAt(
   stage: IntroStage,
   globe: { from: number; to: number } | null,
-  withNames: boolean = false,
+  withNames = false,
 ): StyleSpecification {
   return introStyle(
     composeStyle(base, dataSources(tiles, { live: live.features }, NOTHING_OPTED_IN), at(stage)),
@@ -190,13 +190,12 @@ describe("the grid lighting up during the intro", () => {
     );
     expect(opacity(3, "place-country")).toBe(0);
     expect(opacity(INTRO_SETTLE, "place-country")).toBe(0.9);
-    const source = styleAt(1, null, true).sources["energymap-intro-names"] as {
-      data: { features: { properties: { name: string; home: boolean } }[] };
-    };
-    expect(source.data.features).toHaveLength(SCOPE_COUNTRIES.length);
-    expect(source.data.features.filter((f) => f.properties.home).map((f) => f.properties.name)).toEqual([
-      "ime HR",
-    ]);
+    const source = styleAt(1, null, true).sources["energymap-intro-names"];
+    if (source?.type !== "geojson" || typeof source.data === "string") throw new Error("not inline GeoJSON");
+    if (source.data.type !== "FeatureCollection") throw new Error("not a feature collection");
+    const names = source.data.features.map((feature) => feature.properties ?? {});
+    expect(names).toHaveLength(SCOPE_COUNTRIES.length);
+    expect(names.filter((p) => p.home === true).map((p) => p.name as unknown)).toEqual(["ime HR"]);
   });
 
   it("has no names without the basemap's fonts", () => {

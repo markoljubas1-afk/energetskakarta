@@ -15,7 +15,7 @@ const labels: CsvLabels = {
   total: "Ukupno",
   pumping: "Pumpanje",
   months: ["sij", "velj", "ožu", "tra", "svi", "lip", "srp", "kol", "ruj", "lis", "stu", "pro"],
-  technology: (tech) => ({ hydro: "Hidro", solar: "Sunce" })[tech as "hydro" | "solar"] ?? tech,
+  technology: (tech) => (({ hydro: "Hidro", solar: "Sunce" }) as Record<string, string>)[tech] ?? tech,
 };
 
 const data: EnergySeries = {
