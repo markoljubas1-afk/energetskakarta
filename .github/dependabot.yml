@@ -1,0 +1,26 @@
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /pipeline
+    schedule:
+      interval: weekly
+    groups:
+      python:
+        patterns: ["*"]
+
+  - package-ecosystem: npm
+    directory: /web
+    schedule:
+      interval: weekly
+    groups:
+      web-minor:
+        update-types: [minor, patch]
+    ignore:
+      # typescript-eslint 8.x supports TypeScript < 6.1 (tasks/todo.md, Faza 4); lift when it does
+      - dependency-name: typescript
+        versions: [">=6.1"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

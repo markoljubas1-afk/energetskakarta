@@ -1,0 +1,62 @@
+# One-off (or repair) fetch of whole calendar years. Takes a while: one request per country, kind and year.
+name: energy-backfill
+
+on:
+  workflow_dispatch:
+    inputs:
+      from_year:
+        description: "First year (2015 or later)"
+        default: "2015"
+        required: true
+      countries:
+        description: "Comma separated country codes"
+        default: "HR,SI,HU,RS,BA,ME,IT,AT"
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: energy-publish
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      DATA_BASE_URL: ${{ vars.DATA_BASE_URL }}
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/pyproject.toml
+      - run: python -m pip install -e .
+      - name: Pull published years
+        if: env.DATA_BASE_URL != ''
+        run: energymap energy pull --data-dir data --baseline-url "$DATA_BASE_URL"
+      - name: Fetch
+        env:
+          ENTSOE_TOKEN: ${{ secrets.ENTSOE_TOKEN }}
+          FROM_YEAR: ${{ inputs.from_year }}
+          COUNTRIES: ${{ inputs.countries }}
+        run: energymap energy fetch --data-dir data --from-year "$FROM_YEAR" --countries "$COUNTRIES"
+      - name: Publish
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: energymap energy publish-r2 --data-dir data
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: energy-data
+          path: pipeline/data/energy/
+          if-no-files-found: ignore
+          retention-days: 30

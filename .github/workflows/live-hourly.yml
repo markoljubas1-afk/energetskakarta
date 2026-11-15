@@ -1,0 +1,54 @@
+# Hourly cross-border flows and day-ahead prices (ENTSO-E) for the map's live layer.
+# If the platform returns nothing usable, the published document is left as it was.
+name: live-hourly
+
+on:
+  schedule:
+    - cron: "12 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-publish
+  cancel-in-progress: true # a newer run supersedes an older one
+
+jobs:
+  live:
+    # The schedule is opt-in (SCHEDULE_ENTSOE=true under Settings → Variables), switched on once a manual run has
+    # succeeded; until then scheduled runs are skipped instead of failing every time. Manual runs always run.
+    if: github.event_name != 'schedule' || vars.SCHEDULE_ENTSOE == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check configuration
+        env:
+          HAS_TOKEN: ${{ secrets.ENTSOE_TOKEN != '' }}
+          HAS_R2: ${{ secrets.R2_ACCOUNT_ID != '' && secrets.R2_ACCESS_KEY_ID != '' && secrets.R2_SECRET_ACCESS_KEY != '' && secrets.R2_BUCKET != '' }}
+        run: |
+          if [ "$HAS_TOKEN" != "true" ] || [ "$HAS_R2" != "true" ]; then
+            echo "::error::Not configured: ENTSOE_TOKEN and R2_* secrets are required (infra/README.md)"
+            exit 1
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/pyproject.toml
+      - run: python -m pip install -e .
+      - name: Fetch
+        env:
+          ENTSOE_TOKEN: ${{ secrets.ENTSOE_TOKEN }}
+        run: energymap live fetch --data-dir data
+      - name: Publish
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: energymap live publish-r2 --data-dir data

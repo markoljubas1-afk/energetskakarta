@@ -1,0 +1,14 @@
+# Downloaded and built data, never committed. Anchored to the pipeline: an unanchored "data/" would also
+# swallow web/src/data/ (the site's data-loading code) and the site would not build from the repository.
+/pipeline/data/
+/data/
+*.osm.pbf
+__pycache__/
+*.egg-info/
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Visual Studio workspace cache (local, locked while VS is open)
+.vs/

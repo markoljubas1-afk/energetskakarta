@@ -1,0 +1,174 @@
+# Geothermal sites in Croatia for the map's geothermal layer (Faza 21).
+#
+# Hand-curated, like datacenters.yaml: an entry is added only when a public page states it, and that page is
+# linked in `sources`. Coordinates are those of the place (village or town), not of a wellhead. The build
+# rejects the whole file if any entry breaks a rule. Review at least every quarter and update `reviewed`.
+#
+# kind: power (electricity) | heat (heating, spa)
+# status: operating | project | potential_confirmed | exploration | local_project
+# uses: electricity | heating | greenhouses | spa (what the site uses the hot water for)
+version: 1
+reviewed: "2026-11-15"
+sites:
+  - id: velika-1
+    name: Geotermalna elektrana Velika 1
+    place: Velika Ciglena kraj Bjelovara
+    lon: 16.88
+    lat: 45.87
+    kind: power
+    status: operating
+    electric_mw: 16.5
+    uses: [electricity]
+    sources:
+      - https://balkangreenenergynews.com/croatias-first-geothermal-power-plant-velika-1-officially-unveiled/
+      - https://ippjournal.com/update/mb-holding-opens-of-165-mw-velika-ciglena-geothermal-power-project-in-bjelovar
+  - id: legrad-1
+    name: Legrad 1
+    place: Legrad
+    lon: 16.85
+    lat: 46.30
+    kind: power
+    status: project
+    electric_mw: 98
+    note_hr: Planirana elektrana; ključna faza istraživanja je završena, priprema se lokacijska dozvola.
+    note_en: Planned power plant; the key exploration phase is complete and a location permit is being prepared.
+    uses: [electricity]
+    sources:
+      - https://www.tportal.hr/vijesti/clanak/na-sest-polja-planirana-proizvodnja-geotermalne-elektricne-energije-20260801
+  - id: slatina-2
+    name: Slatina 2
+    place: Slatina
+    lon: 17.70
+    lat: 45.70
+    kind: power
+    status: project
+    note_hr: Ključna faza istraživanja je završena; priprema se gradnja.
+    note_en: The key exploration phase is complete; construction is being prepared.
+    uses: [electricity]
+    sources:
+      - https://www.tportal.hr/vijesti/clanak/na-sest-polja-planirana-proizvodnja-geotermalne-elektricne-energije-20260801
+  - id: topusko
+    name: Toplice Topusko
+    place: Topusko
+    lon: 15.97
+    lat: 45.30
+    kind: heat
+    status: operating
+    temperature_c: 65
+    note_hr: Bušotine daju vodu od oko 64 do 68 °C; grijanje zgrada smanjeno je nakon rata.
+    note_en: Wells give water at about 64–68 °C; heating of buildings declined after the war.
+    uses: [heating, spa]
+    sources:
+      - https://mdpi.com/2071-1050/15/6/5498
+  - id: velika-gorica
+    name: Velika Gorica
+    place: Velika Gorica
+    lon: 16.07
+    lat: 45.71
+    kind: heat
+    status: potential_confirmed
+    uses: [heating]
+    sources: &azu
+      - https://www.tportal.hr/vijesti/clanak/na-sest-polja-planirana-proizvodnja-geotermalne-elektricne-energije-20260801
+      - https://balkangreenenergynews.com/rs/hrvatska-ulaze-50-miliona-evra-u-geotermalnu-energiju-u-blizini-sest-gradova
+  - id: osijek
+    name: Osijek
+    place: Osijek
+    lon: 18.69
+    lat: 45.55
+    kind: heat
+    status: potential_confirmed
+    uses: [heating]
+    sources: *azu
+  - id: vinkovci
+    name: Vinkovci
+    place: Vinkovci
+    lon: 18.80
+    lat: 45.29
+    kind: heat
+    status: potential_confirmed
+    uses: [heating]
+    sources: *azu
+  - id: zapresic
+    name: Zaprešić
+    place: Zaprešić
+    lon: 15.81
+    lat: 45.86
+    kind: heat
+    status: potential_confirmed
+    uses: [heating]
+    sources: *azu
+  - id: sisak
+    name: Sisak
+    place: Sisak
+    lon: 16.37
+    lat: 45.47
+    kind: heat
+    status: exploration
+    uses: [heating]
+    sources:
+      - https://balkangreenenergynews.com/rs/hrvatska-ulaze-50-miliona-evra-u-geotermalnu-energiju-u-blizini-sest-gradova
+  - id: bjelovar
+    name: Bjelovar
+    place: Bjelovar
+    lon: 16.84
+    lat: 45.90
+    kind: heat
+    status: local_project
+    uses: [heating]
+    sources: &local
+      - https://www.tportal.hr/vijesti/clanak/na-sest-polja-planirana-proizvodnja-geotermalne-elektricne-energije-20260801
+  - id: krizevci
+    name: Križevci
+    place: Križevci
+    lon: 16.55
+    lat: 46.02
+    kind: heat
+    status: local_project
+    uses: [heating]
+    sources: *local
+  - id: lipik
+    name: Lipik
+    place: Lipik
+    lon: 17.16
+    lat: 45.41
+    kind: heat
+    status: local_project
+    uses: [heating]
+    sources: *local
+  - id: kutina
+    name: Kutina
+    place: Kutina
+    lon: 16.78
+    lat: 45.48
+    kind: heat
+    status: local_project
+    uses: [heating]
+    sources: *local
+  - id: slavonski-brod
+    name: Slavonski Brod
+    place: Slavonski Brod
+    lon: 18.01
+    lat: 45.16
+    kind: heat
+    status: local_project
+    uses: [heating]
+    sources: *local
+  - id: vukovar
+    name: Vukovar
+    place: Vukovar
+    lon: 19.00
+    lat: 45.35
+    kind: heat
+    status: local_project
+    uses: [heating]
+    sources: *local
+  - id: dugo-selo
+    name: Dugo Selo
+    place: Dugo Selo
+    lon: 16.24
+    lat: 45.81
+    kind: heat
+    status: local_project
+    uses: [heating]
+    sources: *local

@@ -1,0 +1,82 @@
+.legend {
+  padding: 8px 12px 10px;
+  font-size: 12.5px;
+}
+
+.legend summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+
+.legend summary::-webkit-details-marker {
+  display: none;
+}
+
+.chevron {
+  transition: transform 150ms ease;
+}
+
+.legend:not([open]) .chevron {
+  transform: rotate(-90deg);
+}
+
+.legend h3 {
+  margin: 10px 0 4px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.voltages,
+.technologies {
+  display: grid;
+  gap: 3px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.technologies {
+  grid-template-columns: 1fr 1fr;
+}
+
+.voltages li,
+.technologies li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.line {
+  width: 16px;
+  height: 3px;
+  border-radius: 2px;
+  flex: none;
+}
+
+/* on the map's word, this kind is not on screen now: still listed, but out of the way */
+.voltages li[data-absent],
+.technologies li[data-absent] {
+  opacity: 0.42;
+  transition: opacity var(--motion) var(--ease-out);
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.note {
+  margin: 8px 0 0;
+  color: var(--muted);
+  max-width: 30ch;
+}

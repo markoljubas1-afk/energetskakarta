@@ -1,0 +1,793 @@
+/** Layers for our own data, built from state + theme; merged into whichever basemap is active. */
+import type { ExpressionSpecification, LayerSpecification } from "maplibre-gl";
+
+import type { CountryCode, LayerKey } from "../domain";
+import {
+  chargerFilter,
+  cityFilter,
+  dataCenterFilter,
+  distributionLineFilter,
+  distributionSubstationFilter,
+  extractionFilter,
+  lineFilter,
+  pipelineFilter,
+  plantFilter,
+  selectionFilter,
+  substationFilter,
+  type StyleState,
+} from "./filters";
+import { stepPattern } from "./flowAnimation";
+import {
+  CITY_RADIUS_STOPS,
+  DATACENTER_RADIUS_STOPS,
+  GAS_RADIUS,
+  LINE_WIDTH_STOPS,
+  PLANT_RADIUS_STOPS,
+  SUBSTATION_RADIUS_STOPS,
+  arcWidth,
+  byZoom,
+  cityRadius,
+  datacenterRadius,
+  hoverStroke,
+  hovered,
+  lineWidth,
+  lineWidthByZoom,
+  pipelineColor,
+  plantRadius,
+  selectedRing,
+  substanceColor,
+  substationRadius,
+  technologyColor,
+  visible,
+  voltageColor,
+  type Expr,
+} from "./layerStyle";
+import type { Palette } from "./palette";
+import { priceFill } from "./priceScale";
+import {
+  BOUNDARY_SOURCE,
+  CAPACITY_LAYER,
+  CAPACITY_SOURCE,
+  CHARGER_SOURCE,
+  DISTRIBUTION_SOURCE,
+  EXTRACTION_SOURCE,
+  FLOW_CASING_LAYER,
+  FLOW_DASH_LAYER,
+  FLOW_HALO_LAYER,
+  GAS_SOURCE,
+  GEOTHERMAL_SITES_LAYER,
+  GEOTHERMAL_SOURCE,
+  GRID_SOURCE,
+  LAYER_PREFIX,
+  LINE_GLOW_LAYER,
+  LIVE_SOURCE,
+  PRICE_FILL_LAYER,
+  TIMELINE_SOURCE,
+  type OptIn,
+} from "./sources";
+
+// Everything other modules have always imported from here stays importable from here.
+export {
+  BOUNDARY_SOURCE,
+  CAPACITY_LAYER,
+  CAPACITY_SOURCE,
+  CHARGER_SOURCE,
+  dataSources,
+  DISTRIBUTION_SOURCE,
+  EXTRACTION_SOURCE,
+  FEATURE_ID,
+  FLOW_CASING_LAYER,
+  FLOW_DASH_LAYER,
+  FLOW_HALO_LAYER,
+  GAS_SOURCE,
+  GEOTHERMAL_SITES_LAYER,
+  GEOTHERMAL_SOURCE,
+  GRID_SOURCE,
+  INTERACTIVE_LAYERS,
+  LAYER_PREFIX,
+  LINE_GLOW_LAYER,
+  LIVE_SOURCE,
+  NOTHING_OPTED_IN,
+  OPT_IN_ARCHIVES,
+  optedIn,
+  PRICE_FILL_LAYER,
+  SELECTABLE,
+  TIMELINE_SOURCE,
+  type OptIn,
+  type OptInArchive,
+  type OptionalArchive,
+  type Overlays,
+  type TileUrls,
+} from "./sources";
+export { SELECTED_RING_STROKE, SELECTED_RING_SUFFIX } from "./layerStyle";
+
+export interface LayerOptions {
+  /** only what the style is made of (StyleState): a pan changes nothing here */
+  state: StyleState;
+  palette: Palette;
+  /** Whether the basemap provides glyphs; labels are only added when it does. */
+  labels: string[] | null;
+  /** Dim countries outside the selected scope (on top of a detailed basemap). */
+  maskOutside: boolean;
+  /** Which opt-in archives to draw: switch on and archive published (see `optedIn`). */
+  optIn: OptIn;
+  /** Day-ahead prices at the live layer's hour (EUR/MWh per country); the countries are filled by them. */
+  livePrices?: Partial<Record<CountryCode, number>> | null;
+}
+
+export function dataLayers({
+  state,
+  palette,
+  labels,
+  maskOutside,
+  optIn,
+  livePrices = null,
+}: LayerOptions): LayerSpecification[] {
+  const { distribution: showDistribution, chargers: showChargers, extraction: showExtraction } = optIn;
+  const show = (key: LayerKey) => visible(state.layers.has(key));
+  const layers: LayerSpecification[] = [];
+
+  if (maskOutside) {
+    layers.push({
+      id: `${LAYER_PREFIX}outside-mask`,
+      type: "fill",
+      source: BOUNDARY_SOURCE,
+      "source-layer": "countries",
+      filter: ["!", ["get", "inScope"]],
+      paint: { "fill-color": palette.outsideMask },
+    });
+  }
+  // Prices colour the countries under everything else, only while the live layer is on (Faza 18-2).
+  const fill = state.live && livePrices ? priceFill(livePrices, palette.price.stops) : null;
+  layers.push({
+    id: PRICE_FILL_LAYER,
+    type: "fill",
+    source: BOUNDARY_SOURCE,
+    "source-layer": "countries",
+    filter: ["get", "inScope"],
+    layout: { visibility: visible(fill !== null) },
+    paint: { "fill-color": fill ?? "rgba(0, 0, 0, 0)", "fill-opacity": palette.price.opacity },
+  });
+  // Geothermal potential (Faza 21): heat-flow cells under the grid, translucent, only near measurements.
+  const heatStops = palette.heatFlow.stops.flatMap(([q, color]) => [q, color]);
+  layers.push({
+    id: `${LAYER_PREFIX}geothermal-potential`,
+    type: "fill",
+    source: GEOTHERMAL_SOURCE,
+    filter: ["==", ["geometry-type"], "Polygon"],
+    layout: { visibility: show("geothermal") },
+    paint: {
+      "fill-color": ["interpolate", ["linear"], ["get", "q"], ...heatStops] as ExpressionSpecification,
+      "fill-opacity": palette.heatFlow.opacity,
+      "fill-antialias": false,
+    },
+  });
+  layers.push({
+    id: `${LAYER_PREFIX}scope-outline`,
+    type: "line",
+    source: BOUNDARY_SOURCE,
+    "source-layer": "countries",
+    filter: ["get", "inScope"],
+    paint: {
+      "line-color": palette.border,
+      "line-width": ["interpolate", ["linear"], ["zoom"], 4, 0.8, 10, 1.6],
+    },
+  });
+
+  // The distribution network sits underneath everything: it is context for the grid, never the subject.
+  // Its source is only declared for builds that publish the archive, so its layers follow the same rule.
+  if (showDistribution) {
+    layers.push(
+      {
+        id: `${LAYER_PREFIX}distribution-lines`,
+        type: "line",
+        source: DISTRIBUTION_SOURCE,
+        "source-layer": "distribution_lines",
+        filter: distributionLineFilter(state),
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: {
+          "line-color": voltageColor(palette),
+          // thin, because a real distribution network is dense; opaque, so a single line is still legible
+          "line-opacity": 0.9,
+          "line-width": lineWidthByZoom([
+            [10, 0.7],
+            [14, 1.9],
+          ]),
+        },
+      },
+      {
+        id: `${LAYER_PREFIX}distribution-lines-selected`,
+        type: "line",
+        source: DISTRIBUTION_SOURCE,
+        "source-layer": "distribution_lines",
+        filter: selectionFilter(state.selected),
+        layout: { "line-cap": "round" },
+        paint: { "line-color": palette.selection, "line-width": 6, "line-opacity": 0.55 },
+      },
+      {
+        id: `${LAYER_PREFIX}distribution-substations`,
+        type: "circle",
+        source: DISTRIBUTION_SOURCE,
+        "source-layer": "distribution_substations",
+        filter: distributionSubstationFilter(state),
+        paint: {
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 11, 1.8, 14, 3.4],
+          "circle-color": voltageColor(palette),
+          "circle-opacity": 0.8,
+          ...hoverStroke(palette, 0, voltageColor(palette)),
+        },
+      },
+      {
+        id: `${LAYER_PREFIX}distribution-substations-selected`,
+        type: "circle",
+        source: DISTRIBUTION_SOURCE,
+        "source-layer": "distribution_substations",
+        filter: selectionFilter(state.selected),
+        paint: {
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 11, 5, 14, 7],
+          "circle-color": "rgba(0,0,0,0)",
+          "circle-stroke-color": palette.selection,
+          "circle-stroke-width": 3,
+        },
+      },
+    );
+  }
+
+  if (showChargers) {
+    layers.push({
+      id: `${LAYER_PREFIX}chargers`,
+      type: "circle",
+      source: CHARGER_SOURCE,
+      "source-layer": "chargers",
+      filter: chargerFilter(state),
+      paint: {
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 11, 2.4, 15, 4.5],
+        "circle-color": palette.charger,
+        "circle-opacity": 0.9,
+        ...hoverStroke(palette, 0.8, palette.casing),
+      },
+    });
+    layers.push(
+      selectedRing(
+        "chargers",
+        CHARGER_SOURCE,
+        "chargers",
+        ["interpolate", ["linear"], ["zoom"], 11, 6, 15, 8.5],
+        palette,
+        state.selected,
+      ),
+    );
+  }
+
+  if (showExtraction) {
+    // Discs coloured by substance, larger for a platform, mine or open pit than for a single well or
+    // shaft: the map says where something is dug, never how much (the layer has no production figures).
+    layers.push({
+      id: `${LAYER_PREFIX}extraction`,
+      type: "circle",
+      source: EXTRACTION_SOURCE,
+      "source-layer": "extraction",
+      filter: extractionFilter(state),
+      paint: {
+        "circle-radius": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          6,
+          ["match", ["get", "kind"], "platform", 3.5, "mine", 3, 2],
+          14,
+          ["match", ["get", "kind"], "platform", 8, "mine", 7, "quarry", 7, 5],
+        ],
+        "circle-color": substanceColor(palette),
+        "circle-opacity": ["match", ["get", "kind"], "well", 0.85, "shaft", 0.85, "adit", 0.85, 0.95],
+        "circle-stroke-color": palette.casing,
+        "circle-stroke-width": hovered(1.8, 0.6),
+      },
+    });
+    layers.push(
+      selectedRing(
+        "extraction",
+        EXTRACTION_SOURCE,
+        "extraction",
+        ["interpolate", ["linear"], ["zoom"], 6, 7, 14, 12],
+        palette,
+        state.selected,
+      ),
+    );
+  }
+
+  // Cities sit under the grid: translucent discs whose area tracks yearly electricity, so a reader sees
+  // where consumption is without the discs hiding the plants and lines drawn on top of them.
+  layers.push(
+    {
+      id: `${LAYER_PREFIX}cities`,
+      type: "circle",
+      source: GRID_SOURCE,
+      "source-layer": "cities",
+      filter: cityFilter(state),
+      layout: { visibility: show("cities"), "circle-sort-key": ["-", ["get", "electricityMwh"]] },
+      paint: {
+        "circle-radius": cityRadius,
+        "circle-color": palette.city,
+        ...hoverStroke(palette, 1.2, palette.cityRing),
+      },
+    },
+    {
+      id: `${LAYER_PREFIX}cities-selected`,
+      type: "circle",
+      source: GRID_SOURCE,
+      "source-layer": "cities",
+      filter: selectionFilter(state.selected),
+      layout: { visibility: show("cities") },
+      paint: {
+        "circle-radius": byZoom(CITY_RADIUS_STOPS, 1, 3),
+        "circle-color": "rgba(0,0,0,0)",
+        "circle-stroke-color": palette.selection,
+        "circle-stroke-width": 3,
+      },
+    },
+  );
+
+  // Lines: casing and interconnector halo underneath, then planned (dashed), then operating.
+  layers.push(
+    // offshore pipelines under the power grid: brown family, dashed when not in operation
+    {
+      id: `${LAYER_PREFIX}pipelines-planned`,
+      type: "line",
+      source: GRID_SOURCE,
+      "source-layer": "pipelines",
+      filter: pipelineFilter(state, false),
+      layout: { visibility: show("pipelines") },
+      paint: {
+        "line-color": pipelineColor(palette),
+        "line-width": hovered(4.5, 2),
+        "line-dasharray": [1.5, 1.5],
+      },
+    },
+    {
+      id: `${LAYER_PREFIX}pipelines`,
+      type: "line",
+      source: GRID_SOURCE,
+      "source-layer": "pipelines",
+      filter: pipelineFilter(state, true),
+      layout: { visibility: show("pipelines"), "line-cap": "round", "line-join": "round" },
+      paint: {
+        "line-color": pipelineColor(palette),
+        "line-width": lineWidthByZoom([
+          [5, 1.5],
+          [10, 3.5],
+        ]),
+      },
+    },
+    {
+      id: `${LAYER_PREFIX}pipelines-selected`,
+      type: "line",
+      source: GRID_SOURCE,
+      "source-layer": "pipelines",
+      filter: selectionFilter(state.selected),
+      layout: { "line-cap": "round" },
+      paint: { "line-color": palette.selection, "line-width": 7, "line-opacity": 0.55 },
+    },
+    {
+      // Night glow (Faza 18-4): in the muted dark theme lines sit on a soft halo of their own colour. It is
+      // the same theme, not a new one; the light theme has no glow (palette.lineGlow = 0).
+      id: LINE_GLOW_LAYER,
+      type: "line",
+      source: GRID_SOURCE,
+      "source-layer": "lines",
+      filter: lineFilter(state, true),
+      layout: {
+        visibility: visible(state.layers.has("lines") && palette.lineGlow > 0),
+        "line-cap": "round",
+        "line-join": "round",
+      },
+      paint: {
+        "line-color": voltageColor(palette),
+        "line-width": byZoom(LINE_WIDTH_STOPS, 4),
+        "line-blur": byZoom(LINE_WIDTH_STOPS, 3),
+        "line-opacity": palette.lineGlow,
+      },
+    },
+    {
+      id: `${LAYER_PREFIX}interconnectors`,
+      type: "line",
+      source: GRID_SOURCE,
+      "source-layer": "lines",
+      filter: ["all", ["get", "isInterconnector"], lineFilter(state, true)],
+      layout: { visibility: show("lines"), "line-cap": "round" },
+      paint: { "line-color": palette.interconnector, "line-width": byZoom(LINE_WIDTH_STOPS, 3.2) },
+    },
+    {
+      id: `${LAYER_PREFIX}lines-planned`,
+      type: "line",
+      source: GRID_SOURCE,
+      "source-layer": "lines",
+      filter: lineFilter(state, false),
+      layout: { visibility: show("lines") },
+      paint: { "line-color": voltageColor(palette), "line-width": lineWidth, "line-dasharray": [2, 2] },
+    },
+    {
+      id: `${LAYER_PREFIX}lines`,
+      type: "line",
+      source: GRID_SOURCE,
+      "source-layer": "lines",
+      filter: lineFilter(state, true),
+      layout: { visibility: show("lines"), "line-cap": "round", "line-join": "round" },
+      paint: { "line-color": voltageColor(palette), "line-width": lineWidth },
+    },
+    {
+      id: `${LAYER_PREFIX}lines-selected`,
+      type: "line",
+      source: GRID_SOURCE,
+      "source-layer": "lines",
+      filter: selectionFilter(state.selected),
+      layout: { "line-cap": "round" },
+      paint: {
+        "line-color": palette.selection,
+        "line-width": byZoom(LINE_WIDTH_STOPS, 1, 4),
+        "line-opacity": 0.55,
+      },
+    },
+  );
+
+  // Hover thickens the ring and turns it the selection colour; the fill is left alone so the
+  // technology or voltage colour stays readable under the pointer.
+  const hollow = (color: string | Expr) => ({
+    "circle-opacity": 0.15,
+    ...hoverStroke(palette, 1.6, color),
+  });
+  const solid = { "circle-opacity": 0.92, ...hoverStroke(palette, 1, palette.casing) };
+
+  layers.push(
+    {
+      id: `${LAYER_PREFIX}substations-planned`,
+      type: "circle",
+      source: GRID_SOURCE,
+      "source-layer": "substations",
+      filter: substationFilter(state, false),
+      layout: { visibility: show("substations") },
+      paint: {
+        "circle-radius": substationRadius,
+        "circle-color": voltageColor(palette),
+        ...hollow(voltageColor(palette)),
+      },
+    },
+    {
+      id: `${LAYER_PREFIX}substations`,
+      type: "circle",
+      source: GRID_SOURCE,
+      "source-layer": "substations",
+      filter: substationFilter(state, true),
+      layout: { visibility: show("substations") },
+      paint: { "circle-radius": substationRadius, "circle-color": voltageColor(palette), ...solid },
+    },
+    {
+      id: `${LAYER_PREFIX}plants-planned`,
+      type: "circle",
+      source: GRID_SOURCE,
+      "source-layer": "plants",
+      filter: plantFilter(state, false),
+      layout: {
+        visibility: show("plants"),
+        "circle-sort-key": ["-", ["coalesce", ["get", "capacityMw"], 0]],
+      },
+      paint: {
+        "circle-radius": plantRadius,
+        "circle-color": technologyColor(palette),
+        ...hollow(technologyColor(palette)),
+      },
+    },
+    {
+      id: `${LAYER_PREFIX}plants`,
+      type: "circle",
+      source: GRID_SOURCE,
+      "source-layer": "plants",
+      filter: plantFilter(state, true),
+      // small plants drawn last so they stay clickable on top of large ones
+      layout: {
+        visibility: show("plants"),
+        "circle-sort-key": ["-", ["coalesce", ["get", "capacityMw"], 0]],
+      },
+      paint: { "circle-radius": plantRadius, "circle-color": technologyColor(palette), ...solid },
+    },
+    // Time machine (Faza 18-3): plants GEM lists as retired, from the timeline. While they ran they look
+    // like any plant; once closed they stay as grey outlines, unlike the coloured rings of planned plants.
+    {
+      id: `${LAYER_PREFIX}timeline-closed`,
+      type: "circle",
+      source: TIMELINE_SOURCE,
+      filter: ["==", ["get", "phase"], "closed"],
+      layout: { visibility: visible(state.year !== null && state.layers.has("plants")) },
+      paint: {
+        "circle-radius": plantRadius,
+        "circle-opacity": 0,
+        "circle-stroke-color": palette.border,
+        "circle-stroke-width": 1.4,
+        "circle-stroke-opacity": 0.9,
+      },
+    },
+    {
+      id: `${LAYER_PREFIX}timeline-running`,
+      type: "circle",
+      source: TIMELINE_SOURCE,
+      filter: ["==", ["get", "phase"], "running"],
+      layout: {
+        visibility: visible(state.year !== null && state.layers.has("plants")),
+        "circle-sort-key": ["-", ["coalesce", ["get", "capacityMw"], 0]],
+      },
+      paint: {
+        "circle-radius": plantRadius,
+        "circle-color": technologyColor(palette),
+        "circle-opacity": 0.92,
+        "circle-stroke-color": palette.casing,
+        "circle-stroke-width": 1,
+      },
+    },
+    // Data centres are loads, not generation, so they stay out of the technology palette entirely: one
+    // dark slate colour, a ring for the ones not yet running, and a legend entry that names them.
+    // (A distinct shape would mean sprites or SDF icons; that machinery is not worth it for one layer.)
+    {
+      id: `${LAYER_PREFIX}datacenters-planned`,
+      type: "circle",
+      source: GRID_SOURCE,
+      "source-layer": "datacenters",
+      filter: dataCenterFilter(state, false),
+      layout: { visibility: show("datacenters") },
+      paint: {
+        "circle-radius": datacenterRadius,
+        "circle-color": palette.datacenter,
+        ...hollow(palette.datacenter),
+      },
+    },
+    {
+      id: `${LAYER_PREFIX}datacenters`,
+      type: "circle",
+      source: GRID_SOURCE,
+      "source-layer": "datacenters",
+      filter: dataCenterFilter(state, true),
+      layout: { visibility: show("datacenters") },
+      paint: { "circle-radius": datacenterRadius, "circle-color": palette.datacenter, ...solid },
+    },
+    {
+      id: `${LAYER_PREFIX}datacenters-selected`,
+      type: "circle",
+      source: GRID_SOURCE,
+      "source-layer": "datacenters",
+      filter: selectionFilter(state.selected),
+      paint: {
+        "circle-radius": byZoom(DATACENTER_RADIUS_STOPS, 1, 5),
+        "circle-color": "rgba(0,0,0,0)",
+        "circle-stroke-color": palette.selection,
+        "circle-stroke-width": 3,
+      },
+    },
+    {
+      id: `${LAYER_PREFIX}points-selected`,
+      type: "circle",
+      source: GRID_SOURCE,
+      "source-layer": "plants",
+      filter: selectionFilter(state.selected),
+      paint: {
+        "circle-radius": byZoom(PLANT_RADIUS_STOPS, 1, 5),
+        "circle-color": "rgba(0,0,0,0)",
+        "circle-stroke-color": palette.selection,
+        "circle-stroke-width": 3,
+      },
+    },
+    {
+      id: `${LAYER_PREFIX}substations-selected`,
+      type: "circle",
+      source: GRID_SOURCE,
+      "source-layer": "substations",
+      filter: selectionFilter(state.selected),
+      paint: {
+        "circle-radius": byZoom(SUBSTATION_RADIUS_STOPS, 1, 5),
+        "circle-color": "rgba(0,0,0,0)",
+        "circle-stroke-color": palette.selection,
+        "circle-stroke-width": 3,
+      },
+    },
+  );
+
+  // Gas production per country: a disc whose area follows the latest gas day, at the country's anchor.
+  // There is one figure per country, so the disc is the whole layer; the days are in the details.
+  layers.push({
+    id: `${LAYER_PREFIX}gas`,
+    type: "circle",
+    source: GAS_SOURCE,
+    layout: { visibility: show("gas") },
+    paint: {
+      "circle-radius": GAS_RADIUS,
+      "circle-color": palette.gas,
+      "circle-opacity": 0.55,
+      "circle-stroke-color": palette.gas,
+      "circle-stroke-width": hovered(3, 1.5),
+      "circle-stroke-opacity": 0.95,
+    },
+  });
+  layers.push(
+    selectedRing("gas", GAS_SOURCE, undefined, ["+", GAS_RADIUS, 4], palette, state.selected, show("gas")),
+  );
+
+  // HEP ODS free capacity (Faza 25): a point per substation, stronger the more a new plant can connect;
+  // 110/x kV larger than 35/x kV; the best categories drawn on top where points overlap.
+  const cap = palette.capacity;
+  const byLevel = (hv: number, mv: number): ExpressionSpecification => [
+    "match",
+    ["get", "level"],
+    "hv",
+    hv,
+    mv,
+  ];
+  layers.push({
+    id: CAPACITY_LAYER,
+    type: "circle",
+    source: CAPACITY_SOURCE,
+    layout: { visibility: show("capacity"), "circle-sort-key": ["get", "rank"] },
+    paint: {
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 6, byLevel(5, 3.5), 11, byLevel(9, 6)],
+      "circle-color": [
+        "match",
+        ["get", "existing"],
+        "A",
+        cap.A,
+        "B",
+        cap.B,
+        "C",
+        cap.C,
+        "D",
+        cap.D,
+        cap.none,
+      ],
+      "circle-stroke-color": ["match", ["get", "existing"], "none", cap.noneRing, cap.ring],
+      "circle-stroke-width": ["match", ["get", "existing"], "none", 1.5, 1],
+      "circle-opacity": ["match", ["get", "existing"], "none", 0.4, 0.95],
+    },
+  });
+
+  // Geothermal sites: solid for what runs, lighter for what is coming; size grows with electric capacity.
+  layers.push({
+    id: GEOTHERMAL_SITES_LAYER,
+    type: "circle",
+    source: GEOTHERMAL_SOURCE,
+    filter: ["==", ["geometry-type"], "Point"],
+    layout: { visibility: show("geothermal") },
+    paint: {
+      "circle-radius": ["interpolate", ["linear"], ["get", "mw"], 0, 5, 20, 7, 100, 11],
+      "circle-color": [
+        "match",
+        ["get", "status"],
+        "operating",
+        palette.geoPhase.operating,
+        "project",
+        palette.geoPhase.project,
+        "potential_confirmed",
+        palette.geoPhase.potential_confirmed,
+        "exploration",
+        palette.geoPhase.exploration,
+        palette.geoPhase.local_project,
+      ],
+      "circle-stroke-color": palette.casing,
+      "circle-stroke-width": 1.5,
+    },
+  });
+
+  // Live flows on top of the grid: arcs scaled by MW, arrowheads as small triangles (no glyphs needed).
+  const liveVisibility = visible(state.live);
+  const halo = palette.flowHalo;
+  layers.push(
+    {
+      // dark theme: a glow in the flow colour; light theme: a soft shadow below the arc (Faza 18)
+      id: FLOW_HALO_LAYER,
+      type: "line",
+      source: LIVE_SOURCE,
+      filter: ["==", ["geometry-type"], "LineString"],
+      layout: { visibility: liveVisibility, "line-cap": "round" },
+      paint: {
+        "line-color": halo.color,
+        "line-opacity": halo.opacity,
+        "line-width": arcWidth(halo.extra),
+        "line-blur": halo.blur,
+        "line-translate": [0, halo.offsetY],
+      },
+    },
+    {
+      // light theme: a pale edge that parts the arc from the lines and points beneath it
+      id: FLOW_CASING_LAYER,
+      type: "line",
+      source: LIVE_SOURCE,
+      filter: ["==", ["geometry-type"], "LineString"],
+      layout: { visibility: visible(state.live && halo.casing > 0), "line-cap": "round" },
+      paint: { "line-color": palette.casing, "line-width": arcWidth(halo.casing) },
+    },
+    {
+      id: `${LAYER_PREFIX}live-arcs`,
+      type: "line",
+      source: LIVE_SOURCE,
+      filter: ["==", ["geometry-type"], "LineString"],
+      layout: { visibility: liveVisibility, "line-cap": "round" },
+      paint: {
+        "line-color": palette.flow,
+        "line-opacity": 0.85,
+        "line-width": arcWidth(0),
+      },
+    },
+    {
+      // pale dashes travelling along the arc in the direction of the flow (flowAnimation.ts)
+      id: FLOW_DASH_LAYER,
+      type: "line",
+      source: LIVE_SOURCE,
+      filter: ["==", ["geometry-type"], "LineString"],
+      // butt caps: a zero-length dash in the pattern must not render as a dot
+      layout: { visibility: liveVisibility, "line-cap": "butt" },
+      paint: {
+        "line-color": palette.casing,
+        "line-opacity": 0.75,
+        "line-width": ["interpolate", ["linear"], ["get", "mw"], 0, 0.6, 500, 1.6, 1500, 3.5],
+        "line-dasharray": [...stepPattern(0)],
+      },
+    },
+    {
+      id: `${LAYER_PREFIX}live-heads`,
+      type: "fill",
+      source: LIVE_SOURCE,
+      filter: ["==", ["geometry-type"], "Polygon"],
+      layout: { visibility: liveVisibility },
+      paint: { "fill-color": palette.flow, "fill-opacity": 0.95 },
+    },
+  );
+
+  if (labels) {
+    // the day's figure on each gas disc, in GWh with one decimal, formatted the way the interface is
+    layers.push({
+      id: `${LAYER_PREFIX}gas-labels`,
+      type: "symbol",
+      source: GAS_SOURCE,
+      layout: {
+        visibility: show("gas"),
+        "text-field": [
+          "concat",
+          [
+            "number-format",
+            ["/", ["get", "latestKwh"], 1_000_000],
+            { locale: state.lang, "min-fraction-digits": 1, "max-fraction-digits": 1 },
+          ],
+          " GWh",
+        ],
+        "text-font": labels,
+        "text-size": 12,
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+      },
+      paint: {
+        "text-color": palette.labelText,
+        "text-halo-color": palette.labelHalo,
+        "text-halo-width": 1.6,
+      },
+    });
+    layers.push({
+      id: `${LAYER_PREFIX}plant-labels`,
+      type: "symbol",
+      source: GRID_SOURCE,
+      "source-layer": "plants",
+      minzoom: 7,
+      filter: ["all", ["has", "name"], plantFilter(state, true)],
+      layout: {
+        visibility: show("plants"),
+        "text-field": ["get", "name"],
+        "text-font": labels,
+        "text-size": ["interpolate", ["linear"], ["zoom"], 7, 10.5, 12, 12.5],
+        "text-offset": [0, 1.1],
+        "text-anchor": "top",
+        "text-optional": true,
+        "symbol-sort-key": ["-", ["coalesce", ["get", "capacityMw"], 0]],
+      },
+      paint: {
+        "text-color": palette.labelText,
+        "text-halo-color": palette.labelHalo,
+        "text-halo-width": 1.4,
+      },
+    });
+  }
+  return layers;
+}

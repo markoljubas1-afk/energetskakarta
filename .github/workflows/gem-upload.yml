@@ -1,0 +1,73 @@
+# Make a new Global Energy Monitor export the input of all following builds.
+# Paste the download link from GEM's e-mail; the file is checked before anything is stored.
+name: gem-upload
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "HTTPS download link of the Global Integrated Power Tracker (.xlsx or .csv)"
+        required: true
+      filename:
+        description: "File name to store it under (must end in .xlsx or .csv)"
+        default: "Global-Integrated-Power-Tracker.xlsx"
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: osm-publish # never change the source while a build reads it
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check configuration
+        env:
+          HAS_R2: ${{ secrets.R2_ACCOUNT_ID != '' && secrets.R2_ACCESS_KEY_ID != '' && secrets.R2_SECRET_ACCESS_KEY != '' && secrets.R2_BUCKET != '' }}
+        run: |
+          if [ "$HAS_R2" != "true" ]; then
+            echo "::error::Not configured: R2_* secrets are required (infra/README.md)"
+            exit 1
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/pyproject.toml
+      - run: python -m pip install -e .
+      - name: Download
+        env:
+          # inputs go through the environment, never straight into the script
+          GEM_URL: ${{ inputs.url }}
+          GEM_NAME: ${{ inputs.filename }}
+        run: |
+          case "$GEM_URL" in
+            https://*) ;;
+            *) echo "::error::The link must start with https://"; exit 1 ;;
+          esac
+          case "$GEM_NAME" in
+            */*|*..*) echo "::error::The file name must not contain / or .."; exit 1 ;;
+            *.xlsx|*.csv) ;;
+            *) echo "::error::The file name must end in .xlsx or .csv"; exit 1 ;;
+          esac
+          mkdir -p "$RUNNER_TEMP/gem"
+          curl --fail --location --proto '=https' --max-filesize 1000000000 --retry 3 \
+            --output "$RUNNER_TEMP/gem/$GEM_NAME" "$GEM_URL"
+          echo "GEM_FILE=$RUNNER_TEMP/gem/$GEM_NAME" >> "$GITHUB_ENV"
+      - name: Check and upload
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: |
+          key=$(energymap sources gem-upload "$GEM_FILE")
+          echo "Stored as \`$key\`. The next build (osm-scheduled or osm-build) will use it." >> "$GITHUB_STEP_SUMMARY"

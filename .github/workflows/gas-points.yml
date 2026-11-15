@@ -1,0 +1,35 @@
+# A survey of the region's gas points on the ENTSOG Transparency Platform (Faza 30, step 1): every point
+# direction of the transmission operators in scope, the fields the platform returns, and the latest daily flow
+# at interconnections, LNG Krk and storage. The gas-flow layer is matched against this real answer before it is
+# built. Publishes nothing: the table goes to the job summary and points.json to the run's artifacts.
+# Started by hand only; no secrets needed.
+name: gas-points
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  survey:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/pyproject.toml
+      - run: python -m pip install -e .
+      - name: Survey the gas points
+        run: energymap gas points --data-dir data >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gas-points
+          path: pipeline/data/gas/points.json
+          retention-days: 30

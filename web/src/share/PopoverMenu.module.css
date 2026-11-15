@@ -1,0 +1,16 @@
+/*
+ * An open menu sits in the top layer, fixed to the screen; PopoverMenu.tsx sets its top and left. Until then it
+ * is laid out but invisible, so it never flashes in the middle of the screen where browsers put popovers.
+ */
+.popover {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  max-height: calc(100dvh - 16px);
+  overflow: auto;
+  color: var(--ink);
+}
+
+.popover:not([data-placed]) {
+  visibility: hidden;
+}

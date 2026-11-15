@@ -1,0 +1,54 @@
+# Official share of energy from renewable sources (Eurostat, nrg_ind_ren) for the energy transition page
+# (Faza 28): overall, electricity, heating and cooling, transport, for the eight countries and the EU. The data
+# are annual (a year comes out about a year later, revisions in between), so once a month is plenty; an
+# unchanged answer is not rewritten. If the answer is not the expected JSON-stat dataset, validation fails here
+# (red run, e-mail) and the published document stays as it was. No API key is needed.
+name: eurostat-update
+
+on:
+  schedule:
+    - cron: "17 4 12 * *" # 12th of each month, 04:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: eurostat
+  cancel-in-progress: false
+
+jobs:
+  update:
+    # The schedule is opt-in (SCHEDULE_OSM=true), like the other source updates that need only the bucket;
+    # manual runs always run. Start one by hand first: it shows whether the API answers as expected.
+    if: github.event_name != 'schedule' || vars.SCHEDULE_OSM == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check configuration
+        env:
+          HAS_R2: ${{ secrets.R2_ACCOUNT_ID != '' && secrets.R2_ACCESS_KEY_ID != '' && secrets.R2_SECRET_ACCESS_KEY != '' && secrets.R2_BUCKET != '' }}
+        run: |
+          if [ "$HAS_R2" != "true" ]; then
+            echo "::error::Not configured: R2_* secrets are required (infra/README.md)"
+            exit 1
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/pyproject.toml
+      - run: python -m pip install -e .
+      - name: Fetch the shares
+        run: energymap eurostat fetch --data-dir data >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish to the data bucket
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: energymap eurostat publish-r2 --data-dir data

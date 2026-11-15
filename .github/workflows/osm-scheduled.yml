@@ -1,0 +1,129 @@
+# Weekly data update: download → build (guarded by the published build) → change report → tiles → publish.
+# On failure the published data stays as it was and an issue is opened (or updated).
+name: osm-scheduled
+
+on:
+  schedule:
+    - cron: "0 3 * * 1" # Mondays 03:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: osm-publish # shared with osm-build: never two publications at once
+  cancel-in-progress: false
+
+jobs:
+  update:
+    # The schedule is opt-in (SCHEDULE_OSM=true under Settings → Variables), switched on once a manual run has
+    # succeeded; until then scheduled runs are skipped instead of failing every time. Manual runs always run.
+    if: github.event_name != 'schedule' || vars.SCHEDULE_OSM == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      DATA_BASE_URL: ${{ vars.DATA_BASE_URL }}
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check configuration
+        env:
+          HAS_R2: ${{ secrets.R2_ACCOUNT_ID != '' && secrets.R2_ACCESS_KEY_ID != '' && secrets.R2_SECRET_ACCESS_KEY != '' && secrets.R2_BUCKET != '' }}
+        run: |
+          missing=""
+          [ -n "$DATA_BASE_URL" ] || missing="$missing variable DATA_BASE_URL;"
+          [ "$HAS_R2" = "true" ] || missing="$missing secrets R2_*;"
+          if [ -n "$missing" ]; then
+            echo "::error::Not configured:$missing see infra/README.md"
+            exit 1
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/pyproject.toml
+      - name: Install tippecanoe
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends tippecanoe
+      - run: python -m pip install -e .
+      - name: Restore downloaded extracts
+        uses: actions/cache@v4
+        with:
+          path: |
+            pipeline/data/raw
+            pipeline/data/reference
+          # a new key every run; restore-keys picks the newest, the MD5 check skips unchanged files
+          key: osm-raw-${{ github.run_id }}
+          restore-keys: osm-raw-
+      - name: Download
+        run: energymap osm download --data-dir data
+      - name: Global Energy Monitor source (optional)
+        id: gem
+        # assigned first: a failure inside $(...) as an echo argument would not stop the step
+        run: |
+          path=$(energymap sources gem-fetch --data-dir data --baseline-url "$DATA_BASE_URL")
+          echo "path=$path" >> "$GITHUB_OUTPUT"
+      - name: EMODnet offshore data (optional)
+        id: marine
+        run: |
+          # assigned first: a failure inside $(...) as an echo argument would not stop the step
+          dir=$(energymap sources emodnet-fetch --data-dir data --baseline-url "$DATA_BASE_URL")
+          echo "dir=$dir" >> "$GITHUB_OUTPUT"
+      - name: Cities (Covenant of Mayors / JRC, CC BY 4.0)
+        id: cities
+        # A JRC outage must not silently drop the layer: the step may fail, but then the build compares
+        # its counts with the published ones and refuses the drop (validate.check_counts).
+        continue-on-error: true
+        run: |
+          energymap cities download --data-dir data
+          echo "dir=data/cities" >> "$GITHUB_OUTPUT"
+      - name: Build (compared with the published build)
+        env:
+          GEM_FILE: ${{ steps.gem.outputs.path }}
+          MARINE_DIR: ${{ steps.marine.outputs.dir }}
+          CITIES_DIR: ${{ steps.cities.outputs.dir }}
+        run: |
+          energymap osm build --data-dir data --baseline-url "$DATA_BASE_URL" \
+            --overrides ../overrides/conflation.yaml ${GEM_FILE:+--gem "$GEM_FILE"} ${MARINE_DIR:+--marine "$MARINE_DIR"} \
+            ${CITIES_DIR:+--cities "$CITIES_DIR"}
+      - name: Change report
+        run: energymap diff --data-dir data --baseline-url "$DATA_BASE_URL" --summary "$GITHUB_STEP_SUMMARY"
+      - name: Tiles
+        run: energymap tiles build --data-dir data
+      - name: Publish to R2
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: energymap publish r2 --data-dir data
+      - name: Keep the build report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: osm-report
+          path: |
+            pipeline/data/out/builds/*/manifest.json
+            pipeline/data/out/builds/*/diff.json
+            pipeline/data/out/builds/*/conflation.json
+          if-no-files-found: ignore
+          retention-days: 90
+      - name: Report failure as an issue
+        if: failure() && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Automatsko ažuriranje podataka nije uspjelo"
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "\"$title\" in:title" \
+            --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "Ponovno nije uspjelo: $run_url"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$(printf '%s\n\n%s\n\n%s' \
+              "Tjedno ažuriranje nije uspjelo: $run_url" \
+              "Objavljeni podaci nisu promijenjeni; stranica i dalje prikazuje zadnju ispravnu verziju." \
+              "Ako je build odbijen zbog velikog pada broja objekata, pogledaj izvještaj i po potrebi pokreni osm-build s allow_drop.")"
+          fi

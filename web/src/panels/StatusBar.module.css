@@ -1,0 +1,140 @@
+/* Placed by the dock in App.module.css; phones move it to the top of the map (below). */
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+}
+
+.item,
+.trigger,
+.notice,
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+.logo {
+  padding: 3px 8px;
+}
+
+.logo img {
+  display: block;
+}
+
+/* the download and share buttons; their menus open in the top layer (share/PopoverMenu.tsx) */
+.trigger {
+  border: 0;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.menu {
+  min-width: 220px;
+  max-width: calc(100vw - 16px);
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.menu p {
+  margin: 0 0 6px;
+  color: var(--muted);
+}
+
+.menu ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menu a {
+  color: var(--accent);
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.action:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+
+.hint {
+  margin: 2px 0 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.linkField {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 4px 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: 12px;
+}
+
+.notice {
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+  box-shadow: none;
+}
+
+/* text that only fits on a wide bar, and its short stand-in for phones */
+.narrow {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .wide {
+    display: none;
+  }
+
+  .narrow {
+    display: inline;
+  }
+
+  .trigger {
+    padding: 3px 8px;
+  }
+
+  /* one scrollable row: a second row would eat into a map that is already short on a phone */
+  .bar {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 2;
+    max-width: calc(100% - 70px);
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .bar > * {
+    flex: none;
+  }
+}

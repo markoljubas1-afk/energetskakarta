@@ -1,0 +1,70 @@
+# Monthly copy of EMODnet offshore pipelines and wind farms into the data bucket (sources/emodnet/).
+# Builds use the stored copy, so an EMODnet outage never blocks the weekly OSM update.
+name: emodnet-update
+
+on:
+  schedule:
+    - cron: "0 2 3 * *" # 3rd of each month, 02:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: osm-publish
+  cancel-in-progress: false
+
+jobs:
+  update:
+    # The schedule is opt-in (SCHEDULE_OSM=true under Settings → Variables), switched on once a manual run has
+    # succeeded; until then scheduled runs are skipped instead of failing every time. Manual runs always run.
+    if: github.event_name != 'schedule' || vars.SCHEDULE_OSM == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check configuration
+        env:
+          HAS_R2: ${{ secrets.R2_ACCOUNT_ID != '' && secrets.R2_ACCESS_KEY_ID != '' && secrets.R2_SECRET_ACCESS_KEY != '' && secrets.R2_BUCKET != '' }}
+        run: |
+          if [ "$HAS_R2" != "true" ]; then
+            echo "::error::Not configured: R2_* secrets are required (infra/README.md)"
+            exit 1
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/pyproject.toml
+      - run: python -m pip install -e .
+      - name: Download from EMODnet (region only)
+        run: energymap marine fetch --data-dir data
+      - name: Store in the data bucket
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: |
+          key=$(energymap sources emodnet-upload --data-dir data)
+          echo "Stored as \`$key\`." >> "$GITHUB_STEP_SUMMARY"
+          cat data/marine/emodnet.json >> "$GITHUB_STEP_SUMMARY"
+      - name: Report failure as an issue
+        if: failure() && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Mjesečno preuzimanje EMODnet podataka nije uspjelo"
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "\"$title\" in:title" \
+            --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "Ponovno nije uspjelo: $run_url"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" \
+              --body "Posao: $run_url. Buildovi i dalje koriste zadnju spremljenu kopiju."
+          fi

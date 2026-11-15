@@ -1,0 +1,175 @@
+/*
+ * The intro (Faza 22). Night colours are tokens (--intro-*); motion is the title rising, one sweep of light
+ * across it and the line beneath lighting up. Under reduced motion the global rule in tokens.css ends every
+ * animation at once, which leaves the title standing still.
+ */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  background-color: var(--intro-night);
+  color: var(--intro-ink);
+  transition:
+    background-color 900ms var(--ease-out),
+    opacity 900ms var(--ease-out);
+}
+
+/* the map shows through; the overlay still catches the first click, wheel or touch, which skip */
+.intro[data-phase="play"] {
+  background-color: transparent;
+}
+
+.intro[data-phase="handoff"] {
+  background-color: transparent;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Space above the horizon and dusk at the edges, like the view from orbit; only while the map flies. */
+.sky {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(
+      to bottom,
+      var(--intro-night) 0%,
+      color-mix(in srgb, var(--intro-night) 70%, transparent) 9%,
+      transparent 26%
+    ),
+    radial-gradient(
+      ellipse 80% 70% at 50% 58%,
+      transparent 55%,
+      color-mix(in srgb, var(--intro-night) 70%, transparent) 100%
+    );
+  box-shadow: inset 0 70px 90px -60px color-mix(in srgb, var(--intro-cool) 55%, transparent);
+  transition: opacity 900ms var(--ease-out);
+}
+
+.intro[data-phase="play"] .sky {
+  opacity: 1;
+}
+
+.titleBlock {
+  position: relative;
+  isolation: isolate;
+  padding: 0 16px;
+  text-align: center;
+  transition: transform 1200ms var(--ease-out);
+}
+
+/* over the map the title keeps a soft patch of night behind it, so it reads over bright cities too */
+.titleBlock::before {
+  content: "";
+  position: absolute;
+  inset: -48px -72px;
+  z-index: -1;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--intro-night) 72%, transparent),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 900ms var(--ease-out);
+}
+
+.intro[data-phase="play"] .titleBlock::before {
+  opacity: 1;
+}
+
+/* while the map flies the title moves up, out of the way of the region */
+.intro[data-phase="play"] .titleBlock,
+.intro[data-phase="handoff"] .titleBlock {
+  transform: translateY(-30vh) scale(0.8);
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(28px, 5.4vw, 66px);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  /* one band of warm light crosses the letters once */
+  background: linear-gradient(
+    100deg,
+    var(--intro-ink) 0%,
+    var(--intro-ink) 42%,
+    var(--intro-warm) 50%,
+    var(--intro-ink) 58%,
+    var(--intro-ink) 100%
+  );
+  background-size: 250% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 22px color-mix(in srgb, var(--intro-warm) 28%, transparent));
+  animation:
+    intro-rise 900ms var(--ease-out) both,
+    intro-sweep 1700ms 450ms var(--ease-out) both;
+}
+
+.rule {
+  display: block;
+  width: min(420px, 62vw);
+  height: 2px;
+  margin: 20px auto 0;
+  border-radius: 1px;
+  background: linear-gradient(90deg, transparent, var(--intro-warm), var(--intro-cool), transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--intro-warm) 60%, transparent);
+  transform: scaleX(0);
+  animation: intro-rule 1200ms 650ms var(--ease-out) both;
+}
+
+.skip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  border: 1px solid color-mix(in srgb, var(--intro-ink) 22%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--intro-night) 55%, transparent);
+  color: var(--intro-ink);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color var(--motion) var(--ease-out);
+}
+
+.skip:hover {
+  background: color-mix(in srgb, var(--intro-ink) 14%, transparent);
+}
+
+.skip:focus-visible {
+  outline-color: var(--intro-warm);
+}
+
+@keyframes intro-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes intro-sweep {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0% 0;
+  }
+}
+
+@keyframes intro-rule {
+  to {
+    transform: scaleX(1);
+  }
+}

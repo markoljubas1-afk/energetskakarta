@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="handwritten-fixture">
+  <!-- 100: 400/220 kV interconnector SI -> HR -->
+  <node id="1" lat="45.5" lon="14.5" version="1"/>
+  <node id="2" lat="45.5" lon="15.5" version="1"/>
+  <!-- 101: busbar inside a substation (excluded) -->
+  <node id="3" lat="45.6" lon="15.6" version="1"/>
+  <node id="4" lat="45.6" lon="15.601" version="1"/>
+  <!-- 102: 110 kV line under construction (lifecycle prefix) -->
+  <node id="5" lat="45.7" lon="15.2" version="1"/>
+  <node id="6" lat="45.7" lon="15.8" version="1"/>
+  <!-- 103: HVDC submarine/underground cable -->
+  <node id="7" lat="45.2" lon="16.0" version="1"/>
+  <node id="8" lat="45.2" lon="16.4" version="1"/>
+  <!-- 104 minor_line, 105 35 kV, 107 cable w/o voltage (all distribution, not transmission) -->
+  <node id="9" lat="45.3" lon="16.0" version="1"/>
+  <node id="10" lat="45.3" lon="16.1" version="1"/>
+  <!-- 106: line without voltage hugging the SI border (~160 m on SI side) -->
+  <node id="11" lat="45.2" lon="14.998" version="1"/>
+  <node id="12" lat="45.2" lon="15.3" version="1"/>
+  <!-- 108: substation area (closed way) -->
+  <node id="13" lat="45.40" lon="15.90" version="1"/>
+  <node id="14" lat="45.40" lon="15.91" version="1"/>
+  <node id="15" lat="45.41" lon="15.91" version="1"/>
+  <node id="16" lat="45.41" lon="15.90" version="1"/>
+  <!-- 109: pumped-storage hydro plant area -->
+  <node id="17" lat="45.80" lon="16.50" version="1"/>
+  <node id="18" lat="45.80" lon="16.52" version="1"/>
+  <node id="19" lat="45.82" lon="16.52" version="1"/>
+  <node id="20" lat="45.82" lon="16.50" version="1"/>
+  <!-- 110: outer ring of multipolygon wind farm (relation 200) -->
+  <node id="21" lat="45.10" lon="13.50" version="1"/>
+  <node id="22" lat="45.10" lon="13.60" version="1"/>
+  <node id="23" lat="45.20" lon="13.60" version="1"/>
+  <node id="24" lat="45.20" lon="13.50" version="1"/>
+  <!-- 111: disused line (excluded) -->
+  <node id="25" lat="45.9" lon="16.0" version="1"/>
+  <node id="26" lat="45.9" lon="16.2" version="1"/>
+  <!-- 300: road, removed by the prefilter -->
+  <node id="30" lat="45.45" lon="15.0" version="1"/>
+  <node id="31" lat="45.45" lon="15.1" version="1"/>
+  <!-- tagged nodes -->
+  <node id="50" lat="45.55" lon="15.95" version="1">
+    <tag k="power" v="substation"/><tag k="voltage" v="400000;110000"/><tag k="name" v="TS Žerjavinec"/><tag k="operator" v="HOPS"/>
+  </node>
+  <node id="60" lat="45.65" lon="16.30" version="1">
+    <tag k="proposed:power" v="plant"/><tag k="plant:source" v="solar"/><tag k="plant:output:electricity" v="9,9 MW"/><tag k="name" v="SE Primjer"/>
+  </node>
+  <node id="61" lat="45.50" lon="18.00" version="1">
+    <tag k="power" v="plant"/><tag k="plant:source" v="gas"/><tag k="plant:output:electricity" v="400 MW"/>
+  </node>
+  <node id="62" lat="45.35" lon="16.20" version="1">
+    <tag k="power" v="substation"/><tag k="substation" v="minor_distribution"/>
+  </node>
+  <node id="63" lat="45.36" lon="16.21" version="1">
+    <tag k="power" v="plant"/><tag k="plant:source" v="coal"/><tag k="plant:output:electricity" v="210"/><tag k="start_date" v="2001"/>
+  </node>
+  <way id="100" version="1">
+    <nd ref="1"/><nd ref="2"/>
+    <tag k="power" v="line"/><tag k="voltage" v="400000;220000"/><tag k="circuits" v="2"/><tag k="operator" v="HOPS;ELES"/>
+  </way>
+  <way id="101" version="1">
+    <nd ref="3"/><nd ref="4"/>
+    <tag k="power" v="line"/><tag k="line" v="busbar"/><tag k="voltage" v="110000"/>
+  </way>
+  <way id="102" version="1">
+    <nd ref="5"/><nd ref="6"/>
+    <tag k="construction:power" v="line"/><tag k="voltage" v="110 kV"/>
+  </way>
+  <way id="103" version="1">
+    <nd ref="7"/><nd ref="8"/>
+    <tag k="power" v="cable"/><tag k="voltage" v="320000"/><tag k="frequency" v="0"/><tag k="location" v="underground"/>
+  </way>
+  <way id="104" version="1">
+    <nd ref="9"/><nd ref="10"/>
+    <tag k="power" v="minor_line"/><tag k="voltage" v="20000"/>
+  </way>
+  <way id="105" version="1">
+    <nd ref="9"/><nd ref="10"/>
+    <tag k="power" v="line"/><tag k="voltage" v="35000"/>
+  </way>
+  <way id="106" version="1">
+    <nd ref="11"/><nd ref="12"/>
+    <tag k="power" v="line"/>
+  </way>
+  <way id="107" version="1">
+    <nd ref="9"/><nd ref="10"/>
+    <tag k="power" v="cable"/>
+  </way>
+  <way id="108" version="1">
+    <nd ref="13"/><nd ref="14"/><nd ref="15"/><nd ref="16"/><nd ref="13"/>
+    <tag k="power" v="substation"/><tag k="voltage" v="110000;35000"/><tag k="name" v="TS Area"/>
+  </way>
+  <way id="109" version="1">
+    <nd ref="17"/><nd ref="18"/><nd ref="19"/><nd ref="20"/><nd ref="17"/>
+    <tag k="power" v="plant"/><tag k="plant:source" v="hydro"/><tag k="plant:method" v="water-pumped-storage"/>
+    <tag k="plant:output:electricity" v="276 MW"/><tag k="start_date" v="1985-05"/><tag k="name" v="RHE Primjer"/>
+  </way>
+  <way id="110" version="1">
+    <nd ref="21"/><nd ref="22"/><nd ref="23"/><nd ref="24"/><nd ref="21"/>
+  </way>
+  <way id="111" version="1">
+    <nd ref="25"/><nd ref="26"/>
+    <tag k="disused:power" v="line"/><tag k="voltage" v="110000"/>
+  </way>
+  <!-- 70, 71: data centres (telecom schema); 71 is planned via a lifecycle prefix -->
+  <node id="70" lat="45.78" lon="15.95" version="1">
+    <tag k="telecom" v="data_center"/><tag k="name" v="DC Primjer"/><tag k="operator" v="Primjer d.o.o."/><tag k="start_date" v="2019"/>
+  </node>
+  <node id="71" lat="45.60" lon="16.10" version="1">
+    <tag k="proposed:telecom" v="data_center"/><tag k="name" v="DC Planirani"/>
+  </node>
+  <!-- 72: EV charging station (its own prefilter pass) -->
+  <node id="72" lat="45.70" lon="15.85" version="1">
+    <tag k="amenity" v="charging_station"/><tag k="name" v="Punionica Primjer"/><tag k="operator" v="Punjenje d.o.o."/><tag k="capacity" v="4"/>
+  </node>
+  <!-- 80-86: extraction sites (their own prefilter pass) -->
+  <node id="80" lat="45.55" lon="16.90" version="1">
+    <tag k="man_made" v="petroleum_well"/><tag k="name" v="Bušotina Primjer"/><tag k="operator" v="Nafta d.d."/><tag k="resource" v="gas"/>
+  </node>
+  <!-- 81: an offshore platform 0.6° south of the synthetic HR coast: beyond the coastal tolerance, within the offshore one -->
+  <node id="81" lat="44.40" lon="16.00" version="1">
+    <tag k="man_made" v="offshore_platform"/><tag k="name" v="Platforma Primjer"/>
+  </node>
+  <node id="82" lat="45.90" lon="16.20" version="1">
+    <tag k="landuse" v="industrial"/><tag k="industrial" v="mine"/><tag k="name" v="Rudnik Primjer"/><tag k="resource" v="coal;lignite"/>
+  </node>
+  <!-- 83: a stone quarry is not an energy object and is dropped -->
+  <node id="83" lat="45.30" lon="16.30" version="1">
+    <tag k="landuse" v="quarry"/><tag k="name" v="Kamenolom"/><tag k="resource" v="stone"/>
+  </node>
+  <!-- 84: a disused shaft is not part of the map -->
+  <node id="84" lat="45.35" lon="16.35" version="1">
+    <tag k="disused:man_made" v="mineshaft"/><tag k="name" v="Staro okno"/>
+  </node>
+  <node id="85" lat="45.40" lon="16.40" version="1">
+    <tag k="construction:man_made" v="mineshaft"/><tag k="name" v="Novo okno"/>
+  </node>
+  <!-- 90-93 / way 112: an open-pit lignite mine mapped as a quarry area -->
+  <node id="90" lat="45.20" lon="15.20" version="1"/>
+  <node id="91" lat="45.20" lon="15.24" version="1"/>
+  <node id="92" lat="45.23" lon="15.24" version="1"/>
+  <node id="93" lat="45.23" lon="15.20" version="1"/>
+  <way id="112" version="1">
+    <nd ref="90"/><nd ref="91"/><nd ref="92"/><nd ref="93"/><nd ref="90"/>
+    <tag k="landuse" v="quarry"/><tag k="resource" v="lignite"/><tag k="name" v="Površinski kop"/><tag k="operator" v="Ugljen d.o.o."/>
+  </way>
+  <way id="300" version="1">
+    <nd ref="30"/><nd ref="31"/>
+    <tag k="highway" v="primary"/>
+  </way>
+  <relation id="200" version="1">
+    <member type="way" ref="110" role="outer"/>
+    <tag k="type" v="multipolygon"/><tag k="power" v="plant"/><tag k="plant:source" v="wind"/><tag k="plant:output:electricity" v="1.2 GW"/><tag k="name" v="VE Relacija"/>
+  </relation>
+  <relation id="201" version="1">
+    <member type="node" ref="63" role=""/>
+    <tag k="type" v="site"/><tag k="power" v="plant"/><tag k="name" v="Site relation"/>
+  </relation>
+</osm>

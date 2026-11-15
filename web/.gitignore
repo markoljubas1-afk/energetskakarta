@@ -1,0 +1,10 @@
+node_modules
+dist
+coverage
+playwright-report
+test-results
+.data
+e2e/.data
+.env.local
+.prerender
+.prerender-notify

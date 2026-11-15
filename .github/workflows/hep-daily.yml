@@ -1,0 +1,64 @@
+# Available capacity for new connections in HEP ODS's distribution grid (kapaciteti.hep.hr), for the map's
+# capacity layer, the analytics view and the static pages. HEP ODS publishes no API or file; it allowed this
+# project to reuse what its map loads (2026-11-08). Releases come in versions weeks apart, so the job asks every
+# day and publishes only when the version or the content changed: a snapshot, the rebuilt history, the areas,
+# and the current document last. If the source format changes, validation fails here (red run, e-mail) and the
+# published data stays as it was. No API key is needed.
+name: hep-daily
+
+on:
+  schedule:
+    - cron: "23 6 * * *"
+  workflow_dispatch:
+    inputs:
+      allow_drop:
+        description: "Publish even if the release has more than 10 % fewer substations"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hep-publish
+  cancel-in-progress: false # never interrupt a publish half-way; the next run sees the result
+
+jobs:
+  hep:
+    # The schedule is opt-in (SCHEDULE_HEP=true under Settings → Variables), switched on once a manual run has
+    # succeeded; until then scheduled runs are skipped instead of failing every time. Manual runs always run.
+    if: github.event_name != 'schedule' || vars.SCHEDULE_HEP == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check configuration
+        env:
+          HAS_R2: ${{ secrets.R2_ACCOUNT_ID != '' && secrets.R2_ACCESS_KEY_ID != '' && secrets.R2_SECRET_ACCESS_KEY != '' && secrets.R2_BUCKET != '' }}
+        run: |
+          if [ "$HAS_R2" != "true" ]; then
+            echo "::error::Not configured: R2_* secrets are required (infra/README.md)"
+            exit 1
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/pyproject.toml
+      - run: python -m pip install -e .
+      - name: Fetch
+        run: energymap hep fetch --data-dir data
+      - name: Publish
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          ALLOW_DROP: ${{ inputs.allow_drop && '--allow-drop' || '' }}
+        run: |
+          # word splitting is intended: ALLOW_DROP is empty or exactly one flag
+          # shellcheck disable=SC2086
+          energymap hep publish-r2 --data-dir data $ALLOW_DROP

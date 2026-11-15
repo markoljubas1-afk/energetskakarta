@@ -1,0 +1,169 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "id": "pipelines.1",
+   "geometry": {
+    "type": "MultiLineString",
+    "coordinates": [
+     [
+      [
+       13.9,
+       44.6
+      ],
+      [
+       13.8,
+       44.7
+      ]
+     ],
+     [
+      [
+       13.8,
+       44.7
+      ],
+      [
+       13.85,
+       44.85
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "name": "Plinovod Primjer",
+    "id": 101,
+    "status": "Active",
+    "medium": "Gas",
+    "operator": "INA",
+    "size_in": "12",
+    "length_m": "76000",
+    "year": "2006",
+    "from_loc": "Ivana K",
+    "to_loc": "Pula",
+    "country_co": "HR"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "pipelines.2",
+   "geometry": {
+    "type": "MultiLineString",
+    "coordinates": [
+     [
+      [
+       13.9,
+       54.1
+      ],
+      [
+       14.4,
+       54.5
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "name": "Nord Stream 2",
+    "id": 154802,
+    "status": "Not in use",
+    "medium": "Gas",
+    "operator": null,
+    "size_in": null,
+    "length_m": null,
+    "year": null,
+    "from_loc": null,
+    "to_loc": null,
+    "country_co": "DE"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "pipelines.3",
+   "geometry": {
+    "type": "MultiLineString",
+    "coordinates": [
+     [
+      [
+       13.0,
+       44.0
+      ],
+      [
+       13.2,
+       44.1
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "name": "Naftovod Nepoznat",
+    "id": 103,
+    "status": "Mothballed?",
+    "medium": "Oil",
+    "operator": "X",
+    "size_in": "8",
+    "length_m": "12000",
+    "year": "1990",
+    "from_loc": null,
+    "to_loc": null,
+    "country_co": "IT"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "pipelines.4",
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      13.5,
+      44.5
+     ],
+     [
+      13.3,
+      44.4
+     ]
+    ]
+   },
+   "properties": {
+    "name": null,
+    "id": 104,
+    "status": null,
+    "medium": null,
+    "operator": "N/A",
+    "size_in": "0",
+    "length_m": null,
+    "year": "n/a",
+    "from_loc": null,
+    "to_loc": null,
+    "country_co": "HR;IT"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "pipelines.5",
+   "geometry": {
+    "type": "MultiLineString",
+    "coordinates": [
+     [
+      [
+       13.6,
+       44.6
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "name": "Kratki",
+    "id": 105,
+    "status": "Active",
+    "medium": "Water",
+    "operator": null,
+    "size_in": null,
+    "length_m": "500",
+    "year": "2015",
+    "from_loc": null,
+    "to_loc": null,
+    "country_co": "HR"
+   }
+  }
+ ]
+}

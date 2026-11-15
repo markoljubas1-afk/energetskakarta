@@ -1,0 +1,6 @@
+{"type":"FeatureCollection","features":[
+{"type":"Feature","properties":{"ISO_A2_EH":"SI","NAME":"Slovenia"},"geometry":{"type":"Polygon","coordinates":[[[13,45],[15,45],[15,46],[13,46],[13,45]]]}},
+{"type":"Feature","properties":{"ISO_A2_EH":"HR","NAME":"Croatia"},"geometry":{"type":"Polygon","coordinates":[[[15,45],[17,45],[17,46],[15,46],[15,45]]]}},
+{"type":"Feature","properties":{"ISO_A2_EH":"SK","NAME":"Slovakia"},"geometry":{"type":"Polygon","coordinates":[[[17,45],[19,45],[19,46],[17,46],[17,45]]]}},
+{"type":"Feature","properties":{"ISO_A2_EH":"-99","NAME":"Nowhere"},"geometry":{"type":"Polygon","coordinates":[[[30,30],[31,30],[31,31],[30,31],[30,30]]]}}
+]}

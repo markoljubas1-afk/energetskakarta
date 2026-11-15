@@ -1,0 +1,50 @@
+# Rebuilds the site once a day after the day-ahead auction, so the static price page (/cijene-struje/) and the
+# generation pages show today's and tomorrow's figures. The results are published around 12:45 CET and
+# live-hourly copies them into live/current.json; this job only checks that the copy is fresh and has
+# tomorrow's prices. Its success starts `web` (workflow_run), which builds and deploys the pages; a failure
+# deploys nothing and the published pages stay as they were.
+name: prices-daily
+
+on:
+  schedule:
+    - cron: "25 12 * * *" # 13:25 CET / 14:25 CEST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prices:
+    # Opt-in with the other ENTSO-E jobs (SCHEDULE_ENTSOE=true); manual runs always run.
+    if: github.event_name != 'schedule' || vars.SCHEDULE_ENTSOE == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Live data is fresh and has tomorrow's prices
+        env:
+          DATA_BASE_URL: ${{ vars.DATA_BASE_URL }}
+        run: |
+          if [ -z "$DATA_BASE_URL" ]; then
+            echo "::error::DATA_BASE_URL is not set (Settings → Variables)"
+            exit 1
+          fi
+          python3 - <<'PY'
+          import json, os, sys, urllib.request
+          from datetime import datetime, timedelta, timezone
+          from zoneinfo import ZoneInfo
+
+          url = os.environ["DATA_BASE_URL"].rstrip("/") + "/live/current.json"
+          with urllib.request.urlopen(url, timeout=30) as response:
+              live = json.load(response)
+          generated = datetime.fromisoformat(live["generatedAt"])
+          age = datetime.now(timezone.utc) - generated
+          if age > timedelta(hours=3):
+              sys.exit(f"::error::live/current.json is {age} old; live-hourly may be stuck")
+          zone = ZoneInfo(live["timezone"])
+          tomorrow = (datetime.now(zone) + timedelta(days=1)).date().isoformat()
+          hours = [i for i, hour in enumerate(live["hours"]) if hour.startswith(tomorrow)]
+          priced = any(prices["eurPerMwh"][i] is not None for prices in live["prices"].values() for i in hours)
+          if not priced:
+              sys.exit(f"::error::no day-ahead prices for {tomorrow} yet")
+          print(f"live data from {live['generatedAt']} has prices for {tomorrow}")
+          PY

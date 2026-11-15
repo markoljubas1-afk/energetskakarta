@@ -1,0 +1,146 @@
+/* The time machine bar (Faza 18-3); same frame as the live bar, placed by the dock in App.module.css. */
+.bar {
+  padding: 10px 14px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.head h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.close,
+.step {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.close {
+  border-color: transparent;
+}
+
+/* fingers need more than 28 px (Faza 31) */
+@media (pointer: coarse) {
+  .close,
+  .step {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+.step:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.year {
+  min-width: 5ch;
+  font: 600 22px/1 var(--font-num);
+  font-variant-numeric: tabular-nums;
+}
+
+.slider {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.play {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.play[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.chart {
+  display: block;
+  width: 100%;
+  height: 56px;
+  margin-top: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.future {
+  fill: var(--surface);
+  opacity: 0.7;
+}
+
+.cursor {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+
+.axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2px;
+  color: var(--muted);
+  font: 500 11.5px/1.3 var(--font-num);
+}
+
+.figure {
+  margin: 6px 0 0;
+  font: 600 14px/1.35 var(--font-num);
+}
+
+.muted {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media (max-width: 520px) {
+  .controls {
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+  }
+
+  .play {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}

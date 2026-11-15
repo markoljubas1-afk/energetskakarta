@@ -1,0 +1,26 @@
+# Data centres we maintain by hand, because no open database covers this region.
+#
+# This file is deliberately EMPTY. Nothing here is guessed or filled in from memory: an entry is added
+# only when there is a public page stating it, and that page is linked in `source`. The build rejects
+# the whole file if any entry breaks a rule, so a half-remembered record cannot slip in.
+#
+# Entries are merged with what OpenStreetMap knows (pipeline/src/energymap/datacenters.py):
+# an entry within 1 km of an OSM data centre completes that record and keeps its id, so shared links
+# stay valid; anything further away becomes a record of its own with the id `dc:<id>`.
+#
+# Schema, one list item per data centre:
+#
+#   datacenters:
+#     - id: operator-town          # our own slug: lowercase, digits, hyphens; never changes once shared
+#       name: "Data centre name"
+#       operator: "Company d.o.o." # optional
+#       location: [15.9819, 45.8150]   # [longitude, latitude], WGS84, as precise as the source allows
+#       status: operating          # operating | construction | planned
+#       powerMw: 2.5               # optional, ONLY a published figure (connected or IT load), never an estimate
+#       year: 2015                 # optional, year it went into service
+#       source: https://…          # required: the page this was taken from
+#
+# Leaving `powerMw` out is always better than putting a guess in: on a map a number reads as a
+# measurement, and an entry without one still shows the site.
+
+datacenters: []

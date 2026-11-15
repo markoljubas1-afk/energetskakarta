@@ -1,0 +1,38 @@
+# GitHub switches off the scheduled workflows of a public repository after 60 days without activity. The
+# data goes to R2, not into the repository, so a quiet month or two would silently stop every update. Twice a
+# month this job re-enables each scheduled workflow through the API (itself included), which keeps them
+# running without commits; the same approach as the keepalive-workflow action. If GitHub ever disables them
+# anyway, it e-mails the owner and Actions → workflow → Enable workflow restores them (PRIPREMA.md).
+name: keepalive
+
+on:
+  schedule:
+    - cron: "17 4 1,15 * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  keepalive:
+    # Runs whenever any schedule is switched on (Faza 31: with only SCHEDULE_ENTSOE, _GAS or _HEP on, the
+    # schedules were disabled after 60 quiet days); manual runs always run.
+    if: >-
+      github.event_name != 'schedule' || vars.SCHEDULE_OSM == 'true' || vars.SCHEDULE_ENTSOE == 'true' ||
+      vars.SCHEDULE_GAS == 'true' || vars.SCHEDULE_HEP == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Re-enable every scheduled workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for file in .github/workflows/*.yml; do
+            if grep -qE '^\s*schedule:' "$file"; then
+              gh workflow enable "$(basename "$file")" --repo "$GITHUB_REPOSITORY"
+              echo "enabled $(basename "$file")"
+            fi
+          done

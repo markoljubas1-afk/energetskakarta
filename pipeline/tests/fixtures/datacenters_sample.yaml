@@ -1,0 +1,19 @@
+# Invented test data. It exists so the website and its end-to-end tests have a hand-kept record to show;
+# the list shipped in the repository (overrides/datacenters.yaml) is empty on purpose.
+datacenters:
+  # within 1 km of node 70 in sample.osm: completes that record instead of duplicating it
+  - id: primjer-zagreb
+    name: DC Primjer
+    operator: Primjer d.o.o.
+    location: [15.9505, 45.7805]
+    status: operating
+    powerMw: 2.5
+    year: 2019
+    source: https://primjer.invalid/o-nama
+  # far from any OSM data centre: becomes a record of its own
+  - id: rucni-primjer-karlovac
+    name: DC Ručni Primjer
+    operator: Ručni Primjer d.d.
+    location: [15.55, 45.49]
+    status: planned
+    source: https://primjer.invalid/najava

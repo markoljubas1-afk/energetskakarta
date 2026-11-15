@@ -1,0 +1,222 @@
+.filters {
+  display: grid;
+  gap: 4px;
+}
+
+.section {
+  padding: 12px 0 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.sectionHead h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.bulk {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.stack {
+  display: grid;
+  gap: 6px;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+}
+
+.toggle input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.chip[aria-pressed="true"] {
+  border-color: transparent;
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.chip:disabled,
+.fieldset:disabled .chip {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.lineSwatch {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.dotSwatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.statusSwatch {
+  width: 14px;
+  height: 0;
+  border-top: 3px solid var(--muted);
+}
+
+.statusSwatch:not([data-status="operating"]) {
+  border-top-style: dashed;
+}
+
+.fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.fieldset:disabled {
+  opacity: 0.6;
+}
+
+.select {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: none;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.reset:disabled {
+  color: var(--muted);
+  cursor: default;
+  opacity: 0.6;
+}
+
+.groups {
+  display: grid;
+  gap: 12px;
+}
+
+.groupLabel {
+  margin: 0 0 2px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* switch, the small "i" beside it, and the note that opens under both */
+.layerRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: 4px;
+}
+
+.noteButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.noteButton:hover,
+.noteButton[aria-expanded="true"] {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+/* why a layer is incomplete or what it really shows, right under the switch that turns it on */
+.layerNote {
+  grid-column: 1 / -1;
+  margin: 2px 0 4px 26px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* time machine entry (Faza 18-3) */
+.hint {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.action[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.action:disabled {
+  cursor: default;
+}

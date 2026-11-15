@@ -1,0 +1,174 @@
+.header {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  background: var(--canvas);
+  border-bottom: 1px solid var(--line);
+}
+
+.skip {
+  position: absolute;
+  left: 12px;
+  top: -40px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--ink);
+  color: var(--canvas);
+}
+
+.skip:focus {
+  top: 8px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.brand strong {
+  display: block;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.tagline {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.mark {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--ink);
+  color: var(--canvas);
+}
+
+.search {
+  max-width: 460px;
+  width: 100%;
+  justify-self: center;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.iconButton,
+.textButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.iconButton {
+  width: 36px;
+}
+
+.textButton {
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.iconButton:hover,
+.textButton:hover {
+  background: var(--surface-2);
+}
+
+@media (max-width: 760px) {
+  .header {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas: "brand pages actions" "search search search";
+    gap: 8px 10px;
+    padding: 8px 10px;
+  }
+  .brand {
+    grid-area: brand;
+  }
+  .actions {
+    grid-area: actions;
+  }
+  .pages {
+    grid-area: pages;
+  }
+  /* no search on the energy page: drop the empty second row on phones */
+  .search:empty {
+    display: none;
+  }
+  .search {
+    grid-area: search;
+    max-width: none;
+  }
+  .tagline {
+    display: none;
+  }
+  .textButton {
+    padding: 0 10px;
+  }
+  /* icon-only buttons, so the brand keeps its two lines */
+  .buttonLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+.pages {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+}
+
+.pages button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--muted);
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.pages button[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+@media (max-width: 900px) {
+  .pageLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}

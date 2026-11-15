@@ -1,0 +1,47 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "id": "windfarmspoly.11",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       17.189999999999998,
+       40.480000000000004
+      ],
+      [
+       17.21,
+       40.480000000000004
+      ],
+      [
+       17.21,
+       40.5
+      ],
+      [
+       17.189999999999998,
+       40.5
+      ],
+      [
+       17.189999999999998,
+       40.480000000000004
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "FID": 11,
+    "country": "Italy",
+    "name": "Beleolico",
+    "n_turbines": 10,
+    "power_mw": 30,
+    "status": "Production",
+    "start": 2022,
+    "dist_coast": 1200,
+    "area_sqkm": 2.1
+   }
+  }
+ ]
+}

@@ -1,0 +1,162 @@
+/* "What the grid is made of" and "near me" (Faza 19), inside the live bar */
+.card {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.headActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.head h3 {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.select {
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: 13px;
+}
+
+.modes {
+  display: inline-flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.modes button,
+.whereButtons button,
+.near {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.modes button[aria-pressed="true"],
+.near[aria-expanded="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.bar {
+  display: flex;
+  gap: 2px;
+  height: 12px;
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.bar span {
+  display: block;
+  min-width: 2px;
+  height: 100%;
+}
+
+.unknown {
+  background: repeating-linear-gradient(135deg, var(--line) 0 3px, var(--surface) 3px 6px);
+}
+
+.small {
+  background: var(--muted);
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 2px 14px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+
+.list li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.list i {
+  display: inline-block;
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.list b {
+  margin-left: auto;
+  font: 600 13px/1.3 var(--font-num);
+  font-variant-numeric: tabular-nums;
+}
+
+.figure {
+  margin: 6px 0 0;
+  font: 600 13.5px/1.4 var(--font-num);
+}
+
+.muted,
+.note {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.note {
+  font-size: 12px;
+}
+
+.near {
+  margin-top: 8px;
+}
+
+.here {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-2, var(--surface));
+}
+
+.whereButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kwp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 12.5px;
+}
+
+.kwp input {
+  width: 72px;
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}

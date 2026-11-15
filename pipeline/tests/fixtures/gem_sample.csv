@@ -1,0 +1,10 @@
+Date Last Researched,Country,Plant / Project name,Unit / Phase name,Type,Technology,Fuel,Capacity (MW),Status,Start year,Retired year,Operator(s),Owner(s),Latitude,Longitude,Location accuracy,GEM location ID,GEM unit/phase ID,Other IDs (unit/phase),Wiki URL
+2026-06-01,Croatia,RHE Primjer,Agregat 1,hydropower,pumped storage,water,138,operating,1984,,HEP Proizvodnja,HEP,45.812,16.508,exact,L100000000001,G100000000011,,https://www.gem.wiki/RHE_Primjer
+2026-06-01,Croatia,RHE Primjer,Agregat 2,hydropower,pumped storage,water,138,operating,1985,,HEP Proizvodnja,HEP,45.812,16.508,exact,L100000000001,G100000000012,,https://www.gem.wiki/RHE_Primjer
+2026-06-01,Croatia,RHE Primjer,Agregat 3,hydropower,pumped storage,water,150,announced,2031,,HEP Proizvodnja,HEP,45.812,16.508,exact,L100000000001,G100000000013,,https://www.gem.wiki/RHE_Primjer
+2026-06-01,Croatia,Sunčana elektrana Primjer,Faza 1,solar,PV,solar,"9,9",construction,2027,,Solar d.o.o.,Solar d.o.o.,45.651,16.301,exact,L100000000002,G100000000021,TZ-4711,
+2026-06-01,Croatia,TE Lignit Primjer,Blok A,coal,subcritical,coal: lignite,210,operating,2001,,Energo,Energo,45.361,16.212,exact,L100000000003,G100000000031,,
+2026-06-01,Croatia,Vjetroelektrana Daleko,,wind,onshore,wind,"1,200",operating,2019,,Vjetar d.d.,Vjetar d.d.,45.1,16.9,approximate,L100000000004,G100000000041,,
+2026-06-01,Croatia,HE Sijena,,hydropower,conventional storage,water,40,shelved - inferred 2 y,,,Nitko,Nitko,45.7,16.7,exact,L100000000005,G100000000051,,
+2026-06-01,Slovakia,Elektráreň Mimo,,oil/gas,combined cycle,fossil gas: natural gas,400,operating,2010,,SE,SE,45.5,18.0,exact,L100000000006,G100000000061,,
+2026-06-01,Croatia,Pokvareni red,,solar,PV,solar,5,operating,2020,,X,X,not-a-number,16.0,exact,L100000000007,G100000000071,,

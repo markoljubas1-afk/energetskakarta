@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Regionalna energetska karta — prototip dizajna</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --canvas: #DCDFE2;
+  --surface: #EEF0F1;
+  --surface-2: #E4E7EA;
+  --line: #C7CDD3;
+  --ink: #1E262E;
+  --muted: #5E6A75;
+  --accent: #1F6F8B;
+  --accent-soft: rgba(31, 111, 139, 0.14);
+  --export: #3E8E6A;
+  --import: #B57B25;
+  --sea: #CDD8E0;
+  --land: #F3F4F5;
+  --land-context: #E2E5E8;
+  --warn-bg: #EFE6D2;
+  --warn-ink: #6B4E12;
+  --on-signal: #FFFFFF;
+  --c-hydro: #4A7FB0;
+  --c-solar: #D4A63A;
+  --c-wind: #62A89E;
+  --c-nuclear: #8C74B4;
+  --c-gas: #C27D5E;
+  --c-coal: #74695F;
+  --c-biomass: #80A060;
+  --font: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-num: "IBM Plex Sans Condensed", "Arial Narrow", "IBM Plex Sans", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --canvas: #2A3036; --surface: #343B42; --surface-2: #3C444C; --line: #4B545D;
+    --ink: #E4E8EC; --muted: #A3AEB8; --accent: #5FB0CC; --accent-soft: rgba(95, 176, 204, 0.18);
+    --export: #6DBF97; --import: #DDA85A; --sea: #26323B; --land: #3E464E; --land-context: #353C43;
+    --warn-bg: #4A4232; --warn-ink: #EBD7A8; --on-signal: #1E262E;
+    --c-hydro: #6E9FCC; --c-solar: #E0B654; --c-wind: #7DC0B6; --c-nuclear: #A792CC;
+    --c-gas: #D69476; --c-coal: #9A8E83; --c-biomass: #98B878;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --canvas: #2A3036; --surface: #343B42; --surface-2: #3C444C; --line: #4B545D;
+  --ink: #E4E8EC; --muted: #A3AEB8; --accent: #5FB0CC; --accent-soft: rgba(95, 176, 204, 0.18);
+  --export: #6DBF97; --import: #DDA85A; --sea: #26323B; --land: #3E464E; --land-context: #353C43;
+  --warn-bg: #4A4232; --warn-ink: #EBD7A8; --on-signal: #1E262E;
+  --c-hydro: #6E9FCC; --c-solar: #E0B654; --c-wind: #7DC0B6; --c-nuclear: #A792CC;
+  --c-gas: #D69476; --c-coal: #9A8E83; --c-biomass: #98B878;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--canvas); color: var(--ink);
+  font: 400 15px/1.5 var(--font); font-feature-settings: "tnum" 1;
+}
+img, svg { max-width: 100%; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.ic { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+
+.wrap { max-width: 1320px; margin: 0 auto; padding: 0 20px; }
+
+/* Header */
+.topbar { border-bottom: 1px solid var(--line); }
+.topbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 64px; }
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.brand-mark { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; background: var(--ink); color: var(--canvas); }
+.brand-mark .ic { width: 22px; height: 22px; }
+.brand strong { display: block; font-weight: 600; font-size: 16px; line-height: 1.2; }
+.brand span { display: block; color: var(--muted); font-size: 13px; }
+.top-actions { display: flex; align-items: center; gap: 8px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: var(--warn-bg); color: var(--warn-ink); font-size: 13px; font-weight: 500; white-space: nowrap; }
+.pill .ic { width: 15px; height: 15px; }
+.icon-btn { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; }
+.icon-btn:hover { background: var(--surface-2); }
+
+.notice { display: flex; gap: 10px; align-items: flex-start; margin: 16px 0 0; padding: 10px 14px; border-radius: 10px; background: var(--warn-bg); color: var(--warn-ink); font-size: 14px; }
+.notice .ic { margin-top: 2px; }
+
+/* Scope + figures */
+.scope-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 22px 0 10px; flex-wrap: wrap; }
+.scope-row h1 { margin: 0; font-size: 26px; line-height: 1.15; font-weight: 600; letter-spacing: -0.01em; }
+.scope-row p { margin: 0; color: var(--muted); font-size: 14px; }
+.link-btn { border: 0; background: none; color: var(--accent); cursor: pointer; padding: 0; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+
+.figures { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.figure { padding: 14px 18px 16px; border-left: 1px solid var(--line); min-width: 0; }
+.figure:first-child { border-left: 0; }
+.figure-label { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 13px; }
+.figure-value { display: block; margin-top: 4px; font-family: var(--font-num); font-weight: 600; font-size: 32px; line-height: 1.05; letter-spacing: -0.01em; }
+.figure-value small { font-size: 15px; font-weight: 500; color: var(--muted); margin-left: 3px; }
+.figure-sub { display: block; margin-top: 3px; font-size: 13px; color: var(--muted); }
+.pos { color: var(--export); } .neg { color: var(--import); }
+
+/* Timeline */
+.timeline { display: grid; grid-template-columns: auto auto minmax(0, 1fr); align-items: center; gap: 14px; margin: 14px 0 16px; }
+.play { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px 0 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--ink); color: var(--canvas); cursor: pointer; font-weight: 500; }
+.clock { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+.clock b { font-family: var(--font-num); font-weight: 600; font-size: 22px; color: var(--ink); min-width: 3.2ch; }
+.track { position: relative; }
+.track input { width: 100%; margin: 0; accent-color: var(--accent); height: 28px; cursor: pointer; }
+.ticks { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); padding: 0 2px; font-family: var(--font-num); }
+
+/* Layout */
+.grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); grid-template-areas: "map list" "map mix" "bal bal" "gas gas"; gap: 16px; align-items: start; }
+.a-map { grid-area: map; } .a-list { grid-area: list; } .a-mix { grid-area: mix; } .a-bal { grid-area: bal; } .a-gas { grid-area: gas; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; min-width: 0; }
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 18px 0; flex-wrap: wrap; }
+.panel-head h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 16px; font-weight: 600; }
+.panel-head h2 .ic { color: var(--muted); }
+.panel-note { margin: 4px 18px 0; color: var(--muted); font-size: 13px; }
+
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+
+/* Map */
+.map-wrap { padding: 8px 10px 10px; }
+.map { display: block; width: 100%; height: auto; border-radius: 10px; }
+.map .sea { fill: var(--sea); }
+.map .context { fill: var(--land-context); stroke: var(--line); stroke-width: 0.6; }
+.map .country { fill: var(--land); stroke: var(--muted); stroke-width: 0.8; cursor: pointer; transition: fill 160ms ease; }
+.map .country:hover { fill: var(--surface-2); }
+.map .country.is-selected { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.4; }
+.flow-track { fill: none; stroke: var(--line); stroke-linecap: round; }
+.flow-dash { fill: none; stroke: var(--accent); stroke-linecap: round; stroke-dasharray: 1 11; animation: flow var(--dur, 2s) linear infinite; }
+.flow-dash.dim, .flow-track.dim { opacity: 0.28; }
+@keyframes flow { to { stroke-dashoffset: -24; } }
+.flow-label { font: 600 12px var(--font-num); fill: var(--ink); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; pointer-events: none; }
+.node { cursor: pointer; }
+.node circle { stroke: var(--surface); stroke-width: 2.5; }
+.node .code { font: 600 12px var(--font); fill: var(--on-signal); text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.node .net { font: 600 12.5px var(--font-num); text-anchor: middle; paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; pointer-events: none; }
+.node.is-selected circle { stroke: var(--accent); stroke-width: 3; }
+
+/* Country list */
+.countries { list-style: none; margin: 10px 0 0; padding: 0 8px 10px; }
+.country-row { display: grid; grid-template-columns: 34px minmax(0, 1fr) 96px; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 0; border-radius: 10px; background: none; text-align: left; cursor: pointer; }
+.country-row:hover { background: var(--surface-2); }
+.country-row[aria-pressed="true"] { background: var(--accent-soft); }
+.cc { display: grid; place-items: center; height: 26px; border-radius: 7px; background: var(--surface-2); font-weight: 600; font-size: 12px; }
+.country-row[aria-pressed="true"] .cc { background: var(--accent); color: var(--surface); }
+.cname { display: block; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cmeta { display: block; font-size: 12.5px; color: var(--muted); }
+.netbar { display: block; position: relative; height: 8px; border-radius: 4px; background: var(--surface-2); }
+.netbar::after { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--muted); }
+.netbar span { position: absolute; top: 0; bottom: 0; border-radius: 4px; }
+.netval { display: block; margin-top: 4px; text-align: right; font: 600 13px var(--font-num); }
+
+/* Charts */
+.chart-box { position: relative; height: 340px; padding: 8px 14px 14px; }
+.chart-fail { display: grid; place-items: center; height: 100%; color: var(--muted); text-align: center; padding: 0 20px; }
+.seg { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--surface-2); }
+.seg button { border: 0; background: none; padding: 5px 11px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
+
+.mix { display: grid; grid-template-columns: minmax(0, 170px) minmax(0, 1fr); gap: 16px; align-items: center; padding: 12px 18px 18px; }
+.donut { position: relative; height: 170px; }
+.mix-list { list-style: none; margin: 0; padding: 0; font-size: 14px; }
+.mix-list li { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--line); }
+.mix-list li:last-child { border-bottom: 0; }
+.mix-list .ic { width: 16px; height: 16px; }
+.mix-list b { font-family: var(--font-num); font-weight: 600; }
+
+/* Gas */
+.gas { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; padding: 12px 0 16px; }
+.gas-item { padding: 4px 18px; border-left: 1px solid var(--line); }
+.gas-item:first-child { border-left: 0; }
+.gas-item h3 { display: flex; align-items: center; gap: 7px; margin: 0; font-size: 14px; font-weight: 500; }
+.gas-item h3 .ic { color: var(--muted); width: 16px; height: 16px; }
+.gas-pct { display: block; margin-top: 4px; font: 600 26px/1.1 var(--font-num); }
+.meter { height: 8px; margin: 8px 0 6px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.meter span { display: block; height: 100%; border-radius: 4px; background: var(--c-hydro); }
+.gas-sub { font-size: 13px; color: var(--muted); }
+
+footer { margin: 22px 0 30px; color: var(--muted); font-size: 13px; }
+footer p { margin: 4px 0; max-width: 90ch; }
+
+@media (max-width: 1000px) {
+  .grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "map" "list" "bal" "mix" "gas"; }
+  .figures { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .figure:nth-child(4) { border-left: 0; }
+  .figure:nth-child(n+4) { border-top: 1px solid var(--line); }
+  .gas { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 14px; }
+  .gas-item:nth-child(odd) { border-left: 0; }
+  .gas-item:last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+@media (max-width: 600px) {
+  .wrap { padding: 0 12px; }
+  .brand span, .pill .label { display: none; }
+  .scope-row h1 { font-size: 22px; }
+  .figures { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .figure { padding: 12px 14px; }
+  .figure:nth-child(n) { border-left: 0; border-top: 1px solid var(--line); }
+  .figure:nth-child(1), .figure:nth-child(2) { border-top: 0; }
+  .figure:nth-child(2n) { border-left: 1px solid var(--line); }
+  .figure:nth-child(5) { grid-column: 1 / -1; }
+  .figure-value { font-size: 27px; }
+  .timeline { grid-template-columns: auto auto; }
+  .track { grid-column: 1 / -1; }
+  .chart-box { height: 280px; padding: 8px 6px 10px; }
+  .mix { grid-template-columns: minmax(0, 1fr); }
+  .donut { height: 190px; }
+  .map .flow-label, .map .node .net { font-size: 17px; stroke-width: 5px; }
+  .map .node .code { font-size: 15px; }
+  .country-row { grid-template-columns: 34px minmax(0, 1fr) 84px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flow-dash { animation: none; stroke-dasharray: none; }
+  .map .country { transition: none; }
+}
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="i-utility-pole" viewBox="0 0 24 24"><path d="M12 2v20" /><path d="M2 5h20" /><path d="M3 3v2" /><path d="M7 3v2" /><path d="M17 3v2" /><path d="M21 3v2" /><path d="m19 5-7 7-7-7" /></symbol><symbol id="i-zap" viewBox="0 0 24 24"><path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z" /></symbol><symbol id="i-factory" viewBox="0 0 24 24"><path d="M12 16h.01" /><path d="M16 16h.01" /><path d="M3 19a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5a.5.5 0 0 0-.769-.422l-4.462 2.844A.5.5 0 0 1 15 10.5v-2a.5.5 0 0 0-.769-.422L9.77 10.922A.5.5 0 0 1 9 10.5V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z" /><path d="M8 16h.01" /></symbol><symbol id="i-plug" viewBox="0 0 24 24"><path d="M12 22v-5" /><path d="M15 8V2" /><path d="M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z" /><path d="M9 8V2" /></symbol><symbol id="i-arrow-left-right" viewBox="0 0 24 24"><path d="M8 3 4 7l4 4" /><path d="M4 7h16" /><path d="m16 21 4-4-4-4" /><path d="M20 17H4" /></symbol><symbol id="i-leaf" viewBox="0 0 24 24"><path d="M11 20a10 10 0 0010-10 25.9 25.9 0 00-1.04-7.281 1 1 0 00-1.755-.325C15.833 5.5 13 5.5 9.8 6.1A7 7 0 0011 20" /><path d="M2 21a5 5 0 012.911-4.544C7.613 15.212 8.351 15.24 11 13" /></symbol><symbol id="i-cloud" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" /></symbol><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></symbol><symbol id="i-wind" viewBox="0 0 24 24"><path d="M12.8 19.6A2 2 0 1 0 14 16H2" /><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2" /><path d="M9.8 4.4A2 2 0 1 1 11 8H2" /></symbol><symbol id="i-droplets" viewBox="0 0 24 24"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z" /><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97" /></symbol><symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4" /></symbol><symbol id="i-atom" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1" /><path d="M20.2 20.2c2.04-2.03.02-7.36-4.5-11.9-4.54-4.52-9.87-6.54-11.9-4.5-2.04 2.03-.02 7.36 4.5 11.9 4.54 4.52 9.87 6.54 11.9 4.5Z" /><path d="M15.7 15.7c4.52-4.54 6.54-9.87 4.5-11.9-2.03-2.04-7.36-.02-11.9 4.5-4.52 4.54-6.54 9.87-4.5 11.9 2.03 2.04 7.36.02 11.9-4.5Z" /></symbol><symbol id="i-sprout" viewBox="0 0 24 24"><path d="M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3" /><path d="M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4" /><path d="M5 21h14" /></symbol><symbol id="i-play" viewBox="0 0 24 24"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" /></symbol><symbol id="i-pause" viewBox="0 0 24 24"><rect x="14" y="3" width="5" height="18" rx="1" /><rect x="5" y="3" width="5" height="18" rx="1" /></symbol><symbol id="i-sun-moon" viewBox="0 0 24 24"><path d="M12 2v2" /><path d="M14.837 16.385a6 6 0 1 1-7.223-7.222c.624-.147.97.66.715 1.248a4 4 0 0 0 5.26 5.259c.589-.255 1.396.09 1.248.715" /><path d="M16 12a4 4 0 0 0-4-4" /><path d="m19 5-1.256 1.256" /><path d="M20 12h2" /></symbol><symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></symbol><symbol id="i-cylinder" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M3 5v14a9 3 0 0 0 18 0V5" /></symbol><symbol id="i-ship" viewBox="0 0 24 24"><path d="M12 2v2" /><path d="M12 9.189V13" /><path d="M19 12V6a2 2 0 00-2-2H7a2 2 0 00-2 2v6" /><path d="M19.38 19A11.6 11.6 0 0021 13l-8.188-3.639a2 2 0 00-1.624 0L3 13.001a11.6 11.6 0 002.81 7.76" /><path d="M2 20c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1s1.2 1 2.5 1c2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" /></symbol><symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></symbol><symbol id="i-map" viewBox="0 0 24 24"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z" /><path d="M15 5.764v15" /><path d="M9 3.236v15" /></symbol><symbol id="i-chart-area" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16" /><path d="M7 11.207a.5.5 0 0 1 .146-.353l2-2a.5.5 0 0 1 .708 0l3.292 3.292a.5.5 0 0 0 .708 0l4.292-4.292a.5.5 0 0 1 .854.353V16a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1z" /></symbol><symbol id="i-triangle-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path d="M12 9v4" /><path d="M12 17h.01" /></symbol></svg>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><svg class="ic"><use href="#i-utility-pole"/></svg></div>
+      <div><strong>Regionalna energetska karta</strong><span>Hrvatska i šira regija, osam zemalja</span></div>
+    </div>
+    <div class="top-actions">
+      <span class="pill" title="Brojke su izmišljene za prikaz dizajna"><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg><span class="label">Demo podaci</span></span>
+      <button class="icon-btn" id="themeBtn" type="button" aria-label="Promijeni svijetlu ili tamnu temu"><svg class="ic" aria-hidden="true"><use href="#i-sun-moon"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <p class="notice" role="note"><svg class="ic" aria-hidden="true"><use href="#i-triangle-alert"/></svg>
+    <span>Prikaz dizajna. Brojke su izmišljene, ali međusobno usklađene: proizvodnja je uvijek jednaka potrošnji uvećanoj za izvoz. Stvarni podaci dolaze iz ENTSO-E i GIE u sljedećoj fazi.</span></p>
+
+  <p class="notice" role="note"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg>
+    <span><strong>Ovo je prototip nadzorne ploče, ne karta.</strong> Sama karta sa svim slojevima
+    (dalekovodi, trafostanice, elektrane, podatkovni centri, distribucijska mreža, punionice, cjevovodi,
+    tokovi i cijene) je stvarna aplikacija u mapi <code>web/</code>. Pokreće se jednom naredbom:
+    <code>cd web &amp;&amp; npm install &amp;&amp; npm run preview:local</code>, pa
+    <a href="http://localhost:4173/">localhost:4173</a> &mdash; s testnim podacima, bez ikakvih ključeva.
+    Ova stranica ostaje kao dogovoreni izgled nadzorne ploče koja dolazi u Fazi 6 sa stvarnim
+    ENTSO-E podacima.</span></p>
+
+  <div class="scope-row">
+    <h1 id="scopeTitle">Cijela regija</h1>
+    <p id="scopeHint">Odaberite zemlju na karti ili na popisu.</p>
+  </div>
+
+  <section class="figures" aria-label="Ključne brojke">
+    <div class="figure"><span class="figure-label"><svg class="ic" aria-hidden="true"><use href="#i-factory"/></svg>Proizvodnja</span><span class="figure-value" id="fGen"></span><span class="figure-sub" id="fGenSub"></span></div>
+    <div class="figure"><span class="figure-label"><svg class="ic" aria-hidden="true"><use href="#i-plug"/></svg>Potrošnja</span><span class="figure-value" id="fLoad"></span><span class="figure-sub" id="fLoadSub"></span></div>
+    <div class="figure"><span class="figure-label"><svg class="ic" aria-hidden="true"><use href="#i-arrow-left-right"/></svg><span id="fNetLabel">Razmjena</span></span><span class="figure-value" id="fNet"></span><span class="figure-sub" id="fNetSub"></span></div>
+    <div class="figure"><span class="figure-label"><svg class="ic" aria-hidden="true"><use href="#i-leaf"/></svg>Obnovljivi izvori</span><span class="figure-value" id="fRes"></span><span class="figure-sub">udio u proizvodnji</span></div>
+    <div class="figure"><span class="figure-label"><svg class="ic" aria-hidden="true"><use href="#i-cloud"/></svg>Intenzitet CO₂</span><span class="figure-value" id="fCo2"></span><span class="figure-sub">procjena po izvorima</span></div>
+  </section>
+
+  <div class="timeline">
+    <button class="play" id="playBtn" type="button" aria-pressed="false"><svg class="ic" aria-hidden="true"><use id="playIcon" href="#i-play"/></svg><span id="playText">Pokreni dan</span></button>
+    <div class="clock"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><b id="hourLabel" aria-live="polite"></b></div>
+    <div class="track">
+      <input id="hour" type="range" min="0" max="23" step="1" aria-label="Sat u danu">
+      <div class="ticks" aria-hidden="true"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>
+    </div>
+  </div>
+
+  <main class="grid">
+    <section class="panel a-map" aria-labelledby="mapTitle">
+      <div class="panel-head">
+        <h2 id="mapTitle"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg>Tokovi snage preko granica</h2>
+        <div class="legend"><span><i style="background:var(--export)"></i>Neto izvoz</span><span><i style="background:var(--import)"></i>Neto uvoz</span></div>
+      </div>
+      <p class="panel-note">Točkice putuju u smjeru toka; deblja linija znači veći tok. Veličina kruga prati potrošnju.</p>
+      <div class="map-wrap" id="mapWrap"></div>
+    </section>
+
+    <section class="panel a-list" aria-labelledby="listTitle">
+      <div class="panel-head">
+        <h2 id="listTitle"><svg class="ic" aria-hidden="true"><use href="#i-arrow-left-right"/></svg>Neto pozicija zemalja</h2>
+      </div>
+      <p class="panel-note">Lijevo uvoz, desno izvoz. Uključuje razmjenu sa zemljama izvan regije.</p>
+      <ul class="countries" id="countryList"></ul>
+    </section>
+
+    <section class="panel a-bal" aria-labelledby="balTitle">
+      <div class="panel-head">
+        <h2 id="balTitle"><svg class="ic" aria-hidden="true"><use href="#i-chart-area"/></svg>Proizvodnja i potrošnja kroz dan</h2>
+        <div class="seg" role="group" aria-label="Opseg grafikona">
+          <button type="button" data-unit="gw" aria-pressed="true">GW</button>
+          <button type="button" data-unit="pct" aria-pressed="false">Udjeli</button>
+        </div>
+      </div>
+      <p class="panel-note" id="balNote">Razmak između linije potrošnje i vrha proizvodnje je uvoz.</p>
+      <div class="chart-box" id="balBox"><canvas id="balChart" aria-label="Grafikon proizvodnje po izvorima i potrošnje kroz 24 sata" role="img"></canvas></div>
+    </section>
+
+    <section class="panel a-mix" aria-labelledby="mixTitle">
+      <div class="panel-head">
+        <h2 id="mixTitle"><svg class="ic" aria-hidden="true"><use href="#i-zap"/></svg>Proizvodni miks</h2>
+        <span class="legend" id="mixHour"></span>
+      </div>
+      <div class="mix">
+        <div class="donut" id="mixBox"><canvas id="mixChart" role="img" aria-label="Udio izvora u proizvodnji"></canvas></div>
+        <ul class="mix-list" id="mixList"></ul>
+      </div>
+    </section>
+
+    <section class="panel a-gas" aria-labelledby="gasTitle">
+      <div class="panel-head">
+        <h2 id="gasTitle"><svg class="ic" aria-hidden="true"><use href="#i-cylinder"/></svg>Plin: skladišta i LNG</h2>
+        <span class="legend">Dnevni podaci, stanje na kraju plinskog dana</span>
+      </div>
+      <div class="gas" id="gasGrid"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Granice država: Natural Earth (javno dobro). Ikone: Lucide (ISC). Grafikoni: Chart.js (MIT).</p>
+    <p>U produkciji: ENTSO-E Transparency Platform (električna energija), GIE AGSI i ALSI (plin), OpenStreetMap i Global Energy Monitor (infrastruktura).</p>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+<script>
+"use strict";
+/* Demo model — ILLUSTRATIVE DATA ONLY, not the real state of the power system.
+ * Invariants (checked by test.mjs):
+ *   net(c, h)        = Σ flows leaving c − Σ flows entering c + external(c, h)
+ *   generation(c, h) = load(c, h) + net(c, h)
+ *   Σ sources(c, h)  = generation(c, h), every source ≥ 0
+ */
+const HOURS = Array.from({ length: 24 }, (_, h) => h);
+const TAU = Math.PI * 2;
+
+const SOURCES = ["hydro", "solar", "wind", "nuclear", "gas", "coal", "biomass"];
+
+/** @type {Record<string, {name: string, loadBase: number, loadAmp: number, solarPeak: number, wind: number, nuclear: number, external: number, dispatch: Record<string, number>, price: number}>} */
+const COUNTRIES = {
+  HR: { name: "Hrvatska", loadBase: 2.1, loadAmp: 0.45, solarPeak: 0.35, wind: 0.32, nuclear: 0, external: 0, dispatch: { hydro: 0.62, gas: 0.28, biomass: 0.1 }, price: 104 },
+  SI: { name: "Slovenija", loadBase: 1.55, loadAmp: 0.35, solarPeak: 0.3, wind: 0.01, nuclear: 0.69, external: 0, dispatch: { hydro: 0.6, coal: 0.32, gas: 0.08 }, price: 105 },
+  HU: { name: "Mađarska", loadBase: 5.3, loadAmp: 1.0, solarPeak: 3.1, wind: 0.14, nuclear: 1.9, external: -2.25, dispatch: { gas: 0.7, coal: 0.14, biomass: 0.16 }, price: 106 },
+  RS: { name: "Srbija", loadBase: 4.9, loadAmp: 0.95, solarPeak: 0.22, wind: 0.34, nuclear: 0, external: 0.1, dispatch: { coal: 0.74, hydro: 0.26 }, price: 103 },
+  BA: { name: "Bosna i Hercegovina", loadBase: 1.4, loadAmp: 0.3, solarPeak: 0.12, wind: 0.14, nuclear: 0, external: 0, dispatch: { coal: 0.58, hydro: 0.42 }, price: 100 },
+  ME: { name: "Crna Gora", loadBase: 0.46, loadAmp: 0.1, solarPeak: 0.06, wind: 0.08, nuclear: 0, external: 0.05, dispatch: { hydro: 0.6, coal: 0.4 }, price: 101 },
+  AT: { name: "Austrija", loadBase: 7.3, loadAmp: 1.4, solarPeak: 1.5, wind: 1.1, nuclear: 0, external: -0.4, dispatch: { hydro: 0.68, gas: 0.24, biomass: 0.08 }, price: 108 },
+  IT: { name: "Italija", loadBase: 34, loadAmp: 8.5, solarPeak: 16, wind: 3, nuclear: 0, external: -5.0, dispatch: { gas: 0.72, hydro: 0.2, biomass: 0.05, coal: 0.03 }, price: 118 },
+};
+
+/** Border flows in GW; positive value means from → to. Optional `bow` bends the drawn arc to avoid overlaps. */
+const BORDERS = [
+  { from: "HU", to: "HR", base: 0.42, amp: 0.15, phase: 14 },
+  { from: "BA", to: "HR", base: 0.25, amp: 0.1, phase: 17 },
+  { from: "SI", to: "HR", base: 0.05, amp: 0.3, phase: 0 },
+  { from: "RS", to: "HR", base: 0.1, amp: 0.1, phase: 8 },
+  { from: "SI", to: "IT", base: 1.1, amp: 0.3, phase: 3 },
+  { from: "HU", to: "SI", base: 0.6, amp: 0.15, phase: 1 },
+  { from: "HU", to: "RS", base: 0.3, amp: 0.2, phase: 6 },
+  { from: "RS", to: "BA", base: 0.15, amp: 0.2, phase: 10 },
+  { from: "BA", to: "ME", base: 0.2, amp: 0.1, phase: 4 },
+  { from: "RS", to: "ME", base: 0.15, amp: 0.1, phase: 7 },
+  { from: "ME", to: "IT", base: 0.42, amp: 0.15, phase: 9 },
+  { from: "AT", to: "SI", base: 0.45, amp: 0.25, phase: 11 },
+  { from: "AT", to: "HU", base: 0.35, amp: 0.2, phase: 13 },
+  { from: "AT", to: "IT", base: 0.18, amp: 0.07, phase: 2, bow: 0.34 },
+];
+
+/** CO₂ intensity estimate, g/kWh (illustrative factors). */
+const CO2_FACTOR = { hydro: 0, solar: 0, wind: 0, nuclear: 0, gas: 400, coal: 1050, biomass: 0 };
+
+const round3 = (v) => Math.round(v * 1000) / 1000;
+
+/** Daily load shape in [-1, 1]: trough ~04:00, morning plateau, evening peak ~19:00. */
+function loadShape(h) {
+  const raw = -Math.cos((TAU * (h - 4)) / 24) * 0.75 + Math.cos((TAU * (h - 19)) / 12) * 0.25;
+  return Math.max(-1, Math.min(1, raw));
+}
+
+function solarShape(h) {
+  if (h <= 6 || h >= 20) return 0;
+  return Math.pow(Math.sin((Math.PI * (h - 6)) / 14), 1.4);
+}
+
+function flowAt(border, h) {
+  return round3(border.base + border.amp * Math.sin((TAU * (h + border.phase)) / 24));
+}
+
+function buildModel() {
+  const flows = BORDERS.map((b) => ({ ...b, values: HOURS.map((h) => flowAt(b, h)) }));
+  const countries = {};
+
+  for (const [code, c] of Object.entries(COUNTRIES)) {
+    const hours = HOURS.map((h) => {
+      const load = round3(c.loadBase + c.loadAmp * loadShape(h));
+      const internal = flows.reduce((sum, f) => {
+        if (f.from === code) return sum + f.values[h];
+        if (f.to === code) return sum - f.values[h];
+        return sum;
+      }, 0);
+      // Imports from outside the region shrink at midday when regional solar peaks.
+      const external = round3(c.external * (1 - 0.55 * solarShape(h)));
+      const net = round3(internal + external);
+      const generation = round3(load + net);
+
+      const fixed = {
+        solar: round3(c.solarPeak * solarShape(h)),
+        wind: round3(c.wind * (1 + 0.25 * Math.sin((TAU * (h + 3)) / 24))),
+        nuclear: c.nuclear,
+      };
+      const fixedSum = fixed.solar + fixed.wind + fixed.nuclear;
+      const remaining = generation - fixedSum;
+      if (remaining < 0) {
+        throw new Error(`Inconsistent demo model: ${code} at ${h}:00 has negative dispatchable output (${remaining.toFixed(3)} GW)`);
+      }
+      const sources = Object.fromEntries(SOURCES.map((s) => [s, 0]));
+      Object.assign(sources, fixed);
+      for (const [s, w] of Object.entries(c.dispatch)) sources[s] += remaining * w;
+      // Put rounding residue into the largest dispatchable source so the sum matches exactly.
+      for (const s of SOURCES) sources[s] = round3(sources[s]);
+      const residue = round3(generation - SOURCES.reduce((a, s) => a + sources[s], 0));
+      const largest = Object.entries(c.dispatch).sort((a, b) => b[1] - a[1])[0][0];
+      sources[largest] = round3(sources[largest] + residue);
+
+      const co2 = generation > 0
+        ? Math.round(SOURCES.reduce((a, s) => a + sources[s] * CO2_FACTOR[s], 0) / generation)
+        : 0;
+      const price = Math.round(c.price + 22 * loadShape(h) - 30 * solarShape(h));
+      return { load, generation, net, external, sources, co2, price };
+    });
+    countries[code] = { code, name: c.name, hours };
+  }
+
+  return { hours: HOURS, sources: SOURCES, countries, flows };
+}
+
+/** Region aggregate for one hour. */
+function regionAt(model, h) {
+  const list = Object.values(model.countries).map((c) => c.hours[h]);
+  const sum = (fn) => round3(list.reduce((a, x) => a + fn(x), 0));
+  const generation = sum((x) => x.generation);
+  const sources = Object.fromEntries(model.sources.map((s) => [s, sum((x) => x.sources[s])]));
+  const renewable = sources.hydro + sources.solar + sources.wind + sources.biomass;
+  const co2 = Math.round(model.sources.reduce((a, s) => a + sources[s] * CO2_FACTOR[s], 0) / generation);
+  return {
+    load: sum((x) => x.load),
+    generation,
+    net: sum((x) => x.net),
+    external: sum((x) => x.external),
+    sources,
+    renewableShare: renewable / generation,
+    co2,
+  };
+}
+
+if (typeof module !== "undefined") module.exports = { buildModel, regionAt, COUNTRIES, BORDERS, SOURCES };
+
+
+const GEO = {"W":800,"H":760,"context":"M300.2,446.3L299.7,446.4L299.7,446.2L299.7,445.9L300.2,445.9ZM800,81.5L791.9,75.7L788.7,72.8L784.9,72.3L780.9,73.2L777.1,75.3L773.1,76L768.3,74.2L767.8,74.6L766.1,75L754.2,73.5L753.2,73.1L752.6,73.1L751,73L742.5,74.2L733.9,69.5L731.3,69.5L729.7,71.9L728.6,74.6L723.1,77.6L721.8,78.7L720.9,78.1L720.4,75.9L720.7,74L719.7,72.3L717.4,70.4L716.7,69.7L714,70L713.4,70.3L713.1,70.3L709.2,68.8L706.5,64.9L702.5,63L699.6,62.5L698.2,60.9L697.1,58.5L696,56.7L695.9,56.7L695.1,54L694.2,53.7L694,53.6L690.3,54.5L689.9,44.8L695.3,37.5L696.4,33.8L698,26.1L699.3,22.5L701,19.3L702.3,16.4L702.6,14L704.3,13.5L709.1,15.3L713.3,16.1L714.5,14.8L714.7,13.4L714.5,12.4L710.9,9.4L708.6,7.6L708.4,6.3L708.8,3.4L708.9,0.2L708.9,0L800,0ZM96.6,760L96.1,757.3L94.9,755L90.6,752.3L90.6,750.9L91.9,749.4L98.7,744.8L102.9,737.6L105.9,736.2L110.7,733.9L110.7,730.9L109.9,727.7L121.7,725L133.5,716.5L137.5,714.5L163.6,707.6L166.8,708.5L170.4,709.9L169.2,713L167.5,715.5L169.4,720.1L172.6,717.5L172.1,715.6L172.1,713.3L177.3,713.4L182,714L186.9,716.9L186,727.1L192.2,737.4L190,742.2L195.5,745.4L200.6,742.1L203.4,737L212.7,734.6L221.8,727.4L226.6,726.8L227.3,733.1L229.4,738.7L226.1,740.4L221.6,746L213.1,760L96.6,760ZM194.5,111.1L195.6,111.8L198.3,114.7L197.4,119L193.7,125.9L191.6,131.5L191.1,136L191.3,138.1L191.9,138.1L195,138.6L196.6,138.7L201.4,140.1L205.3,142.1L206.1,144.1L206.4,146.4L211,149.7L216.3,152L218.2,151.5L225.4,144.6L228.1,146L229.5,149.9L229.2,151.9L226.9,159.4L226.4,163.6L227.9,166.3L227.9,168.4L227.4,170.3L224.6,170.4L221,169.1L218.2,165.6L215.7,165.9L213.6,166.6L212.4,169.7L211.3,173.3L211.5,175.5L212.8,177.1L213.8,180.6L214.3,185L214.9,187.1L214.1,187.9L212.2,188.4L210.6,187.8L208,182.3L206.8,180.2L204.6,179.8L200.6,180.7L194.5,183.3L192,183.2L190,182.4L188.3,179.9L187,175L186.6,171.9L185.4,171.9L181.7,170.7L179.9,171.8L179.6,176.7L178.7,182.9L176.5,186.6L170.7,193.2L168.6,196L167.5,198.1L167.3,199.9L167.9,203.2L168.7,206.3L167.7,208.1L164.8,208.8L162.9,206.7L162.4,203.4L158.4,198.5L160.5,194.9L160.3,193.9L153.3,191.4L150.5,188.3L146.5,182.9L145.8,180.7L146.6,173.7L146.4,172L145.9,171.1L143.9,171L140.8,173.2L137.7,176.6L131.9,180.3L131.2,181.1L132.8,185.3L132.5,186.8L127.6,192.8L126.6,194.9L120.5,198.4L117.8,199.7L110.1,196.1L108,195.5L104.1,197.2L99,198.5L90.7,199.7L87.8,198L86.6,196.6L86.1,194.6L84.3,191L82.2,188.8L80.8,186.4L79,183.8L77.9,181.7L80.3,175.4L79.2,173L78.7,169.7L79.4,167.5L78.7,167L71.6,165L65.5,164.8L61,166.5L57.1,169.7L56.5,170.5L56.8,171.1L58.2,174.5L54.9,177.8L50,179.9L46.7,179.9L45.3,179.2L45.7,175.5L48.5,174.4L51.2,172.3L52.3,168.9L52.8,166.6L50.7,163.4L51.1,161.7L53.1,158.4L54.3,155.6L55.8,153.2L61.2,149.4L66.7,145.8L67.9,141.3L68.8,135.8L69.7,134.6L76.8,132L78.5,130.9L79.5,129.1L85.4,123.5L91.3,118L92.5,116L93.5,114.9L93.6,113.9L93.1,113.1L90.5,112.4L89.9,110.3L92.9,107.1L96.5,105.3L99.8,105.6L101,106.7L100.8,107.8L102.1,109.1L104.6,109.8L107.6,109.6L110.9,108.6L113,105.7L114.2,103.5L119.3,101.2L122.4,102.9L131.4,104L138.1,103.9L142.4,102.4L147.5,102.8L150.9,104.1L151.4,104L152.5,103.8L153.4,102.9L156.7,102.5L157.2,101.7L157.1,100.9L156.6,100.4L152.6,100.5L151,99.8L150.9,98.2L152.4,95.8L155.4,94L158,93.6L159.6,94.3L163.7,98.5L164.7,98.8L165.5,98.1L166.4,97.8L167.9,98.6L169.3,101.1L169.5,101.6L179.4,101.4L181.5,101.5L187.9,106.2ZM563.2,0L563.5,1.1L564.1,4.2L571.1,3.6L573,0L588,0L588,0L589.3,1.3L589.5,2.3L590.9,2.8L593.4,3.1L595.1,4L595.8,7.2L596,10L595.3,12.1L595,14L596.8,14.6L599.4,13.7L601.2,12.6L606.7,14.6L608.3,9.3L610.2,6.4L613.1,5L615.4,3.2L617.7,1.9L619.2,1.8L619.9,1.4L622,1.4L624.2,1.7L627.4,0.9L631.7,1.9L634.6,4.1L637.3,4.7L640.4,4.4L642.3,3L644,0L675.8,0L675.8,0L676.4,0.2L679.7,2.5L681.2,5.5L682,7.6L689.4,10.3L700.1,13.7L702.6,14L702.6,14L702.3,16.4L701,19.3L699.3,22.5L698,26.1L696.4,33.8L695.3,37.5L689.9,44.8L690.3,54.5L689.5,55.2L676.4,59.6L674.6,59.2L672.6,57.5L671.5,56.2L670.7,55.3L669.4,52.8L667.7,51L665.4,49.6L663.1,48L660.5,48.1L653.4,51.2L648.3,51.8L645,51.2L640.5,50L631.8,50.4L625.8,52.1L625.4,54L620.7,66.1L612.9,70.9L606.1,75.7L604.2,76.8L600.6,75.5L596.5,73.2L593.1,72L590.8,72.7L588.3,75.8L587.3,78.9L579.5,81.6L565.7,83.5L561,86.7L559.6,90.4L559.6,93.1L561,95.4L559.5,98.2L559,99.3L549.2,100.4L536.2,101.7L528.3,101.8L520.9,101.8L515.9,99.6L509.6,95.2L503.1,89.4L502.4,89.2L501.5,88.6L497.4,88.3L496.4,88.6L493.9,86.7L493.2,84.2L489.2,77.6L484.7,66.5L484.6,63.2L486.1,59.6L487.6,56.7L487.7,54.6L487.9,54L489.1,49.3L491.9,43.1L494.6,39.5L496.7,38.3L500.9,39.2L508.2,39.9L513.6,38.9L518.7,36L521.4,33.6L523.8,30.9L524.4,29.3L525.5,28.5L529.8,26.9L531,25.1L531.4,21.9L531.7,18.3L532.4,15.7L533.5,13.7L541.2,8.8L541.8,7.1L543,5.4L545.3,3.6L547.4,0.9L548.6,0L563.2,0ZM305.7,329.1L303.1,329.4L302,327L303.9,324.3L306.6,324L307,326.1ZM800,317.5L789.7,317.4L771.8,315.3L758.7,315.4L746,318.9L743.8,317.4L743,315.4L743.3,312.5L744.9,310L747.8,308L749.3,306.2L749.2,304.3L745.5,301.7L738,298.4L734.8,296.3L734.2,295.7L733.7,293.5L732.1,291.9L729.2,290.8L726.9,288.7L725.1,285.5L725.1,282.3L726.9,279.2L729.6,277.6L733,277.7L734.4,276.7L733.6,274.7L730.1,272.4L723.8,269.7L717.8,271.9L712.1,279.3L707.7,280.8L704.6,276.4L699.5,274.1L692.4,273.8L687.9,272.5L686.2,269.9L682.9,268.2L676,266.5L675.7,264.4L676.9,263.9L679.3,263.5L682.4,262.8L682.9,261.6L682.8,260.6L680.1,259.4L677.5,258.7L676.1,257.9L675.2,256.9L674.9,255.9L675.6,255L676.7,255L677.7,254.3L677.9,251.7L679.2,249.6L680.1,248.8L680,247.4L678.8,246L677.4,244.9L675.3,244.3L668.7,242.7L665.3,240L663.3,240L659.9,238.6L656.5,236.2L653.3,232.8L650,230.6L649.1,229.8L649,228.9L649.4,227.8L649.3,226.7L648.3,223.2L648.5,219.3L648.1,215.9L648,214.2L647.4,213.8L646.8,214.3L646.1,215.1L645.4,215.2L642.9,212.9L639.6,207.8L637.6,206.2L633.6,204L630.3,202.1L627.6,197.9L624.9,194.6L626.5,193.1L635.5,190.6L639.9,192.2L641.9,191.4L643.7,189.6L644.6,188.3L644.7,186.9L645.4,185.2L648.6,184.2L656.8,184.6L660,182L661.1,180.6L661.6,177.8L662.3,175.4L665.1,174L665,172L664.4,169.8L665.7,164.6L666.6,162.4L668.1,161.5L670.1,159.8L673.3,156.2L672.2,153.4L672.7,151.2L675.9,145.8L678.3,140.6L678.1,138L678.3,135.8L680.5,133.2L682.8,129.9L685.3,119.9L686.5,118.1L688.4,116.1L689.9,114.2L689.5,107.7L690.9,105.8L693.7,103.4L696.3,99.8L698.4,95.7L699.9,93.6L702.3,93L704.8,91.2L707.6,90.4L710.5,90.9L712.3,90.3L714.8,88.1L721,80.3L721.8,78.7L723.1,77.6L728.6,74.6L729.7,71.9L731.3,69.5L733.9,69.5L742.5,74.2L751,73L752.6,73.1L753.2,73.1L754.2,73.5L766.1,75L767.8,74.6L768.3,74.2L773.1,76L777.1,75.3L780.9,73.2L784.9,72.3L788.7,72.8L791.9,75.7L800,81.5L800,317.5ZM708.9,0L708.9,0.2L708.8,3.4L708.4,6.3L708.6,7.6L710.9,9.4L714.5,12.4L714.7,13.4L714.5,14.8L713.3,16.1L709.1,15.3L704.3,13.5L702.6,14L700.1,13.7L689.4,10.3L682,7.6L681.2,5.5L679.7,2.5L676.4,0.2L675.8,0L708.9,0ZM644,0L642.3,3L640.4,4.4L637.3,4.7L634.6,4.1L631.7,1.9L627.4,0.9L624.2,1.7L622,1.4L619.9,1.4L619.2,1.8L617.7,1.9L615.4,3.2L613.1,5L610.2,6.4L608.3,9.3L606.7,14.6L601.2,12.6L599.4,13.7L596.8,14.6L595,14L595.3,12.1L596,10L595.8,7.2L595.1,4L593.4,3.1L590.9,2.8L589.5,2.3L589.3,1.3L588,0L644,0ZM573,0L571.1,3.6L564.1,4.2L563.5,1.1L563.2,0L573,0ZM92.2,325.3L89.5,326.1L89.8,324.9L90.5,324.2L91.3,324L92.1,324.6ZM696.1,416.5L698.6,416.6L703.6,414.8L706.7,412.4L708.4,412L710.5,411L713.6,410.8L717,411.5L720.9,410L724.8,407.7L726.5,408L728.4,409.6L729.5,409.9L737,418L740.9,421.1L745.5,423.5L750.6,424.9L752.5,426.7L756.5,435.6L758.4,438.9L760.5,439.8L761.1,440.8L761.4,442.1L759.7,448.8L760.1,463.5L759.6,464.7L757,464.9L753.7,465.5L752.6,466.7L752,474.6L746.9,477.4L742.2,479.1L738.1,479.2L730.8,478L728.4,478L726.4,479.1L720.2,480.2L717.4,481.8L711.5,491.5L705.1,495.3L703,497L697.6,495.3L695.2,495.3L691.8,497.9L684.1,498.8L682,499.4L676,500.1L675.6,498.9L674.4,497.1L671.6,496.4L665.9,497.5L664.4,496.3L661.5,488.6L659.7,487.5L657.4,485L653.4,476.8L653,473.1L653.1,469.8L650.7,462.4L651.7,460.4L653.3,459.1L653.1,456.1L652.4,451.4L654,442.2L654.4,441.5L655,441.9L660.1,442.3L661.3,441.1L662.1,439.2L661.8,432.5L662.9,429.3L674.6,422.6L678.2,422.1L681.2,424.7L683.5,426.2L684.7,426L685.1,424.3L686.4,420.8L688.7,418.7ZM195,138.6L191.9,138.1L191.3,138.1L191.1,136L191.6,131.5L193.7,125.9L194,126.9L194.1,128.1L194.4,129.4L194.5,131L195,132.7L196,134.3L196.3,135.7L195.7,137.5ZM641.3,386.3L646.4,384.2L647.1,382.9L645.7,380.3L646.4,378.6L652.4,373.5L653.3,371.3L653.7,369.5L652.6,367.8L651.2,365.1L651.7,363.8L655,362L657.5,360L659,359.7L660.2,361L660.3,362.4L661.4,364.7L663.3,365.8L666.8,367.7L670.8,368.8L673.9,371.5L678.4,376.2L679.2,378.7L683.1,380.7L686.7,383L686.4,387.7L698.4,390.8L701.1,390.6L702.4,391.2L702.5,392.3L701.8,395.6L697.8,406.1L697.5,408.2L694.2,410.6L693.9,412L695,414.6L696.1,416.5L688.7,418.7L686.4,420.8L685.1,424.3L684.7,426L683.5,426.2L681.2,424.7L678.2,422.1L674.6,422.6L662.9,429.3L661.8,432.5L662.1,439.2L661.3,441.1L660.1,442.3L655,441.9L654.4,441.5L655,438.8L654.3,433.3L651.4,424.2L649.6,421.2L646,418.4L643.4,416.6L638.6,415.2L636,410.3L632,404.7L630.3,403.5L630.5,402.9L631,398.5L629.8,395.4L628.1,392.7L629,391L632.3,390.8L634.9,391L635.9,388.4ZM670,645.5L671.1,652.3L674.3,653.3L679,659.1L678.9,662.3L678,663.4L670.7,661L669.1,662.5L666.9,662.1L665.5,658.7L665.6,657.6L664.2,655.6L663.3,654.8L660.6,657.6L658.8,658.2L658.7,655.8L660.9,648.9L662,647.7L664.3,649.8L665.9,648.9L667,645.1L666.9,641.5L667.3,640.3ZM685.1,678.6L690.3,683.9L686.4,682.8L682.3,687L676.8,682.8L673.2,678.4L672.4,676.6L675.4,672L678.9,676.2L682.6,676.7ZM672.6,632.1L670.8,632.7L669.3,632.5L667.8,632.8L666.6,634L666.4,629.4L667.7,623.5L669.3,620.1L672,618.3L673.3,620.9L673.8,630.3ZM677,648.2L674.7,649L671.5,643.6L670.1,639.8L671.2,639.5L672.4,640L673.8,641.3L673.9,642.8L674.5,644.3L675.8,646.2ZM641.8,585.7L643,588.9L637.2,587.2L632.9,584.4L629.1,577.4L621.3,569.6L621.2,567.2L623.8,565.2L629.6,563.6L632.1,564.8L633.6,566L634.2,567.6L631.2,571L630.4,572.5L633.2,575.2L633.3,576.3L634.7,581.8L636.1,583.8L639.5,585.2ZM800,619.5L799.4,618.7L794.1,614.6L788.7,611.2L783.5,609.1L778.1,608L774,610.3L771.5,610.1L770.9,608.9L776.1,605.6L782.8,599.9L787.7,597.8L790.1,597.3L795.3,601.3L795.3,601.3L798.4,607.3L800,608.5L800,619.5ZM786.8,760L786.5,758L787.6,755L788.4,754L790.9,757.1L794.3,760L786.8,760ZM800,497.1L799.8,499.5L800,499.8L800,527.6L800,527.6L799,526.3L788.2,525.1L786.7,527.7L789.4,533.6L791.1,535.9L800,541.1L800,543.5L800,543.5L799.2,544L788.3,541.2L784.7,535.6L783.3,528.3L773.4,524.2L763.9,519.4L761.3,514.3L763,512.1L764,508.2L759.1,509.3L756.3,512.1L751.4,514.9L751.6,518.8L752.7,522.4L751.6,527.8L750.8,537.1L752.2,541.9L764.4,554.6L769.1,564.3L772,567.8L778.1,571.6L784.7,578.7L787.5,582.6L790,589L785.5,593.7L782.6,594.2L780.9,592.4L782.6,587.7L782,584.9L773.9,581.4L770.8,583.2L767.5,586.3L770.1,591.2L772.7,594.5L774.5,599L779,598.2L773.3,604L767.8,607.3L762.1,607.9L758.4,608.8L757.3,610.2L760.4,611L762.8,610.8L767,613.3L778.5,615.7L784.3,619.5L789.6,619.4L795.7,626.8L800,627.3L800,658.1L800,658.1L790.8,660.7L786.3,663.9L784.5,664.6L784,666.1L786.4,667.4L789.6,670.5L790,675.1L792.9,680.5L796.1,681.7L800,681.2L800,693.1L800,693.1L796.8,694.5L794.8,696.4L792.9,697.5L789.8,695.9L789.2,691.5L785.3,689.5L781.6,687.7L777.4,687.1L773.6,684.4L771.5,687.2L774.1,695.6L778.7,701.4L786.9,716.8L790.9,726L792,730.6L791.2,738.4L794.9,743.8L797.9,749.3L795.3,749.4L792.9,747.6L789.1,745.4L781.1,736.8L778.1,731.2L775.1,731L770.1,732.3L765.5,745.3L766.3,752.4L763.1,750.9L760.5,748.9L760,741.1L759.6,737.9L751.9,727.9L748.6,726.9L746.9,723.5L744.1,719.8L740.9,720.9L738.3,722.6L738.1,728.4L738.2,733.6L736.7,737.6L728.8,730.9L720.6,718.6L719.8,711.7L724.6,704.9L723.5,700.4L717.8,691.7L710.1,686.5L706,685L703.7,679.1L699.6,676.2L696.4,674.9L695.5,672.7L696.4,671L703.4,664.2L707.2,653.9L709.3,653.3L714,655.3L719,654.3L722.7,648.1L725.9,644.7L731.9,644.6L745.8,651.2L760.6,654.4L768.1,657.7L772.6,661.1L774.8,661.8L778.2,662L777.8,659.1L776.5,656.7L779.2,655L786.9,654.4L788.2,652.8L789.3,650.5L787.6,648.3L784.8,647.3L782.2,647.2L780.3,646.6L777.5,647.7L772.7,646.2L770.3,644.8L768.8,643.3L760.7,640.7L752.8,635.9L751.4,639.2L748.4,641.1L744.3,641.7L732,639.2L724.8,642.6L720.9,643.5L717.7,643.8L714,645.3L709.8,646.4L705.6,641.6L703.8,637.7L702.6,637.1L702.7,640.9L701.8,643.9L696.4,646L693,643.9L690,637.1L686.4,628.5L680.5,621.7L675.9,620.2L675.1,616.3L675.4,613.2L680.6,612L689,614.7L690.8,614L692.5,612.3L691.9,609L690.6,606.1L688.2,606.1L686.6,606.6L681.5,606.4L675.2,608.4L672,607.1L670.9,605.2L665.2,600.9L660.1,594.9L652.3,591.2L646.5,578.7L642.1,573.4L637.3,569.6L638.2,569.6L640.1,570.1L643.3,572.1L646.7,572.4L648.6,570.8L649.6,569.4L650.1,567.2L650.3,564.5L650.7,563.7L653.3,563.8L654.1,563.2L654,560.8L652.2,558.1L650.3,554.6L650.2,553L651.5,552.2L653.5,550.6L654.3,548.6L656.5,547.5L659.6,547.1L663.1,546.1L665.3,543.9L665.5,541.9L666.6,536.2L667.2,533.4L668.7,530.9L669.2,527.5L670.6,524.2L673.9,522.7L676.8,520.9L678.8,516.7L679.8,513.2L679.7,511.2L677.5,507.7L675.8,504.5L676,500.1L682,499.4L684.1,498.8L691.8,497.9L695.2,495.3L697.6,495.3L703,497L705.1,495.3L711.5,491.5L717.4,481.8L720.2,480.2L726.4,479.1L728.4,478L730.8,478L738.1,479.2L742.2,479.1L746.9,477.4L752,474.6L752.6,466.7L753.7,465.5L757,464.9L759.6,464.7L764.3,464.8L770.2,464.5L773.5,460.5L779.3,459.6L781.9,458.8L786.4,459.2L790.8,458.6L796.1,456.5L800,454.1L800,497.1ZM319.8,0L320.9,2.7L322.8,5.5L325.3,8.4L327.8,10.7L331.6,10.7L335.7,15L340.1,21L343.4,23.8L345.7,24.7L347.6,27L349.3,30.1L349.9,31.9L351.4,33.2L355.6,33.1L360.8,38.1L364,41.7L365.8,44.6L365.3,45.7L365,49.3L364.9,53.2L364.5,55.1L362.1,57.7L360.8,58.3L360.1,58.8L352.8,55.2L352.3,55.8L351.7,56.2L349.6,66.3L348.2,68.1L346.1,69.9L341.8,71.6L339,72.2L336.6,73L329.3,77L326,79.5L323.8,82.6L323.7,84.4L327.1,89.8L331.1,95.6L331,100.4L329,104L328.6,105.4L329.9,106L332.1,106.2L334,106.9L334.8,109.4L334.4,113.9L333.6,118.1L332.9,119.8L331.1,120L327.6,118.1L324.9,115.8L323.8,114.6L323.8,113.1L324.4,112.1L323.5,110.1L320.1,108.3L316.5,109L313.8,110L312.1,110L310.3,108.2L307.4,106.8L303.6,105.8L301.4,104.8L300.8,105.3L301,109L300.2,110.6L281.6,112.1L275.8,113.8L271.7,116.2L268.5,117.2L267.7,118.8L264.6,120.7L261.1,121.2L260.3,120.5L258.1,121.3L254.4,122.1L251.9,121.6L250.9,120L248.7,117.3L247.8,115.4L248,114.3L242.7,113.8L239.5,112.2L232.5,112.3L230.8,111.6L230.5,112.2L229,119.4L227.5,122.3L225,125.3L222.1,126.8L219.8,127L220,124.8L220.8,122.1L219.1,121.4L216.7,120.9L215.6,120L216,118L215.5,116.8L214.6,115.3L212.1,113.3L207.1,110.2L203.7,108.6L202.1,109.9L199.5,111.3L195.5,110.5L194.5,111.1L194.5,111.1L187.9,106.2L181.5,101.5L179.4,101.4L169.5,101.6L169.3,101.1L167.9,98.6L166.4,97.8L165.5,98.1L164.7,98.8L163.7,98.5L159.6,94.3L158,93.6L155.4,94L152.4,95.8L150.9,98.2L151,99.8L152.6,100.5L156.6,100.4L157.1,100.9L157.2,101.7L156.7,102.5L153.4,102.9L152.5,103.8L151.4,104L150.9,104.1L147.5,102.8L142.4,102.4L138.1,103.9L131.4,104L122.4,102.9L119.3,101.2L117.4,100.3L116.3,96.3L117.2,90.4L120,82.9L121.1,77.2L120.4,73.6L122.2,68.2L126.3,61.3L129.2,53.8L131.2,46L133.3,40.8L136.8,37.4L145.5,27.9L146.2,27.1L146.4,22L144.3,21.1L141.4,19.3L133.8,16.8L126.7,15.1L123.5,13.4L120.9,9.2L119.1,9L115.5,10.1L111,10.6L108.1,9.5L106,9.5L104.8,10.1L104.3,9.4L103.8,6L102.2,4.9L99.8,4L98.1,4.1L96.8,5.6L95.1,6.7L93.4,6.1L90.4,0L319.8,0ZM174.7,387.1L173.1,395.6L173.7,398.2L175.1,400.1L175.8,402.1L175.6,425L175.1,426.8L169.2,435.7L168,438.3L166.9,449.7L165.7,452.7L163.6,455.6L159.7,465.1L156.4,469.3L148.7,463.4L144.1,460.8L142.1,458.1L140.7,456.3L141.8,454L144.2,451.8L144.6,449.9L139.7,447.4L137.5,445.8L137.7,443.4L139.7,439.7L139.1,436.4L136.3,436.3L134,435.7L134,433.9L135.7,431.9L138.1,429.3L138.2,426.3L135.8,424.8L133.6,422.1L132.9,418.7L135,416.5L137.9,415.2L136.1,411.6L134.6,411.3L133.6,410.5L134.6,409L137,406.7L140.8,399.8L145.3,396.7L153.2,395.1L155.5,394.3L157.5,391.9L159.8,390.4L162.2,390.8L164.7,391.9L166,393.1L167.3,392.1L168.4,389L168,386.2L168.8,378.6L170.5,374.4L172.8,374.3L174.6,376.8L174.4,378.9L174.8,383.9ZM90.4,0L93.4,6.1L95.1,6.7L96.8,5.6L98.1,4.1L99.8,4L102.2,4.9L103.8,6L104.3,9.4L104.8,10.1L106,9.5L108.1,9.5L111,10.6L115.5,10.1L119.1,9L120.9,9.2L123.5,13.4L126.7,15.1L133.8,16.8L141.4,19.3L144.3,21.1L146.4,22L146.2,27.1L145.5,27.9L136.8,37.4L133.3,40.8L131.2,46L129.2,53.8L126.3,61.3L122.2,68.2L120.4,73.6L121.1,77.2L120,82.9L117.2,90.4L116.3,96.3L117.4,100.3L119.3,101.2L119.3,101.2L114.2,103.5L113,105.7L110.9,108.6L107.6,109.6L104.6,109.8L102.1,109.1L100.8,107.8L101,106.7L99.8,105.6L96.5,105.3L92.9,107.1L89.9,110.3L90.5,112.4L93.1,113.1L93.6,113.9L93.5,114.9L92.5,116L91.3,118L85.4,123.5L79.5,129.1L78.5,130.9L76.8,132L69.7,134.6L68.8,135.8L67.9,141.3L66.7,145.8L61.2,149.4L55.8,153.2L54.3,155.6L53.1,158.4L51.1,161.7L50.7,163.4L52.8,166.6L52.3,168.9L51.2,172.3L48.5,174.4L45.7,175.5L45.3,179.2L46.7,179.9L50,179.9L54.9,177.8L58.2,174.5L56.8,171.1L56.5,170.5L57.1,169.7L61,166.5L65.5,164.8L71.6,165L78.7,167L79.4,167.5L78.7,169.7L79.2,173L80.3,175.4L77.9,181.7L79,183.8L80.8,186.4L82.2,188.8L84.3,191L86.1,194.6L86.6,196.6L82.9,199.7L77.2,202.3L76.3,204.2L76.2,206.5L76.6,208.4L79.5,211L82.2,216.5L84,221.4L88.1,226.4L89.2,227.8L88.8,228.9L87.3,230.7L85.2,237L83.2,237.8L81.1,238L74.8,242.1L72.4,241.3L68.7,241L66,242.3L65.9,245.1L68,248.1L69,251.1L69.3,254.2L71.8,256.6L75.2,258.3L77.3,258.6L78.6,259.5L79.4,260.6L80.2,267.3L79.2,268.8L77.2,269.3L75.7,271.8L73,275.6L71.3,278.6L72.5,281.5L73,283.5L72,285.6L72.7,288.9L75.3,292.5L82.4,297.8L89.1,302.1L91.3,302.9L101,301.4L102.7,301.8L103.6,304.7L103.9,306.7L102.6,309.4L99.7,313.3L96.5,316.2L94.6,318.7L94.7,321.2L94.6,324.5L92.2,325.3L92.1,324.6L91.3,324L90.5,324.2L89.8,324.9L89.5,326.1L84.5,327.7L80.8,329.5L66.2,341.1L59.6,344.4L58.1,346.5L56.5,350.6L52.5,353.9L48.9,355.3L40.8,356.3L32.3,359.3L28.9,357.3L19.4,356.4L14.1,351.1L3.1,346.9L0.2,339.7L0,339.7L0,0ZM548.6,0L547.4,0.9L545.3,3.6L543,5.4L541.8,7.1L541.2,8.8L533.5,13.7L532.4,15.7L531.7,18.3L531.4,21.9L531,25.1L529.8,26.9L525.5,28.5L524.4,29.3L523.8,30.9L521.4,33.6L518.7,36L513.6,38.9L508.2,39.9L500.9,39.2L496.7,38.3L494.6,39.5L491.9,43.1L489.1,49.3L487.9,54L486.9,52.7L485,47.8L483,47.2L480.4,46.9L478.4,46.2L474,43.4L471.7,42.6L469.2,42.5L466.7,44.1L464.9,46.1L459.2,46.2L452.9,45.4L443.7,39L441.5,38.9L439,39.3L435.1,37.8L427.4,33.6L423.8,32.7L421.5,33.2L419.6,34.2L418.1,34.4L417.2,32.9L414.4,31.3L411.5,31.1L410.7,32.1L409.8,41.3L408.8,44.6L404.9,44.5L403.5,46L400.4,50.5L399.7,54.7L394.4,53.9L391.9,53.1L389.6,53.7L387.1,56.1L380.2,55.8L374.7,54.4L372.4,49.1L369.9,46.9L366.9,45L365.8,44.6L364,41.7L360.8,38.1L355.6,33.1L351.4,33.2L349.9,31.9L349.3,30.1L347.6,27L345.7,24.7L343.4,23.8L340.1,21L335.7,15L331.6,10.7L327.8,10.7L325.3,8.4L322.8,5.5L320.9,2.7L319.8,0L548.6,0ZM800,454.1L796.1,456.5L790.8,458.6L786.4,459.2L781.9,458.8L779.3,459.6L773.5,460.5L770.2,464.5L764.3,464.8L759.6,464.7L760.1,463.5L759.7,448.8L761.4,442.1L761.1,440.8L760.5,439.8L758.4,438.9L756.5,435.6L752.5,426.7L750.6,424.9L745.5,423.5L740.9,421.1L737,418L729.5,409.9L732.9,408.7L733.6,406.9L736.6,401.8L736.7,399.4L736.3,398.1L733.9,396L731.9,391.1L732.6,386.3L732.5,383.9L731.3,381.6L732.1,378.6L734.4,376.8L735.9,376.1L742.2,375.3L745.6,368.9L747.9,366.8L750,363.2L751,361.9L751.8,359.1L752,356.5L746.6,353.1L744.7,350.5L742.3,347.6L739,345.7L732.7,342.5L730,339L728.5,334.2L726.6,330.6L724.6,328.4L724.1,326.4L723.1,324.2L722.6,319.4L723.4,313L724.1,310.8L726.2,309.9L731.3,306.1L731.1,301.8L731.9,299.1L733.4,297.4L734.8,296.3L738,298.4L745.5,301.7L749.2,304.3L749.3,306.2L747.8,308L744.9,310L743.3,312.5L743,315.4L743.8,317.4L746,318.9L758.7,315.4L771.8,315.3L789.7,317.4L800,317.5L800,454.1ZM0,718.2L0.8,717.9L5.2,712L12.8,710.4L16.5,715.6L32.6,722.1L42.8,721.7L47.3,720.6L46.5,713.2L56.9,716.1L64.9,720.3L72.8,728.1L78.3,730L88.7,727.6L109.9,727.7L109.9,727.7L110.7,730.9L110.7,733.9L105.9,736.2L102.9,737.6L98.7,744.8L91.9,749.4L90.6,750.9L90.6,752.3L94.9,755L96.1,757.3L96.6,760L0,760ZM601.1,444.8L601.1,442L601.7,437.3L601.1,435.8L601.4,433.1L599.9,429.6L597.5,427.2L599.5,422.6L602.2,417.1L604.8,412.7L607.9,407.9L610,403.5L612.3,399.7L614.4,398.5L615.4,399.2L616.1,400.7L616.2,405.5L617.1,407.2L618.5,408.4L621.6,407.6L625,406.1L629.5,403.3L630.3,403.5L632,404.7L636,410.3L638.6,415.2L643.4,416.6L646,418.4L649.6,421.2L651.4,424.2L654.3,433.3L655,438.8L654.4,441.5L654,442.2L652.4,451.4L653.1,456.1L653.3,459.1L651.7,460.4L650.7,462.4L653.1,469.8L653,473.1L653.4,476.8L657.4,485L659.7,487.5L661.5,488.6L664.4,496.3L665.9,497.5L671.6,496.4L674.4,497.1L675.6,498.9L676,500.1L675.8,504.5L677.5,507.7L679.7,511.2L679.8,513.2L678.8,516.7L676.8,520.9L673.9,522.7L670.6,524.2L669.2,527.5L668.7,530.9L667.2,533.4L666.6,536.2L665.5,541.9L665.3,543.9L663.1,546.1L659.6,547.1L656.5,547.5L654.3,548.6L653.5,550.6L651.5,552.2L650.2,553L650.3,554.6L652.2,558.1L654,560.8L654.1,563.2L653.3,563.8L650.7,563.7L650.3,564.5L650.1,567.2L649.6,569.4L648.6,570.8L646.7,572.4L643.3,572.1L640.1,570.1L638.2,569.6L637.3,569.6L636.8,564.3L635.1,560.3L629.5,550.5L612.5,541.6L608.4,537.5L606.5,533.9L604.7,530.4L606.3,530.2L607.9,531.1L610.1,532.1L610.8,530.2L609.6,526.5L605,517.9L604.6,515.4L606.3,507.8L609.2,499.3L608.5,489.3L609.2,481.6L607.7,476.7L606.9,470.6L608.8,462.5L610.9,460.3L612,457.7L611.7,449.1L606.6,445.4Z","countries":{"HR":"M353.3,235.5L354.8,237.8L365.7,240.8L367.9,239.6L369.4,237.7L369.4,236.5L370.3,236.1L374.2,238.1L377.3,237.6L382.3,237.6L385.9,237.9L388.2,236.5L391.5,231.3L392.7,228.4L394.1,227.6L395.1,228.1L395.7,230.4L397.4,232.8L400.8,236.4L403.3,238.2L405.6,238.9L407.6,237.4L410,237L416.4,239.8L421.7,240.3L425.7,238.9L425.2,236.7L423.8,234.5L423.5,232.3L423.7,230.3L426.4,228.4L426.2,227.6L423,224.1L423.1,223.3L430.3,219.4L437.4,217.2L438.4,215.6L439.1,213.1L439.4,208.4L438.9,204.7L436.1,201.1L435.9,199.3L436.5,197.5L437.7,195.7L440.4,195L443.6,193.7L446.3,192.3L449.6,191.1L452.4,189.5L454.9,185.5L456.5,184.9L461.5,185.4L462.5,184.4L461.8,178.8L462.7,177.4L464.4,176.5L465.1,175.8L469.5,176.4L473,177.7L475.2,178.5L482.6,182.4L487.6,186.8L490.5,191.8L494.4,195.6L499.2,198.3L503.1,201.9L506,206.5L510,209.1L515,209.5L518.2,211L519.6,213.7L522.5,215.9L526.6,217.9L533,219L545.4,218.8L546.4,218.8L549.3,219.4L552.5,218.4L556.4,216.5L557.5,215.5L561.4,209.8L563.7,210.2L568.3,209.3L571,207.9L571.1,207.9L571.1,209.4L570.9,211.8L568.8,213.6L571.2,217.6L573.7,224L572.5,227.3L574.1,229.7L578.4,231.3L578.8,232L577.5,232.8L576.5,235L576.7,239L580.5,242.5L588.1,245.5L590.5,245.9L591.4,247.2L592.6,248.1L593.4,249L593.7,250.5L593.1,251.4L589.6,251.9L585.6,252.1L582.6,250.6L582.6,251.8L582.5,253.2L579.8,254.2L581.8,263.7L581.3,266.5L580.3,267.4L579.4,267.1L578.2,267L577.7,268L578.2,270L575.5,270.3L571.1,269.5L569,267.8L568.6,265.8L568.5,264.1L567,261.2L563.5,258.4L556.2,258.2L553.4,257.4L550.7,256.4L547.7,255.7L544.9,255.9L541.6,256.9L535.6,255.7L533.8,257.5L530.9,259.7L528.2,259.8L523,255.3L521.5,255L517.1,257.5L515.3,257.6L513.9,257L507.9,255.3L505.2,255.1L503.2,255.9L499.7,255.1L491,249.1L485.9,253.9L475,253L471.9,256.2L468.3,262.4L465.4,265.4L462.8,264.3L459.8,261.7L454.3,254.9L451.6,253.6L448.5,253.4L445.8,254.2L444.4,255.6L443.4,265.6L442.4,274.5L442.5,279.9L448.5,284.7L455.7,293.1L458,294.1L459.1,296.8L460.8,303.9L462.7,311.9L466.4,317.2L469.8,320.9L473.8,324.2L478.9,329.4L483.2,335L484.3,337.1L492.4,344.5L500.3,352.1L507.4,354.6L508.5,356L508.7,362L509.5,364.3L514.3,370.3L524.1,379.2L525.3,381.3L525.6,382.8L525,384.1L522.6,385.4L520.6,384.1L511.4,375.4L502.8,369.9L492.8,359.6L479.9,355.7L470.9,351.2L465.8,352L459.8,353.5L456.3,353.6L453.7,352.7L451.8,349.9L452.1,347.7L451.8,344.8L446.5,340.2L439.5,335.8L432.9,330.1L419.6,314.8L416.9,309.8L419.5,308.9L421.4,308.9L423.7,307.9L427.3,307.9L431.6,308.9L427.8,305.6L423.1,302.4L411,289.5L407.4,283.5L407,276.9L407.9,267.9L405.8,261.5L396.6,253.1L393.2,248.7L386.5,246.1L383.4,246.3L381.6,249.6L380.2,256.8L374.2,266.2L372,270.3L368.8,275.6L366.1,276L364.5,275.4L359.7,266.4L355,259.4L354.5,256.2L354.1,252.2L350.8,237.4ZM482.6,383L490.5,384.5L496.3,383.5L501.6,384.4L504.9,386.3L505.7,387.2L501.4,387.4L496.5,386.7L491.2,388.7L486.4,387.8L484.5,386.6L483.2,385.1ZM505.7,374.8L502.6,375.5L483.7,375.5L478.1,374.4L471.9,371.4L470.5,370.5L476.8,369.5L482.5,370.3L484.4,372.5L499.9,374ZM487.9,366.8L481.2,367.1L475.3,366.1L472.4,364.4L472.7,362.8L473.5,360.3L480,360.5L490,362.1L492.3,364.2L491.7,365.1ZM421.5,321.2L422.2,323.3L416.9,319.4L415,316.8L414.5,315.6ZM403.9,267.6L398.8,268.8L396.4,266.6L395.8,264.7L391.5,264.1L389,261.5L388.5,260.4L392.1,257.6L394.1,253L396.4,255.8L399.4,261L401,262.4ZM404.7,280.4L405.8,283L401.9,280.6L398.4,279.7L397.7,278L398.2,276.5L398.9,275.1L401.6,275.3L402,276.8ZM419.6,305.1L418.6,306.8L415.8,303.8L413.4,301.8L411.6,299.5L408.2,296.4L407,292.9L401.9,285.9L401,284L403.7,286.8L405.8,288.7L407.6,289.1L412.1,293.6L416.6,299.4L421.9,304.3L420.7,304.5ZM419.8,329.5L420.4,330.3L420.3,330.9L418.2,330.1L417.6,330.3L407.2,317.5L406.2,315L409.8,318ZM427.4,326.4L430.3,330.7L427.6,329.8L424.8,327.1L423.2,324.3ZM390.5,286.2L390.1,288.4L387.6,285.5L386.3,280.3L383.2,272L382.8,269.6L384.5,267.3L384.5,265L382.3,257.6L384.1,256.5L385.3,256.3L385.7,261.4L386.7,264.4L389.7,267.9L389,273.8L389.6,282.3L390.2,284.1ZM524,395.3L529.9,399.1L512.5,394.4L514.5,393.8L516.4,393.7ZM560.1,406.2L560.2,408.4L562,410.8L563.8,413.5L555.7,408.3L548,402.4L533.2,393.4L522.8,391.3L508.5,384L499.4,381.5L502.9,380.8L506.9,380.7L528.8,390.3L526.2,387.7L529.3,386.6L531.9,387.2L533.8,390.5L537.2,392.6L542.8,396.3L546.3,399.1L554.3,404.2L556.1,404.8Z","SI":"M473,177.7L469.5,176.4L465.1,175.8L464.4,176.5L462.7,177.4L461.8,178.8L462.5,184.4L461.5,185.4L456.5,184.9L454.9,185.5L452.4,189.5L449.6,191.1L446.3,192.3L443.6,193.7L440.4,195L437.7,195.7L436.5,197.5L435.9,199.3L436.1,201.1L438.9,204.7L439.4,208.4L439.1,213.1L438.4,215.6L437.4,217.2L430.3,219.4L423.1,223.3L423,224.1L426.2,227.6L426.4,228.4L423.7,230.3L423.5,232.3L423.8,234.5L425.2,236.7L425.7,238.9L421.7,240.3L416.4,239.8L410,237L407.6,237.4L405.6,238.9L403.3,238.2L400.8,236.4L397.4,232.8L395.7,230.4L395.1,228.1L394.1,227.6L392.7,228.4L391.5,231.3L388.2,236.5L385.9,237.9L382.3,237.6L377.3,237.6L374.2,238.1L370.3,236.1L369.4,236.5L369.4,237.7L367.9,239.6L365.7,240.8L354.8,237.8L353.3,235.5L355.9,234.4L359.3,231.4L361.5,231.8L364.3,231.1L365.7,229.9L363.8,226L359.5,221.2L357.1,219.4L353.9,218.1L353.3,216.8L355.2,209.4L354.7,208.3L351,208.6L350.1,207.8L349.9,206.5L350.2,204.7L352.7,201.8L355.5,199.3L356.3,197.9L356.2,196.8L352.7,195.5L350.5,194.3L348.9,193.9L347.7,194.5L346.9,193.8L346,191.6L347,188.4L350.1,185.4L353.6,182.8L356.7,180.8L358.3,180L359.3,176.6L361,177L364.6,177.2L368.6,178.1L372.2,179.1L375.4,180.3L382.2,181.6L388.3,182.4L390.2,183.1L391.7,183L393.6,184L394.7,183.3L395.5,182L398.8,180.4L402,178.3L404.1,175.6L405.4,173.5L407.4,172.1L409.7,171.5L411.8,170.8L420.5,169.8L429.5,170.6L433.8,169.1L437.3,166.5L442.4,165.7L442.7,165.7L450.4,167.6L450.9,166.4L451.2,165.9L451,160.3L453.4,157.7L455.7,156.6L463.4,156.9L464.4,158.6L464.8,161.2L465.6,164.8L466.9,165.8L467.6,167.2L467.5,169.7L469,171.5L472.6,176.4Z","HU":"M690.3,54.5L694,53.6L694.2,53.7L695.1,54L695.9,56.7L696,56.7L697.1,58.5L698.2,60.9L699.6,62.5L702.5,63L706.5,64.9L709.2,68.8L713.1,70.3L713.4,70.3L714,70L716.7,69.7L717.4,70.4L719.7,72.3L720.7,74L720.4,75.9L720.9,78.1L721.8,78.7L721,80.3L714.8,88.1L712.3,90.3L710.5,90.9L707.6,90.4L704.8,91.2L702.3,93L699.9,93.6L698.4,95.7L696.3,99.8L693.7,103.4L690.9,105.8L689.5,107.7L689.9,114.2L688.4,116.1L686.5,118.1L685.3,119.9L682.8,129.9L680.5,133.2L678.3,135.8L678.1,138L678.3,140.6L675.9,145.8L672.7,151.2L672.2,153.4L673.3,156.2L670.1,159.8L668.1,161.5L666.6,162.4L665.7,164.6L664.4,169.8L665,172L665.1,174L662.3,175.4L661.6,177.8L661.1,180.6L660,182L656.8,184.6L648.6,184.2L645.4,185.2L644.7,186.9L644.6,188.3L643.7,189.6L641.9,191.4L639.9,192.2L635.5,190.6L626.5,193.1L624.9,194.6L623.6,193.7L621.6,192.9L612.3,192.3L608.7,193.4L603.7,193.3L599.3,192.5L596,193.5L593.1,197.7L591.7,199.2L590.6,200L588.2,201.4L586.1,203L583.3,204.3L580.8,204.2L578.2,202.6L577.5,203L576.7,204.7L575.6,206.1L572,207.9L571.1,207.9L571,207.9L568.3,209.3L563.7,210.2L561.4,209.8L557.5,215.5L556.4,216.5L552.5,218.4L549.3,219.4L546.4,218.8L545.4,218.8L533,219L526.6,217.9L522.5,215.9L519.6,213.7L518.2,211L515,209.5L510,209.1L506,206.5L503.1,201.9L499.2,198.3L494.4,195.6L490.5,191.8L487.6,186.8L482.6,182.4L475.2,178.5L473,177.7L472.6,176.4L469,171.5L467.5,169.7L467.6,167.2L466.9,165.8L465.6,164.8L464.8,161.2L464.4,158.6L463.4,156.9L455.7,156.6L462,150.2L465.2,148.3L468.9,148.5L470.1,148L470.3,147.1L470.9,144.9L471.3,143L471.5,141.1L471.1,140.1L469.3,139.8L468.4,135.3L469.2,133.5L470.1,132.3L469,126.8L469.2,124.9L472.1,124.6L474.4,123.3L476.3,122L476.9,120.2L478.4,116.7L476.9,112.5L468.5,109.8L468.1,108.7L469.9,107.5L472,105.7L473.2,104.4L474.7,104.1L477,104.8L481.1,107.8L482.5,108.3L484,107.3L485.6,107.1L489.9,107.1L493.6,106.3L492.6,103L492.6,100.6L492,98.6L492.3,96.6L493.7,94.9L494.1,91.2L496.4,88.6L497.4,88.3L501.5,88.6L502.4,89.2L503.1,89.4L509.6,95.2L515.9,99.6L520.9,101.8L528.3,101.8L536.2,101.7L549.2,100.4L559,99.3L559.5,98.2L561,95.4L559.6,93.1L559.6,90.4L561,86.7L565.7,83.5L579.5,81.6L587.3,78.9L588.3,75.8L590.8,72.7L593.1,72L596.5,73.2L600.6,75.5L604.2,76.8L606.1,75.7L612.9,70.9L620.7,66.1L625.4,54L625.8,52.1L631.8,50.4L640.5,50L645,51.2L648.3,51.8L653.4,51.2L660.5,48.1L663.1,48L665.4,49.6L667.7,51L669.4,52.8L670.7,55.3L671.5,56.2L672.6,57.5L674.6,59.2L676.4,59.6L689.5,55.2Z","RS":"M734.8,296.3L733.4,297.4L731.9,299.1L731.1,301.8L731.3,306.1L726.2,309.9L724.1,310.8L723.4,313L722.6,319.4L723.1,324.2L724.1,326.4L724.6,328.4L726.6,330.6L728.5,334.2L730,339L732.7,342.5L739,345.7L742.3,347.6L744.7,350.5L746.6,353.1L752,356.5L751.8,359.1L751,361.9L750,363.2L747.9,366.8L745.6,368.9L742.2,375.3L735.9,376.1L734.4,376.8L732.1,378.6L731.3,381.6L732.5,383.9L732.6,386.3L731.9,391.1L733.9,396L736.3,398.1L736.7,399.4L736.6,401.8L733.6,406.9L732.9,408.7L729.5,409.9L728.4,409.6L726.5,408L724.8,407.7L720.9,410L717,411.5L713.6,410.8L710.5,411L708.4,412L706.7,412.4L703.6,414.8L698.6,416.6L696.1,416.5L695,414.6L693.9,412L694.2,410.6L697.5,408.2L697.8,406.1L701.8,395.6L702.5,392.3L702.4,391.2L701.1,390.6L698.4,390.8L686.4,387.7L686.7,383L683.1,380.7L679.2,378.7L678.4,376.2L673.9,371.5L670.8,368.8L666.8,367.7L663.3,365.8L661.4,364.7L660.3,362.4L660.2,361L659,359.7L657.5,360L655,362L651.7,363.8L651.2,365.1L652.6,367.8L653.7,369.5L653.3,371.3L652.4,373.5L646.4,378.6L645.7,380.3L647.1,382.9L646.4,384.2L641.3,386.3L641.4,384.9L640.8,382.6L637.7,380.2L633.2,378.6L623.2,372.5L619.6,371.8L616.1,371.3L611.3,368.3L608.9,367.9L606,365.9L599.7,358.4L594.6,354.5L591.2,352.7L590.1,350.6L589.7,348.6L589.8,347.9L592.3,344.7L594.3,344.2L596.7,343.9L598.4,345.4L600.8,345.6L601.9,343.6L602.3,340.8L601.8,337.3L596.1,329.2L591.4,323.6L590.7,322.4L591.7,321.3L593.2,320.7L594.9,321L599.3,321.2L603.5,320.5L604.8,319L604.7,317.1L603.1,315.4L598,311L593.9,307L589.3,304L585.8,302.9L584.8,301.3L584.3,299.5L584.6,296.4L584.5,292.3L585.2,289.7L587.9,284.8L590.5,279.5L592.1,274.5L592.7,269.9L592.4,268.6L590.8,267.7L587.6,266.9L583.3,268L579.7,269.8L578.2,270L577.7,268L578.2,267L579.4,267.1L580.3,267.4L581.3,266.5L581.8,263.7L579.8,254.2L582.5,253.2L582.6,251.8L582.6,250.6L585.6,252.1L589.6,251.9L593.1,251.4L593.7,250.5L593.4,249L592.6,248.1L591.4,247.2L590.5,245.9L588.1,245.5L580.5,242.5L576.7,239L576.5,235L577.5,232.8L578.8,232L578.4,231.3L574.1,229.7L572.5,227.3L573.7,224L571.2,217.6L568.8,213.6L570.9,211.8L571.1,209.4L571.1,207.9L572,207.9L575.6,206.1L576.7,204.7L577.5,203L578.2,202.6L580.8,204.2L583.3,204.3L586.1,203L588.2,201.4L590.6,200L591.7,199.2L593.1,197.7L596,193.5L599.3,192.5L603.7,193.3L608.7,193.4L612.3,192.3L621.6,192.9L623.6,193.7L624.9,194.6L627.6,197.9L630.3,202.1L633.6,204L637.6,206.2L639.6,207.8L642.9,212.9L645.4,215.2L646.1,215.1L646.8,214.3L647.4,213.8L648,214.2L648.1,215.9L648.5,219.3L648.3,223.2L649.3,226.7L649.4,227.8L649,228.9L649.1,229.8L650,230.6L653.3,232.8L656.5,236.2L659.9,238.6L663.3,240L665.3,240L668.7,242.7L675.3,244.3L677.4,244.9L678.8,246L680,247.4L680.1,248.8L679.2,249.6L677.9,251.7L677.7,254.3L676.7,255L675.6,255L674.9,255.9L675.2,256.9L676.1,257.9L677.5,258.7L680.1,259.4L682.8,260.6L682.9,261.6L682.4,262.8L679.3,263.5L676.9,263.9L675.7,264.4L676,266.5L682.9,268.2L686.2,269.9L687.9,272.5L692.4,273.8L699.5,274.1L704.6,276.4L707.7,280.8L712.1,279.3L717.8,271.9L723.8,269.7L730.1,272.4L733.6,274.7L734.4,276.7L733,277.7L729.6,277.6L726.9,279.2L725.1,282.3L725.1,285.5L726.9,288.7L729.2,290.8L732.1,291.9L733.7,293.5L734.2,295.7Z","BA":"M589.8,347.9L588.6,347.7L586.5,348.3L585,349L582.8,348.2L580.5,347.7L579.6,348.6L579.3,350.5L580.8,353.6L583.6,358.4L583.5,362.2L581.4,362.7L579.4,359.7L577.7,359.2L575.8,359.4L571.7,363.3L568.6,366.6L567.9,368.7L566.8,371.1L566.6,372.9L567,378.5L561.2,379.7L560,380.6L559.4,382.3L560.2,389.6L560.8,393.4L564.3,399.4L564.5,401.2L564.1,402.6L561.9,405L560.8,406L560.1,406.2L556.1,404.8L554.3,404.2L546.3,399.1L542.8,396.3L537.2,392.6L533.8,390.5L531.9,387.2L529.3,386.6L526.2,387.7L522.6,385.4L525,384.1L525.6,382.8L525.3,381.3L524.1,379.2L514.3,370.3L509.5,364.3L508.7,362L508.5,356L507.4,354.6L500.3,352.1L492.4,344.5L484.3,337.1L483.2,335L478.9,329.4L473.8,324.2L469.8,320.9L466.4,317.2L462.7,311.9L460.8,303.9L459.1,296.8L458,294.1L455.7,293.1L448.5,284.7L442.5,279.9L442.4,274.5L443.4,265.6L444.4,255.6L445.8,254.2L448.5,253.4L451.6,253.6L454.3,254.9L459.8,261.7L462.8,264.3L465.4,265.4L468.3,262.4L471.9,256.2L475,253L485.9,253.9L491,249.1L499.7,255.1L503.2,255.9L505.2,255.1L507.9,255.3L513.9,257L515.3,257.6L517.1,257.5L521.5,255L523,255.3L528.2,259.8L530.9,259.7L533.8,257.5L535.6,255.7L541.6,256.9L544.9,255.9L547.7,255.7L550.7,256.4L553.4,257.4L556.2,258.2L563.5,258.4L567,261.2L568.5,264.1L568.6,265.8L569,267.8L571.1,269.5L575.5,270.3L578.2,270L579.7,269.8L583.3,268L587.6,266.9L590.8,267.7L592.4,268.6L592.7,269.9L592.1,274.5L590.5,279.5L587.9,284.8L585.2,289.7L584.5,292.3L584.6,296.4L584.3,299.5L584.8,301.3L585.8,302.9L589.3,304L593.9,307L598,311L603.1,315.4L604.7,317.1L604.8,319L603.5,320.5L599.3,321.2L594.9,321L593.2,320.7L591.7,321.3L590.7,322.4L591.4,323.6L596.1,329.2L601.8,337.3L602.3,340.8L601.9,343.6L600.8,345.6L598.4,345.4L596.7,343.9L594.3,344.2L592.3,344.7Z","ME":"M589.8,347.9L589.7,348.6L590.1,350.6L591.2,352.7L594.6,354.5L599.7,358.4L606,365.9L608.9,367.9L611.3,368.3L616.1,371.3L619.6,371.8L623.2,372.5L633.2,378.6L637.7,380.2L640.8,382.6L641.4,384.9L641.3,386.3L635.9,388.4L634.9,391L632.3,390.8L629,391L628.1,392.7L629.8,395.4L631,398.5L630.5,402.9L630.3,403.5L629.5,403.3L625,406.1L621.6,407.6L618.5,408.4L617.1,407.2L616.2,405.5L616.1,400.7L615.4,399.2L614.4,398.5L612.3,399.7L610,403.5L607.9,407.9L604.8,412.7L602.2,417.1L599.5,422.6L597.5,427.2L599.9,429.6L601.4,433.1L601.1,435.8L601.7,437.3L601.1,442L601.1,444.8L594.1,440.5L591,434.1L580.6,423.5L568.9,416.5L568.2,415.3L568.8,413.9L569.4,412.7L567,412.7L565.4,413.7L563.8,413.5L562,410.8L560.2,408.4L560.1,406.2L560.8,406L561.9,405L564.1,402.6L564.5,401.2L564.3,399.4L560.8,393.4L560.2,389.6L559.4,382.3L560,380.6L561.2,379.7L567,378.5L566.6,372.9L566.8,371.1L567.9,368.7L568.6,366.6L571.7,363.3L575.8,359.4L577.7,359.2L579.4,359.7L581.4,362.7L583.5,362.2L583.6,358.4L580.8,353.6L579.3,350.5L579.6,348.6L580.5,347.7L582.8,348.2L585,349L586.5,348.3L588.6,347.7Z","IT":"M86.6,196.6L87.8,198L90.7,199.7L99,198.5L104.1,197.2L108,195.5L110.1,196.1L117.8,199.7L120.5,198.4L126.6,194.9L127.6,192.8L132.5,186.8L132.8,185.3L131.2,181.1L131.9,180.3L137.7,176.6L140.8,173.2L143.9,171L145.9,171.1L146.4,172L146.6,173.7L145.8,180.7L146.5,182.9L150.5,188.3L153.3,191.4L160.3,193.9L160.5,194.9L158.4,198.5L162.4,203.4L162.9,206.7L164.8,208.8L167.7,208.1L168.7,206.3L167.9,203.2L167.3,199.9L167.5,198.1L168.6,196L170.7,193.2L176.5,186.6L178.7,182.9L179.6,176.7L179.9,171.8L181.7,170.7L185.4,171.9L186.6,171.9L187,175L188.3,179.9L190,182.4L192,183.2L194.5,183.3L200.6,180.7L204.6,179.8L206.8,180.2L208,182.3L210.6,187.8L212.2,188.4L214.1,187.9L214.9,187.1L214.3,185L213.8,180.6L212.8,177.1L211.5,175.5L211.3,173.3L212.4,169.7L213.6,166.6L215.7,165.9L218.2,165.6L221,169.1L224.6,170.4L227.4,170.3L227.9,168.4L227.9,166.3L226.4,163.6L226.9,159.4L229.2,151.9L230.2,152.5L234.2,152.8L238.7,153.5L241.3,156.8L244,157.9L248,158.4L250.6,158.2L252,157.1L253.8,153.5L256.7,149L261.3,147L268.8,146.8L272.7,146.2L276.6,146.4L279.5,147.2L282.5,147.3L290.4,144.4L298.6,142.1L299.7,142.6L299.8,143.5L298.3,145.3L296.8,147.8L297.7,150.8L302,156.7L304.3,161.3L306.7,164.7L310.2,166.6L315,167.8L319,168.4L323.4,169.7L337.8,173.2L345.2,174.2L350.9,174.5L359.3,176.6L358.3,180L356.7,180.8L353.6,182.8L350.1,185.4L347,188.4L346,191.6L346.9,193.8L347.7,194.5L348.9,193.9L350.5,194.3L352.7,195.5L356.2,196.8L356.3,197.9L355.5,199.3L352.7,201.8L350.2,204.7L349.9,206.5L350.1,207.8L351,208.6L354.7,208.3L355.2,209.4L353.3,216.8L353.9,218.1L357.1,219.4L359.5,221.2L363.8,226L365.7,229.9L364.3,231.1L361.5,231.8L359.3,231.4L361.9,229.1L355.6,220.6L352.8,220.6L348.9,224.1L338.4,220.2L336.3,221.7L334.8,224.5L331,228L325.8,229.4L319.8,233.1L313.7,235.7L308.9,237.7L306.2,237.2L310.6,232.8L308.7,232.7L303,235.7L299.6,238.3L298.5,242.8L297.2,250.3L299.6,252.3L303.8,262.3L309,266.6L307.9,270.7L306.4,273.8L303.1,276.4L300.3,274.3L298.6,274.2L297.2,280.7L299.1,297.9L302.5,310.1L306.1,315.4L314.5,323.9L323.5,328.4L339.6,342.6L348.6,347L350.8,349.5L356.1,360.2L360.7,372.5L365.5,391.8L369.1,401.4L376.5,412.2L391.9,427.7L406,439L419.1,445.9L429.5,447.1L453.8,445.4L458.1,445.9L462.6,447.8L463.6,452.6L462.1,455.9L457,459.3L451.8,464L451.3,470.4L456.2,474.8L480.1,486.4L504.7,495.8L512.4,500.7L521.4,508.4L543.2,518.6L546.9,523.8L560.5,534.6L566.6,543.2L568,549.9L565.5,556.9L564.5,561.8L562.4,566.8L556.6,565.2L550.1,560.4L539.9,540.7L522.5,539.2L518.9,537.8L512.5,534.5L512.2,532.3L510.5,529.5L509,528.5L502.2,528.1L497.8,531.4L492.5,539.3L486.6,550.5L480.6,566.9L480.4,573.4L484,579.8L494.3,583.1L502.2,588.6L507.6,594.4L508.4,608.7L510.9,616.8L507.6,621.4L500.8,620.5L492,623.6L485.7,628.9L483.2,634L484.1,647L482.8,651.9L470.9,661.5L464.7,671.2L463.1,675.2L460.8,679.8L445.3,680.1L441.8,674.5L441.5,666.2L444.2,661.1L449.8,658.6L453.3,648L452.1,640.3L454.3,636.9L456.3,634.6L460.6,633.1L466.7,631.7L467,621L462.3,616.2L460.6,609.5L458.2,596.9L450.3,581L446.1,566.7L443,559.7L438.1,556L429.4,556.2L425,555.2L409.5,545.2L408.6,543.7L408.6,541.1L411.1,537.1L409.5,531.8L407.6,526.7L404.7,522.3L401.4,520.1L394.5,521.5L392.1,522.5L387.8,522L384.4,523.9L382.5,524L387.8,516.4L386.4,514.7L381.1,511.5L373.9,510.9L372,510.5L370.7,512.5L369.5,511.4L369.7,508L361.4,492.7L355.9,486.4L353.3,485.2L348.2,486.5L339.7,483.6L334.6,482.9L331.9,483.5L327.6,485.4L325.5,484.1L324.8,482L317.3,475.4L307.8,471.6L289.8,451L284.4,443.3L273,434.7L266.1,422.3L260.2,417.7L251.6,413.7L249.6,414.1L246.9,415.3L244.9,415.4L243.4,413.8L245,412.2L246.9,411.6L246.5,407L237.1,394.5L231.4,390.5L230,388L228.9,384.7L227.8,382.6L225.1,381.1L222.8,381.3L219.6,380.3L220,374.5L220.9,370.2L220.6,366.4L218.1,356.5L213,347.9L211.1,327.9L208.8,322.2L203.2,317.6L190.1,312.1L172.5,298.1L168.6,297.6L157.9,291.9L151,290.6L141.8,294.3L130,305.7L120,317.7L116.7,319.9L104.9,323.3L94.6,324.5L94.7,321.2L94.6,318.7L96.5,316.2L99.7,313.3L102.6,309.4L103.9,306.7L103.6,304.7L102.7,301.8L101,301.4L91.3,302.9L89.1,302.1L82.4,297.8L75.3,292.5L72.7,288.9L72,285.6L73,283.5L72.5,281.5L71.3,278.6L73,275.6L75.7,271.8L77.2,269.3L79.2,268.8L80.2,267.3L79.4,260.6L78.6,259.5L77.3,258.6L75.2,258.3L71.8,256.6L69.3,254.2L69,251.1L68,248.1L65.9,245.1L66,242.3L68.7,241L72.4,241.3L74.8,242.1L81.1,238L83.2,237.8L85.2,237L87.3,230.7L88.8,228.9L89.2,227.8L88.1,226.4L84,221.4L82.2,216.5L79.5,211L76.6,208.4L76.2,206.5L76.3,204.2L77.2,202.3L82.9,199.7ZM300.2,446.3L300.2,445.9L299.7,445.9L299.7,446.2L299.7,446.4ZM305.7,329.1L307,326.1L306.6,324L303.9,324.3L302,327L303.1,329.4ZM214.1,386.4L215.4,388.8L215.5,390.1L214.5,391.6L214.8,394.9L211.2,391.9L205.7,393L202.5,392.5L201.7,390L202.6,388.5L207.7,388.5L209.4,387.9L212.5,388.4ZM364.6,517.5L362.7,518L361.6,517.4L360.9,516.5L361.8,514.3L365.7,515.6L365.6,516.8ZM272.7,747.3L270.5,747.9L267.5,745.8L267.5,742.9L268,742L271.7,743.5L272.6,746.2ZM438.4,663.6L435.2,670.4L433.8,672.9L422.6,689.3L421.5,693.1L420.7,697.1L419.5,700.7L418,704.2L416.5,708.5L416.7,713.4L417.3,715.7L418.7,717.4L420.9,718.8L422.6,721L419.9,723.2L422.9,727.3L425.3,729.7L425.6,732.2L425.6,734.6L420.6,739.3L418.6,741.8L417.2,744.9L416.7,748.1L417.2,751L417,753.8L411.9,753.4L406.5,751.7L401.2,752.5L393.6,749.1L390.9,748.6L388.4,747.2L382,737L376.9,732.5L371.6,729.1L366,728.8L360.4,729.2L355.5,727.1L345.7,720L335.2,714.2L330.7,710.5L328.8,708L326.4,706.3L320.4,704.6L315,700.7L312.6,700.4L307.3,700.7L304.6,700.4L301.9,699L296.7,694.3L293.5,688.1L292.8,685.5L295.3,678.5L298.4,671.9L300.9,670.1L303.8,668.8L305.7,666.8L307.2,664.5L312.4,671.6L314.8,673.4L317.2,673.1L321.5,670.7L321.9,668L326.8,664.5L332.8,664.6L335.6,665.3L337.1,668.5L339.4,669.4L342,670L350.8,676.2L353.3,677.1L355.7,677.4L362.6,674.9L367.8,674L378.8,675.5L384.8,674L389,673.9L395,671.6L399.6,667.7L402.1,666.8L404.6,666.5L410.9,666.7L417.3,667.7L419.9,666.7L422.1,664.2L424.7,663.1L427.6,663.9L434.8,659.4L438,659.2L441,660.8ZM174.1,500L176.1,503.9L180.1,519.6L180.4,522.9L179.2,526.2L177.8,528.5L172.3,535.9L172.7,542.4L174.2,546.4L174.3,550.8L173,556.2L167.8,589.4L165.9,595.2L164.6,600.2L161.1,601.6L156.6,599.6L151.3,596.4L148.6,596.4L145.9,597.2L143.9,596.2L141.9,594.4L139.6,605.8L136.6,610.3L132.7,612.9L128.9,612.9L125.2,611.6L122.1,611.3L119.8,609L118.1,605L115.5,600L112.9,594.2L112.9,589.2L113.3,578.1L114.3,575.7L115.8,573.5L116.8,568.5L116.7,564.1L117.7,562.7L119.4,564.4L120.7,563.9L120.8,561.7L121.5,557.7L119.4,554L115.6,552.6L115.6,549L116.2,545.5L118.4,543.3L119.3,540.3L120.2,530.8L117.6,527.1L117,521.8L115.9,518.3L113.6,514.7L110.9,511.7L109.2,508.9L109.5,501.9L110.9,496.1L112,493.7L113,494.1L115.6,497.3L117.9,498.1L122.5,499.2L127.2,498.6L132.9,496.4L138.6,493.6L147,484.8L151.9,483.3L154.6,480.9L155.7,477.6L157.8,476.9L159.9,480.3L162.9,480.9L167.3,483.8L169.1,486.6L170.6,489.7L172.1,491.1L173.8,492.1L174.1,492.8L172.6,493.4L170.8,496.9L171.7,497.9ZM115,602.5L111.9,608.1L109.5,603.8L109.6,600.3L110.2,599.3L113.3,601.1ZM115.3,486.6L113.7,489.1L111.6,488.7L112.6,486.8L114.8,483L117.3,481.9L118.1,483.1L116.9,485.3Z","AT":"M193.7,125.9L197.4,119L198.3,114.7L195.6,111.8L194.5,111.1L195.5,110.5L199.5,111.3L202.1,109.9L203.7,108.6L207.1,110.2L212.1,113.3L214.6,115.3L215.5,116.8L216,118L215.6,120L216.7,120.9L219.1,121.4L220.8,122.1L220,124.8L219.8,127L222.1,126.8L225,125.3L227.5,122.3L229,119.4L230.5,112.2L230.8,111.6L232.5,112.3L239.5,112.2L242.7,113.8L248,114.3L247.8,115.4L248.7,117.3L250.9,120L251.9,121.6L254.4,122.1L258.1,121.3L260.3,120.5L261.1,121.2L264.6,120.7L267.7,118.8L268.5,117.2L271.7,116.2L275.8,113.8L281.6,112.1L300.2,110.6L301,109L300.8,105.3L301.4,104.8L303.6,105.8L307.4,106.8L310.3,108.2L312.1,110L313.8,110L316.5,109L320.1,108.3L323.5,110.1L324.4,112.1L323.8,113.1L323.8,114.6L324.9,115.8L327.6,118.1L331.1,120L332.9,119.8L333.6,118.1L334.4,113.9L334.8,109.4L334,106.9L332.1,106.2L329.9,106L328.6,105.4L329,104L331,100.4L331.1,95.6L327.1,89.8L323.7,84.4L323.8,82.6L326,79.5L329.3,77L336.6,73L339,72.2L341.8,71.6L346.1,69.9L348.2,68.1L349.6,66.3L351.7,56.2L352.3,55.8L352.8,55.2L360.1,58.8L360.8,58.3L362.1,57.7L364.5,55.1L364.9,53.2L365,49.3L365.3,45.7L365.8,44.6L366.9,45L369.9,46.9L372.4,49.1L374.7,54.4L380.2,55.8L387.1,56.1L389.6,53.7L391.9,53.1L394.4,53.9L399.7,54.7L400.4,50.5L403.5,46L404.9,44.5L408.8,44.6L409.8,41.3L410.7,32.1L411.5,31.1L414.4,31.3L417.2,32.9L418.1,34.4L419.6,34.2L421.5,33.2L423.8,32.7L427.4,33.6L435.1,37.8L439,39.3L441.5,38.9L443.7,39L452.9,45.4L459.2,46.2L464.9,46.1L466.7,44.1L469.2,42.5L471.7,42.6L474,43.4L478.4,46.2L480.4,46.9L483,47.2L485,47.8L486.9,52.7L487.9,54L487.7,54.6L487.6,56.7L486.1,59.6L484.6,63.2L484.7,66.5L489.2,77.6L493.2,84.2L493.9,86.7L496.4,88.6L494.1,91.2L493.7,94.9L492.3,96.6L492,98.6L492.6,100.6L492.6,103L493.6,106.3L489.9,107.1L485.6,107.1L484,107.3L482.5,108.3L481.1,107.8L477,104.8L474.7,104.1L473.2,104.4L472,105.7L469.9,107.5L468.1,108.7L468.5,109.8L476.9,112.5L478.4,116.7L476.9,120.2L476.3,122L474.4,123.3L472.1,124.6L469.2,124.9L469,126.8L470.1,132.3L469.2,133.5L468.4,135.3L469.3,139.8L471.1,140.1L471.5,141.1L471.3,143L470.9,144.9L470.3,147.1L470.1,148L468.9,148.5L465.2,148.3L462,150.2L455.7,156.6L453.4,157.7L451,160.3L451.2,165.9L450.9,166.4L450.4,167.6L442.7,165.7L442.4,165.7L437.3,166.5L433.8,169.1L429.5,170.6L420.5,169.8L411.8,170.8L409.7,171.5L407.4,172.1L405.4,173.5L404.1,175.6L402,178.3L398.8,180.4L395.5,182L394.7,183.3L393.6,184L391.7,183L390.2,183.1L388.3,182.4L382.2,181.6L375.4,180.3L372.2,179.1L368.6,178.1L364.6,177.2L361,177L359.3,176.6L350.9,174.5L345.2,174.2L337.8,173.2L323.4,169.7L319,168.4L315,167.8L310.2,166.6L306.7,164.7L304.3,161.3L302,156.7L297.7,150.8L296.8,147.8L298.3,145.3L299.8,143.5L299.7,142.6L298.6,142.1L290.4,144.4L282.5,147.3L279.5,147.2L276.6,146.4L272.7,146.2L268.8,146.8L261.3,147L256.7,149L253.8,153.5L252,157.1L250.6,158.2L248,158.4L244,157.9L241.3,156.8L238.7,153.5L234.2,152.8L230.2,152.5L229.2,151.9L229.5,149.9L228.1,146L225.4,144.6L218.2,151.5L216.3,152L211,149.7L206.4,146.4L206.1,144.1L205.3,142.1L201.4,140.1L196.6,138.7L195,138.6L195.7,137.5L196.3,135.7L196,134.3L195,132.7L194.5,131L194.4,129.4L194.1,128.1L194,126.9Z"},"anchors":{"HR":[465,239],"SI":[391,193],"HU":[580,139],"RS":[656,317],"BA":[529,311],"ME":[592,391],"IT":[300,388],"AT":[396,117]},"focusBox":"185 70 550 385"};
+
+const SOURCE_META = {
+  nuclear: { label: "Nuklearna", icon: "atom" },
+  coal: { label: "Ugljen i lignit", icon: "factory" },
+  gas: { label: "Plin", icon: "flame" },
+  biomass: { label: "Biomasa", icon: "sprout" },
+  hydro: { label: "Hidro", icon: "droplets" },
+  wind: { label: "Vjetar", icon: "wind" },
+  solar: { label: "Sunce", icon: "sun" },
+};
+const STACK_ORDER = ["nuclear", "coal", "gas", "biomass", "hydro", "wind", "solar"];
+
+/* Demo gas values — illustrative only. */
+const GAS = [
+  { name: "Okoli", place: "Hrvatska", icon: "cylinder", fill: 0.86, sub: "Punjenje +0,2 p.p. dnevno" },
+  { name: "Skladišta", place: "Mađarska", icon: "cylinder", fill: 0.91, sub: "Punjenje +0,1 p.p. dnevno" },
+  { name: "Skladišta", place: "Italija", icon: "cylinder", fill: 0.94, sub: "Punjenje +0,1 p.p. dnevno" },
+  { name: "Skladišta", place: "Austrija", icon: "cylinder", fill: 0.89, sub: "Punjenje +0,2 p.p. dnevno" },
+  { name: "LNG terminal Krk", place: "Hrvatska", icon: "ship", fill: 0.63, sub: "Isporuka u mrežu 92 GWh dnevno" },
+];
+
+const MODEL = buildModel();
+const CODES = Object.keys(MODEL.countries);
+const nf1 = new Intl.NumberFormat("hr-HR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const nf2 = new Intl.NumberFormat("hr-HR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const nf0 = new Intl.NumberFormat("hr-HR", { maximumFractionDigits: 0 });
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+const state = { hour: new Date().getHours(), scope: "REGION", unit: "gw", playing: false, timer: 0 };
+const charts = { balance: null, mix: null };
+
+const $ = (id) => {
+  const el = document.getElementById(id);
+  if (!el) throw new Error(`Missing element #${id}`);
+  return el;
+};
+const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const gw = (v) => (Math.abs(v) >= 10 ? nf1 : nf2).format(v);
+const signed = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + gw(Math.abs(v));
+const icon = (name, cls = "ic") => `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
+const hourText = (h) => `${String(h).padStart(2, "0")}:00`;
+const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function scopeData(h) {
+  if (state.scope === "REGION") return regionAt(MODEL, h);
+  const x = MODEL.countries[state.scope].hours[h];
+  const renewable = x.sources.hydro + x.sources.solar + x.sources.wind + x.sources.biomass;
+  return { ...x, renewableShare: renewable / x.generation };
+}
+function scopeSeries() {
+  return MODEL.hours.map((h) => scopeData(h));
+}
+
+/* ---------- Figures ---------- */
+function renderFigures() {
+  const d = scopeData(state.hour);
+  const series = scopeSeries();
+  const peakLoad = Math.max(...series.map((x) => x.load));
+  const unit = "<small>GW</small>";
+  $("fGen").innerHTML = gw(d.generation) + unit;
+  $("fGenSub").textContent = `${nf0.format((d.generation / d.load) * 100)} % potrošnje`;
+  $("fLoad").innerHTML = gw(d.load) + unit;
+  $("fLoadSub").textContent = `Dnevni vrh ${gw(peakLoad)} GW`;
+  const isRegion = state.scope === "REGION";
+  const net = isRegion ? d.external : d.net;
+  $("fNetLabel").textContent = isRegion ? "Razmjena izvan regije" : "Neto razmjena";
+  $("fNet").innerHTML = `<span class="${net >= 0 ? "pos" : "neg"}">${signed(net)}</span>${unit}`;
+  $("fNetSub").textContent = net >= 0 ? "neto izvoz" : "neto uvoz";
+  $("fRes").innerHTML = nf0.format(d.renewableShare * 100) + "<small>%</small>";
+  $("fCo2").innerHTML = nf0.format(d.co2) + "<small>g/kWh</small>";
+  $("hourLabel").textContent = hourText(state.hour);
+  $("scopeTitle").textContent = isRegion ? "Cijela regija" : MODEL.countries[state.scope].name;
+  $("scopeHint").innerHTML = isRegion
+    ? "Odaberite zemlju na karti ili na popisu."
+    : `Cijena dan-unaprijed ${nf0.format(d.price)} €/MWh. <button class="link-btn" type="button" id="backBtn">Prikaži cijelu regiju</button>`;
+  if (!isRegion) $("backBtn").addEventListener("click", () => setScope("REGION"));
+}
+
+/* ---------- Map ---------- */
+const mapRefs = { countries: {}, nodes: {}, flows: [] };
+
+function el(tag, attrs = {}, parent) {
+  const node = document.createElementNS(SVG_NS, tag);
+  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, String(v));
+  if (parent) parent.appendChild(node);
+  return node;
+}
+
+function curve(a, b, k = 0.14) {
+  const [x1, y1] = a, [x2, y2] = b;
+  // k = perpendicular bow; the arc is built from the canonical from→to order so a reversed flow keeps the same arc
+  const cx = (x1 + x2) / 2 - (y2 - y1) * k, cy = (y1 + y2) / 2 + (x2 - x1) * k;
+  const at = (t) => [
+    (1 - t) ** 2 * x1 + 2 * (1 - t) * t * cx + t ** 2 * x2,
+    (1 - t) ** 2 * y1 + 2 * (1 - t) * t * cy + t ** 2 * y2,
+  ];
+  return { d: `M${x1},${y1} Q${cx},${cy} ${x2},${y2}`, at };
+}
+
+function buildMap() {
+  const svg = el("svg", { class: "map", viewBox: `0 0 ${GEO.W} ${GEO.H}`, role: "img", "aria-label": "Karta regije s tokovima električne energije između zemalja" });
+  el("rect", { class: "sea", x: 0, y: 0, width: GEO.W, height: GEO.H }, svg);
+  el("path", { class: "context", d: GEO.context }, svg);
+  const land = el("g", {}, svg);
+  for (const code of CODES) {
+    const p = el("path", { class: "country", d: GEO.countries[code] }, land);
+    const t = el("title", {}, p);
+    t.textContent = MODEL.countries[code].name;
+    p.addEventListener("click", () => setScope(state.scope === code ? "REGION" : code));
+    mapRefs.countries[code] = p;
+  }
+  const flowsG = el("g", {}, svg);
+  for (const f of MODEL.flows) {
+    const track = el("path", { class: "flow-track" }, flowsG);
+    const dash = el("path", { class: "flow-dash" }, flowsG);
+    const title = el("title", {}, dash);
+    const label = el("text", { class: "flow-label", "text-anchor": "middle" }, flowsG);
+    mapRefs.flows.push({ f, track, dash, title, label });
+  }
+  const nodesG = el("g", {}, svg);
+  for (const code of CODES) {
+    const [x, y] = GEO.anchors[code];
+    const g = el("g", { class: "node", transform: `translate(${x},${y})` }, nodesG);
+    const circle = el("circle", { r: 10 }, g);
+    const text = el("text", { class: "code" }, g);
+    text.textContent = code;
+    const net = el("text", { class: "net" }, g);
+    g.addEventListener("click", () => setScope(state.scope === code ? "REGION" : code));
+    mapRefs.nodes[code] = { g, circle, net };
+  }
+  const wrap = $("mapWrap");
+  wrap.replaceChildren(svg);
+  // Phones get a tighter frame around the connected systems so labels stay readable.
+  const narrow = window.matchMedia("(max-width: 600px)");
+  const applyFrame = () => svg.setAttribute("viewBox", narrow.matches ? GEO.focusBox : `0 0 ${GEO.W} ${GEO.H}`);
+  narrow.addEventListener("change", applyFrame);
+  applyFrame();
+}
+
+function renderMap() {
+  const h = state.hour;
+  const sel = state.scope;
+  for (const code of CODES) {
+    mapRefs.countries[code].classList.toggle("is-selected", sel === code);
+    const x = MODEL.countries[code].hours[h];
+    const n = mapRefs.nodes[code];
+    const r = 11 + 3 * Math.sqrt(x.load);
+    n.circle.setAttribute("r", r.toFixed(1));
+    n.circle.setAttribute("fill", x.net >= 0 ? css("--export") : css("--import"));
+    n.net.setAttribute("y", (r + 15).toFixed(1));
+    n.net.setAttribute("fill", x.net >= 0 ? css("--export") : css("--import"));
+    // With a country selected, border flow labels take over the map; totals remain in the figures band and the list.
+    n.net.textContent = sel === "REGION" ? `${signed(x.net)} GW` : "";
+    n.g.classList.toggle("is-selected", sel === code);
+  }
+  for (const ref of mapRefs.flows) {
+    const v = ref.f.values[h];
+    const forward = v >= 0;
+    // Keep the arc on the same side regardless of direction: build from a canonical order, then reverse if needed.
+    const canon = curve(GEO.anchors[ref.f.from], GEO.anchors[ref.f.to], ref.f.bow);
+    const d = forward ? canon.d : reversePath(canon.d);
+    const mag = Math.abs(v);
+    const width = 1.5 + Math.min(mag, 1.4) * 4;
+    ref.track.setAttribute("d", d);
+    ref.track.setAttribute("stroke-width", (width + 3).toFixed(1));
+    ref.dash.setAttribute("d", d);
+    ref.dash.setAttribute("stroke-width", width.toFixed(1));
+    ref.dash.style.setProperty("--dur", `${(2.6 / (0.35 + Math.min(mag, 1.2))).toFixed(2)}s`);
+    const src = forward ? ref.f.from : ref.f.to;
+    const dst = forward ? ref.f.to : ref.f.from;
+    ref.title.textContent = `${MODEL.countries[src].name} → ${MODEL.countries[dst].name}: ${nf0.format(mag * 1000)} MW`;
+    const involved = sel === "REGION" || src === sel || dst === sel;
+    ref.dash.classList.toggle("dim", !involved);
+    ref.track.classList.toggle("dim", !involved);
+    const showLabel = sel === "REGION" ? mag >= 0.7 : involved;
+    const [lx, ly] = canon.at(0.5);
+    ref.label.setAttribute("x", lx.toFixed(1));
+    ref.label.setAttribute("y", (ly + 4).toFixed(1));
+    ref.label.textContent = showLabel ? `${nf0.format(mag * 1000)} MW` : "";
+  }
+}
+
+function reversePath(d) {
+  const m = /^M([\d.]+),([\d.]+) Q([\d.]+),([\d.]+) ([\d.]+),([\d.]+)$/.exec(d);
+  if (!m) throw new Error(`Unexpected path format: ${d}`);
+  return `M${m[5]},${m[6]} Q${m[3]},${m[4]} ${m[1]},${m[2]}`;
+}
+
+/* ---------- Country list ---------- */
+function buildList() {
+  const list = $("countryList");
+  list.replaceChildren();
+  for (const code of CODES) {
+    const li = document.createElement("li");
+    li.innerHTML = `<button class="country-row" type="button" data-code="${code}" aria-pressed="false">
+      <span class="cc">${code}</span>
+      <span><span class="cname">${MODEL.countries[code].name}</span><span class="cmeta" data-meta></span></span>
+      <span><span class="netbar"><span data-bar></span></span><span class="netval" data-val></span></span>
+    </button>`;
+    li.querySelector("button").addEventListener("click", () => setScope(state.scope === code ? "REGION" : code));
+    list.appendChild(li);
+  }
+}
+
+function renderList() {
+  const h = state.hour;
+  // Scale by relative position (net / load) so Italy does not flatten the small systems.
+  const ratios = CODES.map((c) => { const x = MODEL.countries[c].hours[h]; return x.net / x.load; });
+  const maxRatio = Math.max(0.2, ...ratios.map(Math.abs));
+  CODES.forEach((code, i) => {
+    const row = document.querySelector(`.country-row[data-code="${code}"]`);
+    if (!row) throw new Error(`Missing row ${code}`);
+    const x = MODEL.countries[code].hours[h];
+    row.setAttribute("aria-pressed", String(state.scope === code));
+    row.querySelector("[data-meta]").textContent = `Potrošnja ${gw(x.load)} GW, ${nf0.format(x.price)} €/MWh`;
+    const bar = row.querySelector("[data-bar]");
+    const half = (Math.abs(ratios[i]) / maxRatio) * 50;
+    bar.style.left = x.net >= 0 ? "50%" : `${50 - half}%`;
+    bar.style.width = `${half}%`;
+    bar.style.background = x.net >= 0 ? "var(--export)" : "var(--import)";
+    const val = row.querySelector("[data-val]");
+    val.textContent = `${signed(x.net)} GW`;
+    val.className = `netval ${x.net >= 0 ? "pos" : "neg"}`;
+  });
+}
+
+/* ---------- Charts ---------- */
+const hourCursor = {
+  id: "hourCursor",
+  afterDatasetsDraw(chart) {
+    const { ctx, chartArea, scales } = chart;
+    const x = scales.x.getPixelForValue(state.hour);
+    ctx.save();
+    ctx.strokeStyle = css("--ink");
+    ctx.globalAlpha = 0.55;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(x, chartArea.top);
+    ctx.lineTo(x, chartArea.bottom);
+    ctx.stroke();
+    ctx.restore();
+  },
+};
+
+function withAlpha(hex, a) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+}
+
+function balanceDatasets() {
+  const series = scopeSeries();
+  const pct = state.unit === "pct";
+  // Omit sources the scope never uses (e.g. nuclear in Croatia) so the legend stays honest.
+  const used = STACK_ORDER.filter((s) => series.some((x) => x.sources[s] > 0.0005));
+  const ds = used.map((s) => {
+    const color = css(`--c-${s}`);
+    return {
+      label: SOURCE_META[s].label,
+      data: series.map((x) => (pct ? (x.sources[s] / x.generation) * 100 : x.sources[s])),
+      stack: "gen", fill: true, borderWidth: 1, pointRadius: 0, tension: 0.35,
+      borderColor: color, backgroundColor: withAlpha(color, 0.78),
+    };
+  });
+  if (!pct) {
+    ds.push({
+      label: "Potrošnja", data: series.map((x) => x.load), stack: "load", fill: false,
+      borderColor: css("--ink"), borderWidth: 2.5, pointRadius: 0, tension: 0.35, borderDash: [],
+    });
+  }
+  return ds;
+}
+
+function chartTheme() {
+  return { grid: withAlpha(css("--muted"), 0.18), tick: css("--muted"), font: css("--font").split(",")[0].replaceAll('"', "") };
+}
+
+function buildCharts() {
+  if (typeof window.Chart === "undefined") {
+    const msg = '<div class="chart-fail">Grafikoni se nisu učitali. Provjerite internetsku vezu i osvježite stranicu. Karta i brojke rade i bez njih.</div>';
+    $("balBox").innerHTML = msg;
+    $("mixBox").innerHTML = msg;
+    console.error("[charts] Chart.js failed to load from CDN");
+    return;
+  }
+  const t = chartTheme();
+  Chart.defaults.font.family = `${t.font}, system-ui, sans-serif`;
+  Chart.defaults.color = t.tick;
+  charts.balance = new Chart($("balChart"), {
+    type: "line",
+    data: { labels: MODEL.hours.map((h) => String(h).padStart(2, "0")), datasets: balanceDatasets() },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: reducedMotion() ? 0 : 400 },
+      interaction: { mode: "index", intersect: false },
+      scales: {
+        x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkipPadding: 12 } },
+        y: { stacked: true, beginAtZero: true, grid: { color: t.grid }, border: { display: false }, title: { display: true, text: "GW" } },
+      },
+      plugins: {
+        legend: { position: "bottom", labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true, pointStyle: "circle", padding: 12 } },
+        tooltip: {
+          callbacks: {
+            title: (items) => `${items[0].label}:00`,
+            label: (c) => `${c.dataset.label}: ${state.unit === "pct" ? nf0.format(c.parsed.y) + " %" : gw(c.parsed.y) + " GW"}`,
+          },
+        },
+      },
+    },
+    plugins: [hourCursor],
+  });
+  $("balChart").addEventListener("click", (e) => {
+    const x = charts.balance.scales.x.getValueForPixel(e.offsetX);
+    if (Number.isFinite(x)) setHour(Math.max(0, Math.min(23, Math.round(x))));
+  });
+
+  charts.mix = new Chart($("mixChart"), {
+    type: "doughnut",
+    data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderColor: css("--surface"), borderWidth: 2 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: "68%", animation: { duration: reducedMotion() ? 0 : 400 },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${c.label}: ${gw(c.parsed)} GW` } } },
+    },
+    plugins: [{
+      id: "centerText",
+      afterDraw(chart) {
+        const { ctx, chartArea } = chart;
+        const d = scopeData(state.hour);
+        const cx = (chartArea.left + chartArea.right) / 2, cy = (chartArea.top + chartArea.bottom) / 2;
+        ctx.save();
+        ctx.textAlign = "center";
+        ctx.fillStyle = css("--ink");
+        ctx.font = `600 26px ${css("--font-num")}`;
+        ctx.fillText(`${nf0.format(d.renewableShare * 100)} %`, cx, cy + 4);
+        ctx.fillStyle = css("--muted");
+        ctx.font = `400 12px ${css("--font")}`;
+        ctx.fillText("obnovljivo", cx, cy + 22);
+        ctx.restore();
+      },
+    }],
+  });
+}
+
+function renderCharts() {
+  const d = scopeData(state.hour);
+  const order = [...STACK_ORDER].reverse().filter((s) => d.sources[s] > 0.0005);
+  $("mixList").innerHTML = order.map((s) => `<li style="color:var(--c-${s})">${icon(SOURCE_META[s].icon)}<span style="color:var(--ink)">${SOURCE_META[s].label}</span><b style="color:var(--ink)">${nf0.format((d.sources[s] / d.generation) * 100)} %</b></li>`).join("");
+  $("mixHour").textContent = `u ${hourText(state.hour)}`;
+  $("balNote").textContent = state.unit === "pct"
+    ? "Udio svakog izvora u proizvodnji, sat po sat."
+    : state.scope === "REGION"
+      ? "Razmak između linije potrošnje i vrha proizvodnje je uvoz izvan regije."
+      : "Linija iznad proizvodnje znači uvoz, linija ispod znači izvoz.";
+  if (!charts.balance || !charts.mix) return;
+  charts.balance.data.datasets = balanceDatasets();
+  const y = charts.balance.options.scales.y;
+  y.max = state.unit === "pct" ? 100 : undefined;
+  y.title.text = state.unit === "pct" ? "%" : "GW";
+  charts.balance.update();
+  const mix = charts.mix.data;
+  mix.labels = order.map((s) => SOURCE_META[s].label);
+  mix.datasets[0].data = order.map((s) => d.sources[s]);
+  mix.datasets[0].backgroundColor = order.map((s) => css(`--c-${s}`));
+  mix.datasets[0].borderColor = css("--surface");
+  charts.mix.update();
+}
+
+function retheme() {
+  if (!charts.balance || !charts.mix) return;
+  const t = chartTheme();
+  Chart.defaults.color = t.tick;
+  charts.balance.options.scales.y.grid.color = t.grid;
+  for (const c of [charts.balance, charts.mix]) {
+    for (const axis of Object.values(c.options.scales ?? {})) if (axis.ticks) axis.ticks.color = t.tick;
+    if (c.options.plugins.legend.labels) c.options.plugins.legend.labels.color = t.tick;
+  }
+  if (charts.balance.options.scales.y.title) charts.balance.options.scales.y.title.color = t.tick;
+}
+
+/* ---------- Gas ---------- */
+function renderGas() {
+  $("gasGrid").innerHTML = GAS.map((g) => `<div class="gas-item">
+      <h3>${icon(g.icon)}${g.name}, ${g.place}</h3>
+      <span class="gas-pct">${nf0.format(g.fill * 100)} %</span>
+      <div class="meter" role="img" aria-label="Popunjenost ${nf0.format(g.fill * 100)} posto"><span style="width:${g.fill * 100}%"></span></div>
+      <span class="gas-sub">${g.sub}</span>
+    </div>`).join("");
+}
+
+/* ---------- State ---------- */
+function safe(name, fn) {
+  try { fn(); } catch (err) { console.error(`[${name}]`, err); }
+}
+function renderAll() {
+  safe("figures", renderFigures);
+  safe("map", renderMap);
+  safe("list", renderList);
+  safe("charts", renderCharts);
+}
+function setScope(scope) {
+  state.scope = scope;
+  renderAll();
+}
+function setHour(h) {
+  state.hour = h;
+  $("hour").value = String(h);
+  renderAll();
+}
+function setPlaying(on) {
+  state.playing = on;
+  window.clearInterval(state.timer);
+  $("playBtn").setAttribute("aria-pressed", String(on));
+  $("playIcon").setAttribute("href", on ? "#i-pause" : "#i-play");
+  $("playText").textContent = on ? "Zaustavi" : "Pokreni dan";
+  if (on) state.timer = window.setInterval(() => setHour((state.hour + 1) % 24), 1100);
+}
+
+function init() {
+  safe("theme", () => {
+    const saved = (() => { try { return localStorage.getItem("theme"); } catch { return null; } })();
+    if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
+    $("themeBtn").addEventListener("click", () => {
+      const current = document.documentElement.dataset.theme
+        ?? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = next;
+      try { localStorage.setItem("theme", next); } catch { /* storage unavailable: theme still applies for this visit */ }
+      retheme();
+      renderAll();
+    });
+  });
+  safe("mapBuild", buildMap);
+  safe("listBuild", buildList);
+  safe("chartsBuild", buildCharts);
+  safe("gas", renderGas);
+  $("hour").value = String(state.hour);
+  $("hour").addEventListener("input", (e) => { setPlaying(false); setHour(Number(e.target.value)); });
+  $("playBtn").addEventListener("click", () => setPlaying(!state.playing));
+  document.querySelectorAll(".seg button").forEach((b) => b.addEventListener("click", () => {
+    state.unit = b.dataset.unit === "pct" ? "pct" : "gw";
+    document.querySelectorAll(".seg button").forEach((o) => o.setAttribute("aria-pressed", String(o === b)));
+    renderAll();
+  }));
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { retheme(); renderAll(); });
+  renderAll();
+}
+init();
+</script>
+</body>
+</html>

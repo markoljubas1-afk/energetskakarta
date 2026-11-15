@@ -1,0 +1,114 @@
+.map {
+  position: absolute;
+  inset: 0;
+  background: var(--canvas);
+}
+
+/* around the globe at the start of the intro there is night, not the page's canvas (Faza 22) */
+.map[data-intro] {
+  background: var(--intro-night);
+}
+
+.map :global(.maplibregl-ctrl-group) {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+}
+
+.map :global(.maplibregl-ctrl-group button + button) {
+  border-top-color: var(--line);
+}
+
+:global(:root[data-theme="dark"]) .map :global(.maplibregl-ctrl-icon) {
+  filter: invert(1);
+}
+
+.map :global(.maplibregl-ctrl-attrib) {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.map :global(.maplibregl-ctrl-attrib a) {
+  color: var(--ink);
+}
+
+.map :global(.maplibregl-ctrl-scale) {
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  border-color: var(--muted);
+  color: var(--ink);
+}
+
+/* phones: main is a column (App.module.css) and the map takes what the bars below it leave */
+@media (max-width: 720px) {
+  .map {
+    position: relative;
+    inset: auto;
+    flex: 1 1 0;
+    min-height: 0;
+  }
+}
+
+.flowLabel,
+.priceLabel {
+  padding: 1px 6px;
+  border-radius: 999px;
+  font: 600 11.5px/1.5 var(--font-num);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.flowLabel {
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-soft);
+}
+
+.priceLabel {
+  transform: translateY(-16px);
+  background: var(--ink);
+  color: var(--canvas);
+}
+
+/* Hover tooltip: positioned by MapView from the pointer, never in the way of it. */
+.tooltip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-width: 260px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  box-shadow: var(--shadow);
+  font-size: 12.5px;
+  line-height: 1.35;
+  pointer-events: none;
+  will-change: transform;
+  opacity: 1;
+  transition:
+    opacity 120ms var(--ease-out),
+    display 120ms allow-discrete;
+}
+
+@starting-style {
+  .tooltip {
+    opacity: 0;
+  }
+}
+
+.tooltip[hidden] {
+  display: none;
+}
+
+.tooltipTitle {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.tooltipDetail {
+  color: var(--muted);
+}

@@ -1,0 +1,15 @@
+# Manual conflation decisions between OpenStreetMap and Global Energy Monitor plants.
+# They are applied before automatic matching and survive every data update.
+#
+# osm: OpenStreetMap id as used on the map ("osm:way/123")
+# gem: GEM location id and status group ("L100000123456:operating", ":construction" or ":planned")
+#
+# Candidates worth a decision are listed in builds/<id>/conflation.json under "review".
+
+force: []
+#  - osm: osm:way/123456
+#    gem: L100000123456:operating
+
+never: []
+#  - osm: osm:node/654321
+#    gem: L100000654321:planned

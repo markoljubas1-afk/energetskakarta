@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="hr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Regionalna energetska karta – elektrane, dalekovodi i trafostanice Hrvatske i regije</title>
+    <meta
+      name="description"
+      content="Otvorena karta elektrana, dalekovoda, trafostanica, cjevovoda i podatkovnih centara Hrvatske, Slovenije, Mađarske, Srbije, BiH, Crne Gore, Italije i Austrije. Podaci OpenStreetMap, Global Energy Monitor i ENTSO-E, tjedno ažurirani, za preuzimanje pod otvorenom licencom."
+    />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Regionalna energetska karta" />
+    <meta property="og:title" content="Regionalna energetska karta – Hrvatska i regija" />
+    <meta
+      property="og:description"
+      content="Otvorena karta elektrana, dalekovoda i trafostanica Hrvatske i regije, s tokovima struje i cijenama uživo."
+    />
+    <meta property="og:locale" content="hr_HR" />
+    <meta property="og:locale:alternate" content="en_GB" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#1f6f8b" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!--
+      The prerender step (src/seo/home.ts) replaces the marker below with the absolute canonical link,
+      og:url and og:image, the WebSite JSON-LD and the JSON/feed alternates, all built from SITE_URL.
+    -->
+    <!--seo:head-->
+  </head>
+  <body>
+    <!--
+      What a reader without JavaScript (and every crawler that does not run it) gets. The application
+      replaces it as soon as it starts; the static pages it links to carry the full content.
+    -->
+    <div id="root">
+      <main class="no-script">
+        <h1>Regionalna energetska karta</h1>
+        <p>
+          Otvorena karta elektrana, dalekovoda, trafostanica, podmorskih cjevovoda, podatkovnih centara,
+          punionica, crpilišta i rudnika Hrvatske, Slovenije, Mađarske, Srbije, Bosne i Hercegovine, Crne
+          Gore, Italije i Austrije, sa satnim tokovima struje preko granica, cijenama i dnevnom proizvodnjom
+          plina. Karta traži JavaScript; podaci su dostupni i bez njega:
+        </p>
+        <ul>
+          <li><a href="/o-karti/">O karti: izvori, licence, preuzimanje baze</a></li>
+          <li>
+            Po zemljama: <a href="/zemlja/hr/">Hrvatska</a>, <a href="/zemlja/si/">Slovenija</a>,
+            <a href="/zemlja/hu/">Mađarska</a>, <a href="/zemlja/rs/">Srbija</a>,
+            <a href="/zemlja/ba/">Bosna i Hercegovina</a>, <a href="/zemlja/me/">Crna Gora</a>,
+            <a href="/zemlja/it/">Italija</a>, <a href="/zemlja/at/">Austrija</a>
+          </li>
+          <li><a href="/en/about/">About the map (English)</a></li>
+        </ul>
+        <!--seo:body-->
+      </main>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

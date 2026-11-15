@@ -1,0 +1,60 @@
+{
+  "name": "energetska-karta-web",
+  "private": true,
+  "license": "MIT",
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build && npm run prerender",
+    "prerender": "vite build --ssr src/seo/entry.ts --outDir .prerender --emptyOutDir && node .prerender/entry.js",
+    "notify:indexnow": "vite build --ssr src/seo/notify.ts --outDir .prerender-notify --emptyOutDir && node .prerender-notify/notify.js",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test",
+    "e2e:data": "python3 ../pipeline/scripts/web_fixture.py e2e/.data",
+    "preview:local": "npm run e2e:data && VITE_DATA_BASE_URL=/local-data/ LOCAL_DATA_DIR=e2e/.data npm run build && LOCAL_DATA_DIR=e2e/.data vite preview --port 4173"
+  },
+  "dependencies": {
+    "@fontsource/ibm-plex-sans": "5.3.0",
+    "@fontsource/ibm-plex-sans-condensed": "5.3.0",
+    "chart.js": "4.5.1",
+    "lucide-react": "1.46.0",
+    "maplibre-gl": "6.10.0",
+    "pmtiles": "4.5.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@maplibre/maplibre-gl-style-spec": "26.4.4",
+    "@playwright/test": "1.63.0",
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.7",
+    "@types/node": "22.20.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "eslint": "10.10.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.12.0",
+    "jsdom": "30.0.1",
+    "prettier": "3.9.6",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.70.0",
+    "vite": "8.3.0",
+    "vitest": "5.0.1"
+  }
+}

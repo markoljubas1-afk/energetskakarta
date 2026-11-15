@@ -1,0 +1,115 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "id": "windfarms.1",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     17.2,
+     40.49
+    ]
+   },
+   "properties": {
+    "FID": 1,
+    "country": "Italy",
+    "name": "Beleolico",
+    "n_turbines": 10,
+    "power_mw": 30,
+    "status": "Production",
+    "year": 2022,
+    "dist_coast": 1200,
+    "notes": null
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "windfarms.2",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     14.0,
+     44.5
+    ]
+   },
+   "properties": {
+    "FID": 2,
+    "country": "Croatia",
+    "name": "VE More",
+    "n_turbines": null,
+    "power_mw": "300",
+    "status": "Planned",
+    "year": null,
+    "dist_coast": 15000,
+    "notes": null
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "windfarms.3",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     12.9,
+     44.1
+    ]
+   },
+   "properties": {
+    "FID": 3,
+    "country": "Italy",
+    "name": "Stari park",
+    "n_turbines": 5,
+    "power_mw": 10,
+    "status": "Dismantled",
+    "year": 2001,
+    "dist_coast": 900,
+    "notes": null
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "windfarms.4",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     12.95,
+     44.15
+    ]
+   },
+   "properties": {
+    "FID": 4,
+    "country": "Italy",
+    "name": "Bez statusa",
+    "n_turbines": 5,
+    "power_mw": 10,
+    "status": null,
+    "year": 2001,
+    "dist_coast": 900,
+    "notes": null
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "windfarms.5",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     7.9,
+     55.5
+    ]
+   },
+   "properties": {
+    "FID": 5,
+    "country": "Denmark",
+    "name": "Horns Rev",
+    "n_turbines": 80,
+    "power_mw": 160,
+    "status": "Production",
+    "year": 2002,
+    "dist_coast": 14000,
+    "notes": null
+   }
+  }
+ ]
+}

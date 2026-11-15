@@ -1,0 +1,119 @@
+# Manual run on real Geofabrik data: build, tiles and (optionally) publish to R2.
+# Scheduling comes in phase 5, once the first real build is reviewed.
+name: osm-build
+
+on:
+  workflow_dispatch:
+    inputs:
+      countries:
+        description: "Comma separated country codes"
+        default: "HR,SI,HU,RS,BA,ME,IT,AT"
+        required: true
+      allow_drop:
+        description: "Accept a large drop in record counts"
+        type: boolean
+        default: false
+      publish:
+        description: "Publish to Cloudflare R2"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: osm-publish # shared with osm-scheduled
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/pyproject.toml
+      - name: Install tippecanoe
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends tippecanoe
+      - run: python -m pip install -e .
+      - name: Download extracts
+        env:
+          COUNTRIES: ${{ inputs.countries }}
+        run: energymap osm download --data-dir data --countries "$COUNTRIES"
+      - name: Global Energy Monitor source (optional)
+        id: gem
+        env:
+          DATA_BASE_URL: ${{ vars.DATA_BASE_URL }}
+        run: |
+          # assigned first: a failure inside $(...) as an echo argument would not stop the step
+          if [ -n "$DATA_BASE_URL" ]; then
+            path=$(energymap sources gem-fetch --data-dir data --baseline-url "$DATA_BASE_URL")
+            echo "path=$path" >> "$GITHUB_OUTPUT"
+          fi
+      - name: EMODnet offshore data (optional)
+        id: marine
+        env:
+          DATA_BASE_URL: ${{ vars.DATA_BASE_URL }}
+        run: |
+          # assigned first: a failure inside $(...) as an echo argument would not stop the step
+          if [ -n "$DATA_BASE_URL" ]; then
+            dir=$(energymap sources emodnet-fetch --data-dir data --baseline-url "$DATA_BASE_URL")
+            echo "dir=$dir" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Cities (Covenant of Mayors / JRC, CC BY 4.0)
+        id: cities
+        # A JRC outage must not silently drop the layer: the step may fail, but then the build compares
+        # its counts with the published ones and refuses the drop (validate.check_counts).
+        continue-on-error: true
+        run: |
+          energymap cities download --data-dir data
+          echo "dir=data/cities" >> "$GITHUB_OUTPUT"
+      # Without the data address the build compares its counts with an empty local folder, so a partial build
+      # could replace the published one (L-015; Faza 31). Publishing therefore requires it.
+      - name: Check the baseline for publishing
+        if: ${{ inputs.publish }}
+        env:
+          DATA_BASE_URL: ${{ vars.DATA_BASE_URL }}
+        run: |
+          if [ -z "$DATA_BASE_URL" ]; then
+            echo "::error::Publishing needs the variable DATA_BASE_URL, so the build is checked against the published one."
+            exit 1
+          fi
+      - name: Build
+        env:
+          DATA_BASE_URL: ${{ vars.DATA_BASE_URL }}
+          GEM_FILE: ${{ steps.gem.outputs.path }}
+          MARINE_DIR: ${{ steps.marine.outputs.dir }}
+          CITIES_DIR: ${{ steps.cities.outputs.dir }}
+          COUNTRIES: ${{ inputs.countries }}
+          ALLOW_DROP: ${{ inputs.allow_drop }}
+        run: |
+          energymap osm build --data-dir data --countries "$COUNTRIES" \
+            --overrides ../overrides/conflation.yaml \
+            ${DATA_BASE_URL:+--baseline-url "$DATA_BASE_URL"} \
+            ${GEM_FILE:+--gem "$GEM_FILE"} ${MARINE_DIR:+--marine "$MARINE_DIR"} \
+            ${CITIES_DIR:+--cities "$CITIES_DIR"} \
+            $( [ "$ALLOW_DROP" = "true" ] && echo --allow-drop )
+      - name: Tiles
+        run: energymap tiles build --data-dir data
+      - name: Publish to R2
+        if: ${{ inputs.publish }}
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: energymap publish r2 --data-dir data
+      - uses: actions/upload-artifact@v4
+        with:
+          name: osm-build
+          path: |
+            pipeline/data/out/LATEST
+            pipeline/data/out/builds/
+          retention-days: 30

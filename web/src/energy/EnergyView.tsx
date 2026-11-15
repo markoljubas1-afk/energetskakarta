@@ -1,0 +1,684 @@
+import { ExternalLink } from "lucide-react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+
+import { useAsync } from "../app/useAsync";
+import { assetUrl, DataError, fetchJson } from "../data/current";
+import {
+  ALL,
+  compareYears,
+  EnergyPointerSchema,
+  PeriodsSchema,
+  rangeDays,
+  rangeTotals,
+  series,
+  technologiesOf,
+  YearFileSchema,
+  yearsInRange,
+  type EnergyPointer,
+  type EnergySeries,
+  type Periods,
+} from "../data/energy";
+import { isOneOf, type Technology } from "../domain";
+import { useI18n } from "../i18n";
+import { PALETTES, type Theme } from "../map/palette";
+import { ChartShare, chartLink } from "../share/ChartShare";
+import type { Table } from "../share/csv";
+import { ENERGY_AREAS, ENERGY_CHARTS, type AppState, type EnergyChart, type EnergyState } from "../state/url";
+import { compareTable, mixTable, rangeTable, type CsvLabels } from "./csv";
+import styles from "./EnergyView.module.css";
+
+// One shared import for both charts: a single request, and a single module instance.
+let chartsModule: Promise<typeof import("./charts")> | null = null;
+const loadCharts = (): Promise<typeof import("./charts")> => (chartsModule ??= import("./charts"));
+const Charts = {
+  Stacked: lazy(() => loadCharts().then((m) => ({ default: m.StackedChart }))),
+  Lines: lazy(() => loadCharts().then((m) => ({ default: m.LinesChart }))),
+};
+
+const YEAR_COLORS = ["#8A949E", "#6E9FCC", "#62A89E", "#D09A25", "#B8403A", "#7E63AE"];
+const SOURCE = "ENTSO-E Transparency Platform";
+
+interface Props {
+  dataBaseUrl: URL;
+  energy: EnergyState;
+  setState: (update: (state: AppState) => AppState) => void;
+  theme: Theme;
+  /** embedded in another page: no sharing, and with `energy.chart` that one card alone (Faza 23-5) */
+  embed?: boolean;
+}
+
+/** What every card needs to be passed on (Faza 23): the data's date, the source line, the CSV labels. */
+interface ShareKit {
+  embedded: boolean;
+  dataDate: string;
+  sourceLine: string;
+  labels: CsvLabels;
+}
+
+type Loaded = { kind: "none" } | { kind: "ready"; pointer: EnergyPointer; periods: Periods };
+
+async function loadEnergy(base: URL, signal: AbortSignal): Promise<Loaded> {
+  const pointerUrl = `${assetUrl(base, "energy/current.json")}?t=${Math.floor(Date.now() / 60_000)}`;
+  const probe = await fetch(pointerUrl, { signal });
+  if (probe.status === 404) return { kind: "none" };
+  if (!probe.ok) throw new DataError(`energy pointer returned HTTP ${probe.status}`);
+  const pointer = EnergyPointerSchema.parse(await probe.json());
+  const periods = await fetchJson(assetUrl(base, pointer.periods.key), PeriodsSchema, signal);
+  return { kind: "ready", pointer, periods };
+}
+
+function Segmented<T extends string>(props: {
+  label: string;
+  value: T;
+  options: readonly { value: T; label: string }[];
+  onChange: (value: T) => void;
+}) {
+  return (
+    <div className={styles.segmented} role="group" aria-label={props.label}>
+      {props.options.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          aria-pressed={props.value === option.value}
+          onClick={() => {
+            props.onChange(option.value);
+          }}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+interface CardShare {
+  kit: ShareKit;
+  subtitle: string;
+  table: () => Table;
+}
+
+/**
+ * A card of the page: its id is where its link opens; its own source line travels with a screenshot of the
+ * card alone; its share menu knows its title, what it shows, its rows and its chart (Faza 23).
+ */
+function Card(props: {
+  id: EnergyChart;
+  title: string;
+  actions?: ReactNode;
+  share: CardShare;
+  children: ReactNode;
+}) {
+  const { id, title, actions, share, children } = props;
+  const ref = useRef<HTMLElement>(null);
+  const canvas = (): HTMLCanvasElement | null => ref.current?.querySelector("canvas") ?? null;
+  return (
+    <section id={id} ref={ref} className={styles.card} aria-label={title}>
+      <div className={styles.cardHead}>
+        <h3>{title}</h3>
+        <div className={styles.cardActions}>
+          {actions}
+          {!share.kit.embedded && (
+            <ChartShare
+              title={title}
+              subtitle={share.subtitle}
+              anchor={id}
+              sources={[SOURCE]}
+              dataDate={share.kit.dataDate}
+              sourceLine={share.kit.sourceLine}
+              table={share.table}
+              canvas={canvas}
+              embed={id}
+            />
+          )}
+        </div>
+      </div>
+      {children}
+      <p className={styles.cardSource}>{share.kit.sourceLine}</p>
+    </section>
+  );
+}
+
+export function EnergyView({ dataBaseUrl, energy, setState, theme, embed = false }: Props) {
+  const i18n = useI18n();
+  const { t } = i18n;
+  const [loaded, retry] = useAsync(`energy:${dataBaseUrl.href}`, (signal) => loadEnergy(dataBaseUrl, signal));
+  const update = (patch: Partial<EnergyState>): void => {
+    setState((s) => ({ ...s, energy: { ...s.energy, ...patch } }));
+  };
+
+  let body: ReactNode;
+  if (!loaded || loaded.status === "loading") {
+    body = (
+      <p className={styles.muted} role="status">
+        {t("loadingData")}
+      </p>
+    );
+  } else if (loaded.status === "error") {
+    body = (
+      <p className={styles.muted} role="alert">
+        {t("energyFailed")}{" "}
+        <button type="button" className={styles.link} onClick={retry}>
+          {t("retry")}
+        </button>
+      </p>
+    );
+  } else if (loaded.value.kind === "none") {
+    body = <p className={styles.empty}>{t("energyNoData")}</p>;
+  } else {
+    body = (
+      <Content
+        dataBaseUrl={dataBaseUrl}
+        pointer={loaded.value.pointer}
+        periods={loaded.value.periods}
+        energy={energy}
+        update={update}
+        theme={theme}
+        embedded={embed}
+      />
+    );
+  }
+  // an embedded single card is the chart and its source only
+  const alone = embed && energy.chart !== null;
+
+  return (
+    <div className={styles.view} data-alone={alone || undefined}>
+      {!alone && (
+        <header className={styles.header}>
+          <h2>{t("energyTitle")}</h2>
+          <p className={styles.intro}>{t("energyIntro")}</p>
+        </header>
+      )}
+      {body}
+      {embed && (
+        <a
+          className={styles.openFull}
+          href={chartLink(window.location.href, energy.chart ?? "")}
+          target="_blank"
+          rel="noopener"
+          data-embed-link
+        >
+          {t("chartOpenFull")}
+          <ExternalLink size={14} strokeWidth={1.75} aria-hidden="true" />
+        </a>
+      )}
+    </div>
+  );
+}
+
+interface ContentProps {
+  dataBaseUrl: URL;
+  pointer: EnergyPointer;
+  periods: Periods;
+  energy: EnergyState;
+  update: (patch: Partial<EnergyState>) => void;
+  theme: Theme;
+  embedded: boolean;
+}
+
+function Content({ dataBaseUrl, pointer, periods, energy, update, theme, embedded }: ContentProps) {
+  const i18n = useI18n();
+  const { t } = i18n;
+  const kit: ShareKit = {
+    embedded,
+    dataDate: pointer.updatedAt,
+    sourceLine: t("chartSourceLine", {
+      source: SOURCE,
+      date: i18n.date(pointer.updatedAt),
+      site: window.location.host,
+    }),
+    labels: {
+      period: t("energyPeriod"),
+      load: t("energyLoad"),
+      complete: t("energyComplete"),
+      year: t("csvYear"),
+      source: t("energyCompareSource"),
+      shareOfGeneration: t("energyShareOfGeneration"),
+      shareOfLoad: t("energyShareOfLoad"),
+      total: t("energyTotal"),
+      pumping: t("energyPumping"),
+      months: i18n.months,
+      technology: (tech) => i18n.technology(tech),
+    },
+  };
+  const only = embedded ? energy.chart : null;
+  const shows = (chart: EnergyChart): boolean => only === null || only === chart;
+  // a link to a card opens the page at it, once the data (and so the card) is there
+  useEffect(() => {
+    const id = window.location.hash.slice(1);
+    if (ENERGY_CHARTS.some((chart) => chart === id))
+      document.getElementById(id)?.scrollIntoView({ block: "start" });
+  }, []);
+  const palette = PALETTES[theme];
+  const available = ENERGY_AREAS.filter((a) => a === ALL || a in periods.countries);
+  const area = available.includes(energy.area) ? energy.area : ALL;
+  const areaName = area === ALL ? t("energyRegion") : i18n.country(area);
+  const data = useMemo(() => series(periods, area, energy.unit), [periods, area, energy.unit]);
+  const monthly = useMemo(() => series(periods, area, "month"), [periods, area]);
+  const techs = technologiesOf(data);
+  const ink = theme === "dark" ? "#E4E8EC" : "#1E262E";
+  const grid = theme === "dark" ? "rgba(163,174,184,0.18)" : "rgba(94,106,117,0.16)";
+
+  return (
+    <>
+      {only === null && (
+        <div className={styles.controls}>
+          <label className={styles.select}>
+            <span>{t("energyArea")}</span>
+            <select
+              value={area}
+              onChange={(event) => {
+                const value = event.target.value;
+                if (isOneOf(ENERGY_AREAS, value)) update({ area: value });
+              }}
+            >
+              {available.map((code) => (
+                <option key={code} value={code}>
+                  {code === ALL ? t("energyRegion") : i18n.country(code)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <Segmented
+            label={t("energyUnit")}
+            value={energy.unit}
+            options={[
+              { value: "month", label: t("energyMonthly") },
+              { value: "year", label: t("energyYearly") },
+            ]}
+            onChange={(unit) => {
+              update({ unit });
+            }}
+          />
+          <Segmented
+            label={t("energyShow")}
+            value={energy.show}
+            options={[
+              { value: "chart", label: t("energyChart") },
+              { value: "table", label: t("energyTable") },
+            ]}
+            onChange={(show) => {
+              update({ show });
+            }}
+          />
+        </div>
+      )}
+      {only === null && (
+        <p className={styles.muted}>
+          {t("energySource", { date: i18n.date(pointer.updatedAt) })}{" "}
+          {area === ALL &&
+            t("energyCountries", { list: data.countries.map((c) => i18n.country(c)).join(", ") })}
+        </p>
+      )}
+
+      {shows("mix") && (
+        <Card
+          id="mix"
+          title={t("energyMixTitle")}
+          share={{
+            kit,
+            subtitle: `${areaName} · ${energy.unit === "month" ? t("energyMonthly") : t("energyYearly")}`,
+            table: () => mixTable(data, techs, kit.labels),
+          }}
+        >
+          {energy.show === "chart" ? (
+            <div className={styles.chart}>
+              <Suspense fallback={<p className={styles.muted}>{t("loadingData")}</p>}>
+                <Charts.Stacked
+                  labels={data.periods.map(i18n.period)}
+                  bars={techs.map((tech) => ({
+                    label: i18n.technology(tech),
+                    color: palette.technology[tech],
+                    values: data.generation[tech] ?? [],
+                  }))}
+                  line={{ label: t("energyLoad"), color: ink, values: data.load }}
+                  coverage={data.coverage}
+                  note={(index) => {
+                    const share = data.coverage[index] ?? 0;
+                    return share < 1 ? t("energyIncomplete", { share: i18n.number(share * 100) }) : null;
+                  }}
+                  description={t("energyMixDescription", {
+                    area: areaName,
+                    unit: energy.unit === "month" ? t("energyMonthly") : t("energyYearly"),
+                  })}
+                  format={i18n.energy}
+                  ink={ink}
+                  grid={grid}
+                />
+              </Suspense>
+            </div>
+          ) : (
+            <MixTable data={data} techs={techs} />
+          )}
+        </Card>
+      )}
+
+      {shows("compare") && (
+        <YearComparison
+          monthly={monthly}
+          energy={energy}
+          update={update}
+          areaName={areaName}
+          ink={ink}
+          grid={grid}
+          kit={kit}
+        />
+      )}
+
+      {shows("range") && (
+        <RangeTotals
+          dataBaseUrl={dataBaseUrl}
+          pointer={pointer}
+          area={area}
+          areaName={areaName}
+          codes={data.countries}
+          energy={energy}
+          update={update}
+          palette={palette}
+          kit={kit}
+        />
+      )}
+    </>
+  );
+}
+
+function MixTable({ data, techs }: { data: EnergySeries; techs: Technology[] }) {
+  const i18n = useI18n();
+  const { t } = i18n;
+  const cell = (value: number | null | undefined): string =>
+    value === null || value === undefined ? t("energyNoValue") : i18n.energy(value);
+  return (
+    <div className={styles.tableWrap}>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th scope="col">{t("energyPeriod")}</th>
+            {techs.map((tech) => (
+              <th key={tech} scope="col">
+                {i18n.technology(tech)}
+              </th>
+            ))}
+            <th scope="col">{t("energyLoad")}</th>
+            <th scope="col">{t("energyComplete")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.periods.map((period, i) => {
+            const coverage = data.coverage[i] ?? 0;
+            return (
+              <tr key={period} data-incomplete={coverage < 1 || undefined}>
+                <th scope="row">{i18n.period(period)}</th>
+                {techs.map((tech) => (
+                  <td key={tech}>{cell(data.generation[tech]?.[i])}</td>
+                ))}
+                <td>{cell(data.load[i])}</td>
+                <td>{i18n.percent(coverage)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function YearComparison(props: {
+  monthly: EnergySeries;
+  energy: EnergyState;
+  update: (patch: Partial<EnergyState>) => void;
+  areaName: string;
+  ink: string;
+  grid: string;
+  kit: ShareKit;
+}) {
+  const { monthly, energy, update, areaName, ink, grid, kit } = props;
+  const i18n = useI18n();
+  const { t } = i18n;
+  const techs = technologiesOf(monthly);
+  const tech = techs.includes(energy.tech) ? energy.tech : techs[0];
+  const lines = tech ? compareYears(monthly, tech) : [];
+  const picker = (
+    <label className={styles.select}>
+      <span>{t("energyCompareSource")}</span>
+      <select
+        value={tech ?? ""}
+        onChange={(event) => {
+          const value = event.target.value;
+          const next = techs.find((candidate) => candidate === value);
+          if (next) update({ tech: next });
+        }}
+      >
+        {techs.map((candidate) => (
+          <option key={candidate} value={candidate}>
+            {i18n.technology(candidate)}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+  return (
+    <Card
+      id="compare"
+      title={t("energyCompareTitle")}
+      actions={picker}
+      share={{
+        kit,
+        subtitle: tech ? `${i18n.technology(tech)} · ${areaName}` : areaName,
+        table: () => compareTable(lines, kit.labels),
+      }}
+    >
+      {!tech || lines.length === 0 ? (
+        <p className={styles.muted}>{t("energyCompareEmpty")}</p>
+      ) : energy.show === "chart" ? (
+        <div className={styles.chart}>
+          <Suspense fallback={<p className={styles.muted}>{t("loadingData")}</p>}>
+            <Charts.Lines
+              labels={i18n.months}
+              lines={lines.map((line, index) => ({
+                label: line.year,
+                color: YEAR_COLORS[(YEAR_COLORS.length - lines.length + index) % YEAR_COLORS.length] ?? ink,
+                values: line.values,
+              }))}
+              description={t("energyCompareDescription", { tech: i18n.technology(tech), area: areaName })}
+              format={i18n.energy}
+              ink={ink}
+              grid={grid}
+            />
+          </Suspense>
+        </div>
+      ) : (
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th scope="col">{t("energyPeriod")}</th>
+                {i18n.months.map((month) => (
+                  <th key={month} scope="col">
+                    {month}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {lines.map((line) => (
+                <tr key={line.year}>
+                  <th scope="row">{line.year}</th>
+                  {line.values.map((value, month) => (
+                    <td key={month} data-incomplete={(line.coverage[month] ?? 0) < 1 || undefined}>
+                      {value === null ? t("energyNoValue") : i18n.energy(value)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function RangeTotals(props: {
+  dataBaseUrl: URL;
+  pointer: EnergyPointer;
+  area: string;
+  areaName: string;
+  codes: string[];
+  energy: EnergyState;
+  update: (patch: Partial<EnergyState>) => void;
+  palette: (typeof PALETTES)[Theme];
+  kit: ShareKit;
+}) {
+  const { dataBaseUrl, pointer, area, areaName, codes, energy, update, palette, kit } = props;
+  const i18n = useI18n();
+  const { t } = i18n;
+  const years = Object.keys(pointer.years).sort();
+  const lastYear = years.at(-1) ?? "";
+  const [draft, setDraft] = useState(
+    () => energy.range ?? { from: `${lastYear}-06-01`, to: `${lastYear}-08-31` },
+  );
+  const days = rangeDays(draft.from, draft.to);
+  const range = energy.range;
+  const wanted = range ? yearsInRange(range.from, range.to).filter((y) => String(y) in pointer.years) : [];
+  const [files] = useAsync(range ? `range:${wanted.join(",")}` : null, (signal) =>
+    Promise.all(
+      wanted.map((year) => {
+        const entry = pointer.years[String(year)];
+        if (!entry) throw new DataError(`no published data for ${year}`);
+        return fetchJson(assetUrl(dataBaseUrl, entry.key), YearFileSchema, signal);
+      }),
+    ),
+  );
+
+  let result: ReactNode = <p className={styles.muted}>{t("energyRangeHint")}</p>;
+  // the rows the table shows; until a period is calculated there are none
+  let rows: Table = { header: [], rows: [] };
+  if (range && files?.status === "error") {
+    result = (
+      <p className={styles.muted} role="alert">
+        {t("energyFailed")}
+      </p>
+    );
+  } else if (range && files?.status === "ready") {
+    const totals = rangeTotals(files.value, area, codes, range.from, range.to);
+    rows = rangeTable(totals, kit.labels);
+    if (totals.coveredDays === 0 && totals.total === 0) {
+      result = <p className={styles.muted}>{t("energyRangeEmpty")}</p>;
+    } else {
+      result = (
+        <>
+          <p className={styles.muted} role="status">
+            {t("energyCoverage", { covered: totals.coveredDays, total: totals.days })}
+            {totals.load === null && ` ${t("energyLoadUnknown")}`}
+          </p>
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th scope="col">{t("energyCompareSource")}</th>
+                  <th scope="col">MWh</th>
+                  <th scope="col">{t("energyShareOfGeneration")}</th>
+                  <th scope="col">{t("energyShareOfLoad")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {totals.generation.map((row) => (
+                  <tr key={row.tech}>
+                    <th scope="row">
+                      <span
+                        className={styles.dot}
+                        style={{ background: palette.technology[row.tech] }}
+                        aria-hidden="true"
+                      />
+                      {i18n.technology(row.tech)}
+                    </th>
+                    <td>{i18n.energy(row.mwh)}</td>
+                    <td>{totals.total > 0 ? i18n.percent(row.mwh / totals.total) : "—"}</td>
+                    <td>{totals.load ? i18n.percent(row.mwh / totals.load) : "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th scope="row">{t("energyTotal")}</th>
+                  <td>{i18n.energy(totals.total)}</td>
+                  <td>{i18n.percent(1)}</td>
+                  <td>{totals.load ? i18n.percent(totals.total / totals.load) : "—"}</td>
+                </tr>
+                <tr>
+                  <th scope="row">{t("energyLoad")}</th>
+                  <td>{totals.load === null ? "—" : i18n.energy(totals.load)}</td>
+                  <td />
+                  <td />
+                </tr>
+                {totals.pumping > 0 && (
+                  <tr>
+                    <th scope="row">{t("energyPumping")}</th>
+                    <td>{i18n.energy(totals.pumping)}</td>
+                    <td />
+                    <td />
+                  </tr>
+                )}
+              </tfoot>
+            </table>
+          </div>
+        </>
+      );
+    }
+  } else if (range) {
+    result = (
+      <p className={styles.muted} role="status">
+        {t("loadingData")}
+      </p>
+    );
+  }
+
+  return (
+    <Card
+      id="range"
+      title={t("energyRangeTitle")}
+      share={{
+        kit,
+        subtitle: range ? `${areaName} · ${i18n.date(range.from)} – ${i18n.date(range.to)}` : areaName,
+        table: () => rows,
+      }}
+    >
+      <form
+        className={styles.rangeForm}
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (days !== null) update({ range: draft });
+        }}
+      >
+        <label className={styles.select}>
+          <span>{t("energyFrom")}</span>
+          <input
+            type="date"
+            value={draft.from}
+            min={`${years[0] ?? ""}-01-01`}
+            max={`${lastYear}-12-31`}
+            onChange={(event) => {
+              setDraft((d) => ({ ...d, from: event.target.value }));
+            }}
+          />
+        </label>
+        <label className={styles.select}>
+          <span>{t("energyTo")}</span>
+          <input
+            type="date"
+            value={draft.to}
+            min={`${years[0] ?? ""}-01-01`}
+            max={`${lastYear}-12-31`}
+            onChange={(event) => {
+              setDraft((d) => ({ ...d, to: event.target.value }));
+            }}
+          />
+        </label>
+        <button type="submit" className={styles.button} disabled={days === null}>
+          {t("energyCalculate")}
+        </button>
+      </form>
+      {days === null && <p className={styles.warning}>{t("energyRangeInvalid")}</p>}
+      {result}
+    </Card>
+  );
+}

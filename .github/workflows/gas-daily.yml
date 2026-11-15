@@ -1,0 +1,52 @@
+# Daily gas production entering the grid at ENTSOG production points, for the map's gas layer.
+# Runs after the gas day closes (06:00 CET) and the operators have reported. No API key is needed.
+# If the platform returns nothing usable, the published document is left as it was.
+name: gas-daily
+
+on:
+  schedule:
+    - cron: "40 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gas-publish
+  cancel-in-progress: true # a newer run supersedes an older one
+
+jobs:
+  gas:
+    # The schedule is opt-in (SCHEDULE_GAS=true under Settings → Variables), switched on once a manual run has
+    # succeeded; until then scheduled runs are skipped instead of failing every time. Manual runs always run.
+    if: github.event_name != 'schedule' || vars.SCHEDULE_GAS == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check configuration
+        env:
+          HAS_R2: ${{ secrets.R2_ACCOUNT_ID != '' && secrets.R2_ACCESS_KEY_ID != '' && secrets.R2_SECRET_ACCESS_KEY != '' && secrets.R2_BUCKET != '' }}
+        run: |
+          if [ "$HAS_R2" != "true" ]; then
+            echo "::error::Not configured: R2_* secrets are required (infra/README.md)"
+            exit 1
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/pyproject.toml
+      - run: python -m pip install -e .
+      - name: Fetch
+        run: energymap gas fetch --data-dir data
+      - name: Publish
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: energymap gas publish-r2 --data-dir data

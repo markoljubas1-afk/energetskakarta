@@ -1,0 +1,304 @@
+.app {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
+}
+
+.main {
+  position: relative;
+  overflow: hidden;
+  outline: none;
+}
+
+/* Floating panels share one surface treatment; hierarchy comes from size and position. */
+.side,
+.details,
+.legend {
+  position: absolute;
+  z-index: 2;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .side,
+  .details,
+  .legend {
+    background: var(--glass);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+  }
+}
+
+/* The details panel arrives from where the click was: a short fade and settle, nothing that delays it. */
+.details {
+  transition:
+    opacity var(--motion) var(--ease-out),
+    transform var(--motion) var(--ease-out);
+}
+
+@starting-style {
+  .details {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+.side {
+  top: 12px;
+  left: 12px;
+  bottom: 56px;
+  width: 340px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.details {
+  z-index: 3; /* above the legend when both are open */
+  top: 12px;
+  right: 56px;
+  width: 320px;
+  max-height: calc(100% - 100px);
+  overflow: auto;
+  border-radius: var(--radius-lg);
+}
+
+/* the welcome card takes the details slot; it has no scroll of its own */
+.welcome {
+  overflow: hidden;
+}
+
+/* sits above MapLibre's scale bar and attribution in the bottom-right corner */
+.legend {
+  right: 12px;
+  bottom: calc(var(--map-chrome, 40px) + 8px);
+  max-width: 260px;
+  /* short windows: scroll inside instead of growing into the zoom buttons (top 10px, 61px tall) */
+  max-height: calc(100% - var(--map-chrome, 40px) - 92px);
+  overflow: auto;
+  border-radius: var(--radius-md);
+}
+
+/*
+ * Everything along the bottom edge of the map lives in this one column, so the bars stack instead of
+ * each guessing its own offset (they used to overlap). --map-chrome is the measured height of MapLibre's
+ * own bottom-right corner (scale bar and attribution); it is published by MapView because that line
+ * wraps as data sources are added, and every source we add would otherwise creep under these bars.
+ */
+.dock {
+  position: absolute;
+  left: 364px;
+  right: 300px;
+  bottom: calc(var(--map-chrome, 40px) + 6px);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  /* live bar, mix card and time machine together: scroll inside rather than grow past the map's top */
+  max-height: calc(100% - var(--map-chrome, 40px) - 24px);
+  overflow-y: auto;
+  pointer-events: none; /* the gaps between the bars still belong to the map */
+}
+
+.dock > * {
+  pointer-events: auto;
+}
+
+.liveSlot {
+  align-self: center;
+  width: 100%;
+  max-width: 720px;
+}
+
+@media (max-width: 1000px) {
+  .dock {
+    right: 12px;
+  }
+}
+
+.panelError {
+  margin: 0;
+  padding: 16px;
+  color: var(--muted);
+}
+
+.linkButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Phones: a bar below the map holds the settings button; both sheets open above it, so it is never covered. */
+.mobileBar {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  /*
+   * Phones: main is a column of map, live bar, settings bar. The bars take their space from the map
+   * instead of floating over it, so MapLibre's scale and attribution always stay visible above them.
+   */
+  .main {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .dock {
+    position: static;
+    order: 1;
+    display: block;
+    flex: none;
+    /* the map keeps at least half of the screen */
+    max-height: 50dvh;
+    pointer-events: auto;
+  }
+
+  .liveSlot {
+    max-width: none;
+    padding: 8px;
+    border-top: 1px solid var(--line);
+    background: var(--canvas);
+  }
+
+  .mobileBar {
+    position: relative;
+    order: 2;
+    flex: none;
+    z-index: 3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: var(--mobile-bar);
+    background: var(--canvas);
+    border-top: 1px solid var(--line);
+  }
+
+  .sheetToggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--canvas);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  /*
+   * The sheets cover the bars of the dock when open (Faza 31): the dock comes later in the page and was painted
+   * over the filters, so a reader with the live bar open could not reach the switch that closes it.
+   */
+  .side,
+  .details {
+    z-index: 4;
+    right: 0;
+    bottom: var(--mobile-bar);
+    left: 0;
+    width: auto;
+    border-bottom: 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .side {
+    top: auto;
+    height: min(68%, 540px);
+    transform: translateY(calc(100% + var(--mobile-bar)));
+    visibility: hidden;
+    transition:
+      transform 200ms ease,
+      visibility 0s linear 200ms;
+  }
+
+  .side[data-open="true"] {
+    transform: none;
+    visibility: visible;
+    transition: transform 200ms ease;
+  }
+
+  .details {
+    top: auto;
+    max-height: 55%;
+  }
+
+  /* one sheet at a time: settings take precedence while open */
+  .side[data-open="true"] ~ .details {
+    display: none;
+  }
+
+  .legend,
+  .welcome {
+    display: none; /* a phone's first screen is the map; the card would sit on top of it */
+  }
+}
+
+/* Embedded in another page: only the map; the side panel and header are not rendered at all. */
+.embedLink {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--canvas);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+
+/* no header row: the map takes the whole frame */
+.app[data-embed] {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.app[data-embed] .dock {
+  left: 12px;
+}
+
+@media (max-width: 720px) {
+  .app[data-embed] .embedLink {
+    top: auto;
+    bottom: 10px;
+  }
+}
+
+/*
+ * The intro (Faza 22): the header, panels and map controls wait while it plays, then come in together. The
+ * map's credits stay visible throughout.
+ */
+.app[data-intro="on"] > header,
+.app[data-intro="on"] :is(.mobileBar, .side, .details, .legend, .dock),
+.app[data-intro="on"] :global(.maplibregl-ctrl-top-right),
+.app[data-intro="on"] :global(.maplibregl-ctrl-scale) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.app[data-intro="handoff"] > header,
+.app[data-intro="handoff"] :is(.mobileBar, .side, .details, .legend, .dock),
+.app[data-intro="handoff"] :global(.maplibregl-ctrl-top-right),
+.app[data-intro="handoff"] :global(.maplibregl-ctrl-scale) {
+  animation: intro-chrome-in 900ms var(--ease-out) both;
+}
+
+@keyframes intro-chrome-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
