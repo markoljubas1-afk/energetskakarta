@@ -44,7 +44,8 @@ jobs:
   e2e:
     needs: check
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    # 198 tests on one worker with software WebGL take about 20 minutes, more when failures are retried
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -72,7 +73,8 @@ jobs:
         env:
           CI: "true"
         run: npx playwright test
-      - if: failure()
+      # also when the job is cancelled by its time limit: that is when the report is needed most
+      - if: failure() || cancelled()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
