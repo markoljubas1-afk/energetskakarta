@@ -347,3 +347,14 @@
 - Rule going forward: faza nije gotova dok `npm run check` ne prođe cijeli. Testovi izbornik prvo otvore;
   jsdom dobiva Popover API iz `src/test/popover.ts`. Automatski `eslint --fix` se pregleda u diffu (zamjena
   `a && a.b !== null` u `a?.b !== null` mijenja značenje).
+
+### L-066 — Traka viša od svog okvira (2026-11-16)
+- What happened: otkad traka „Tokovi i cijene” nosi karticu sastava struje, na desktopu je ulazila pod panel s
+  detaljima, a njezin donji dio ležao je skriven ispod retka s izvorima i, na mobitelu, ispod gumba „Filtri i
+  pregled”. e2e `layout.spec.ts` je to uhvatio; e2e nije pokrenut nakon te promjene.
+- Root cause: dock je bio jedini okvir koji se pomiče, pa je traka unutra bila viša od onoga što se vidi; širina
+  docka nije računala stupac s detaljima.
+- Rule going forward: traka se pomiče unutar vlastitog okvira (`.liveSlot > *`), a redak sa stanjem podataka
+  ostaje vidljiv; dock završava prije stupca s detaljima (od 1200 px). e2e ima 45 minuta i sprema izvještaj i
+  kad istekne; testni podaci su artefakt `e2e-data`, pa se e2e može vrtjeti i na Windowsu
+  (`PW_CHROMIUM_PATH`, `--workers=1`).

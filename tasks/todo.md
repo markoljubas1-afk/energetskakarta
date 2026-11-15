@@ -986,6 +986,11 @@ ruff, mypy --strict, ESLint, Prettier, actionlint — sve prolazi. Snimke: `preg
 - Otvoreno: lokalne provjere na Windowsu nisu zelene (web: 7 `tsc` grešaka i 19 testova; pipeline: 26
   testova, Python 3.14 i kodna stranica). Uzrok na webu nije istražen; blokira objavu stranice.
 
+### Raspored docka — otvoreno (2026-11-16)
+
+- Između 1001 i 1199 px panel s detaljima (ili kartica dobrodošlice) i dalje prekriva desni rub trake uživo:
+  uz tri stupca traka bi bila uža od 450 px. Odlučiti: traka ispod panela, uži panel ili sklapanje filtara.
+
 ## Faza 11 — „živa slika": što još može biti uživo (pregled 2026-09-19, odgovor na pitanje)
 
 Cilj je da što više bude **uživo**. Ovo su izvori koji to stvarno omogućuju, složeni po tome što traže:

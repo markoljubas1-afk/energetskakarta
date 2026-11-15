@@ -98,20 +98,41 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 8px;
-  /* live bar, mix card and time machine together: scroll inside rather than grow past the map's top */
+  /* live bar, mix card and time machine together never grow past the map's top: the bars share the height */
   max-height: calc(100% - var(--map-chrome, 40px) - 24px);
-  overflow-y: auto;
   pointer-events: none; /* the gaps between the bars still belong to the map */
 }
 
 .dock > * {
+  flex: none; /* the status bar keeps its row; only the slots below give way */
   pointer-events: auto;
 }
 
+/*
+ * A bar that does not fit scrolls inside its own frame, so what is on screen is the bar's real box: nothing of
+ * it lies hidden under the status bar, the attribution or a phone's settings bar (it used to, clipped by the dock).
+ */
 .liveSlot {
+  flex: 0 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   align-self: center;
   width: 100%;
   max-width: 720px;
+}
+
+.liveSlot > * {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* with the details panel or the welcome card open the bars end where that column begins (56 + 320 + 12) */
+@media (min-width: 1200px) {
+  .details ~ .dock {
+    right: 388px;
+  }
 }
 
 @media (max-width: 1000px) {
@@ -153,7 +174,7 @@
   .dock {
     position: static;
     order: 1;
-    display: block;
+    align-items: stretch;
     flex: none;
     /* the map keeps at least half of the screen */
     max-height: 50dvh;
