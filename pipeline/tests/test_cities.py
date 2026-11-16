@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from collections import Counter
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -177,7 +178,7 @@ def test_fixture_release_loads_the_expected_cities(release: Path) -> None:
     assert Sector.OTHER in vzorec.sectors
 
 
-def _save(path: Path, sheets: dict[str, list[list[object]]]) -> None:
+def _save(path: Path, sheets: Mapping[str, Sequence[Sequence[object]]]) -> None:
     workbook = openpyxl.Workbook()
     first = workbook.active
     assert first is not None

@@ -358,3 +358,12 @@
   ostaje vidljiv; dock završava prije stupca s detaljima (od 1200 px). e2e ima 45 minuta i sprema izvještaj i
   kad istekne; testni podaci su artefakt `e2e-data`, pa se e2e može vrtjeti i na Windowsu
   (`PW_CHROMIUM_PATH`, `--workers=1`).
+
+### L-067 — „Provjereno na živom API-ju” koje nije bilo (2026-11-16)
+- What happened: prvi `gas-daily` nije dobio nijednu vrijednost. Upit `operationalData` filtrirao je po polju
+  `id` iz popisa točaka („5HR-TSO-0001PRD-00197entry”), a ENTSOG na to odgovara 404; prihvaća operator + točku +
+  smjer („HR-TSO-0001PRD-00197entry”). Testni stand-in je odgovarao upravo na krivi oblik.
+- Root cause: stand-in je pisan iz iste pretpostavke kao i kod, pa ju je potvrđivao umjesto provjeravao.
+- Rule going forward: oznaka se slaže iz stabilnih polja (`entsog.point_direction_of`), u oba modula. Uz to:
+  `pipeline` provjere su `ruff check .`, `ruff format --check .`, `mypy src tests` i `pytest`, sve četiri prije
+  pusha (mypy samo nad `src` propustio je šest grešaka u testovima); `%` u `help=` teksta argparsea piše se `%%`.

@@ -9,8 +9,11 @@ similar exists for oil or coal.
 Verified against the live API on 2026-09-19 (no key needed):
 
 * ``operatorpointdirections?idPointType=3&limit=-1`` lists the production points; each row carries
-  ``id`` (operator key + point key + direction, the value ``operationalData`` filters on), ``pointLabel``,
-  ``operatorKey``/``operatorLabel``, ``directionKey`` and ``tSOCountry``. There are no coordinates.
+  ``pointKey``, ``pointLabel``, ``operatorKey``/``operatorLabel``, ``directionKey`` and ``tSOCountry``.
+  There are no coordinates. ``operationalData`` filters on operator key + point key + direction
+  ("HR-TSO-0001PRD-00197entry"). The row's own ``id`` is not that value: on 2026-11-16 it carried a
+  numeric prefix and, for some points, the adjacent operator as a suffix, and the filter answered 404
+  for it. A point listed once per adjacent operator is one point with one series.
 * ``operationalData?indicator=Physical Flow&periodType=day&pointDirection=<id>&from=…&to=…`` returns one
   row per gas day (06:00-06:00 CET) in ``kWh/d``; ``value`` is a number, or ``""`` when ``isNA``.
 * HTTP 404 means "no rows", not an error.
@@ -90,22 +93,35 @@ def _text(row: dict[str, Any], key: str) -> str:
     return value.strip() if isinstance(value, str) else ""
 
 
+def point_direction_of(row: dict[str, Any]) -> str | None:
+    """The value ``operationalData`` filters on, or None for a row without the fields it is made of."""
+    operator_key, point_key, direction = (
+        _text(row, key) for key in ("operatorKey", "pointKey", "directionKey")
+    )
+    return f"{operator_key}{point_key}{direction}" if operator_key and point_key and direction else None
+
+
 def production_points(client: httpx.Client, scope: frozenset[str]) -> list[ProductionPoint]:
     """Every production entry point of a transmission operator in ``scope``, sorted by country and key."""
     rows = _get(client, "operatorpointdirections", {"idPointType": PRODUCTION_POINT_TYPE, "limit": -1})
     points: dict[str, ProductionPoint] = {}
     for row in rows:
         country = _text(row, "tSOCountry").upper()
-        point_direction = _text(row, "id")
-        if country not in scope or _text(row, "directionKey") != "entry" or not point_direction:
+        point_direction = point_direction_of(row)
+        if country not in scope or _text(row, "directionKey") != "entry" or point_direction is None:
             continue
-        points[point_direction] = ProductionPoint(
-            country=country,
-            key=_text(row, "pointKey") or point_direction,
-            point_direction=point_direction,
-            label=_text(row, "pointLabel") or _text(row, "pointKey") or point_direction,
-            operator_key=_text(row, "operatorKey"),
-            operator_label=_text(row, "operatorLabel") or _text(row, "operatorKey"),
+        operator_key = _text(row, "operatorKey")
+        point_key = _text(row, "pointKey")
+        points.setdefault(
+            point_direction,
+            ProductionPoint(
+                country=country,
+                key=point_key,
+                point_direction=point_direction,
+                label=_text(row, "pointLabel") or point_key,
+                operator_key=operator_key,
+                operator_label=_text(row, "operatorLabel") or operator_key,
+            ),
         )
     return sorted(points.values())
 

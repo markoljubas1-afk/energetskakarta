@@ -16,6 +16,7 @@ import pytest
 
 from energymap import cli
 from energymap.gas import points
+from energymap.gas.entsog import EntsogError
 
 NOW = datetime(2026, 11, 15, 9, 0, tzinfo=UTC)  # 10:00 CET: gas day 2026-11-14 is complete
 SCOPE = frozenset({"HR", "SI"})
@@ -46,10 +47,10 @@ ROWS = [
 ]
 # kWh/d by point direction and gas day; the exit at Border A reports nothing
 FLOWS = {
-    "5HR-TSO-0001ITP-00001entry": {"2026-11-13": 12_000_000.0, "2026-11-14": 15_500_000.0},
-    "5HR-TSO-0001LNG-00002entry": {"2026-11-14": 40_000_000.0},
-    "5HR-TSO-0001UGS-00003exit": {"2026-11-12": 3_000_000.0},
-    "5SI-TSO-0001ITP-00006exit": {},
+    "HR-TSO-0001ITP-00001entry": {"2026-11-13": 12_000_000.0, "2026-11-14": 15_500_000.0},
+    "HR-TSO-0001LNG-00002entry": {"2026-11-14": 40_000_000.0},
+    "HR-TSO-0001UGS-00003exit": {"2026-11-12": 3_000_000.0},
+    "SI-TSO-0001ITP-00006exit": {},
 }
 
 
@@ -116,7 +117,7 @@ def test_the_summary_is_a_table_with_flows_in_gwh(platform: Platform) -> None:
     with platform.client() as client:
         text = points.markdown(points.survey(client, NOW, SCOPE))
     assert "| HR | LNG | LNG terminal | entry | Operator HR |" in text
-    assert "| 2026-11-14 | 40.0 | `5HR-TSO-0001LNG-00002entry` |" in text
+    assert "| 2026-11-14 | 40.0 | `HR-TSO-0001LNG-00002entry` |" in text
     assert "`adjacentCountry`" in text
 
 
@@ -134,7 +135,7 @@ def test_cli_points_writes_the_file_and_prints_the_table(
 def test_one_failing_point_is_noted_and_the_survey_goes_on() -> None:
     class Flaky(Platform):
         def handle(self, request: httpx.Request) -> httpx.Response:
-            if request.url.params.get("pointDirection") == "5HR-TSO-0001LNG-00002entry":
+            if request.url.params.get("pointDirection") == "HR-TSO-0001LNG-00002entry":
                 return httpx.Response(503, text="busy")
             return super().handle(request)
 
@@ -151,5 +152,5 @@ def test_an_empty_answer_is_an_error_not_an_empty_table() -> None:
     def empty(request: httpx.Request) -> httpx.Response:
         return httpx.Response(200, json={"operatorpointdirections": []})
 
-    with httpx.Client(transport=httpx.MockTransport(empty)) as client, pytest.raises(points.EntsogError):
+    with httpx.Client(transport=httpx.MockTransport(empty)) as client, pytest.raises(EntsogError):
         points.survey(client, NOW, SCOPE)

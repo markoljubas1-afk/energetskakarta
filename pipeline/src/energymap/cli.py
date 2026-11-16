@@ -243,7 +243,7 @@ def parser() -> argparse.ArgumentParser:
             step.add_argument(
                 "--allow-drop",
                 action="store_true",
-                help=f"publish even with more than {hep_capacity.MAX_DROP:.0%} fewer substations",
+                help=f"publish even with more than {hep_capacity.MAX_DROP * 100:.0f} %% fewer substations",
             )
         if name == "publish-dir":
             step.add_argument("--out", type=Path, required=True, help="target directory, e.g. ../web/.data")

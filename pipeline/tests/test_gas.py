@@ -30,8 +30,8 @@ POINTS: list[dict[str, Any]] = [
         "idPointType": 3,
         "hasData": True,
     },
-    {  # the same point listed again: kept once
-        "id": "5HR-TSO-0001PRD-00197entry",
+    {  # the same point listed again, for an adjacent operator: kept once
+        "id": "5HR-TSO-0001PRD-00197entryHR-PSO-0001",
         "pointKey": "PRD-00197",
         "pointLabel": "Domestic production",
         "operatorKey": "HR-TSO-0001",
@@ -104,7 +104,7 @@ class Platform:
         assert path == "operationalData"
         assert request.url.params["indicator"] == "Physical Flow"
         assert request.url.params["periodType"] == "day"
-        if request.url.params["pointDirection"] == "5IT-TSO-0001PRD-00050entry":
+        if request.url.params["pointDirection"] == "IT-TSO-0001PRD-00050entry":
             return httpx.Response(404, json={"message": "No Data Found"})
         start = date.fromisoformat(request.url.params["from"])
         end = date.fromisoformat(request.url.params["to"])
@@ -113,7 +113,7 @@ class Platform:
         # the last day is not yet reported (""), the day before has a number as text
         values: list[float | str | None] = [12_500_000.0] * (len(days) - 2) + ["9800000.5", ""]
         return httpx.Response(
-            200, json={"operationalData": flow_rows("5HR-TSO-0001PRD-00197entry", days, values)}
+            200, json={"operationalData": flow_rows("HR-TSO-0001PRD-00197entry", days, values)}
         )
 
 
@@ -138,11 +138,11 @@ def test_gas_days_end_with_the_last_complete_day() -> None:
 
 def test_production_points_are_entry_points_in_scope_listed_once(client: httpx.Client) -> None:
     points = entsog.production_points(client, SCOPE)
-    assert [p.point_direction for p in points] == ["5HR-TSO-0001PRD-00197entry", "5IT-TSO-0001PRD-00050entry"]
+    assert [p.point_direction for p in points] == ["HR-TSO-0001PRD-00197entry", "IT-TSO-0001PRD-00050entry"]
     assert points[0] == entsog.ProductionPoint(
         country="HR",
         key="PRD-00197",
-        point_direction="5HR-TSO-0001PRD-00197entry",
+        point_direction="HR-TSO-0001PRD-00197entry",
         label="Domestic production",
         operator_key="HR-TSO-0001",
         operator_label="Plinacro",
@@ -158,7 +158,7 @@ def test_collect_reads_numbers_and_blanks_and_reports_what_is_missing(
     assert document["points"] == [
         {
             "key": "PRD-00197",
-            "pointDirection": "5HR-TSO-0001PRD-00197entry",
+            "pointDirection": "HR-TSO-0001PRD-00197entry",
             "label": "Domestic production",
             "country": "HR",
             "operator": "Plinacro",
@@ -166,7 +166,7 @@ def test_collect_reads_numbers_and_blanks_and_reports_what_is_missing(
         }
     ]
     # the IT point answered 404, SI has no production point at all
-    assert document["missing"] == {"points": ["5IT-TSO-0001PRD-00050entry"], "countries": ["IT", "SI"]}
+    assert document["missing"] == {"points": ["IT-TSO-0001PRD-00050entry"], "countries": ["IT", "SI"]}
     # every request asked for the whole window at once
     flows = [r for r in platform.requests if r.url.path.endswith("operationalData")]
     assert len(flows) == 2 and flows[0].url.params["from"] == "2026-09-14"

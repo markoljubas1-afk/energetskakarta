@@ -19,7 +19,7 @@ from typing import Any
 
 import httpx
 
-from energymap.gas.entsog import UNIT, EntsogError, _get, _kwh, _text, gas_days
+from energymap.gas.entsog import UNIT, EntsogError, _get, _kwh, _text, gas_days, point_direction_of
 
 log = logging.getLogger(__name__)
 
@@ -62,8 +62,8 @@ def survey(
     keys: set[str] = set()
     for row in rows:
         country = _text(row, "tSOCountry").upper()
-        point_direction = _text(row, "id")
-        if country not in scope or not point_direction or point_direction in seen:
+        point_direction = point_direction_of(row)
+        if country not in scope or point_direction is None or point_direction in seen:
             continue
         keys.update(row)
         point_key = _text(row, "pointKey")
