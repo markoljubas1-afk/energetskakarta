@@ -40,6 +40,7 @@ export interface Copy {
     fixHeading: string;
     fix: string;
     authorHeading: string;
+    authorSupportHeading: string;
     author: string[];
     authorContact: string;
     authorQrAlt: string;
@@ -263,7 +264,8 @@ const hr: Copy = {
       "Slobodni kapaciteti su informativni i ne jamče priključenje; mjerodavan je HEP ODS.",
       "Struja se u mreži miješa, pa karta ne tvrdi iz koje elektrane dolazi struja u pojedino mjesto.",
     ],
-    authorHeading: "Tko stoji iza karte",
+    authorHeading: "Tko stoji iza GridAtlasa",
+    authorSupportHeading: "Podrška i kontakt",
     author: [
       "Ovo je isključivo neovisni hobi projekt. Karta je potpuno besplatna, nema oglasa, ne tražim komercijalna sponzorstva i na njoj se ne zarađuje. Sve što vidite temelji se na otvorenim izvorima podataka.",
       "Ako vam se sviđa to što radim i želite mi simbolično pomoći u pokrivanju troškova servera i daljnjeg razvoja, možete me „počastiti kavom” putem dobrovoljne donacije preko KEKS Paya. Naravno, bez ikakve obveze – projekt je i ostaje besplatan za sve.",
@@ -585,7 +587,8 @@ const en: Copy = {
       "Free capacities are informative and do not guarantee a connection; HEP ODS is the authority.",
       "Electricity mixes in the grid, so the map does not claim which plant supplies which place.",
     ],
-    authorHeading: "Who is behind the map",
+    authorHeading: "Who is behind GridAtlas",
+    authorSupportHeading: "Support and contact",
     author: [
       "This is purely an independent hobby project. The map is completely free, has no ads, I am not looking for commercial sponsorship and it earns nothing. Everything you see is based on open data sources.",
       "If you like what I do and would like to help a little with the cost of servers and further development, you can “buy me a coffee” with a voluntary donation through KEKS Pay. No obligation, of course – the project is and stays free for everyone.",

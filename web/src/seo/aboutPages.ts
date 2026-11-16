@@ -57,10 +57,7 @@ export function aboutPage(site: SiteData, lang: Lang): StaticPage {
       { heading: about.limitsHeading, html: list(about.limits.map(e)) },
       { heading: about.downloadsHeading, html: `<p>${e(about.downloadsNote)}</p>${list(downloads)}` },
       { heading: about.fixHeading, html: `<p>${e(about.fix)}</p>` },
-      {
-        heading: about.authorHeading,
-        html: `${about.author.map((p) => `<p>${e(p)}</p>`).join("")}<p><img src="/keks-pay.png" alt="${e(about.authorQrAlt)}" width="200" height="200" loading="lazy"><br>${e(about.authorKeksTag)}: <strong>${e(AUTHOR.keksTag)}</strong></p><p>${e(about.authorContact)}: <a href="mailto:${e(AUTHOR.email)}">${e(AUTHOR.email)}</a></p>`,
-      },
+
       {
         heading: about.faqHeading,
         html: about.faq.map((f) => `<h3>${e(f.question)}</h3><p>${e(f.answer)}</p>`).join(""),
@@ -89,6 +86,34 @@ export function aboutPage(site: SiteData, lang: Lang): StaticPage {
     lastModified: site.current.createdAt,
     breadcrumbs: [home(lang)],
     apiPath: API_PATHS.index,
+  };
+}
+
+/**
+ * Who is behind GridAtlas (2026-11-16, moved out of the about page at the owner's request): the owner's own
+ * words, how to support the project and how to reach him.
+ */
+export function authorPage(site: SiteData, lang: Lang): StaticPage {
+  const about = COPY[lang].about;
+  const [first = "", ...rest] = about.author;
+  return {
+    path: PATHS[lang].author,
+    lang,
+    alternatePath: PATHS[other(lang)].author,
+    title: about.authorHeading,
+    description: first,
+    heading: about.authorHeading,
+    lead: `<p>${e(first)}</p>`,
+    sections: [
+      {
+        heading: about.authorSupportHeading,
+        html: `${rest.map((p) => `<p>${e(p)}</p>`).join("")}<p><img src="/keks-pay.png" alt="${e(about.authorQrAlt)}" width="200" height="200" loading="lazy"><br>${e(about.authorKeksTag)}: <strong>${e(AUTHOR.keksTag)}</strong></p><p>${e(about.authorContact)}: <a href="mailto:${e(AUTHOR.email)}">${e(AUTHOR.email)}</a></p>`,
+      },
+    ],
+    jsonLd: [],
+    lastModified: site.current.createdAt,
+    breadcrumbs: [home(lang)],
+    citable: false,
   };
 }
 

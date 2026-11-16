@@ -106,6 +106,8 @@ export interface StaticPage {
    * stopped deploying (2026-11-16).
    */
   markdownTwin?: false;
+  /** False for a page that is not about data (who is behind the site): it gets no "how to cite" section. */
+  citable?: false;
   /**
    * Links to neighbouring pages (the previous and next monthly report), shown after the sections but left out
    * of the page hash: a new neighbour does not make an unchanged page look changed (Faza 31).
@@ -123,6 +125,7 @@ export interface Crumb {
 interface Paths {
   about: string;
   learn: string;
+  author: string;
   api: string;
   cities: string;
   largest: string;
@@ -189,6 +192,7 @@ export const PATHS: Record<Lang, Paths> = {
   hr: {
     about: "/o-karti/",
     learn: "/edukacija/",
+    author: "/tko-stoji-iza/",
     api: "/api/",
     cities: "/gradovi/",
     largest: "/najvece-elektrane/",
@@ -209,6 +213,7 @@ export const PATHS: Record<Lang, Paths> = {
   en: {
     about: "/en/about/",
     learn: "/en/learn/",
+    author: "/en/who-is-behind/",
     api: "/en/api/",
     cities: "/en/cities/",
     largest: "/en/largest-power-plants/",

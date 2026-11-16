@@ -167,12 +167,12 @@ ${breadcrumbNav(page)}
 <h1>${e(page.heading)}</h1>
 <div class="lead">${page.lead}</div>
 ${sections}
-${citeSection(page, site)}
+${page.citable === false ? "" : citeSection(page, site)}
 </main>
 <footer>
 <p>${e(copy.nav.countries)}: ${countries}</p>
 <p>${e(copy.footer)} · ${e(i18n.t("dataVersion", { date: i18n.date(page.lastModified) }))}</p>
-<p>${e(copy.about.authorContact)}: <a href="mailto:${e(AUTHOR.email)}">${e(AUTHOR.email)}</a></p>
+<p><a href="${PATHS[page.lang].author}">${e(copy.about.authorHeading)}</a> · ${e(copy.about.authorContact)}: <a href="mailto:${e(AUTHOR.email)}">${e(AUTHOR.email)}</a></p>
 ${supportLinks(site, page.lang)
   .map((link) => `<p>${link}</p>`)
   .join("")}

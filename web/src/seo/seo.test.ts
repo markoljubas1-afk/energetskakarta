@@ -79,9 +79,9 @@ describe("buildPages", () => {
       "/objekt/osm-node-50/",
       "/objekt/dc-primjer/",
     ]);
-    // per language: about, learning corner, API, largest plants (4) + 8 countries + HR topic pages (pumped
-    // storage, solar, substations, data centres: 4) + 3 assets = 19
-    expect(pages).toHaveLength(2 * (4 + SCOPE_COUNTRIES.length + 4 + 3));
+    // per language: about, learning corner, who is behind it, API, largest plants (5) + 8 countries + HR
+    // topic pages (pumped storage, solar, substations, data centres: 4) + 3 assets = 20
+    expect(pages).toHaveLength(2 * (5 + SCOPE_COUNTRIES.length + 4 + 3));
     expect(ASSET_PAGE_MIN_MW).toBe(10);
     expect(ASSET_PAGE_MIN_KV).toBe(220);
   });
@@ -246,5 +246,25 @@ describe("about page", () => {
     expect(en.sections).toHaveLength(hr.sections.length);
     expect(renderPage(en, site)).toContain("Nothing is estimated or filled in.");
     expect(renderPage(hr, site)).toContain("Ništa se ne procjenjuje ni ne nadopunjuje.");
+  });
+});
+
+describe("who is behind the site", () => {
+  it("has its own page in both languages, off the about page, without a citation", () => {
+    const pages = buildPages(site);
+    const hr = pages.find((page) => page.path === "/tko-stoji-iza/");
+    const en = pages.find((page) => page.path === "/en/who-is-behind/");
+    if (!hr || !en) throw new Error("the author page exists in both languages");
+    expect(hr.alternatePath).toBe(en.path);
+    const html = renderPage(hr, site);
+    expect(html).toContain("<h1>Tko stoji iza GridAtlasa</h1>");
+    expect(html).toContain('<img src="/keks-pay.png"');
+    expect(html).toContain("KEKS tag: <strong>#markol363</strong>");
+    expect(html).toContain('href="mailto:marko.ljubas1@gmail.com"');
+    expect(html).not.toContain('class="cite"');
+    const about = pages.find((page) => page.path === "/o-karti/");
+    expect(about?.sections.map((section) => section.heading)).not.toContain("Tko stoji iza GridAtlasa");
+    // every static page's footer leads there
+    expect(renderPage(about ?? hr, site)).toContain('<a href="/tko-stoji-iza/">Tko stoji iza GridAtlasa</a>');
   });
 });
