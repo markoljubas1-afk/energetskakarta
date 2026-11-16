@@ -144,7 +144,7 @@ function toEnglish(template: string): string {
   const copy = COPY.en;
   const i18n = createI18n("en");
   const attr = (text: string): string => e(text);
-  let html = replaceOnce(template, /<html lang="hr">/, () => '<html lang="en">', "html lang");
+  let html = replaceOnce(template, /<html lang="hr"/, () => '<html lang="en"', "html lang");
   html = replaceOnce(
     html,
     /<title>[^<]*<\/title>/,

@@ -44,6 +44,12 @@ def test_plant_minzoom(mw: float | None, zoom: int) -> None:
     assert tiles.plant_minzoom(mw) == zoom
 
 
+@pytest.mark.parametrize(("mw", "zoom"), [(3200.0, 7), (276.0, 7), (10.0, 7), (9.9, 9), (None, 9)])
+def test_a_planned_plant_waits_for_a_closer_map(mw: float | None, zoom: int) -> None:
+    assert tiles.plant_minzoom(mw, planned=True) == zoom
+    assert tiles.PLANNED_PLANT_MINZOOM in tiles.ZOOM_STEPS
+
+
 def test_tile_feature_is_slim_and_has_no_nulls() -> None:
     feature = {
         "type": "Feature",

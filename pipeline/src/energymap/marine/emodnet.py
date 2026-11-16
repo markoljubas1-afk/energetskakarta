@@ -42,6 +42,12 @@ REGION_BOX = (5.5, 35.0, 24.5, 49.5)
 LICENSE = "EMODnet-open"
 ATTRIBUTION = "EMODnet Human Activities"
 DUPLICATE_WIND_KM = 5.0
+# EMODnet lists some projects twice, once as a point and once as an area, under slightly different names
+# ("MedWind" and "Med Wind wind farm", 8 km apart, both 2793 MW). Two records are one project when their
+# names agree once the generic words are gone, the capacity is the same and they lie this close. Phases of
+# one project ("Marche wind farm 1" and "2") keep their numbers and stay two.
+LISTED_TWICE_KM = 30.0
+_GENERIC_NAME_WORDS = ("floating", "offshore", "wind", "farm", "park")
 
 
 class EmodnetError(RuntimeError):
@@ -366,14 +372,37 @@ def merge_windfarms(
 ) -> None:
     """Add offshore wind farms that no existing wind plant (OSM or GEM) already represents."""
     existing = [p for p in plants.values() if p.technology is Technology.WIND]
+    added: list[PowerPlant] = []
     for farm in windfarms:
-        near = any(
-            haversine_m(farm.location[0], farm.location[1], p.location[0], p.location[1]) / 1000
-            <= DUPLICATE_WIND_KM
-            for p in existing
-        )
-        if near:
+        if any(_km(farm, p) <= DUPLICATE_WIND_KM for p in existing):
             stats["windfarms_already_known"] += 1
             continue
+        if any(_same_project(farm, other) for other in added):
+            stats["windfarms_listed_twice"] += 1
+            continue
         plants[farm.id] = farm
+        added.append(farm)
         stats["windfarms_added"] += 1
+
+
+def _km(a: PowerPlant, b: PowerPlant) -> float:
+    return haversine_m(a.location[0], a.location[1], b.location[0], b.location[1]) / 1000
+
+
+def _project_name(name: str | None) -> str:
+    """The name without the words every wind farm shares, case, spaces and punctuation."""
+    text = (name or "").casefold()
+    for word in _GENERIC_NAME_WORDS:
+        text = text.replace(word, "")
+    return "".join(character for character in text if character.isalnum())
+
+
+def _same_project(a: PowerPlant, b: PowerPlant) -> bool:
+    name = _project_name(a.name)
+    return (
+        name != ""
+        and name == _project_name(b.name)
+        and a.capacity_mw is not None
+        and a.capacity_mw == b.capacity_mw
+        and _km(a, b) <= LISTED_TWICE_KM
+    )

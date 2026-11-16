@@ -160,14 +160,22 @@ def substation_minzoom(max_kv: float | None) -> int:
     return 9
 
 
-def plant_minzoom(capacity_mw: float | None) -> int:
+PLANNED_PLANT_MINZOOM = 7
+
+
+def plant_minzoom(capacity_mw: float | None, planned: bool = False) -> int:
+    """A plan is a proposal, not a plant: however large, it waits until the map is closer than the
+    overview of the region, where it would otherwise compete with what stands (the 118 offshore wind
+    proposals around Italy, 100 GW on paper, covered the country's real plants)."""
     if capacity_mw is not None and capacity_mw >= 500:
-        return 3
-    if capacity_mw is not None and capacity_mw >= 100:
-        return 5
-    if capacity_mw is not None and capacity_mw >= 10:
-        return 7
-    return 9
+        zoom = 3
+    elif capacity_mw is not None and capacity_mw >= 100:
+        zoom = 5
+    elif capacity_mw is not None and capacity_mw >= 10:
+        zoom = 7
+    else:
+        zoom = 9
+    return max(zoom, PLANNED_PLANT_MINZOOM) if planned else zoom
 
 
 # ---------------------------------------------------------------- tile features
@@ -261,7 +269,7 @@ def _plant(props: Mapping[str, Any]) -> dict[str, Any]:
         "commissioningYear": props["commissioningYear"],
         "country": props["country"],
         "operator": props["operator"],
-        MINZOOM_ATTRIBUTE: plant_minzoom(props["capacityMw"]),
+        MINZOOM_ATTRIBUTE: plant_minzoom(props["capacityMw"], props["status"] == "planned"),
     }
 
 

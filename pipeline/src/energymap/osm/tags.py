@@ -278,6 +278,32 @@ def parse_capacity_mw(raw: str | None) -> float | None:
     return round(number * _POWER_FACTOR_TO_MW[match["unit"].lower()], 3)
 
 
+#: The most a single plant of each kind can plausibly have, in MW: well above the largest one in Europe
+#: (solar about 600 MW, an offshore wind project in planning about 3 GW, Bełchatów 5.1 GW, Zaporizhzhia
+#: 5.7 GW). A tagged value above it is a unit mistake, typically kW entered as MW, never a plant: three
+#: solar farms near Ravenna were tagged 10 935, 15 519 and 21 636 MW and alone added 48 GW to Italy.
+MAX_PLAUSIBLE_MW: dict[Technology, float] = {
+    Technology.SOLAR: 2_000,
+    Technology.WIND: 5_000,
+    Technology.HYDRO: 3_000,
+    Technology.PUMPED_STORAGE: 3_000,
+    Technology.GAS: 5_000,
+    Technology.COAL: 6_000,
+    Technology.LIGNITE: 6_000,
+    Technology.NUCLEAR: 8_000,
+    Technology.OIL: 4_000,
+    Technology.BIOMASS: 1_000,
+    Technology.GEOTHERMAL: 1_000,
+    Technology.BATTERY: 2_000,
+    Technology.OTHER: 2_000,
+}
+
+
+def is_plausible_mw(capacity_mw: float, technology: Technology) -> bool:
+    """Whether a tagged capacity can be that of one plant of this kind (see ``MAX_PLAUSIBLE_MW``)."""
+    return capacity_mw <= MAX_PLAUSIBLE_MW[technology]
+
+
 def parse_circuits(raw: str | None) -> int | None:
     """Total circuits. Multi-voltage lines list circuits per voltage (``"2;1"``), which are summed."""
     if not raw:

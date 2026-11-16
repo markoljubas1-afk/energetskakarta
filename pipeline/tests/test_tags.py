@@ -232,3 +232,24 @@ def test_wikidata(raw: str, expected: str | None) -> None:
 )
 def test_wikipedia(raw: str, expected: str | None) -> None:
     assert t.wikipedia({"wikipedia": raw}) == expected
+
+
+def test_every_technology_has_a_plausible_maximum() -> None:
+    assert set(t.MAX_PLAUSIBLE_MW) == set(Technology)
+
+
+@pytest.mark.parametrize(
+    ("capacity", "technology", "expected"),
+    [
+        (21_636.0, Technology.SOLAR, False),  # "Area ex S.A.R.O.M.", Ravenna: kW entered as MW
+        (10_935.0, Technology.SOLAR, False),
+        (600.0, Technology.SOLAR, True),
+        (2_000.0, Technology.SOLAR, True),  # the limit itself is allowed
+        (3_200.0, Technology.WIND, True),  # an offshore project in planning
+        (2_640.0, Technology.COAL, True),  # Brindisi "Federico II"
+        (696.0, Technology.NUCLEAR, True),  # Krško
+        (9_000.0, Technology.NUCLEAR, False),
+    ],
+)
+def test_implausible_capacity_is_recognised(capacity: float, technology: Technology, expected: bool) -> None:
+    assert t.is_plausible_mw(capacity, technology) is expected

@@ -275,3 +275,28 @@ def test_cli_marine_commands(fixtures: Path, tmp_path: Path, monkeypatch: pytest
         cli, "make_client", lambda: wfs({name: httpx.Response(503) for name in emodnet.LAYERS.values()})
     )
     assert cli.main(["marine", "fetch", "--data-dir", str(tmp_path / "z")]) == cli.EXIT_FAILED
+
+
+def test_a_project_listed_twice_is_added_once() -> None:
+    """EMODnet has "MedWind" as a point and "Med Wind wind farm" as an area, 8 km apart, both 2793 MW."""
+
+    def farm(key: int, name: str, lon: float, mw: float | None) -> PowerPlant:
+        prov = Provenance(source="emodnet", source_id=f"windfarms/{key}", license="EMODnet-open",
+                          retrieved_at=NOW)  # fmt: skip
+        return PowerPlant(id=f"emodnet:windfarms/{key}", status=Status.PLANNED, operator=None,
+                          provenance=(prov,), name=name, technology=Technology.WIND, capacity_mw=mw,
+                          commissioning_year=None, country="IT", location=(lon, 37.6))  # fmt: skip
+
+    farms = [
+        farm(213, "MedWind", 11.90, 2793.0),
+        farm(529, "Med Wind wind farm", 11.99, 2793.0),  # the same project again
+        farm(531, "Marche wind farm 1", 13.80, 480.0),
+        farm(532, "Marche wind farm 2", 13.80, 480.0),  # a second phase: its own record
+        farm(600, "MedWind", 16.50, 2793.0),  # same name and size, 400 km away: not the same
+        farm(601, "Med Wind", 11.95, 1000.0),  # same name, another size: not the same
+    ]
+    plants: dict[str, PowerPlant] = {}
+    stats: Counter[str] = Counter()
+    emodnet.merge_windfarms(plants, farms, stats)
+    assert sorted(plants) == [f"emodnet:windfarms/{key}" for key in (213, 531, 532, 600, 601)]
+    assert stats == {"windfarms_added": 5, "windfarms_listed_twice": 1}

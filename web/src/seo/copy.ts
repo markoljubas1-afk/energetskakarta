@@ -161,6 +161,8 @@ export interface Copy {
   labels: {
     technology: string;
     operating: string;
+    /** in place of a power figure when the sources state none for any plant of that kind */
+    notStated: string;
     pipeline: string;
     plants: string;
     voltage: string;
@@ -440,6 +442,7 @@ const hr: Copy = {
   labels: {
     technology: "Tehnologija",
     operating: "U pogonu",
+    notStated: "nije upisano",
     pipeline: "U izgradnji i planirano",
     plants: "Elektrane",
     voltage: "Napon",
@@ -718,6 +721,7 @@ const en: Copy = {
   labels: {
     technology: "Technology",
     operating: "Operating",
+    notStated: "not stated",
     pipeline: "Under construction and planned",
     plants: "Power plants",
     voltage: "Voltage",

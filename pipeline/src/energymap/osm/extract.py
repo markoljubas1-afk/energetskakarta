@@ -379,13 +379,19 @@ def _add_point(
     capacity = t.parse_capacity_mw(raw_capacity)
     if raw_capacity and capacity is None and raw_capacity.strip().lower() != "yes":
         result.stats["ambiguous_capacity"] += 1
+    technology = t.technology(tags)
+    if capacity is not None and not t.is_plausible_mw(capacity, technology):
+        # the plant stays on the map without a figure: a wrong one would distort every total it enters
+        log.warning("implausible capacity left out", extra={"id": key, "tagged": raw_capacity})
+        result.stats["implausible_capacity"] += 1
+        capacity = None
     result.plants[key] = PowerPlant(
         id=key,
         status=cycle.status,
         operator=operator,
         provenance=provenance,
         name=name,
-        technology=t.technology(tags),
+        technology=technology,
         capacity_mw=capacity,
         commissioning_year=t.parse_year(tags.get("start_date")),
         country=country,

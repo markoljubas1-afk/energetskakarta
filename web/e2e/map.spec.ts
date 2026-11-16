@@ -166,12 +166,13 @@ test("switches to English and keeps it on reload", async ({ page }) => {
   await expect(page.locator("[data-data-version]")).toContainText("Data from");
 });
 
-test("dark theme is remembered", async ({ page }) => {
+test("the map opens dark, and a switch to the light theme is remembered", async ({ page }) => {
   await openMap(page);
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.getByRole("button", { name: "Promijeni svijetlu ili tamnu temu" }).click();
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await page.reload();
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await expect(page.locator('[data-map-status="ready"]')).toBeVisible();
 });
 

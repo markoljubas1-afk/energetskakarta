@@ -54,7 +54,8 @@ export function countryPage(site: SiteData, lang: Lang, code: CountryCode, hubs:
           [labels.technology, labels.operating, labels.pipeline, labels.plants],
           summary.technologies.map((row) => [
             i18n.technology(row.technology),
-            i18n.power(row.operatingMw),
+            // plants are there but none has a figure in the sources: "0 MW" would read as "no wind power"
+            row.operatingMw === 0 && row.operatingPlants > 0 ? labels.notStated : i18n.power(row.operatingMw),
             i18n.power(row.pipelineMw),
             i18n.number(row.plants),
           ]),

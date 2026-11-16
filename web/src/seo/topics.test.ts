@@ -259,7 +259,7 @@ describe("home page", () => {
 
   it("has an English twin at /en/ with its own language, title, intro and alternates", () => {
     const en = homeHtml(template, site, "en");
-    expect(en).toContain('<html lang="en">');
+    expect(en).toContain('<html lang="en" data-theme="dark">');
     expect(en).toContain(
       "<title>Regional Energy Map – power plants, transmission lines and substations of Croatia and the region</title>",
     );
