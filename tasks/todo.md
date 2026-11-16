@@ -1041,6 +1041,42 @@ konzoli osim očekivanih 404 za neobjavljene ENTSO-E podatke.
 
 Redoslijed koji predlažem: A (dan), B1–B3 (dva dana), D1–D2, zatim C nakon tokena, D4 na kraju.
 
+## Faza 33 — Interaktivnost (plan 2026-11-16, čeka potvrdu pristupa)
+
+Napravljeno iz Faze 32: A1–A3, B1–B3, B5 (dio), C1, D1, D2, isticanje iz legende i pregleda, sklopljena kartica
+sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP bez kapaciteta, „O karti”.
+
+### 33-1 Brojke u „Pregledu” prate prikaz na karti
+- Cilj: pomakneš kartu na Dalmaciju i vidiš snagu i broj elektrana tog isječka.
+- Zašto ne iz postojećih podataka: pločice na malom zoomu ne nose male elektrane (pravilo `minzoom`), a indeks
+  pretrage nosi samo imenovane elektrane i nema status. Zbroj iz bilo kojeg od ta dva bio bi netočan.
+- Pristup: novi proizvod builda `summary.json`: mreža ćelija 0,25° × 0,25°, po ćeliji snaga i broj elektrana po
+  tehnologiji i statusu (i broj bez upisane snage). Web zbraja ćelije koje sijeku prikaz. Točno do veličine
+  ćelije, pa uz brojku piše „približno, po ćelijama od oko 25 km”.
+- Alternativa: status i neimenovane elektrane u indeks pretrage (točno na objekt, ali indeks koji svi preuzimaju
+  raste nekoliko puta). Odbačeno zbog težine.
+- Datoteke: `pipeline/products.py`, `publish.py`, `build.py`, testovi; web `data/summary.ts`, `OverviewPanel`,
+  `MapView` (javlja granice prikaza), testovi i e2e.
+- Rizik: redoslijed objave (web mora podnijeti build bez `summary.json`).
+- Provjera: zbroj svih ćelija jedne zemlje = `stats.json` te zemlje (test u pipelineu).
+
+### 33-2 Kartica objekta s fotografijom
+- Pristup: u buildu se za objekte s Wikidata oznakom dohvati slika (P18) i autor/licenca s Wikimedia Commonsa;
+  u podatke ide adresa umanjene slike, autor i licenca. Preglednik učitava samo sliku.
+- Odluke koje trebaju potvrdu: (a) slike se učitavaju izravno s `upload.wikimedia.org` (posjetiteljev IP vidi
+  Wikimedia) ili se kopiraju u naš bucket; (b) CSP `img-src` se širi za tu domenu; (c) build ne smije pasti kad
+  Wikimedia ne odgovara (sloj je neobavezan, kao gradovi).
+- Datoteke: novi modul `pipeline/wikimedia/`, shema (`PowerPlant.image`), `tiles.py`, web `DetailsPanel`,
+  `securityHeaders.ts`, atribucija uz sliku.
+
+### 33-3 Ostalo iz razgovora
+- [ ] Vremeplov kao film (brojač snage, automatsko puštanje).
+- [ ] Vođene ture umjesto kartice dobrodošlice.
+- [ ] Statične stranice zemalja: ključne brojke, graf, slika karte.
+- [ ] GEM: nepoznata vrsta i prazan stupac goriva kao brojač u statistici builda (L-069).
+- [ ] Opća provjera granica builda (svaki objekt unutar regije).
+- [ ] Odjeljak „Tko stoji iza karte” (čeka tekst od vlasnika).
+
 ## Faza 11 — „živa slika": što još može biti uživo (pregled 2026-09-19, odgovor na pitanje)
 
 Cilj je da što više bude **uživo**. Ovo su izvori koji to stvarno omogućuju, složeni po tome što traže:
