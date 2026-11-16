@@ -4,6 +4,7 @@
  * at a grid map; nothing here depends on a data release except the date in the footer.
  */
 import type { Lang } from "../state/url";
+import { STORIES, STORY_KEYS } from "../stories/stories";
 import { definitions, e, list } from "./markup";
 import { home, mapLink, other, PATHS, type SiteData, type StaticPage } from "./site";
 
@@ -18,6 +19,8 @@ interface LearnCopy {
   termsHeading: string;
   /** term, explanation */
   terms: [string, string][];
+  storiesHeading: string;
+  storiesIntro: string;
   tryHeading: string;
   tryIntro: string;
   /** link text, what the reader will see, the map's address parameters */
@@ -99,6 +102,9 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
         "Koliko se nove snage još može priključiti na pojedinu trafostanicu, prema podacima operatora distribucijskog sustava. Važno svakome tko planira elektranu.",
       ],
     ],
+    storiesHeading: "Vođene priče na karti",
+    storiesIntro:
+      "Priča vas vodi kroz kartu korak po korak: karta se sama pomiče i pokazuje ono o čemu čitate. Traje minutu ili dvije i možete je prekinuti kad god želite.",
     tryHeading: "Isprobajte na karti",
     tryIntro: "Svaka poveznica otvara kartu s uključenim upravo onim o čemu je riječ:",
     tries: [
@@ -198,6 +204,9 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
         "How much new power can still be connected at a given substation, according to the distribution system operator. It matters to anyone planning a plant.",
       ],
     ],
+    storiesHeading: "Guided stories on the map",
+    storiesIntro:
+      "A story takes you through the map step by step: the map moves by itself and shows what you are reading about. It takes a minute or two and you can stop whenever you like.",
     tryHeading: "Try it on the map",
     tryIntro: "Each link opens the map with exactly what it describes switched on:",
     tries: [
@@ -220,6 +229,10 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
 
 export function learnPage(site: SiteData, lang: Lang): StaticPage {
   const copy = LEARN_COPY[lang];
+  const stories = STORY_KEYS.map(
+    (key) =>
+      `<a href="${e(mapLink(lang, { story: key }))}">${e(STORIES[key].title[lang])}</a>: ${e(STORIES[key].summary[lang])}`,
+  );
   const tries = copy.tries.map(
     ([text, what, params]) => `<a href="${e(mapLink(lang, params))}">${e(text)}</a>: ${e(what)}`,
   );
@@ -232,6 +245,7 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
     heading: copy.title,
     lead: copy.lead.map((p) => `<p>${e(p)}</p>`).join(""),
     sections: [
+      { heading: copy.storiesHeading, html: `<p>${e(copy.storiesIntro)}</p>${list(stories)}` },
       {
         heading: copy.journeyHeading,
         html: `<ol>${copy.journey.map((step) => `<li>${e(step)}</li>`).join("")}</ol>`,

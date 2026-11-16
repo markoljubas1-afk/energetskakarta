@@ -2,6 +2,7 @@
  * The URL is the single source of truth for what the map shows, so every view can be shared as a link.
  * Defaults are omitted from the URL to keep links short.
  */
+import { STORY_KEYS, type StoryKey } from "../stories/keys";
 import { useCallback, useSyncExternalStore } from "react";
 
 import {
@@ -76,6 +77,8 @@ export interface AppState {
   embed: boolean;
   /** time machine: plants in operation in this year (Faza 18-3); null = off, the map shows today */
   year: number | null;
+  /** a guided story is playing (stories/stories.ts); its step is not part of the address */
+  story: StoryKey | null;
 }
 
 export const DEFAULT_VIEW: View = { lng: 16.2, lat: 44.6, zoom: 5.2 };
@@ -98,6 +101,7 @@ export function defaultState(lang: Lang): AppState {
     liveHour: null,
     embed: false,
     year: null,
+    story: null,
   };
 }
 
@@ -155,6 +159,7 @@ export function parseState(search: string, fallbackLang: Lang): AppState {
     liveHour: /^\d{4}-\d{2}-\d{2}T\d{2}([+-]\d{2})?$/.test(params.get("lt") ?? "") ? params.get("lt") : null,
     embed: params.get("embed") === "1",
     year: parseYear(params.get("y")),
+    story: STORY_KEYS.find((key) => key === params.get("story")) ?? null,
     energy: {
       area: pick(ENERGY_AREAS, params.get("ea"), defaults.energy.area),
       unit: pick(ENERGY_UNITS, params.get("eu"), defaults.energy.unit),
@@ -214,6 +219,7 @@ export function serializeState(state: AppState, fallbackLang: Lang): string {
   if (state.live && state.liveHour) params.set("lt", state.liveHour);
   if (state.embed) params.set("embed", "1");
   if (state.year !== null) params.set("y", String(state.year));
+  if (state.story) params.set("story", state.story);
   const energy = state.energy;
   if (energy.area !== defaults.energy.area) params.set("ea", energy.area);
   if (energy.unit !== defaults.energy.unit) params.set("eu", energy.unit);

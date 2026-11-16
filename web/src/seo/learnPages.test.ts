@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { LANGS } from "../state/url";
 import { parseState } from "../state/url";
+import { STORY_KEYS } from "../stories/stories";
 import { LEARN_COPY, learnPage } from "./learnPages";
 import { buildPages } from "./pages";
 import { PATHS } from "./site";
@@ -34,8 +35,13 @@ describe("the learning corner", () => {
           .join("")
           .matchAll(/href="([^"]+)"/g),
       ].map((match) => match[1] ?? "");
-      expect(links).toHaveLength(LEARN_COPY[lang].tries.length);
-      for (const [index, link] of links.entries()) {
+      const stories = links.filter((link) => link.includes("story="));
+      expect(
+        stories.map((link) => parseState(new URL(link, "https://karta.test").search, lang).story),
+      ).toEqual([...STORY_KEYS]);
+      const views = links.filter((link) => !link.includes("story="));
+      expect(views).toHaveLength(LEARN_COPY[lang].tries.length);
+      for (const [index, link] of views.entries()) {
         const asked = LEARN_COPY[lang].tries[index]?.[2] ?? {};
         const state = parseState(new URL(link.replaceAll("&amp;", "&"), "https://karta.test").search, lang);
         // every layer the link names is one the map has, and it ends up switched on

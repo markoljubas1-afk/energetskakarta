@@ -1135,7 +1135,12 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 - Poveznica u zaglavlju karte (ikona kape) i u navigaciji statičnih stranica. Test drži HR i EN u paru i
   provjerava da svaka poveznica vodi na pogled koji karta razumije.
 
-### 35-2 Vođene priče na karti (plan; nije započeto)
+### 35-2 Vođene priče na karti — GOTOVO 2026-11-16 (izvedeno po planu ispod, uz dvije razlike)
+- Tri priče u `web/src/stories/stories.ts`, `?story=<ključ>`, kartica `StoryCard` u okviru detalja, poveznice
+  s edukacijske stranice. Razlike od plana: koraci pokazuju mjesta, ne pojedine objekte (objekt može nestati
+  iz podataka, mjesto ne može), pa provjera postojanja objekata nije potrebna; istaknuti sloj koraka izvodi
+  se iz koraka, a ne sprema kao stanje. Pregledano na snimkama (računalo i mobitel), e2e `story.spec.ts`.
+- Otvoreno: ulaz u priče iz same karte (npr. s kartice dobrodošlice); sada se do njih dolazi s `/edukacija/`.
 - Cilj: priča od 4–6 koraka u kojoj se karta sama pomakne, uključi potrebne slojeve i istakne objekte dok
   čitatelj čita kratki tekst; „Dalje” i „Natrag”, izlaz u svakom trenutku vraća kartu kakva je bila.
 - Prve priče: „Put struje od elektrane do utičnice”, „Odakle struja u Hrvatskoj”, „Zašto su granice važne”

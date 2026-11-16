@@ -94,6 +94,11 @@ function initMapLibre(): void {
 
 export interface MapApi {
   flyTo: (lng: number, lat: number, zoom: number) => void;
+  /**
+   * The same, for a move the reader did not ask for by name (a step of a guided story): unhurried, and
+   * a plain jump for readers who asked their system for less motion.
+   */
+  travelTo: (lng: number, lat: number, zoom: number) => void;
   /** A PNG of the current view with the credits written into the picture. */
   snapshot: () => Promise<Blob>;
 }
@@ -454,6 +459,10 @@ export function MapView(props: Props) {
     onReady({
       flyTo: (lng, lat, zoom) => {
         map.flyTo({ center: [lng, lat], zoom, essential: true });
+      },
+      travelTo: (lng, lat, zoom) => {
+        // not `essential`: MapLibre then jumps instead of flying under prefers-reduced-motion
+        map.flyTo({ center: [lng, lat], zoom, speed: 0.9, curve: 1.3 });
       },
       snapshot: async () => {
         const canvas = await captureCanvas();

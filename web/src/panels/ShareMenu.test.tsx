@@ -35,7 +35,7 @@ describe("ShareMenu", () => {
   it("saves the map's picture under a dated name, and waits for the map before offering it", async () => {
     const user = userEvent.setup();
     const blob = new Blob(["png"], { type: "image/png" });
-    const map: MapApi = { flyTo: vi.fn(), snapshot: vi.fn().mockResolvedValue(blob) };
+    const map: MapApi = { flyTo: vi.fn(), travelTo: vi.fn(), snapshot: vi.fn().mockResolvedValue(blob) };
     vi.stubGlobal("URL", {
       ...URL,
       createObjectURL: vi.fn().mockReturnValue("blob:test"),
@@ -67,7 +67,11 @@ describe("ShareMenu", () => {
   it("reports a picture that could not be made", async () => {
     const user = userEvent.setup();
     vi.spyOn(console, "error").mockImplementation(() => undefined);
-    const map: MapApi = { flyTo: vi.fn(), snapshot: vi.fn().mockRejectedValue(new Error("no canvas")) };
+    const map: MapApi = {
+      flyTo: vi.fn(),
+      travelTo: vi.fn(),
+      snapshot: vi.fn().mockRejectedValue(new Error("no canvas")),
+    };
     renderWithI18n(<ShareMenu map={map} />);
     await user.click(screen.getByText("Podijeli"));
     await user.click(screen.getByRole("button", { name: "Preuzmi sliku (PNG)" }));

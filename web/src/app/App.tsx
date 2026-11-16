@@ -16,6 +16,8 @@ import type { InView } from "../map/inView";
 import { loadImages, photoOf } from "../data/images";
 import { NOTHING_IN_VIEW } from "../map/inView";
 import type { Spotlight } from "../map/spotlight";
+import { StoryCard } from "../panels/StoryCard";
+import { applyStep, leave, remember, sameBefore, STORIES, type Before } from "../stories/stories";
 import type { TileUrls } from "../map/layers";
 import type { MapApi } from "../map/MapView";
 import type { Selection } from "../map/selection";
@@ -294,9 +296,10 @@ function Explorer({
       escape: () => {
         if (state.selected) setState((s) => ({ ...s, selected: null }));
         else if (sheetOpen) setSheetOpen(false);
+        else if (state.story) setState((s) => ({ ...s, story: null }));
       },
     }),
-    [state.selected, sheetOpen, setState, setSheetOpen],
+    [state.selected, state.story, sheetOpen, setState, setSheetOpen],
   );
   useShortcuts(escape);
 
@@ -471,6 +474,33 @@ function Explorer({
   const [seen, setSeen] = useState<InView>(NOTHING_IN_VIEW);
   // what a legend or overview row lights on the map while it is pointed at; never part of the link
   const [spotlight, setSpotlight] = useState<Spotlight>(null);
+
+  // A guided story (stories/stories.ts): each step sets the layers, lights one kind of thing and moves the
+  // map. What the story changes is remembered while no story plays and given back when it ends.
+  const story = state.story ? STORIES[state.story] : null;
+  const [storyStep, setStoryStep] = useState(0);
+  const [storyPlaying, setStoryPlaying] = useState(state.story);
+  if (storyPlaying !== state.story) {
+    setStoryPlaying(state.story);
+    setStoryStep(0);
+  }
+  const [beforeStory, setBeforeStory] = useState<Before>(() => remember(state));
+  if (state.story === null && !sameBefore(beforeStory, state)) setBeforeStory(remember(state));
+  const step = story?.steps[storyStep] ?? null;
+  const introPlaying = intro.map !== null;
+  useEffect(() => {
+    // after the intro, which has the map to itself, and once the map can be moved
+    if (!step || !mapApi || introPlaying) return;
+    setState((s) => applyStep(s, step));
+    mapApi.travelTo(step.view.lng, step.view.lat, step.view.zoom);
+  }, [step, mapApi, introPlaying, setState]);
+  const leaveStory = (): void => {
+    setState((s) => leave(s, beforeStory));
+    const view = beforeStory.view;
+    if (view && mapApi) mapApi.travelTo(view.lng, view.lat, view.zoom);
+  };
+  // a step's own light, unless the reader is pointing at something in the legend right now
+  const shownSpotlight = spotlight ?? step?.spotlight ?? null;
   const welcomeEntries = useMemo<WelcomeEntries>(
     () => ({
       live: livePublished
@@ -531,7 +561,7 @@ function Explorer({
           <MapView
             tiles={tiles}
             regionBounds={current.tiles.grid.bounds}
-            spotlight={spotlight}
+            spotlight={shownSpotlight}
             maptilerKey={config.maptilerKey}
             live={liveOverlay}
             gas={gasFeatures}
@@ -627,7 +657,15 @@ function Explorer({
             </aside>
           )}
 
-          {welcomeShown && (
+          {story && !state.selected && (
+            <aside className={styles.details}>
+              <ErrorBoundary area="story" fallback={panelFallback}>
+                <StoryCard story={story} step={storyStep} onStep={setStoryStep} onLeave={leaveStory} />
+              </ErrorBoundary>
+            </aside>
+          )}
+
+          {welcomeShown && !story && (
             <aside className={`${styles.details} ${styles.welcome}`}>
               <Welcome entries={welcomeEntries} onClose={dismissWelcome} support={config.support} />
             </aside>
