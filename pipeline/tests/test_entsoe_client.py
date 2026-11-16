@@ -73,11 +73,20 @@ def test_rate_limit_ban_is_waited_out() -> None:
     assert sleeps == [60.0, 180.0]
 
 
-def test_a_gateway_timeout_of_the_platform_is_tried_again() -> None:
-    answers = iter([httpx.Response(599), httpx.Response(200, content=document())])
+@pytest.mark.parametrize("status", [500, 503, 527, 599])
+def test_a_failure_on_the_platforms_side_is_tried_again(status: int) -> None:
+    answers = iter([httpx.Response(status), httpx.Response(200, content=document())])
     sleeps: list[float] = []
     assert make(lambda _: next(answers), sleeps).generation("x", START, END) == []
     assert sleeps == [60.0]
+
+
+@pytest.mark.parametrize("status", [400, 404, 409])
+def test_a_request_the_platform_refuses_is_not_repeated(status: int) -> None:
+    sleeps: list[float] = []
+    with pytest.raises(ec.EntsoeError, match=f"HTTP {status}"):
+        make(lambda _: httpx.Response(status), sleeps).generation("x", START, END)
+    assert sleeps == []
 
 
 def test_gives_up_after_retries() -> None:

@@ -27,9 +27,16 @@ TOKEN_ENV = "ENTSOE_TOKEN"
 MAX_REQUESTS_PER_MINUTE = 400
 # Stay well under the limit: other tools of the same user may share the token.
 REQUESTS_PER_MINUTE = 120
-# 599 is not a standard status: the platform's gateway answers with it when its own backend does not reply
-# in time (seen on the first backfill, for one country and year out of dozens of requests).
-RETRY_STATUSES = frozenset({429, 500, 502, 503, 504, 599})
+
+
+def retryable(status: int) -> bool:
+    """Too many requests, or any failure on the platform's side. The platform sits behind a gateway that
+    answers with statuses of its own when the backend is slow or away: 599 and 527 were both seen on the
+    first day (2026-11-16), each for one request among dozens that went through. Listing them one by one
+    only finds the next one in production."""
+    return status == 429 or 500 <= status <= 599
+
+
 MAX_ATTEMPTS = 4
 
 # Energy Identification Codes (EIC) of the control areas / bidding zones (verified against entsoe-py).
@@ -185,7 +192,7 @@ class EntsoeClient:
                 raise EntsoeError(f"ENTSO-E rejected the token (HTTP {response.status_code})")
             if response.status_code == 400 and is_no_data(response.content):
                 return response.content  # "no matching data" is sometimes sent with HTTP 400
-            if response.status_code in RETRY_STATUSES and attempt < MAX_ATTEMPTS:
+            if retryable(response.status_code) and attempt < MAX_ATTEMPTS:
                 self._backoff(attempt, f"HTTP {response.status_code}", safe)
                 continue
             raise EntsoeError(f"ENTSO-E returned HTTP {response.status_code} for {safe}")

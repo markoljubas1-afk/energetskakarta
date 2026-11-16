@@ -77,7 +77,7 @@ preuzimanje → build uz usporedbu s objavljenim → izvještaj o promjenama →
 
 | Varijabla | Što uključuje | Kad je postaviti na `true` |
 |---|---|---|
-| `SCHEDULE_OSM` | `osm-scheduled` (tjedno), `emodnet-update`, `geothermal-update` i `eurostat-update` (mjesečno) | nakon prve uspješne objave (A.6); za `eurostat-update` nakon prvog uspješnog ručnog pokretanja |
+| `SCHEDULE_OSM` | `osm-scheduled` (tjedno), `emodnet-update`, `geothermal-update`, `eurostat-update` i `images-update` (mjesečno) | nakon prve uspješne objave (A.6); za `eurostat-update` nakon prvog uspješnog ručnog pokretanja |
 | `SCHEDULE_ENTSOE` | `energy-daily` (dnevno), `live-hourly` (svaki sat), `prices-daily` (dnevno, nakon dražbe dan unaprijed) | nakon uspješnog `energy-backfill` (dio D) |
 | `SCHEDULE_GAS` | `gas-daily` (dnevno, 07:40 UTC; ENTSOG, bez ključa) | nakon prvog uspješnog ručnog `gas-daily` (treba samo R2) |
 | `SCHEDULE_HEP` | `hep-daily` (dnevno; HEP ODS slobodni kapaciteti) | nakon prvog uspješnog ručnog `hep-daily` |
@@ -139,6 +139,7 @@ energy/…                              dnevna i mjesečna proizvodnja po izvori
 hep/current.json, hep/history.json    slobodni kapaciteti HEP ODS-a, povijest izdanja, hep/regions.geojson,
                                       hep/snapshots/…
 geothermal/…                          geotermalne lokacije i toplinski tok
+images/index.json, images/<hash>.jpg  fotografije elektrana s Wikimedia Commonsa (umanjene kopije, autor i licenca)
 eurostat/renewables.json              službeni udio obnovljivih izvora (Eurostat nrg_ind_ren)
 ```
 

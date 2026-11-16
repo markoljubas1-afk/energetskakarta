@@ -27,50 +27,32 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
   min-width: 0;
 }
 
-.brand strong {
-  display: block;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.2;
-}
-
-/* a quiet second line: small capitals under the name, not a second title competing with it */
-.tagline {
-  display: block;
-  margin-top: 2px;
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.09em;
-  line-height: 1.2;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
 /*
- * The mark carries the map's own light: the warm-to-cool line that runs under the intro's title. A flat
- * square in the ink colour read as a white block in the dark theme, heavier than the name next to it.
+ * The name is the logo: set a little larger and tighter than the text around it, on the map's own light
+ * (the warm-to-cool line that runs under the intro's title) as a short rule beneath it.
  */
-.mark {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--intro-warm), var(--intro-cool));
-  color: var(--intro-night);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--intro-cool) 35%, transparent);
+.brand strong {
+  position: relative;
+  padding-bottom: 5px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  white-space: nowrap;
 }
 
-:global(:root[data-theme="dark"]) .mark {
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--intro-cool) 40%, transparent),
-    0 0 16px color-mix(in srgb, var(--intro-cool) 28%, transparent);
+.brand strong::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 44px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--intro-warm), var(--intro-cool));
 }
 
 .search {
@@ -138,8 +120,10 @@
     grid-area: search;
     max-width: none;
   }
-  .tagline {
-    display: none;
+  /* two short lines on a phone, so the buttons next to the name keep their room */
+  .brand strong {
+    white-space: normal;
+    font-size: 15px;
   }
   .textButton {
     padding: 0 10px;

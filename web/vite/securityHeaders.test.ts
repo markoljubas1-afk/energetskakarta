@@ -54,4 +54,14 @@ describe("content security policy", () => {
       expect(html).not.toMatch(/\sstyle="/);
     }
   });
+  it("lets images come from the data bucket, where the photographs of plants are kept", () => {
+    const policy = contentSecurityPolicy("https://podaci.test/");
+    expect(policy).toMatch(
+      /img-src 'self' data: blob: https:\/\/api\.maptiler\.com https:\/\/podaci\.test(;|$)/,
+    );
+    // same origin in development: nothing is added, and nothing is repeated
+    expect(contentSecurityPolicy("/local-data/")).toMatch(
+      /img-src 'self' data: blob: https:\/\/api\.maptiler\.com(;|$)/,
+    );
+  });
 });

@@ -4,7 +4,6 @@ export const en: Dictionary = {
   appName: "Regional Energy Map",
   documentTitle:
     "Regional Energy Map – power plants, transmission lines and substations of Croatia and the region",
-  appTagline: "Croatia and the wider region",
   skipToMap: "Skip to map",
   searchPlaceholder: "Search for a plant, city, mine…",
   searchLabel: "Search",
@@ -103,6 +102,7 @@ export const en: Dictionary = {
   detailsInterconnector: "Interconnector",
   detailsHvdc: "Direct current (HVDC)",
   detailsEditOsm: "View or correct in OpenStreetMap",
+  photoCredit: "Photo: {author},",
   detailsNotLoaded: "This asset is outside the current view. Zoom in to see its details.",
   kind_line: "Power line",
   kind_cable: "Cable",

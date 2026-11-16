@@ -1,4 +1,4 @@
-import { ChartColumnStacked, Info, Languages, Map as MapIcon, Moon, Sun, UtilityPole } from "lucide-react";
+import { ChartColumnStacked, Info, Languages, Map as MapIcon, Moon, Sun } from "lucide-react";
 
 import { useI18n } from "../i18n";
 import { PATHS } from "../seo/pages";
@@ -24,14 +24,9 @@ export function Header({ theme, page, onPage, onToggleTheme, onToggleLang, child
       <a className={styles.skip} href="#map">
         {t("skipToMap")}
       </a>
+      {/* The name alone (decision 2026-11-16): no mark and no second line next to it. */}
       <div className={styles.brand}>
-        <span className={styles.mark} aria-hidden="true">
-          <UtilityPole size={20} strokeWidth={1.75} />
-        </span>
-        <span>
-          <strong>{t("appName")}</strong>
-          <span className={styles.tagline}>{t("appTagline")}</span>
-        </span>
+        <strong>{t("appName")}</strong>
       </div>
       <div className={styles.search}>{page === "map" ? children : null}</div>
       <div className={styles.pages} role="group" aria-label={t("pageLabel")}>

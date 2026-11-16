@@ -16,6 +16,7 @@ import { useEffect, type ReactNode } from "react";
 import { osmUrl, SECTORS } from "../domain";
 import { useI18n, type I18n } from "../i18n";
 import { latest } from "../data/gas";
+import type { Photo } from "../data/images";
 import { polyline, sparkline } from "./sparkline";
 import type { CitySelection, GasSelection, Selection } from "../map/selection";
 import styles from "./DetailsPanel.module.css";
@@ -28,6 +29,8 @@ interface Props {
   /** null while the map has not delivered the asset's properties yet */
   selection: Selection | null;
   onClose: () => void;
+  /** the asset's photograph, when the data has one (data/images.ts) */
+  photo?: Photo | null;
 }
 
 const ENTSOG_URL = "https://transparency.entsog.eu/";
@@ -254,7 +257,7 @@ function CityDetails({ city, i18n }: { city: CitySelection; i18n: I18n }) {
   );
 }
 
-export function DetailsPanel({ id, selection, onClose }: Props) {
+export function DetailsPanel({ id, selection, onClose, photo = null }: Props) {
   const i18n = useI18n();
   const { t } = i18n;
 
@@ -425,6 +428,33 @@ export function DetailsPanel({ id, selection, onClose }: Props) {
           <X size={18} strokeWidth={1.75} />
         </button>
       </div>
+      {photo && (
+        <figure className={styles.photo}>
+          {/* the copy is in our bucket: showing it does not send the reader's browser to Wikimedia */}
+          <img
+            src={photo.url}
+            alt=""
+            width={photo.width}
+            height={photo.height}
+            loading="lazy"
+            decoding="async"
+          />
+          <figcaption>
+            {t("photoCredit", { author: photo.author || t("unknown") })}{" "}
+            {photo.licenseUrl ? (
+              <a href={photo.licenseUrl} target="_blank" rel="noopener noreferrer">
+                {photo.license}
+              </a>
+            ) : (
+              photo.license
+            )}
+            {" · "}
+            <a href={photo.page} target="_blank" rel="noopener noreferrer">
+              Wikimedia Commons
+            </a>
+          </figcaption>
+        </figure>
+      )}
       {body}
       <p className={styles.source}>
         {selection && t("detailsSource", { sources: i18n.sources(selection.sources) })}

@@ -4,6 +4,7 @@ energymap osm download|build|run   OpenStreetMap grid data
 energymap tiles build              PMTiles for a build
 energymap publish r2               upload a build to Cloudflare R2
 energymap eurostat fetch|publish-* official renewable shares (Eurostat)
+energymap images update            photographs of plants from Wikimedia Commons
 """
 
 from __future__ import annotations
@@ -22,7 +23,7 @@ from pydantic import ValidationError
 
 from energymap import build as pipeline
 from energymap import config, diff, log, publish, sources, tiles
-from energymap.baseline import BaselineError
+from energymap.baseline import BaselineError, fetch_published, iter_layer
 from energymap.cities import read as cities_read
 from energymap.conflate import OverridesError
 from energymap.entsoe import fetch as energy_fetch
@@ -41,6 +42,7 @@ from energymap.geo.countries import CountryDataError
 from energymap.geothermal import publish as geothermal_publish
 from energymap.geothermal.sites import GeothermalDataError
 from energymap.hep import capacity as hep_capacity
+from energymap.images import wikimedia
 from energymap.marine import emodnet
 from energymap.osm.download import DownloadError, make_client
 from energymap.validate import BuildValidationError
@@ -268,6 +270,22 @@ def parser() -> argparse.ArgumentParser:
         if name == "publish-dir":
             step.add_argument("--out", type=Path, required=True, help="target directory, e.g. ../web/.data")
 
+    images = groups.add_parser(
+        "images", help="photographs of plants from Wikimedia Commons, copied into the bucket"
+    ).add_subparsers(dest="step", required=True)
+    images_update = images.add_parser("update", help="copy new photographs and publish their index")
+    _data_dir(images_update)
+    images_update.add_argument(
+        "--baseline-url", required=True, help="public address of the published data (plants are read from it)"
+    )
+    images_update.add_argument(
+        "--contact", default=None, help="where Wikimedia can reach the operator: the site's public address"
+    )
+    images_update.add_argument(
+        "--out", type=Path, default=None, help="publish to this directory instead of R2"
+    )
+    images_update.add_argument("--allow-drop", action="store_true", help="accept a large drop in photographs")
+
     eurostat = groups.add_parser(
         "eurostat", help="official share of energy from renewable sources (Eurostat nrg_ind_ren)"
     ).add_subparsers(dest="step", required=True)
@@ -449,6 +467,24 @@ def run(args: argparse.Namespace) -> None:
                 publish.R2Store.from_env() if args.step == "publish-r2" else publish.DirectoryStore(args.out)
             )
             geothermal_publish.publish_geothermal(geo_store, read_json(geo_file))
+    elif args.group == "images":
+        images_store: publish.ObjectStore = (
+            publish.DirectoryStore(args.out) if args.out is not None else publish.R2Store.from_env()
+        )
+        headers = {"User-Agent": wikimedia.user_agent(args.contact)}
+        with httpx.Client(timeout=60.0, headers=headers, follow_redirects=True) as client:
+            published = fetch_published(client, args.baseline_url)
+            if published is None:
+                raise BuildValidationError([f"nothing is published at {args.baseline_url}"])
+            assets = {
+                str(feature["properties"]["id"]): str(feature["properties"]["wikidata"])
+                for feature in iter_layer(client, published, "plants")
+                if feature.get("properties", {}).get("wikidata")
+            }
+            index = wikimedia.update(
+                images_store, assets, client, datetime.now(UTC), allow_drop=args.allow_drop
+            )
+        print(json.dumps({"plantsWithWikidata": len(assets), "photographs": len(index["images"])}))
     elif args.group == "eurostat":
         shares_file = paths.root / "eurostat" / "renewables.json"
         if args.step == "fetch":
@@ -577,6 +613,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         hep_capacity.HepDataError,
         eurostat_renewables.EurostatSourceError,
         eurostat_renewables.EurostatDataError,
+        wikimedia.ImagesError,
         CountryDataError,
         tiles.TilesError,
         publish.PublishError,

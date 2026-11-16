@@ -23,6 +23,7 @@ EXPECTED = {
     "emodnet-update.yml": "SCHEDULE_OSM",
     "geothermal-update.yml": "SCHEDULE_OSM",
     "eurostat-update.yml": "SCHEDULE_OSM",
+    "images-update.yml": "SCHEDULE_OSM",
     "energy-daily.yml": "SCHEDULE_ENTSOE",
     "live-hourly.yml": "SCHEDULE_ENTSOE",
     "gas-daily.yml": "SCHEDULE_GAS",

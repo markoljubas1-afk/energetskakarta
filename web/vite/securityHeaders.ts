@@ -46,7 +46,8 @@ export function contentSecurityPolicy(dataBaseUrl: string): string {
     `script-src 'self' ${ANALYTICS_SCRIPT_ORIGIN}`,
     `style-src 'self' ${STATIC_STYLE_HASH}`,
     "font-src 'self'",
-    `img-src 'self' data: blob: ${MAPTILER_ORIGIN}`,
+    // the data origin too: photographs of plants are copies kept in the bucket (src/data/images.ts)
+    `img-src ${[...new Set(["'self'", "data:", "blob:", MAPTILER_ORIGIN, dataOrigin(dataBaseUrl)].filter(Boolean))].join(" ")}`,
     `connect-src ${unique}`,
     // MapLibre runs its workers from blob URLs
     "worker-src 'self' blob:",

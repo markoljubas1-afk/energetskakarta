@@ -3,7 +3,6 @@ export const hr = {
   appName: "Regionalna energetska karta",
   /** the browser tab and what search engines show for the home page; matches <title> in index.html */
   documentTitle: "Regionalna energetska karta – elektrane, dalekovodi i trafostanice Hrvatske i regije",
-  appTagline: "Hrvatska i šira regija",
   skipToMap: "Preskoči na kartu",
   searchPlaceholder: "Traži elektranu, grad, rudnik…",
   searchLabel: "Pretraga",
@@ -101,6 +100,7 @@ export const hr = {
   detailsInterconnector: "Interkonektor",
   detailsHvdc: "Istosmjerni prijenos (HVDC)",
   detailsEditOsm: "Pogledaj ili ispravi u OpenStreetMapu",
+  photoCredit: "Foto: {author},",
   detailsNotLoaded: "Objekt je izvan trenutnog prikaza. Približite kartu da biste vidjeli detalje.",
   kind_line: "Dalekovod",
   kind_cable: "Kabel",

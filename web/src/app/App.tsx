@@ -13,6 +13,7 @@ import type { SearchHit } from "../data/search";
 import { I18nProvider, useI18n } from "../i18n";
 import type { Basemap } from "../map/basemap";
 import type { InView } from "../map/inView";
+import { loadImages, photoOf } from "../data/images";
 import { NOTHING_IN_VIEW } from "../map/inView";
 import type { Spotlight } from "../map/spotlight";
 import type { TileUrls } from "../map/layers";
@@ -492,6 +493,13 @@ function Explorer({
     [setState, setSheetOpen, current.diff, livePublished],
   );
 
+  // Photographs are asked for once, when something is first selected; a failure only means no picture.
+  const [wantImages, setWantImages] = useState(false);
+  if (state.selected !== null && !wantImages) setWantImages(true);
+  const [images] = useAsync(wantImages ? "images/index.json" : null, (signal) =>
+    loadImages(config.dataBaseUrl, signal),
+  );
+
   const closeCapacity = useCallback(() => {
     setCapStation(null);
     setState((s) => ({ ...s, layers: new Set([...s.layers].filter((layer) => layer !== "capacity")) }));
@@ -627,7 +635,16 @@ function Explorer({
           {state.selected && (
             <aside className={styles.details} aria-label={t("detailsLabel")}>
               <ErrorBoundary area="details" fallback={panelFallback}>
-                <DetailsPanel id={state.selected} selection={shownDetails} onClose={closeDetails} />
+                <DetailsPanel
+                  id={state.selected}
+                  selection={shownDetails}
+                  onClose={closeDetails}
+                  photo={
+                    images?.status === "ready" && images.value.kind === "ready"
+                      ? photoOf(images.value.index, config.dataBaseUrl, state.selected)
+                      : null
+                  }
+                />
               </ErrorBoundary>
             </aside>
           )}
