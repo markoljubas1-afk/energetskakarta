@@ -156,14 +156,15 @@ const light: Palette = {
     ],
     opacity: 0.5,
   },
+  // no room is red, room is green and darker the more there is (decision 2026-11-16; "none" used to be grey)
   capacity: {
-    none: "#C3CAD0",
+    none: "#C8493F",
     A: "#CFE8DA",
     B: "#9DD0B5",
     C: "#5BAE88",
     D: "#2A7F5E",
     ring: "#FFFFFF",
-    noneRing: "#8A949E",
+    noneRing: "#8E2A22",
   },
   geoPhase: {
     operating: "#B3261E",
@@ -249,13 +250,13 @@ const dark: Palette = {
     opacity: 0.55,
   },
   capacity: {
-    none: "#59636C",
+    none: "#D9655B",
     A: "#4B7464",
     B: "#5E9B7F",
     C: "#76C29C",
     D: "#A6E6C3",
     ring: "#1E262E",
-    noneRing: "#A3AEB8",
+    noneRing: "#F2A39B",
   },
   geoPhase: {
     operating: "#FF7A66",

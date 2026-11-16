@@ -29,8 +29,8 @@ test("a shared link opens an offshore pipeline with its source", async ({ page }
 });
 
 test("clicking the pipeline selects it; switching the layer off makes it unclickable", async ({ page }) => {
-  // centre on the middle of the first segment
-  await open(page, "v=44.65,13.85,11");
+  // centre on the middle of the first segment; the layer is off until the link (or the reader) asks for it
+  await open(page, "l=lines,pipelines&v=44.65,13.85,11");
   const canvas = page.locator("canvas.maplibregl-canvas");
   const box = await canvas.boundingBox();
   if (!box) throw new Error("map canvas has no size");

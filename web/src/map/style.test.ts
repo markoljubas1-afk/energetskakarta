@@ -108,7 +108,7 @@ describe("generated map style", () => {
   });
 
   it("draws pipelines by medium and filters them by status and country", () => {
-    const layers = style(parseState("?s=operating&c=HR", "hr"), "dark", null, false).layers;
+    const layers = style(parseState("?l=lines,pipelines&s=operating&c=HR", "hr"), "dark", null, false).layers;
     const pipelines = layers.find((layer) => layer.id === "energymap-pipelines");
     expect(pipelines).toMatchObject({ "source-layer": "pipelines", layout: { visibility: "visible" } });
     expect(JSON.stringify(pipelines)).toContain('["in","HR",["get","countries"]]');
@@ -413,7 +413,7 @@ describe("time machine", () => {
     const on = composeStyle(
       fallbackStyle(PALETTES.light),
       dataSources(tiles, { timeline: features }),
-      dataLayers({ state: parseState("?y=1963", "hr"), ...options }),
+      dataLayers({ state: parseState("?y=1963&l=lines,plants", "hr"), ...options }),
     );
     expect(validateStyleMin(on).map((e) => e.message)).toEqual([]);
     expect(on.layers.find((layer) => layer.id === "energymap-timeline-running")?.layout?.visibility).toBe(

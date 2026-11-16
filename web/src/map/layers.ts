@@ -681,8 +681,9 @@ export function dataLayers({
         cap.none,
       ],
       "circle-stroke-color": ["match", ["get", "existing"], "none", cap.noneRing, cap.ring],
-      "circle-stroke-width": ["match", ["get", "existing"], "none", 1.5, 1],
-      "circle-opacity": ["match", ["get", "existing"], "none", 0.4, 0.95],
+      "circle-stroke-width": 1,
+      // a substation with no room says so as clearly as one with room; it is drawn underneath (rank)
+      "circle-opacity": ["match", ["get", "existing"], "none", 0.8, 0.95],
     },
   });
 

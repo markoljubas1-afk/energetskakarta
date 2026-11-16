@@ -26,8 +26,11 @@ function Harness({ initial, onState }: { initial: AppState; onState: (s: AppStat
 }
 
 describe("FiltersPanel", () => {
+  // the map opens on the lines alone; these tests are about the filters of layers that are switched on
+  const WITH_PLANTS = "?l=lines%2Csubstations%2Cplants%2Cpipelines%2Cdatacenters";
+
   it("toggles layers, statuses, technologies and countries", async () => {
-    let latest = defaultState("hr");
+    let latest = parseState(WITH_PLANTS, "hr");
     const user = userEvent.setup();
     renderWithI18n(<Harness initial={latest} onState={(s) => (latest = s)} />);
 
@@ -45,17 +48,17 @@ describe("FiltersPanel", () => {
   });
 
   it("selects none and then all technologies", async () => {
-    let latest = defaultState("hr");
+    let latest = parseState(WITH_PLANTS, "hr");
     const user = userEvent.setup();
     renderWithI18n(<Harness initial={latest} onState={(s) => (latest = s)} />);
     await user.click(screen.getByRole("button", { name: "Ništa" }));
     expect(latest.technologies.size).toBe(0);
     await user.click(screen.getByRole("button", { name: "Sve" }));
-    expect(serializeState(latest, "hr")).toBe("");
+    expect(serializeState(latest, "hr")).toBe(WITH_PLANTS);
   });
 
   it("sets a minimum capacity", async () => {
-    let latest = defaultState("hr");
+    let latest = parseState(WITH_PLANTS, "hr");
     const user = userEvent.setup();
     renderWithI18n(<Harness initial={latest} onState={(s) => (latest = s)} />);
     await user.selectOptions(screen.getByRole("combobox", { name: "Najmanja snaga elektrane" }), "100");

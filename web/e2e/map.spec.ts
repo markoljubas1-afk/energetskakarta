@@ -85,7 +85,7 @@ test("a plant known only to Global Energy Monitor is searchable, shareable and c
 });
 
 test("clicking an asset on the map selects it; hiding its layer makes it unclickable", async ({ page }) => {
-  await openMap(page, `?${view(RHE.lat, RHE.lon, 12)}`);
+  await openMap(page, `?l=lines,substations,plants&${view(RHE.lat, RHE.lon, 12)}`);
   const canvas = page.locator("canvas.maplibregl-canvas");
   const box = await canvas.boundingBox();
   if (!box) throw new Error("map canvas has no size");
@@ -111,7 +111,7 @@ test("clicking an asset on the map selects it; hiding its layer makes it unclick
 test("resting the pointer on an asset shows a tooltip and highlights it; leaving clears both", async ({
   page,
 }) => {
-  await openMap(page, `?${view(RHE.lat, RHE.lon, 12)}`);
+  await openMap(page, `?l=lines,plants&${view(RHE.lat, RHE.lon, 12)}`);
   const canvas = page.locator("canvas.maplibregl-canvas");
   const box = await canvas.boundingBox();
   if (!box) throw new Error("map canvas has no size");

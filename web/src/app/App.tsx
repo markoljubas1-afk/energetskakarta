@@ -70,6 +70,19 @@ const LAYER_OF_HIT = {
   extraction: "extraction",
 } as const satisfies Record<SearchHit["kind"], LayerKey>;
 
+const LAYER_OF_SELECTION = {
+  line: "lines",
+  cable: "lines",
+  substation: "substations",
+  pipeline: "pipelines",
+  charger: "chargers",
+  extraction: "extraction",
+  datacenter: "datacenters",
+  plant: "plants",
+  city: "cities",
+  gas: "gas",
+} as const satisfies Record<Selection["kind"], LayerKey>;
+
 /** Map features of each optional layer's release; module-level so they are stable (useOverlay). */
 type Ready<L> = Extract<L, { kind: "ready" }>;
 const gasFeaturesOf = (loaded: Ready<GasLoad>) => gasOverlay(loaded.gas);
@@ -419,7 +432,14 @@ function Explorer({
   const onSelect = useCallback(
     (selection: Selection | null) => {
       setDetails(selection);
-      setState((s) => ({ ...s, selected: selection?.id ?? null }));
+      // a link to an object whose layer is off (most are, by default) switches that layer on: the details
+      // of something that is not on the map would read as a mistake
+      const layer = selection ? LAYER_OF_SELECTION[selection.kind] : null;
+      setState((s) => ({
+        ...s,
+        selected: selection?.id ?? null,
+        layers: layer && !s.layers.has(layer) ? new Set([...s.layers, layer]) : s.layers,
+      }));
     },
     [setState],
   );

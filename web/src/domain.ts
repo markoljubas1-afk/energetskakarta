@@ -45,9 +45,13 @@ export const LAYER_KEYS = [
   "geothermal",
   "capacity",
 ] as const;
-/** The distribution network is heavy and specialised, so it starts switched off; so do cities, which
- * are consumption, not the grid, and would otherwise sit on top of every plant. */
-export const DEFAULT_LAYER_KEYS = ["lines", "substations", "plants", "pipelines", "datacenters"] as const;
+/**
+ * The map opens on the transmission lines alone (decision 2026-11-16): the grid is the picture, and with
+ * substations, plants, pipelines and data centres all on, the first screen was crowded before anyone had
+ * asked for anything. Everything else is one tick away, and a search result, a shared link or a page's
+ * "open on the map" switches on the layer of what it points at.
+ */
+export const DEFAULT_LAYER_KEYS = ["lines"] as const;
 /** Downloadable files, in the order the download menu lists them (pipeline tiles.py LAYERS). */
 export const DOWNLOAD_KEYS = [
   "lines",

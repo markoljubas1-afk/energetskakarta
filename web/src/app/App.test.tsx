@@ -46,7 +46,8 @@ const STATS = {
   substations: {},
   lineKm: {},
 };
-const ROUTES = { "/current.json": CURRENT_FIXTURE, "/stats.json": STATS };
+// the welcome card asks whether live flows are published; this build has none (404)
+const ROUTES = { "/live/current.json": null, "/current.json": CURRENT_FIXTURE, "/stats.json": STATS };
 
 beforeEach(() => {
   mapProps.current = null;
@@ -62,7 +63,8 @@ describe("App", () => {
     vi.stubGlobal("fetch", vi.fn(routeFetch(ROUTES)));
     render(<App config={config} />);
     expect(screen.getByRole("status")).toHaveTextContent("Učitavanje podataka…");
-    expect(await screen.findByRole("button", { name: "fake map" })).toBeInTheDocument();
+    // the first test of the file also pays for loading the whole application: the default second is too short
+    expect(await screen.findByRole("button", { name: "fake map" }, { timeout: 5000 })).toBeInTheDocument();
     expect(mapProps.current?.tiles).toEqual({
       grid: "https://podaci.test/builds/20260916T120000Z/grid.pmtiles",
       boundaries: "https://podaci.test/builds/20260916T120000Z/boundaries.pmtiles",
@@ -97,10 +99,11 @@ describe("App", () => {
     const user = userEvent.setup();
     render(<App config={config} />);
     await user.click(await screen.findByRole("button", { name: "fake map" }));
-    expect(window.location.search).toBe("?sel=osm%3Anode%2F50");
+    // the substation's layer is off by default: selecting it switches the layer on, and the link says so
+    expect(window.location.search).toBe("?l=lines%2Csubstations&sel=osm%3Anode%2F50");
     expect(screen.getByRole("heading", { name: "TS Žerjavinec" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Zatvori detalje" }));
-    expect(window.location.search).toBe("");
+    expect(window.location.search).toBe("?l=lines%2Csubstations");
     expect(screen.queryByRole("heading", { name: "TS Žerjavinec" })).not.toBeInTheDocument();
   });
 

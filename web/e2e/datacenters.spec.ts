@@ -55,11 +55,12 @@ test("data centres are searchable and picking one switches its layer on", async 
 });
 
 test("the layer can be switched off, and says plainly that it is incomplete", async ({ page }) => {
-  await open(page, "v=45.78,15.95,11");
+  // the map opens on the lines alone; the link switches the layer on
+  await open(page, "l=lines,datacenters&v=45.78,15.95,11");
   const toggle = page.getByRole("button", { name: "Filtri i pregled" });
   if (await toggle.isVisible()) await toggle.click();
   const checkbox = page.getByRole("checkbox", { name: "Podatkovni centri" });
-  await expect(checkbox).toBeChecked(); // few of them, so the layer starts on
+  await expect(checkbox).toBeChecked();
   // the note waits behind the "i" beside the switch
   await page.getByRole("button", { name: "O sloju: Podatkovni centri" }).click();
   await expect(page.getByText(/Popis nije potpun/)).toBeVisible();

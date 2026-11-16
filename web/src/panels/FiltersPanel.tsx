@@ -336,24 +336,29 @@ export function FiltersPanel({
             ))}
           </select>
         </Section>
-
-        <Section title={t("timeMachine")}>
-          <p className={styles.hint}>{timeMachine ? t("timeMachineHint") : t("timeMachineNone")}</p>
-          <button
-            type="button"
-            className={styles.action}
-            disabled={!timeMachine}
-            aria-pressed={state.year !== null}
-            onClick={() => {
-              // opens on the current year; the bar plays from the beginning (Faza 18-3)
-              update((s) => ({ year: s.year === null ? new Date().getFullYear() : null }));
-            }}
-          >
-            <History size={15} strokeWidth={1.75} aria-hidden="true" />
-            {state.year === null ? t("timeMachineOpen") : t("timeClose")}
-          </button>
-        </Section>
       </fieldset>
+
+      <Section title={t("timeMachine")}>
+        <p className={styles.hint}>{timeMachine ? t("timeMachineHint") : t("timeMachineNone")}</p>
+        <button
+          type="button"
+          className={styles.action}
+          disabled={!timeMachine}
+          aria-pressed={state.year !== null}
+          onClick={() => {
+            // opens on the current year; the bar plays from the beginning (Faza 18-3). The time machine
+            // is about plants, so it switches their layer on: without them it would play over an empty map
+            update((s) =>
+              s.year === null
+                ? { year: new Date().getFullYear(), layers: new Set([...s.layers, "plants"]) }
+                : { year: null },
+            );
+          }}
+        >
+          <History size={15} strokeWidth={1.75} aria-hidden="true" />
+          {state.year === null ? t("timeMachineOpen") : t("timeClose")}
+        </button>
+      </Section>
 
       <Section title={t("countries")}>
         <div className={styles.chips}>
