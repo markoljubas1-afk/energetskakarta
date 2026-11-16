@@ -8,7 +8,7 @@ import {
   Gauge,
   GraduationCap,
   Info,
-  Languages,
+  Globe,
   Map as MapIcon,
   type LucideIcon,
 } from "lucide-react";
@@ -130,7 +130,7 @@ const ICONS = {
   cities: icon(Building2),
   capacity: icon(Gauge),
   api: icon(Braces),
-  language: icon(Languages),
+  language: icon(Globe),
 };
 
 export function renderPage(page: StaticPage, site: SiteData): string {

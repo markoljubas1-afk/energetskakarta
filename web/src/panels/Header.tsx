@@ -1,4 +1,4 @@
-import { ChartColumnStacked, GraduationCap, Info, Languages, Map as MapIcon, Moon, Sun } from "lucide-react";
+import { ChartColumnStacked, GraduationCap, Info, Globe, Map as MapIcon, Moon, Sun } from "lucide-react";
 
 import { useI18n } from "../i18n";
 import { PATHS } from "../seo/pages";
@@ -65,7 +65,7 @@ export function Header({ theme, page, onPage, onToggleTheme, onToggleLang, child
           onClick={onToggleLang}
           aria-label={t("languageToggleLabel")}
         >
-          <Languages size={16} strokeWidth={1.75} aria-hidden="true" />
+          <Globe size={16} strokeWidth={1.75} aria-hidden="true" />
           <span className={styles.buttonLabel}>{t("languageToggle")}</span>
         </button>
         <button
