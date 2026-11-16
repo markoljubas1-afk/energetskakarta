@@ -27,7 +27,9 @@ TOKEN_ENV = "ENTSOE_TOKEN"
 MAX_REQUESTS_PER_MINUTE = 400
 # Stay well under the limit: other tools of the same user may share the token.
 REQUESTS_PER_MINUTE = 120
-RETRY_STATUSES = frozenset({429, 500, 502, 503, 504})
+# 599 is not a standard status: the platform's gateway answers with it when its own backend does not reply
+# in time (seen on the first backfill, for one country and year out of dozens of requests).
+RETRY_STATUSES = frozenset({429, 500, 502, 503, 504, 599})
 MAX_ATTEMPTS = 4
 
 # Energy Identification Codes (EIC) of the control areas / bidding zones (verified against entsoe-py).

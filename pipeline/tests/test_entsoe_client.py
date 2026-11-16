@@ -73,6 +73,13 @@ def test_rate_limit_ban_is_waited_out() -> None:
     assert sleeps == [60.0, 180.0]
 
 
+def test_a_gateway_timeout_of_the_platform_is_tried_again() -> None:
+    answers = iter([httpx.Response(599), httpx.Response(200, content=document())])
+    sleeps: list[float] = []
+    assert make(lambda _: next(answers), sleeps).generation("x", START, END) == []
+    assert sleeps == [60.0]
+
+
 def test_gives_up_after_retries() -> None:
     sleeps: list[float] = []
     with pytest.raises(ec.EntsoeError, match="HTTP 503"):
