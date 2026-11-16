@@ -80,7 +80,9 @@ test.describe("without JavaScript", () => {
 
   test("the home page still says what the site is and links to the static pages", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("GridAtlas");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "GridAtlas: Regionalna energetska karta",
+    );
     await expect(page.getByRole("link", { name: /O karti/ })).toHaveAttribute("href", "/o-karti/");
     // the intro list and the country summary both link Slovenia
     await expect(page.getByRole("link", { name: "Slovenija" }).first()).toHaveAttribute(
@@ -101,7 +103,7 @@ test.describe("the English map at /en/", () => {
   test("is English before any script runs, with alternates to the Croatian one", async ({ page }) => {
     await page.goto("/en/");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("GridAtlas");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("GridAtlas: Regional energy map");
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "http://localhost:4173/en/");
     await expect(page.locator('link[rel="alternate"][hreflang="hr"]')).toHaveAttribute(
       "href",

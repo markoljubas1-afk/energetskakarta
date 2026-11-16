@@ -391,3 +391,13 @@
 - Root cause: broj stranica raste s podacima, a ograničenje Cloudflare Pagesa nije bilo nigdje u kodu.
 - Rule going forward: stranica jednog objekta nema Markdown blizanca (ima JSON u API-ju); `prerender` odbija
   build koji bi prešao `PAGES_FILE_LIMIT` i kaže brojke. Novo ograničenje domaćina upisuje se kao provjera u buildu.
+
+### L-071 — Promjena vidljivog teksta bez pokretanja e2e testova koji ga čitaju (2026-11-16)
+- What happened: pri preimenovanju u GridAtlas naslovu početne stranice dodan je opis („GridAtlas: Regionalna
+  energetska karta”). Jedinični testovi su ažurirani i prošli, ali `e2e/seo.spec.ts` je i dalje očekivao samo
+  ime, pa je objava dvaju commitova (ime, semafor) pala na e2e i stranica nije objavljena.
+- Root cause: lokalno je pokrenut samo `npm run check` (bez e2e), a tekst je promijenjen nakon automatske
+  zamjene koja je e2e datoteke već „popravila” na staru vrijednost.
+- Rule going forward: nakon promjene bilo kojeg vidljivog teksta pretraži `e2e/` za stari i novi tekst i pokreni
+  pogođene e2e datoteke lokalno prije slanja; „check prolazi” ne znači da prolazi i e2e.
+
