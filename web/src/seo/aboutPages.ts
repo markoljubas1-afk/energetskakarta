@@ -5,7 +5,7 @@ import { DATA_SOURCES, DOWNLOAD_KEYS, isOneOf } from "../domain";
 import { createI18n } from "../i18n";
 import { DOWNLOAD_LABELS } from "../i18n/labels";
 import type { Lang } from "../state/url";
-import { COPY } from "./copy";
+import { AUTHOR, COPY } from "./copy";
 import { definitions, e, list } from "./markup";
 import { API_PATHS } from "./paths";
 import {
@@ -22,9 +22,6 @@ import {
 import { supportLinks } from "./support";
 import { hasFeed } from "./feed";
 import { SCOPE_COUNTRIES } from "../domain";
-
-/** The author's public contact, shown on the about page at their request (2026-11-16). */
-export const AUTHOR_EMAIL = "marko.ljubas1@gmail.com";
 
 export function aboutPage(site: SiteData, lang: Lang): StaticPage {
   const copy = COPY[lang];
@@ -62,7 +59,7 @@ export function aboutPage(site: SiteData, lang: Lang): StaticPage {
       { heading: about.fixHeading, html: `<p>${e(about.fix)}</p>` },
       {
         heading: about.authorHeading,
-        html: `${about.author.map((p) => `<p>${e(p)}</p>`).join("")}<p><img src="/keks-pay.png" alt="${e(about.authorQrAlt)}" width="200" height="200" loading="lazy"></p><p>${e(about.authorContact)}: <a href="mailto:${e(AUTHOR_EMAIL)}">${e(AUTHOR_EMAIL)}</a></p>`,
+        html: `${about.author.map((p) => `<p>${e(p)}</p>`).join("")}<p><img src="/keks-pay.png" alt="${e(about.authorQrAlt)}" width="200" height="200" loading="lazy"><br>${e(about.authorKeksTag)}: <strong>${e(AUTHOR.keksTag)}</strong></p><p>${e(about.authorContact)}: <a href="mailto:${e(AUTHOR.email)}">${e(AUTHOR.email)}</a></p>`,
       },
       {
         heading: about.faqHeading,

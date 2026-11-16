@@ -6,6 +6,9 @@ import type { CountryCode, Technology } from "../domain";
 import type { Lang } from "../state/url";
 
 /** A topic page per country: one per plant technology, plus substations, data centres and extraction sites. */
+/** The author's public contact and KEKS Pay tag, shown at their request (2026-11-16). */
+export const AUTHOR = { email: "marko.ljubas1@gmail.com", keksTag: "#markol363" } as const;
+
 export type HubKey = Technology | "substations" | "datacenters" | "extraction";
 
 export interface Faq {
@@ -40,6 +43,7 @@ export interface Copy {
     author: string[];
     authorContact: string;
     authorQrAlt: string;
+    authorKeksTag: string;
     sourcesHeading: string;
     updatesHeading: string;
     updates: string;
@@ -259,6 +263,7 @@ const hr: Copy = {
     ],
     authorContact: "Kontakt: Marko Ljubas, e-mail",
     authorQrAlt: "QR kod za donaciju preko KEKS Paya",
+    authorKeksTag: "KEKS tag",
     fixHeading: "Našli ste grešku?",
     fix: "Većina podataka dolazi iz OpenStreetMapa, koji svatko može urediti. Ispravak upisan ondje pojavit će se na karti nakon sljedećeg tjednog osvježavanja, i od njega imaju korist svi koji te podatke koriste.",
     sourcesHeading: "Izvori i licence",
@@ -579,6 +584,7 @@ const en: Copy = {
     ],
     authorContact: "Contact: Marko Ljubas, email",
     authorQrAlt: "QR code for a donation through KEKS Pay",
+    authorKeksTag: "KEKS tag",
     fixHeading: "Found a mistake?",
     fix: "Most of the data comes from OpenStreetMap, which anyone can edit. A correction made there appears on the map after the next weekly refresh, and everyone who uses that data benefits from it.",
     sourcesHeading: "Sources and licences",

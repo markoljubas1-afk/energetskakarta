@@ -5,7 +5,7 @@
 import { SCOPE_COUNTRIES } from "../domain";
 import { createI18n } from "../i18n";
 import { LANGS } from "../state/url";
-import { COPY } from "./copy";
+import { AUTHOR, COPY } from "./copy";
 import { FEED_PATHS, hasFeed } from "./feed";
 import { jsonLdScript, OG_IMAGE } from "./home";
 import { pageCitation } from "./citation";
@@ -141,6 +141,7 @@ ${citeSection(page, site)}
 <footer>
 <p>${e(copy.nav.countries)}: ${countries}</p>
 <p>${e(copy.footer)} · ${e(i18n.t("dataVersion", { date: i18n.date(page.lastModified) }))}</p>
+<p>${e(copy.about.authorContact)}: <a href="mailto:${e(AUTHOR.email)}">${e(AUTHOR.email)}</a></p>
 ${supportLinks(site, page.lang)
   .map((link) => `<p>${link}</p>`)
   .join("")}
