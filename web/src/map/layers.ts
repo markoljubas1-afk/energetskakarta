@@ -65,6 +65,7 @@ import {
   LINE_GLOW_LAYER,
   LIVE_SOURCE,
   PRICE_FILL_LAYER,
+  SOLAR_SOURCE,
   TIMELINE_SOURCE,
   TRAVEL_SOURCE,
   type OptIn,
@@ -97,6 +98,7 @@ export {
   optedIn,
   PRICE_FILL_LAYER,
   SELECTABLE,
+  SOLAR_SOURCE,
   TIMELINE_SOURCE,
   TRAVEL_SOURCE,
   type OptIn,
@@ -128,6 +130,8 @@ export interface LayerOptions {
   chargerOverviewBelow?: number | null;
   /** the grid next to the selected plant (data/nearby.ts): its substation and lines are lit; null: nothing */
   around?: Around | null;
+  /** the solar potential picture is declared as a source (layer on and published): draw it */
+  solar?: boolean;
 }
 
 export function dataLayers({
@@ -140,6 +144,7 @@ export function dataLayers({
   spotlight = null,
   chargerOverviewBelow = null,
   around = null,
+  solar = false,
 }: LayerOptions): LayerSpecification[] {
   // Added only while something is lit or the time machine runs: otherwise the style is exactly what it
   // always was. A spotlight wins over the time machine: it is the reader's own, momentary question.
@@ -159,6 +164,17 @@ export function dataLayers({
   const { distribution: showDistribution, chargers: showChargers, extraction: showExtraction } = optIn;
   const show = (key: LayerKey) => visible(state.layers.has(key));
   const layers: LayerSpecification[] = [];
+
+  // Solar potential: a picture under everything else, see-through enough for borders and coast to
+  // show, so lines and plants are read on top of it.
+  if (solar) {
+    layers.push({
+      id: `${LAYER_PREFIX}solar`,
+      type: "raster",
+      source: SOLAR_SOURCE,
+      paint: { "raster-opacity": 0.72, "raster-fade-duration": 0 },
+    });
+  }
 
   if (maskOutside) {
     layers.push({

@@ -3,6 +3,8 @@
  * opt-in archives and the sources themselves for a build's tiles and the overlays the app has loaded.
  */
 import type { FeatureCollection } from "geojson";
+
+import type { SolarImage } from "../data/solar";
 import type { SourceSpecification } from "maplibre-gl";
 
 import type { LayerKey } from "../domain";
@@ -25,6 +27,8 @@ export const GEOTHERMAL_SITES_LAYER = `${LAYER_PREFIX}geothermal-sites`;
 export const CAPACITY_SOURCE = "energymap-capacity";
 /** the point of light of a guided story and its trail (stories/travel.ts); filled by MapApi.showTraveller */
 export const TRAVEL_SOURCE = "energymap-travel";
+/** the solar potential picture (data/solar.ts); declared only while the layer is on and published */
+export const SOLAR_SOURCE = "energymap-solar";
 export const CAPACITY_LAYER = `${LAYER_PREFIX}capacity`;
 /** retired plants for the time machine (data/timeline.ts); a GeoJSON source like the live layer */
 export const TIMELINE_SOURCE = "energymap-timeline";
@@ -130,11 +134,20 @@ export interface Overlays {
   timeline?: FeatureCollection | null;
   geothermal?: FeatureCollection | null;
   capacity?: FeatureCollection | null;
+  /** the solar potential picture and its corners, while that layer is on */
+  solar?: SolarImage | null;
 }
 
 export function dataSources(
   urls: TileUrls,
-  { live = null, gas = null, timeline = null, geothermal = null, capacity = null }: Overlays = {},
+  {
+    live = null,
+    gas = null,
+    timeline = null,
+    geothermal = null,
+    capacity = null,
+    solar = null,
+  }: Overlays = {},
   optIn: OptIn = NOTHING_OPTED_IN,
 ): Record<string, SourceSpecification> {
   // Only while the layer is on. MapLibre reads an archive's header as soon as its source exists, so
@@ -155,6 +168,21 @@ export function dataSources(
   // build, in the shape MapLibre reads (GeoJSON), so nothing has to pass through the app.
   if (optIn.chargers && urls.chargerOverview !== undefined) {
     optional[CHARGER_OVERVIEW_SOURCE] = { type: "geojson", data: urls.chargerOverview };
+  }
+  if (solar) {
+    const [west, south, east, north] = solar.bounds;
+    // the picture's rows are spaced as the map's projection spaces latitude (pipeline solar/potential.py),
+    // so stretching it between its four corners puts every cell where it belongs
+    optional[SOLAR_SOURCE] = {
+      type: "image",
+      url: solar.url,
+      coordinates: [
+        [west, north],
+        [east, north],
+        [east, south],
+        [west, south],
+      ],
+    };
   }
   return {
     // always present, so switching the live layer on or off is a plain data/visibility diff

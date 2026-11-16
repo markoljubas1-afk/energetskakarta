@@ -685,3 +685,36 @@ describe("the grid next to a selected plant", () => {
     expect(ids(dataLayers({ state, ...options }))).toEqual([]);
   });
 });
+
+describe("the solar potential picture", () => {
+  const options = { palette: PALETTES.dark, labels: null, maskOutside: false, optIn: NOTHING_OPTED_IN };
+  const picture = {
+    url: "https://podaci.test/solar/pvout-0123456789abcdef.png",
+    bounds: [6, 35, 24, 50] as [number, number, number, number],
+  };
+
+  it("lies under everything else, between its four corners", () => {
+    const state = parseState("?l=lines,solar", "hr");
+    const layers = dataLayers({ state, ...options, solar: true });
+    expect(layers[0]?.id).toBe("energymap-solar");
+    const sources = dataSources(tiles, { solar: picture });
+    expect(sources["energymap-solar"]).toEqual({
+      type: "image",
+      url: picture.url,
+      coordinates: [
+        [6, 50],
+        [24, 50],
+        [24, 35],
+        [6, 35],
+      ],
+    });
+    const composed = composeStyle(fallbackStyle(PALETTES.dark), sources, layers);
+    expect(validateStyleMin(composed).map((e) => e.message)).toEqual([]);
+  });
+
+  it("is neither a source nor a layer until it is there to draw", () => {
+    expect(dataSources(tiles, {})["energymap-solar"]).toBeUndefined();
+    const layers = dataLayers({ state: parseState("?l=lines,solar", "hr"), ...options });
+    expect(layers.some((layer) => layer.id === "energymap-solar")).toBe(false);
+  });
+});

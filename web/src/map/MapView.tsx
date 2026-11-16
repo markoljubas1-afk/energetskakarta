@@ -46,6 +46,7 @@ import {
 import { TRAVEL_SOURCE } from "./sources";
 import type { Traveller } from "../stories/travel";
 import type { Around } from "../data/nearby";
+import type { SolarImage } from "../data/solar";
 import type { StyleState } from "./filters";
 import { firstViewBounds } from "./firstView";
 import { BREATH_EVERY_MS, BREATH_FADE_MS, BREATH_STEP_MS, breathes, breathPeak } from "./glowBreath";
@@ -147,6 +148,10 @@ interface Props {
   state: AppState;
   /** one technology or voltage lit from the legend or the overview (spotlight.ts) */
   spotlight?: Spotlight;
+  /** the solar potential picture, while that layer is on and published (data/solar.ts) */
+  solar?: SolarImage | null;
+  /** a click on the map that hit nothing: where it was (the solar layer reads a value there) */
+  onPoint?: (point: { lng: number; lat: number }) => void;
   /** the grid next to the selected plant, lit on the map (data/nearby.ts) */
   around?: Around | null;
   onViewChange: (view: { lng: number; lat: number; zoom: number }) => void;
@@ -186,7 +191,9 @@ export function MapView(props: Props) {
   const around = props.around ?? null;
   const geothermal = props.geothermal ?? null;
   const capacity = props.capacity ?? null;
+  const solar = props.solar ?? null;
   const { onViewChange, onSelect, onBasemap, onReady, onInView, onGeothermalSite, onCapacityStation } = props;
+  const { onPoint } = props;
   const intro = props.intro ?? null;
   const { onIntroReady, onIntroDone } = props;
   const i18n = useI18n();
@@ -211,6 +218,7 @@ export function MapView(props: Props) {
     onInView,
     onGeothermalSite,
     onCapacityStation,
+    onPoint,
     onIntroReady,
     onIntroDone,
   });
@@ -225,6 +233,7 @@ export function MapView(props: Props) {
       onInView,
       onGeothermalSite,
       onCapacityStation,
+      onPoint,
       onIntroReady,
       onIntroDone,
     };
@@ -347,6 +356,7 @@ export function MapView(props: Props) {
       const selection = feature ? toSelection(feature) : null;
       resolvedRef.current = selection?.id ?? null;
       callbacks.current.onSelect(selection);
+      if (!selection) callbacks.current.onPoint?.({ lng: event.lngLat.lng, lat: event.lngLat.lat });
     });
     const clearHover = (): void => {
       const previous = hoveredRef.current;
@@ -606,12 +616,13 @@ export function MapView(props: Props) {
       livePrices: live?.prices ?? null,
       spotlight,
       around,
+      solar: solar !== null,
       chargerOverviewBelow:
         tiles.chargerOverview !== undefined && tiles.chargers ? tiles.chargers.minZoom : null,
     });
     const composed = composeStyle(
       value.style,
-      dataSources(tiles, { live: live?.features ?? null, gas, timeline, geothermal, capacity }, optIn),
+      dataSources(tiles, { live: live?.features ?? null, gas, timeline, geothermal, capacity, solar }, optIn),
       stage === null ? layers : introLayers(layers, stage, palette),
       reducedMotion,
     );
@@ -638,6 +649,7 @@ export function MapView(props: Props) {
     timeline,
     geothermal,
     capacity,
+    solar,
     reducedMotion,
     stage,
     flight,

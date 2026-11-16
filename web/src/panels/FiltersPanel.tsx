@@ -14,6 +14,7 @@ import {
   Server,
   ThermometerSun,
   Spline,
+  SunMedium,
   Zap,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
@@ -69,7 +70,7 @@ export const LAYER_GROUPS: readonly { key: "grid" | "energy"; layers: readonly L
   { key: "grid", layers: ["lines", "substations", "capacity", "pipelines", "distribution"] },
   {
     key: "energy",
-    layers: ["plants", "geothermal", "extraction", "gas", "cities", "datacenters", "chargers"],
+    layers: ["plants", "solar", "geothermal", "extraction", "gas", "cities", "datacenters", "chargers"],
   },
 ];
 
@@ -85,6 +86,7 @@ const LAYER_NOTES: Partial<
     | "layer_gas_note"
     | "layer_geothermal_note"
     | "layer_capacity_note"
+    | "layer_solar_note"
   >
 > = {
   datacenters: "layer_datacenters_note",
@@ -95,6 +97,7 @@ const LAYER_NOTES: Partial<
   gas: "layer_gas_note",
   geothermal: "layer_geothermal_note",
   capacity: "layer_capacity_note",
+  solar: "layer_solar_note",
 };
 
 const LAYER_ICONS: Record<LayerKey, typeof Cable> = {
@@ -110,6 +113,7 @@ const LAYER_ICONS: Record<LayerKey, typeof Cable> = {
   gas: Flame,
   geothermal: ThermometerSun,
   capacity: Gauge,
+  solar: SunMedium,
 };
 
 function Section({ title, actions, children }: { title: string; actions?: ReactNode; children: ReactNode }) {

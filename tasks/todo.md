@@ -1118,7 +1118,16 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 - Datoteke: `products.py`, `publish.py`, `data/current.ts`, `map/layers.ts`, i18n napomena sloja.
 - Provjera: zbroj ćelija = broj punionica u buildu; e2e: sloj uključen na početnom pogledu nešto prikazuje.
 
-### 34-2 Sloj „Sunčani potencijal"
+### 34-2 Sloj „Sunčani potencijal" — GOTOVO 2026-11-16 (vidljivo nakon prvog pokretanja `solar-update`)
+- Izvedeno: `pipeline/src/energymap/solar/` preuzima rastere PVOUT osam zemalja s Global Solar Atlasa (oko
+  170 MB), slaže ih u jedan mozaik i objavljuje jednu sliku regije (2160 × 2460, 1,8 MB, redovi razmaknuti kao
+  u Mercatorovoj projekciji) i mrežu vrijednosti od 0,05° (oko 50 kB komprimirano) pod `solar/`. Licenca
+  pročitana iz metapodataka same datoteke: CC BY 4.0, © 2019 Solargis. Nove ovisnosti: `tifffile`, `pillow`
+  (i `numpy` izričito). Workflow `solar-update` je samo ručni (atlas se ne mijenja po rasporedu).
+- Karta: sloj `solar` (slika ispod svega ostalog), traka s legendom, vrijednost na mjestu klika i napomene što
+  brojka nije. Provjereno na stvarnim podacima: Zagreb oko 1233, Split 1461, Palermo 1555 kWh/kWp.
+- Nije napravljeno: najbliža trafostanica i HEP-ov kapacitet u istoj kartici (korak 4 plana), poveznica na
+  PVGIS, e2e test (testni podaci nemaju sliku; jedinični testovi i ručni prolaz).
 - Cilj: prva orijentacija za one koji planiraju sunčane elektrane: očekivana godišnja proizvodnja po kWp,
   uz ono što karta već ima (vodovi, trafostanice, HEP-ov slobodni kapacitet).
 - Izvor: Global Solar Atlas (Svjetska banka / Solargis), sloj PVOUT, GeoTIFF, razlučivost oko 1 km. Katalog

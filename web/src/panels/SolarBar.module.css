@@ -1,0 +1,103 @@
+/* Placed by the dock in App.module.css, like the other layers' bars. */
+.bar {
+  padding: 10px 14px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-size: 13px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bar h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.close:hover {
+  background: var(--accent-soft);
+}
+
+@media (pointer: coarse) {
+  .close {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+.muted {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.retry {
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.reading {
+  margin-top: 6px;
+}
+
+.reading p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.value strong {
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.legend {
+  margin-top: 10px;
+}
+
+.scale {
+  display: block;
+  height: 10px;
+  border-radius: 5px;
+}
+
+.ends {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.note {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.4;
+}

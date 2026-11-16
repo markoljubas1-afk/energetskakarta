@@ -422,6 +422,20 @@ export const hr = {
   substance_unknown: "Sirovina nepoznata",
   detailsSubstance: "Sirovina",
   layer_gas: "Proizvodnja plina (dnevno)",
+  layer_solar: "Sunčani potencijal",
+  layer_solar_note:
+    "Očekivana godišnja proizvodnja sunčane elektrane po instaliranom kilovatu, prema Global Solar Atlasu. Dugogodišnji prosjek modela, ne mjerenje. Kliknite na kartu za vrijednost na tom mjestu.",
+  solarTitle: "Sunčani potencijal",
+  solarClose: "Zatvori sunčani potencijal",
+  solarHint: "Kliknite bilo gdje na karti za očekivanu godišnju proizvodnju na tom mjestu.",
+  solarNoValue: "Za ovo mjesto atlas nema vrijednosti (more ili izvan obuhvaćenih zemalja).",
+  solarUnit: "kWh po kWp godišnje",
+  solarMeaning: "Sustav snage 1 kW ovdje bi u prosječnoj godini proizveo oko {value} kWh.",
+  solarLegend: "kWh/kWp godišnje",
+  solarCaveat:
+    "Prva orijentacija, ne studija izvedivosti: ne govori o zasjenjenju, namjeni zemljišta, zaštićenim područjima ni o priključku na mrežu.",
+  solarFailed: "Sunčani potencijal se nije učitao.",
+  solarNone: "Sunčani potencijal još nije objavljen.",
   layer_geothermal: "Geotermalna energija",
   layer_geothermal_note:
     "Potencijal je toplinski tok iz podzemlja (mW/m²) iz svjetske baze mjerenja, izračunat samo blizu mjerenja: orijentacijski, ne zamjenjuje istraživanje. Lokacije i projekti su ručno vođen popis, svaki s izvorom.",

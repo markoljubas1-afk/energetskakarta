@@ -44,6 +44,7 @@ export const LAYER_KEYS = [
   "gas",
   "geothermal",
   "capacity",
+  "solar",
 ] as const;
 /**
  * The map opens on the transmission lines alone (decision 2026-11-16): the grid is the picture, and with

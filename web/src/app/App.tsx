@@ -26,6 +26,8 @@ import { NOTHING_IN_VIEW } from "../map/inView";
 import type { Spotlight } from "../map/spotlight";
 import { StoryCard } from "../panels/StoryCard";
 import { GreenLight } from "../panels/GreenLight";
+import { SolarBar } from "../panels/SolarBar";
+import { loadSolar, SOLAR_KEY, solarImage, type SolarLoad } from "../data/solar";
 import { loadRoutes } from "../data/routes";
 import { aroundOf, loadNearby } from "../data/nearby";
 import { measure } from "../stories/travel";
@@ -103,6 +105,7 @@ const LAYER_OF_SELECTION = {
 type Ready<L> = Extract<L, { kind: "ready" }>;
 const gasFeaturesOf = (loaded: Ready<GasLoad>) => gasOverlay(loaded.gas);
 const geoFeaturesOf = (loaded: Ready<GeothermalLoad>) => geothermalFeatures(loaded.geothermal);
+const solarOf = (loaded: Ready<SolarLoad>) => loaded.solar;
 const capFeaturesOf = (loaded: Ready<HepLoad>) => capacityOverlay(loaded.release);
 
 export function App({ config }: { config: AppConfig }) {
@@ -403,6 +406,18 @@ function Explorer({
     geoFeaturesOf,
   );
   const [geoSite, setGeoSite] = useState<string | null>(null);
+  // Solar potential: the picture goes to the map, a click on the map to the bar, which reads a value there.
+  const solarOn = state.layers.has("solar");
+  const {
+    data: solarData,
+    retry: retrySolar,
+    features: solarDoc,
+  } = useOverlay(solarOn ? SOLAR_KEY : null, (signal) => loadSolar(config.dataBaseUrl, signal), solarOf);
+  const solarPicture = useMemo(
+    () => (solarDoc ? solarImage(solarDoc, config.dataBaseUrl) : null),
+    [solarDoc, config.dataBaseUrl],
+  );
+  const [solarPoint, setSolarPoint] = useState<{ lng: number; lat: number } | null>(null);
   // the map needs the release only; the history is the capacity pages'
   const capOn = state.layers.has("capacity");
   const {
@@ -601,6 +616,11 @@ function Explorer({
     setState((s) => ({ ...s, layers: new Set([...s.layers].filter((layer) => layer !== "capacity")) }));
   }, [setState, setCapStation]);
 
+  const closeSolar = useCallback(() => {
+    setSolarPoint(null);
+    setState((s) => ({ ...s, layers: new Set([...s.layers].filter((layer) => layer !== "solar")) }));
+  }, [setState]);
+
   const closeGeothermal = useCallback(() => {
     setGeoSite(null);
     setState((s) => ({ ...s, layers: new Set([...s.layers].filter((layer) => layer !== "geothermal")) }));
@@ -633,6 +653,8 @@ function Explorer({
             regionBounds={current.tiles.grid.bounds}
             spotlight={shownSpotlight}
             around={around}
+            solar={solarPicture}
+            {...(solarOn ? { onPoint: setSolarPoint } : {})}
             maptilerKey={config.maptilerKey}
             live={liveOverlay}
             gas={gasFeatures}
@@ -792,6 +814,13 @@ function Explorer({
                     onRetry={retryCap}
                     onClose={closeCapacity}
                   />
+                </ErrorBoundary>
+              </div>
+            )}
+            {solarOn && (
+              <div className={styles.liveSlot}>
+                <ErrorBoundary area="solar" fallback={panelFallback}>
+                  <SolarBar data={solarData} point={solarPoint} onRetry={retrySolar} onClose={closeSolar} />
                 </ErrorBoundary>
               </div>
             )}

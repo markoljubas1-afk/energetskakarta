@@ -425,6 +425,20 @@ export const en: Dictionary = {
   substance_unknown: "Substance unknown",
   detailsSubstance: "Substance",
   layer_gas: "Gas production (daily)",
+  layer_solar: "Solar potential",
+  layer_solar_note:
+    "The expected yearly output of a solar plant per installed kilowatt, from the Global Solar Atlas. A model's long-term average, not a measurement. Click the map for the value at that place.",
+  solarTitle: "Solar potential",
+  solarClose: "Close solar potential",
+  solarHint: "Click anywhere on the map for the expected yearly output at that place.",
+  solarNoValue: "The atlas has no value for this place (the sea, or outside the countries covered).",
+  solarUnit: "kWh per kWp a year",
+  solarMeaning: "A 1 kW system here would generate about {value} kWh in an average year.",
+  solarLegend: "kWh/kWp a year",
+  solarCaveat:
+    "A first orientation, not a feasibility study: it says nothing of shading, land use, protected areas or the grid connection.",
+  solarFailed: "Solar potential did not load.",
+  solarNone: "Solar potential is not published yet.",
   layer_geothermal: "Geothermal energy",
   layer_geothermal_note:
     "Potential is heat flow from below ground (mW/m²) from the global measurement database, worked out only near measurements: for orientation, not a substitute for exploration. Sites and projects are a hand-kept list, each with a source.",
