@@ -1,0 +1,13 @@
+# Starts the data workflows on time; see src/index.js and infra/README.md, part D.
+name = "energetska-karta-okidac"
+main = "src/index.js"
+compatibility_date = "2026-06-01"
+# no public address: the Worker only runs on its schedule
+workers_dev = false
+
+[triggers]
+# minute 12 of every hour, the minute live-hourly's own cron names
+crons = ["12 * * * *"]
+
+[observability]
+enabled = true

@@ -254,3 +254,42 @@ energy/previous.json                  prethodni pokazivač (za povratak)
 energy/daily/<godina>-<sha>.json      MWh po danu, zemlji i izvoru
 energy/periods-<sha>.json             mjeseci i godine
 ```
+
+---
+
+# D. Okidač: da se podaci osvježavaju na vrijeme
+
+GitHubov vlastiti raspored je „kad stigne": 16. 11. 2026. satni `live-hourly` pokrenut je tri puta u dvadesetak
+sati, a dnevni poslovi osam do deset sati kasnije. Zato raspored drži mali Cloudflare Worker
+(`infra/trigger-worker/`): svaki sat u 12. minuti zatraži od GitHuba da pokrene poslove kojima je vrijeme
+(`live-hourly` svaki sat; `energy-daily`, `hep-daily`, `gas-daily` i `prices-daily` jednom dnevno). Ne čita i ne
+objavljuje nikakve podatke. GitHubov raspored ostaje kao rezerva.
+
+## 1. GitHub token (samo za pokretanje poslova)
+
+1. GitHub → **Settings** (profil, ne repozitorij) → **Developer settings** → **Personal access tokens** →
+   **Fine-grained tokens** → **Generate new token**.
+2. **Repository access** → **Only select repositories** → `energetskakarta`.
+3. **Permissions** → **Repository permissions** → **Actions: Read and write**. Ništa drugo.
+4. Rok trajanja po izboru (najdulje godinu dana; kad istekne, Worker u dnevniku javlja HTTP 401 i poslovi se
+   opet pokreću samo po GitHubovu rasporedu). Token kopiraj; prikazuje se samo jednom.
+
+## 2. Objava Workera
+
+Iz mape `web/` (ondje je Wrangler):
+
+```bash
+npx wrangler deploy --config ../infra/trigger-worker/wrangler.toml
+npx wrangler secret put GITHUB_TOKEN --config ../infra/trigger-worker/wrangler.toml
+```
+
+Druga naredba pita za token; zalijepi ga ondje. Token se ne upisuje ni u jednu datoteku.
+
+## 3. Provjera
+
+- Cloudflare → **Workers & Pages** → `energetska-karta-okidac` → **Settings** → **Trigger Events**: raspored
+  `12 * * * *`.
+- Nakon sljedeće 12. minute: GitHub → **Actions** → `live-hourly` ima novo pokretanje s oznakom
+  `workflow_dispatch`. U dnevniku Workera (**Logs**) stoji `{"started":1,...}`.
+- Test Workera: `node --test infra/trigger-worker/index.test.mjs`.
+

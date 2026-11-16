@@ -107,3 +107,20 @@ def test_code_runs_and_data_runs_cannot_cancel_one_another() -> None:
     group = load(WORKFLOWS / "web.yml")["concurrency"]["group"]
     assert "github.event_name != 'workflow_run' && 'code'" in group
     assert "github.event.workflow_run.conclusion == 'success' && 'data' || 'idle'" in group
+
+
+def test_the_trigger_worker_only_starts_workflows_a_person_could_start() -> None:
+    """The Cloudflare Worker (infra/trigger-worker) starts workflows by file name. A renamed workflow, or
+    one without a manual trigger, would fail there every hour, far from this repository's own checks."""
+    worker = WORKFLOWS.parents[1] / "infra" / "trigger-worker" / "src" / "index.js"
+    named = set(re.findall(r'"([a-z-]+\.yml)"', worker.read_text(encoding="utf-8")))
+    assert named == {
+        "live-hourly.yml",
+        "energy-daily.yml",
+        "hep-daily.yml",
+        "gas-daily.yml",
+        "prices-daily.yml",
+    }
+    for name in named:
+        triggers = yaml.safe_load((WORKFLOWS / name).read_text(encoding="utf-8"))[True]
+        assert "workflow_dispatch" in triggers, name
