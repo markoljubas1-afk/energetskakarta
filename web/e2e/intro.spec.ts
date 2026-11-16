@@ -34,10 +34,16 @@ test("a first visit opens on the title, flies in, hands over to the map and does
   await expect(overlay(page)).toHaveCount(0);
 });
 
+/*
+ * A skip ends the intro after the hand-off (INTRO_TIMING.handoffMs, under a second). The map changes its whole
+ * style at that moment, and with software WebGL on a CI machine that alone can hold the page for several
+ * seconds, so these two tests wait for the result with the suite's usual patience instead of timing it: with
+ * a three-second limit they failed about one run in three.
+ */
 test("skipping goes straight to the usable map", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Preskoči uvod" }).click();
-  await expect(overlay(page)).toHaveCount(0, { timeout: 3_000 });
+  await expect(overlay(page)).toHaveCount(0);
   await expect(page.locator('[data-map-status="ready"]')).toBeVisible();
   expect(new URL(page.url()).search).toBe("");
 });
@@ -47,7 +53,7 @@ test("a key skips it too, but Tab only moves focus to the skip button", async ({
   await page.keyboard.press("Tab");
   await expect(overlay(page)).toHaveAttribute("data-phase", /title|play/);
   await page.keyboard.press("Escape");
-  await expect(overlay(page)).toHaveCount(0, { timeout: 3_000 });
+  await expect(overlay(page)).toHaveCount(0);
 });
 
 test("a shared link opens on what it shares, without the intro", async ({ page }) => {
