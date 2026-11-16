@@ -22,15 +22,21 @@ class Loaded:
     fetched_at: str | None
 
 
-def load(directory: Path, scope: frozenset[str], retrieved_at: datetime) -> Loaded:
+def load(
+    directory: Path,
+    scope: frozenset[str],
+    retrieved_at: datetime,
+    in_country: normalize.InCountry | None = None,
+) -> Loaded:
     """``directory`` holds signatories.xlsx, plans.xlsx, monitoring.xlsx and cities.json (from
-    ``read.download``); monitoring.xlsx is optional, since only some releases have inventories there."""
+    ``read.download``); monitoring.xlsx is optional, since only some releases have inventories there.
+    ``in_country`` checks each city's location against its country (see ``normalize.signatories``)."""
     meta_file = directory / read.META_FILE
     meta: dict[str, Any] = read_json(meta_file) if meta_file.exists() else {}
     release = str(meta.get("release") or directory.name)
     stats: Counter[str] = Counter()
     signatories = normalize.signatories(
-        read.read_sheet(directory / "signatories.xlsx", read.SIGNATORIES), scope, stats
+        read.read_sheet(directory / "signatories.xlsx", read.SIGNATORIES), scope, stats, in_country
     )
     stats["signatories_in_scope"] = len(signatories)
 

@@ -15,6 +15,7 @@ from energymap import build as pipeline
 from energymap import config, tiles
 from energymap.cities import normalize, read
 from energymap.cities.load import load
+from energymap.geo.countries import CountryIndex
 from energymap.osm.download import DownloadError
 from energymap.osm.extract import ExtractResult
 from energymap.products import city_register, search_index
@@ -151,6 +152,35 @@ def test_rows_that_cannot_be_linked_or_read_are_counted_not_guessed() -> None:
     assert normalize.inventories(rows, {}, monitoring=False, stats=stats) == []
     assert stats["plan_rows_unlinked"] == 2
     assert stats["plan_rows_unusable"] == 1
+
+
+def test_a_location_is_checked_against_its_country_and_exchanged_coordinates_are_put_right() -> None:
+    """Istrana (IT) and Csongrád (HU) of the 7th release have latitude and longitude exchanged."""
+
+    def in_country(code: str, lon: float, lat: float) -> bool:
+        box = {"IT": (6.6, 36.6, 18.6, 47.1), "HU": (16.1, 45.7, 22.9, 48.6)}[code]
+        return box[0] <= lon <= box[2] and box[1] <= lat <= box[3]
+
+    def row(key: str, name: str, country: str, lon: float, lat: float) -> dict[str, object]:
+        return {"organisation_id": key, "name": name, "country": country, "lon": lon, "lat": lat}
+
+    rows = [
+        row("1", "Istrana", "it", 45.6759378, 12.0907961),  # exchanged: this is Yemen
+        row("2", "Csongrád", "hu", 46.711111, 20.140278),  # exchanged: this is Iran
+        row("3", "Forlì", "it", 12.0403, 44.2225),  # as it should be
+        row("4", "Nigdje", "hu", 2.35, 48.85),  # Paris either way round: left out
+    ]
+    stats: Counter[str] = Counter()
+    found = normalize.signatories(rows, SCOPE, stats, in_country)
+    assert {key: (s.lon, s.lat) for key, s in found.items()} == {
+        "1": (12.0907961, 45.6759378),
+        "2": (20.140278, 46.711111),
+        "3": (12.0403, 44.2225),
+    }
+    assert stats["signatories_coordinates_exchanged"] == 2
+    assert stats["signatories_outside_country"] == 1
+    # without the check the file is taken at its word, as before
+    assert normalize.signatories(rows, SCOPE, Counter())["1"].lon == 45.6759378
 
 
 # ---------------------------------------------------------------- read
@@ -383,7 +413,7 @@ def test_tile_feature_carries_sectors_as_json_and_a_zoom_by_population(release: 
 
 
 def test_build_with_cities_publishes_layer_register_and_attribution(
-    fixtures: Path, sample_pbf: Path, tmp_path: Path, release: Path
+    fixtures: Path, sample_pbf: Path, tmp_path: Path, release: Path, index: CountryIndex
 ) -> None:
     from test_build import HR_ONLY, _prepare
 
@@ -400,6 +430,6 @@ def test_build_with_cities_publishes_layer_register_and_attribution(
     assert any(row[2] == "cities" for row in search["rows"])
 
     with pytest.raises(BuildValidationError, match="yields no city"):
-        pipeline.apply_cities(ExtractResult(), release, frozenset({"ME"}), NOW)
+        pipeline.apply_cities(ExtractResult(), release, index, frozenset({"ME"}), NOW)
     with pytest.raises(DownloadError, match="cities download"):
-        pipeline.apply_cities(ExtractResult(), tmp_path / "nowhere", SCOPE, NOW)
+        pipeline.apply_cities(ExtractResult(), tmp_path / "nowhere", index, SCOPE, NOW)

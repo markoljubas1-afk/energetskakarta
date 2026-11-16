@@ -367,3 +367,12 @@
 - Rule going forward: oznaka se slaže iz stabilnih polja (`entsog.point_direction_of`), u oba modula. Uz to:
   `pipeline` provjere su `ruff check .`, `ruff format --check .`, `mypy src tests` i `pytest`, sve četiri prije
   pusha (mypy samo nad `src` propustio je šest grešaka u testovima); `%` u `help=` teksta argparsea piše se `%%`.
+
+### L-068 — Jedna kriva koordinata rasteže cijelu kartu (2026-11-16)
+- What happened: nakon prve objave svih zemalja karta se otvarala nad istočnim Sredozemljem. Dva grada u 7.
+  izdanju GCoM-a (Istrana, Csongrád) imaju zamijenjenu širinu i dužinu, pa su završila u Jemenu i Iranu, a
+  granice pločica (`current.json` → `tiles.grid.bounds`), po kojima se karta prvi put namješta, protegnule su se do tamo.
+- Root cause: izvor koji sam navodi zemlju uzet je za riječ; lokacija nije provjerena prema toj zemlji.
+- Rule going forward: točka iz izvora koji navodi zemlju provjerava se prema granicama te zemlje
+  (`CountryIndex.is_in_or_near`). Zamijenjene koordinate koje padaju u navedenu zemlju se ispravljaju i broje,
+  ostalo se izostavlja i broji. Nakon svake objave pogledati i `tiles.*.bounds`, ne samo brojeve objekata.

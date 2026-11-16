@@ -991,6 +991,12 @@ ruff, mypy --strict, ESLint, Prettier, actionlint — sve prolazi. Snimke: `preg
 - Između 1001 i 1199 px panel s detaljima (ili kartica dobrodošlice) i dalje prekriva desni rub trake uživo:
   uz tri stupca traka bi bila uža od 450 px. Odlučiti: traka ispod panela, uži panel ili sklapanje filtara.
 
+### Provjera granica builda — otvoreno (2026-11-16)
+
+- Build se ne odbija kad neki objekt leži izvan `config.REGION_BBOX`. Gradovi se sada provjeravaju prema svojoj
+  zemlji, ali opća provjera (svaki sloj, uz toleranciju za podmorske kabele) uhvatila bi i sljedeći takav slučaj
+  prije objave. Dodati u `validate`.
+
 ## Faza 11 — „živa slika": što još može biti uživo (pregled 2026-09-19, odgovor na pitanje)
 
 Cilj je da što više bude **uživo**. Ovo su izvori koji to stvarno omogućuju, složeni po tome što traže:

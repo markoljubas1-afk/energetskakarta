@@ -98,6 +98,16 @@ class CountryIndex:
             return hits[0]
         return self._nearest(point, self.coastal_tolerance_deg if tolerance_deg is None else tolerance_deg)
 
+    def is_in_or_near(self, code: str, lon: float, lat: float) -> bool:
+        """Whether the point lies in country ``code`` or within the coastal tolerance of it. For a source
+        that names the country itself: the borders are generalised, so a town on a border or a coast may
+        fall just outside its own polygon, but never far from it."""
+        point = Point(lon, lat)
+        return any(
+            own == code and geometry.distance(point) <= self.coastal_tolerance_deg
+            for own, geometry in zip(self.codes, self.geometries, strict=True)
+        )
+
     def line_shares(self, line: LineString) -> dict[str, float]:
         """Metres of ``line`` inside each country it intersects (before any threshold)."""
         shares: dict[str, float] = {}

@@ -141,7 +141,7 @@ def build(
     )
     merged.stats.update({f"datacenter_{key}": value for key, value in centre_stats.items()})
     centre_info = datacenters.summary(centre_stats, merged.datacenters)
-    cities_info = apply_cities(merged, cities, region, built_at) if cities is not None else None
+    cities_info = apply_cities(merged, cities, index, region, built_at) if cities is not None else None
 
     counts = merged.counts()
     previous = previous_counts(paths.out) if baseline == LOCAL_BASELINE else baseline
@@ -165,12 +165,16 @@ def build(
 
 
 def apply_cities(
-    merged: ExtractResult, directory: Path, region: frozenset[str], retrieved_at: datetime
+    merged: ExtractResult,
+    directory: Path,
+    index: CountryIndex,
+    region: frozenset[str],
+    retrieved_at: datetime,
 ) -> dict[str, Any]:
     """Add the Covenant of Mayors city inventories to ``merged``. Returns manifest info."""
     if not directory.is_dir():
         raise DownloadError(f"Cities directory not found: {directory}; run `energymap cities download` first")
-    loaded = cities_load.load(directory, region, retrieved_at)
+    loaded = cities_load.load(directory, region, retrieved_at, index.is_in_or_near)
     if not loaded.cities:
         countries = ", ".join(sorted(region))
         raise BuildValidationError([f"{directory} yields no city with an inventory in {countries}"])

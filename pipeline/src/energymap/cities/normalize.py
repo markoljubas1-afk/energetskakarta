@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 import math
 from collections import Counter, defaultdict
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
@@ -118,9 +118,22 @@ class Signatory:
     population: int | None
 
 
+#: (country code, lon, lat) → whether the point lies in that country or right next to it
+InCountry = Callable[[str, float, float], bool]
+
+
 def signatories(
-    rows: Iterable[Mapping[str, Any]], scope: frozenset[str], stats: Counter[str]
+    rows: Iterable[Mapping[str, Any]],
+    scope: frozenset[str],
+    stats: Counter[str],
+    in_country: InCountry | None = None,
 ) -> dict[str, Signatory]:
+    """Signatories of the countries in ``scope`` that have a usable location.
+
+    With ``in_country`` the location is checked against the country the file names. The 7th release has
+    towns whose latitude and longitude are exchanged (Istrana, Csongrád: they land in Yemen and Iran and
+    stretch the map's extent to there). Exchanged coordinates that fall in the named country are put
+    right and counted; a point that fits its country neither way is left out and counted, never guessed."""
     result: dict[str, Signatory] = {}
     for row in rows:
         stats["signatory_rows"] += 1
@@ -137,6 +150,12 @@ def signatories(
         if not (-180 <= lon <= 180 and -90 <= lat <= 90):
             stats["signatories_without_location"] += 1
             continue
+        if in_country is not None and not in_country(code, lon, lat):
+            if not in_country(code, lat, lon):
+                stats["signatories_outside_country"] += 1
+                continue
+            lon, lat = lat, lon
+            stats["signatories_coordinates_exchanged"] += 1
         organisation_id = str(row.get("organisation_id") or "").strip()
         name = str(row.get("name") or "").strip()
         if not organisation_id or not name:
