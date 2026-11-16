@@ -71,6 +71,9 @@ jobs:
         # A JRC outage must not silently drop the layer: the step may fail, but then the build compares
         # its counts with the published ones and refuses the drop (validate.check_counts).
         continue-on-error: true
+        # The JRC server sometimes sends a file so slowly that no single read times out (2026-11-16: the
+        # step ran for 80 minutes). The files are a few megabytes; ten minutes is far more than they need.
+        timeout-minutes: 10
         run: |
           energymap cities download --data-dir data
           echo "dir=data/cities" >> "$GITHUB_OUTPUT"

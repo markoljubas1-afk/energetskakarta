@@ -1060,7 +1060,12 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 - Rizik: redoslijed objave (web mora podnijeti build bez `summary.json`).
 - Provjera: zbroj svih ćelija jedne zemlje = `stats.json` te zemlje (test u pipelineu).
 
-### 33-2 Kartica objekta s fotografijom
+### 33-2 Kartica objekta s fotografijom — GOTOVO 2026-11-16
+- Izvedeno drukčije od prvotnog pristupa ispod: zaseban mjesečni posao `images-update` (ne dio builda) kopira
+  umanjene slike (640 px) u bucket pod `images/` i objavljuje `images/index.json` (autor, licenca, stranica na
+  Commonsu). Odluka vlasnika: kopija u bucketu, ne izravno s Wikimedije. Prva objava: 256 fotografija za 425
+  elektrana s Wikidata oznakom. Slike bez navedene licence i one koje nisu fotografija se preskaču; pad veći
+  od petine ne objavljuje se. Web: `data/images.ts`, `DetailsPanel`, CSP `img-src` uključuje izvor podataka.
 - Pristup: u buildu se za objekte s Wikidata oznakom dohvati slika (P18) i autor/licenca s Wikimedia Commonsa;
   u podatke ide adresa umanjene slike, autor i licenca. Preglednik učitava samo sliku.
 - Odluke koje trebaju potvrdu: (a) slike se učitavaju izravno s `upload.wikimedia.org` (posjetiteljev IP vidi
@@ -1082,9 +1087,14 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 - [ ] Vremeplov kao film (brojač snage, automatsko puštanje).
 - [ ] Vođene ture umjesto kartice dobrodošlice.
 - [ ] Statične stranice zemalja: ključne brojke, graf, slika karte.
-- [ ] GEM: nepoznata vrsta i prazan stupac goriva kao brojač u statistici builda (L-069).
+- [x] GEM: nepoznata vrsta kao brojač po nazivu u statistici builda i u manifestu (L-069); na tablici iz
+      rujna 2026. takvih je 0 od 4057 jedinica. Prazan stupac goriva nije brojan zasebno.
 - [ ] Opća provjera granica builda (svaki objekt unutar regije).
-- [ ] Odjeljak „Tko stoji iza karte” (čeka tekst od vlasnika).
+- [x] Odjeljak „Tko stoji iza karte” (2026-11-16): vlasnikov tekst, kontakt, QR kod i KEKS tag za dobrovoljne
+      donacije; kontakt i u podnožju statičnih stranica. Odluke vlasnika istog dana: repozitorij ostaje javan,
+      stari commitovi ostaju s prijašnjom adresom, novi idu s novom; sponzorstva i oglasi se ne traže
+      (ostaje odluka o nekomercijalnosti iz CLAUDE.md).
+- [x] Zaglavlje (2026-11-16): samo naziv, bez znaka i podnaslova.
 
 ## Faza 11 — „živa slika": što još može biti uživo (pregled 2026-09-19, odgovor na pitanje)
 
