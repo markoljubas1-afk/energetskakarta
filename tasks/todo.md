@@ -997,6 +997,50 @@ ruff, mypy --strict, ESLint, Prettier, actionlint — sve prolazi. Snimke: `preg
   zemlji, ali opća provjera (svaki sloj, uz toleranciju za podmorske kabele) uhvatila bi i sljedeći takav slučaj
   prije objave. Dodati u `validate`.
 
+## Faza 32 — Pregled iskustva i „wow” (prijedlog 2026-11-16, čeka potvrdu)
+
+Pregled žive stranice (desktop 1440×900, mobitel 412×839, svijetla i tamna tema, 39 snimki). Mjereno: prvi
+prikaz 0,5 s, karta spremna za 4,1 s (desktop) i 4,6 s (mobitel), 731 kB prijenosa (JS 591 kB), bez grešaka u
+konzoli osim očekivanih 404 za neobjavljene ENTSO-E podatke.
+
+### A. Povjerenje u brojke (preduvjet: krivi broj poništava svaki dojam)
+- [ ] A1 Nemoguće snage iz OSM-a (Ravenna: 21,6 / 15,5 / 10,9 GW sunca): pravilo vjerodostojnosti po
+      tehnologiji; snaga se ne prikazuje i broji se. Danas: regija „161,92 GW”, sunce 53,5 GW, vremeplov
+      spljošten („vrh grafikona 100 GW”), žuti krug preko pola sjeverne Italije.
+- [ ] A2 Planirane pučinske vjetroelektrane (EMODnet, 100 GW „u izgradnji i planirano”) dominiraju Italijom;
+      MedWind je dvaput. Spojiti duplikate; planirano na malom zoomu prikazati tiše ili tek od z7.
+- [ ] A3 Hrvatska: „Vjetar 0 MW” i 3,24 GW ukupno (OSM nema snage vjetroelektrana). Do GEM tablice jasno
+      označiti da je zbroj donja granica i po tehnologiji; nakon GEM-a provjeriti.
+
+### B. Vizualni identitet (prvi dojam)
+- [ ] B1 Noćni stil s vodovima koji svijetle (kao u uvodu) je najjači prizor na stranici; danju je karta
+      plošna. Odluka: tamna tema kao zadana, ili sjaj vodova i u svijetloj.
+- [ ] B2 Pravokutna svjetlija maska oko regije ima tvrde okomite rubove (x≈320 i x≈1140 na 1440 px). Zamijeniti
+      mekim prijelazom ili maskom po granicama zemalja.
+- [ ] B3 Krugovi elektrana ne ovise o zoomu: na pregledu regije i na mobitelu se preklapaju u mrlju. Veličina
+      po zoomu, prag snage na malom zoomu.
+- [ ] B4 Kartica objekta: fotografija (Wikimedia Commons preko Wikidata oznake koju već imamo), ključne brojke,
+      poveznica na stranicu objekta.
+- [ ] B5 Gumbi za zoom gore desno djeluju odrezano, bez pozadine.
+
+### C. Živa karta
+- [ ] C1 Dok nema ENTSO-E tokena: „Tokovi i cijene” i „Proizvodnja kroz vrijeme” su slijepe ulice (prazna
+      stranica). Sakriti ili prikazati najavu s onim što već imamo (plin, HEP).
+- [ ] C2 Nakon tokena: animirani tokovi uključeni pri prvom posjetu, traka „sada” u zaglavlju (sastav struje,
+      cijena, CO₂).
+- [ ] C3 Vođene priče umjesto kartice dobrodošlice: 3–4 prizora koja sama lete kartom.
+
+### D. Uporabljivost
+- [ ] D1 Sloj „Gradovi” uključen na pregledu regije ne prikaže ništa i ne kaže zašto. Svaki sloj s pragom
+      zooma treba poruku „približi kartu”.
+- [ ] D2 Mobitel: prvi pogled pokazuje pola Europe (od Njemačke do Tunisa); namjestiti na regiju.
+- [ ] D3 Vremeplov: graf je nizak i bez osi; nakon A1 provjeriti čitljivost.
+- [ ] D4 Statične stranice (zemlja, tema, gradovi) su gole tablice: dodati ključne brojke, graf i sliku karte.
+      To je prva stranica za posjetitelja s tražilice.
+- [ ] D5 Raspored 1001–1199 px (već zapisano gore).
+
+Redoslijed koji predlažem: A (dan), B1–B3 (dva dana), D1–D2, zatim C nakon tokena, D4 na kraju.
+
 ## Faza 11 — „živa slika": što još može biti uživo (pregled 2026-09-19, odgovor na pitanje)
 
 Cilj je da što više bude **uživo**. Ovo su izvori koji to stvarno omogućuju, složeni po tome što traže:
