@@ -17,16 +17,22 @@ on:
 permissions:
   contents: read
 
-# A data workflow that failed or was skipped (its schedule switch is off) still starts a run here. Such a run
-# does nothing (the check below is skipped) and sits in its own group, so it never cancels a deploy in progress
-# (Faza 31: hep-daily and prices-daily cancelled main deploys every day while their switches were off).
+# Three groups, so that one kind of run never cancels another:
+#   code  a push or pull request: checks, e2e, then deploy; a newer push supersedes an older one
+#   data  a data workflow succeeded: the code is unchanged, so only the pages are rebuilt and deployed
+#   idle  a data workflow failed or was skipped (its schedule switch is off): nothing to do
+# Data runs used to share the group of code runs and cancelled their tests half-way, several times a day
+# (Faza 31 fixed the same for failed data runs).
 concurrency:
-  group: web-${{ github.ref }}-${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion != 'success' && 'idle' || 'live' }}
+  group: web-${{ github.ref }}-${{ github.event_name != 'workflow_run' && 'code' || (github.event.workflow_run.conclusion == 'success' && 'data' || 'idle') }}
   cancel-in-progress: true
 
 jobs:
+  # Tests run when the code may have changed. After a data workflow the code is the commit that already
+  # passed them at its own push, so repeating 25 minutes of e2e for every daily refresh only burnt Actions
+  # minutes (about 1800 a month on a private repository's 2000) and delayed the pages by half an hour.
   check:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name != 'workflow_run'
     runs-on: ubuntu-24.04
     defaults:
       run:
@@ -96,15 +102,18 @@ jobs:
     # Runs once the Pages project exists and its name is set as the variable PAGES_PROJECT (infra/README.md);
     # before that, checks and e2e still run and the deploy is skipped rather than failing.
     # Secrets are not available to pull requests from forks; those get checks only.
+    # always(): after a data workflow the tests are skipped, and a job whose needs were skipped is skipped
+    # too unless it says otherwise. A code run still deploys only when its e2e passed.
     if: >-
-      vars.PAGES_PROJECT != '' &&
-      (github.event_name == 'push' ||
-       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
-       github.event.pull_request.head.repo.full_name == github.repository)
+      always() && vars.PAGES_PROJECT != '' &&
+      ((github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
+       (needs.e2e.result == 'success' &&
+        (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)))
     runs-on: ubuntu-24.04
     permissions:
       contents: read
       deployments: write
+      actions: read
     defaults:
       run:
         working-directory: web
@@ -115,6 +124,19 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: web/package-lock.json
+      - name: Deploy only code that passed its own tests
+        # A data run does not test. It may publish the commit only if that commit's own push run went
+        # through checks, e2e and deploy; otherwise a broken commit would go live with the next refresh.
+        if: github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          passed=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow web.yml --commit "$GITHUB_SHA" \
+            --event push --status success --limit 1 --json databaseId --jq 'length')
+          if [ "$passed" != "1" ]; then
+            echo "::error::Commit $GITHUB_SHA has no successful 'web' run of its own; the pages are not rebuilt until it has."
+            exit 1
+          fi
       - run: npm ci
       - name: Check the public address (production)
         # Without SITE_URL the pages have no canonical links, no sitemap and no absolute share image: a

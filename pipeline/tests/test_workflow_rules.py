@@ -77,13 +77,32 @@ def test_the_pages_deploy_waits_for_its_project_name() -> None:
     deploy = load(WORKFLOWS / "web.yml")["jobs"]["deploy"]
     assert "vars.PAGES_PROJECT != ''" in deploy["if"]
     jobs = load(WORKFLOWS / "web.yml")["jobs"]
-    # the checks are never gated by the project name; they only skip a data workflow that did not succeed
-    assert jobs["check"]["if"] == (
-        "github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'"
-    )
+    # the checks are never gated by the project name; they run whenever the code may have changed
+    assert jobs["check"]["if"] == "github.event_name != 'workflow_run'"
     assert "if" not in jobs["e2e"]  # follows the check through `needs`
 
 
-def test_a_data_run_that_did_not_succeed_cannot_cancel_a_deploy() -> None:
+def test_a_data_run_deploys_without_repeating_the_tests_but_never_untested_code() -> None:
+    """After a data workflow the code is unchanged: the pages are rebuilt and deployed without the 25
+    minutes of e2e. The commit must still have passed them at its own push, and a code run deploys only
+    when its own e2e succeeded."""
+    deploy = load(WORKFLOWS / "web.yml")["jobs"]["deploy"]
+    condition = " ".join(str(deploy["if"]).split())
+    assert condition.startswith("always() &&")  # otherwise skipped tests would skip the deploy too
+    assert "github.event.workflow_run.conclusion == 'success'" in condition
+    assert "needs.e2e.result == 'success'" in condition
+    guard = next(step for step in deploy["steps"] if "passed its own tests" in str(step.get("name", "")))
+    assert guard["if"] == "github.event_name == 'workflow_run'"
+    assert '--commit "$GITHUB_SHA"' in guard["run"] and "--status success" in guard["run"]
+    assert deploy["steps"].index(guard) < next(
+        index for index, step in enumerate(deploy["steps"]) if "wrangler-action" in str(step.get("uses", ""))
+    )
+    assert deploy["permissions"]["actions"] == "read"
+
+
+def test_code_runs_and_data_runs_cannot_cancel_one_another() -> None:
+    """Three concurrency groups: a push's tests are not cancelled by a data refresh, and a data workflow
+    that failed or was skipped (its schedule switch is off) cancels nothing at all."""
     group = load(WORKFLOWS / "web.yml")["concurrency"]["group"]
-    assert "github.event.workflow_run.conclusion != 'success'" in group and "'idle'" in group
+    assert "github.event_name != 'workflow_run' && 'code'" in group
+    assert "github.event.workflow_run.conclusion == 'success' && 'data' || 'idle'" in group
