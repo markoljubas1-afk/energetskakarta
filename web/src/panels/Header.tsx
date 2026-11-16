@@ -64,7 +64,12 @@ export function Header({ theme, page, onPage, onToggleTheme, onToggleLang, child
           <GraduationCap size={16} strokeWidth={1.75} aria-hidden="true" />
           <span className={styles.buttonLabel}>{t("learnLink")}</span>
         </a>
-        <a className={`${styles.textButton} ${styles.optional}`} href={PATHS[lang].author}>
+        <a
+          className={`${styles.textButton} ${styles.optional}`}
+          href={PATHS[lang].author}
+          aria-label={t("authorTitle")}
+          title={t("authorTitle")}
+        >
           <UserRound size={16} strokeWidth={1.75} aria-hidden="true" />
           <span className={styles.buttonLabel}>{t("authorLink")}</span>
         </a>

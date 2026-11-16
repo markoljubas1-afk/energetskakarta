@@ -1171,6 +1171,12 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 - Provjera: jedinični testovi za svaku priču (svaki korak daje valjano stanje), e2e za prolaz kroz jednu
   priču na računalu i mobitelu, ručni pregled snimki.
 
+### 35-5 Edukacija o sunčanoj energiji — GOTOVO 2026-11-16
+- Odjeljak „Sunčana energija u pet rečenica” na edukacijskoj stranici (kWp, prinos po mjestu, koliko panela
+  treba kućanstvu, zašto treba mreža, uputa na PVGIS) s poveznicom koja otvara sloj; vođena priča „Sunce: gdje
+  ga ima i kamo s njim” u pet koraka (karta sunca, sjever, Dalmacija, postojeće elektrane, slobodni kapacitet
+  mreže). Brojke u tekstu iz samih podataka atlasa (Zagreb oko 1250, Dalmacija oko 1450 kWh/kWp).
+
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda
   od 400 kV, prag spajanja krajeva 0,3 km (`pipeline/src/energymap/routes.py`). Karta: `stories/travel.ts`,

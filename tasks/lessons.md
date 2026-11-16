@@ -401,3 +401,13 @@
 - Rule going forward: nakon promjene bilo kojeg vidljivog teksta pretraži `e2e/` za stari i novi tekst i pokreni
   pogođene e2e datoteke lokalno prije slanja; „check prolazi” ne znači da prolazi i e2e.
 
+### L-072 — Uzastopna slanja prekidaju objavu, a korisniku je rečeno da je stvar objavljena (2026-11-16)
+- What happened: nakon slanja sunčanog potencijala (c780002) poslana su još dva commita u dvadesetak minuta.
+  Svako slanje prekida testove prethodnoga (ista grupa u `web.yml`), pa su objave c780002 i b89abf0 otkazane.
+  Korisniku je javljeno da će sloj „proraditi s objavom koja se vrti”; nije ga našao na stranici.
+- Root cause: novo slanje je krenulo bez provjere je li prethodna objava završila; izvještaj je pisan po
+  očekivanju, ne po provjeri žive stranice.
+- Rule going forward: dok traje objava nečega što je korisniku najavljeno, sljedeće izmjene se skupljaju lokalno
+  i šalju tek kad objava završi. „Objavljeno” se javlja tek nakon provjere na živoj stranici (sadržaj paketa ili
+  stranice), a do tada se kaže „poslano, objava traje”.
+

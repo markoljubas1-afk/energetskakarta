@@ -16,6 +16,9 @@ interface LearnCopy {
   journey: string[];
   unitsHeading: string;
   units: string[];
+  solarHeading: string;
+  solar: string[];
+  solarTry: string;
   timingHeading: string;
   timing: string[];
   termsHeading: string;
@@ -52,6 +55,15 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
       "Primjer: elektrana od 100 MW koja deset sati radi punom snagom proizvede 1000 MWh.",
       "Na karti uz elektranu piše instalirana snaga, a na stranici „Proizvodnja kroz vrijeme” energija po satima, danima i mjesecima.",
     ],
+    solarHeading: "Sunčana energija u pet rečenica",
+    solar: [
+      "Sunčani panel pretvara svjetlost izravno u struju. Njegova snaga piše se u kilovatima „u vrhu” (kWp): toliko daje pod punim suncem, okomito na zrake, pri 25 °C.",
+      "Koliko struje to znači u godini, ovisi o mjestu. U našoj regiji jedan kWp daje otprilike između 1000 i 1600 kWh godišnje: najmanje u Alpama, najviše na jugu Italije; u Zagrebu oko 1250, u Dalmaciji oko 1450.",
+      "Kućanstvo u Hrvatskoj troši reda veličine 3000 do 4000 kWh struje godišnje, pa bi mu za godišnju količinu trebalo otprilike 3 kWp panela, to jest sedam do osam današnjih panela na krovu.",
+      "Sunce daje najviše ljeti i oko podneva, a troši se najviše zimi i navečer. Zato sunčana energija treba mrežu, hidroelektrane i baterije koje premošćuju razliku.",
+      "Brojke na karti su dugogodišnji prosjek modela Global Solar Atlasa. Za konkretan krov ili zemljište treba proračun koji uzima u obzir nagib, orijentaciju i zasjenjenje; besplatan je, na primjer, europski PVGIS.",
+    ],
+    solarTry: "Otvori sloj „Sunčani potencijal” i klikni na svoje mjesto",
     timingHeading: "Zašto je važno kada trošiš",
     timing: [
       "Struja se proizvodi u istom trenutku u kojem se troši. Kad usred sunčanog ili vjetrovitog dana uključite perilicu, veći dio te struje dolazi iz sunca i vjetra; u zimsku večer, kad svi kuhaju i griju se, više rade elektrane na plin i ugljen.",
@@ -157,6 +169,15 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
       "An example: a 100 MW plant running at full power for ten hours generates 1,000 MWh.",
       "On the map a plant carries its installed power; the “Generation over time” page shows energy by hour, day and month.",
     ],
+    solarHeading: "Solar energy in five sentences",
+    solar: [
+      "A solar panel turns light straight into electricity. Its power is stated in kilowatts “peak” (kWp): what it gives in full sun, square to the rays, at 25 °C.",
+      "How much electricity that means in a year depends on the place. In our region one kWp gives roughly between 1,000 and 1,600 kWh a year: least in the Alps, most in the south of Italy; about 1,250 in Zagreb, about 1,450 in Dalmatia.",
+      "A household in Croatia uses in the order of 3,000 to 4,000 kWh of electricity a year, so a year's worth would take about 3 kWp of panels, that is seven or eight of today's panels on a roof.",
+      "The sun gives the most in summer and around noon, while the most is used in winter and in the evening. That is why solar energy needs the grid, hydro plants and batteries to bridge the difference.",
+      "The figures on the map are the long-term average of the Global Solar Atlas's model. A particular roof or plot needs a calculation that takes tilt, orientation and shading into account; the European PVGIS, for one, is free.",
+    ],
+    solarTry: "Open the “Solar potential” layer and click your own place",
     timingHeading: "Why it matters when you use it",
     timing: [
       "Electricity is generated at the very moment it is used. When you start the washing machine in the middle of a sunny or windy day, more of that electricity comes from sun and wind; on a winter evening, when everyone is cooking and heating, gas and coal plants work harder.",
@@ -267,6 +288,10 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
         html: `<ol>${copy.journey.map((step) => `<li>${e(step)}</li>`).join("")}</ol>`,
       },
       { heading: copy.unitsHeading, html: list(copy.units.map(e)) },
+      {
+        heading: copy.solarHeading,
+        html: `${list(copy.solar.map(e))}<p><a href="${e(mapLink(lang, { l: "lines,solar" }))}">${e(copy.solarTry)}</a></p>`,
+      },
       { heading: copy.timingHeading, html: copy.timing.map((p) => `<p>${e(p)}</p>`).join("") },
       { heading: copy.termsHeading, html: definitions(copy.terms.map(([term, text]) => [term, e(text)])) },
       { heading: copy.tryHeading, html: `<p>${e(copy.tryIntro)}</p>${list(tries)}` },

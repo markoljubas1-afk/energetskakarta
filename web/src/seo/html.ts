@@ -158,7 +158,7 @@ ${head(page, site)}
 <a href="${mapHref}">${ICONS.map}${e(copy.nav.map)}</a>
 <a href="${PATHS[page.lang].about}">${ICONS.about}${e(copy.nav.about)}</a>
 <a href="${PATHS[page.lang].learn}">${ICONS.learn}${e(copy.nav.learn)}</a>
-<a href="${PATHS[page.lang].author}">${ICONS.author}${e(copy.nav.author)}</a>
+<a href="${PATHS[page.lang].author}" title="${e(copy.about.authorHeading)}" aria-label="${e(copy.about.authorHeading)}">${ICONS.author}${e(copy.nav.author)}</a>
 ${site.cities ? `<a href="${PATHS[page.lang].cities}">${ICONS.cities}${e(copy.nav.cities)}</a>` : ""}
 ${site.capacity ? `<a href="${PATHS[page.lang].capacity}">${ICONS.capacity}${e(page.lang === "hr" ? "Kapaciteti" : "Grid capacity")}</a>` : ""}
 <a href="${PATHS[page.lang].api}">${ICONS.api}${e(copy.nav.api)}</a>

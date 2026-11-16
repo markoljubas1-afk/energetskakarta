@@ -179,6 +179,63 @@ export const STORIES: Record<StoryKey, Story> = {
       },
     ],
   },
+  sunce: {
+    key: "sunce",
+    title: { hr: "Sunce: gdje ga ima i kamo s njim", en: "The sun: where it shines and where to put it" },
+    summary: {
+      hr: "Koliko sunčana elektrana daje na sjeveru, a koliko na jugu, gdje već stoje i što još treba osim sunca.",
+      en: "How much a solar plant yields in the north and in the south, where they already stand, and what it takes besides sun.",
+    },
+    steps: [
+      {
+        view: { lng: 15.2, lat: 43.6, zoom: 5.4 },
+        layers: ["solar"],
+        title: { hr: "Karta sunca", en: "A map of the sun" },
+        text: {
+          hr: "Boja kaže koliko bi struje u prosječnoj godini dao jedan kilovat sunčanih panela: tamnije je manje, žuto je više. Kliknite bilo gdje i u traci dolje piše brojka za to mjesto.",
+          en: "The colour says how much electricity one kilowatt of solar panels would give in an average year: darker is less, yellow is more. Click anywhere and the bar below gives the figure for that place.",
+        },
+      },
+      {
+        view: { lng: 13.2, lat: 46.4, zoom: 6.6 },
+        layers: ["solar"],
+        title: { hr: "Sjever: Alpe i magla", en: "The north: the Alps and the fog" },
+        text: {
+          hr: "U alpskim dolinama i kotlinama sjeverno od njih prinos je najmanji: planine bacaju sjenu, a zimi se magla danima ne diže. Isti panel ovdje daje osjetno manje nego na obali.",
+          en: "In the Alpine valleys and the basins north of them the yield is the lowest: mountains cast shade, and in winter the fog does not lift for days. The same panel gives noticeably less here than on the coast.",
+        },
+      },
+      {
+        view: { lng: 16.6, lat: 43.6, zoom: 7.2 },
+        layers: ["solar"],
+        title: { hr: "Jug: Dalmacija", en: "The south: Dalmatia" },
+        text: {
+          hr: "Na dalmatinskoj obali i otocima isti kilovat panela daje oko petinu više nego u Zagrebu. Razlika nije golema, ali kroz dvadeset i pet godina rada elektrane odlučuje o isplativosti.",
+          en: "On the Dalmatian coast and islands the same kilowatt of panels gives about a fifth more than in Zagreb. The difference is not huge, but over twenty-five years of a plant's life it decides whether it pays.",
+        },
+      },
+      {
+        view: { lng: 16.4, lat: 44.5, zoom: 6.5 },
+        layers: ["solar", "plants"],
+        countries: ["HR"],
+        spotlight: { kind: "technology", value: "solar" },
+        title: { hr: "Gdje elektrane već stoje", en: "Where plants already stand" },
+        text: {
+          hr: "Istaknute su sunčane elektrane u Hrvatskoj koje otvoreni izvori poznaju. Nisu sve na najsunčanijim mjestima: jednako važni su ravno zemljište, vlasništvo i blizina mreže.",
+          en: "The solar plants in Croatia that open sources know of are lit. Not all of them are in the sunniest places: flat land, ownership and a grid nearby matter just as much.",
+        },
+      },
+      {
+        view: { lng: 16.4, lat: 44.5, zoom: 6.5 },
+        layers: ["solar", "lines", "capacity"],
+        title: { hr: "Sunce nije dovoljno: treba i mreža", en: "Sun is not enough: it takes a grid" },
+        text: {
+          hr: "Struju treba nekamo predati. Točke su trafostanice HEP ODS-a: zelene još imaju mjesta za nove elektrane, crvene nemaju. Dobra lokacija je ondje gdje se poklope sunce i slobodan priključak.",
+          en: "The electricity has to be handed over somewhere. The dots are HEP ODS substations: green ones still have room for new plants, red ones do not. A good site is where sun and a free connection coincide.",
+        },
+      },
+    ],
+  },
   "odakle-struja": {
     key: "odakle-struja",
     title: { hr: "Odakle struja u Hrvatskoj", en: "Where Croatia's electricity comes from" },

@@ -42,7 +42,12 @@ describe("the learning corner", () => {
       expect(
         stories.map((link) => parseState(new URL(link, "https://karta.test").search, lang).story),
       ).toEqual(playable);
-      const views = links.filter((link) => !link.includes("story="));
+      // the solar section's own link opens the solar layer; the rest are the "try it" list, in order
+      const solar = links.filter((link) => link.includes("solar"));
+      expect(
+        solar.map((link) => [...parseState(new URL(link, "https://karta.test").search, lang).layers]),
+      ).toEqual([["lines", "solar"]]);
+      const views = links.filter((link) => !link.includes("story=") && !link.includes("solar"));
       expect(views).toHaveLength(LEARN_COPY[lang].tries.length);
       for (const [index, link] of views.entries()) {
         const asked = LEARN_COPY[lang].tries[index]?.[2] ?? {};
