@@ -297,6 +297,10 @@ class GemLoad:
     plants: list[GemPlant] = field(default_factory=list)
     stats: Counter[str] = field(default_factory=Counter)
     retired: list[RetiredUnit] = field(default_factory=list)
+    #: GEM's own type names that this module does not know, with how many units carry each. Such units
+    #: are kept as "other"; a renamed type (as "solar" became "utility-scale solar" in 2026) shows here
+    #: instead of silently moving a technology's plants into "other".
+    unrecognised_types: Counter[str] = field(default_factory=Counter)
 
 
 def load(rows: Iterable[Mapping[str, Any]]) -> GemLoad:
@@ -311,7 +315,10 @@ def load(rows: Iterable[Mapping[str, Any]]) -> GemLoad:
                 result.retired.append(retired)
         else:
             units.append(parsed)
+            if parsed.technology is Technology.OTHER:
+                result.unrecognised_types[_text(row.get("type")) or "(empty)"] += 1
     result.stats["units_in_scope"] = len(units)
+    result.stats["unrecognised_type_units"] = sum(result.unrecognised_types.values())
     result.stats["retired_units"] = len(result.retired)
     result.plants = aggregate(units)
     result.stats["plants"] = len(result.plants)

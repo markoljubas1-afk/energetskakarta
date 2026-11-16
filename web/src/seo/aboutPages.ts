@@ -23,6 +23,9 @@ import { supportLinks } from "./support";
 import { hasFeed } from "./feed";
 import { SCOPE_COUNTRIES } from "../domain";
 
+/** The author's public contact, shown on the about page at their request (2026-11-16). */
+export const AUTHOR_EMAIL = "marko.ljubas1@gmail.com";
+
 export function aboutPage(site: SiteData, lang: Lang): StaticPage {
   const copy = COPY[lang];
   const i18n = createI18n(lang);
@@ -57,6 +60,10 @@ export function aboutPage(site: SiteData, lang: Lang): StaticPage {
       { heading: about.limitsHeading, html: list(about.limits.map(e)) },
       { heading: about.downloadsHeading, html: `<p>${e(about.downloadsNote)}</p>${list(downloads)}` },
       { heading: about.fixHeading, html: `<p>${e(about.fix)}</p>` },
+      {
+        heading: about.authorHeading,
+        html: `${about.author.map((p) => `<p>${e(p)}</p>`).join("")}<p>${e(about.authorContact)}: <a href="mailto:${e(AUTHOR_EMAIL)}">${e(AUTHOR_EMAIL)}</a></p>`,
+      },
       {
         heading: about.faqHeading,
         html: about.faq.map((f) => `<h3>${e(f.question)}</h3><p>${e(f.answer)}</p>`).join(""),

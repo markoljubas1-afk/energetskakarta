@@ -190,3 +190,16 @@ def gem_read_columns() -> dict[str, tuple[str, ...]]:
     from energymap.gem import read
 
     return read.COLUMNS
+
+
+def test_a_type_the_module_does_not_know_is_counted_by_name() -> None:
+    def row(number: int, type_: str) -> dict[str, object]:
+        return {
+            "country": "Croatia", "status": "operating", "location_id": f"L10000000002{number}",
+            "latitude": 45.0, "longitude": 16.0, "type": type_, "plant_name": f"Plant {number}",
+        }  # fmt: skip
+
+    loaded = gn.load([row(1, "wind"), row(2, "Tidal stream"), row(3, "tidal  stream"), row(4, "")])
+    assert loaded.unrecognised_types == {"Tidal stream": 1, "tidal stream": 1, "(empty)": 1}
+    assert loaded.stats["unrecognised_type_units"] == 3
+    assert gn.load([row(1, "wind")]).unrecognised_types == {}

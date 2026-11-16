@@ -36,6 +36,9 @@ export interface Copy {
     limits: string[];
     fixHeading: string;
     fix: string;
+    authorHeading: string;
+    author: string[];
+    authorContact: string;
     sourcesHeading: string;
     updatesHeading: string;
     updates: string;
@@ -247,6 +250,13 @@ const hr: Copy = {
       "Slobodni kapaciteti su informativni i ne jamče priključenje; mjerodavan je HEP ODS.",
       "Struja se u mreži miješa, pa karta ne tvrdi iz koje elektrane dolazi struja u pojedino mjesto.",
     ],
+    authorHeading: "Tko stoji iza karte",
+    author: [
+      "Kartu sam osmislio i izradio ja, Marko Ljubas, u slobodno vrijeme i iz čiste znatiželje: htio sam na jednom mjestu vidjeti kako je elektroenergetski sustav Hrvatske i susjedstva zaista povezan, od elektrane do granice.",
+      "Karta nije nastala po narudžbi, nitko je ne financira i na njoj se ne zarađuje: nema oglasa ni plaćenih razina. Sve što prikazuje dolazi iz otvorenih izvora navedenih na ovoj stranici.",
+      "Ako vam je korisna, ako ste uočili nešto što ne štima ili imate ideju što bi još vrijedilo prikazati, javite se. Svaka poruka je dobrodošla.",
+    ],
+    authorContact: "Kontakt",
     fixHeading: "Našli ste grešku?",
     fix: "Većina podataka dolazi iz OpenStreetMapa, koji svatko može urediti. Ispravak upisan ondje pojavit će se na karti nakon sljedećeg tjednog osvježavanja, i od njega imaju korist svi koji te podatke koriste.",
     sourcesHeading: "Izvori i licence",
@@ -559,6 +569,13 @@ const en: Copy = {
       "Free capacities are informative and do not guarantee a connection; HEP ODS is the authority.",
       "Electricity mixes in the grid, so the map does not claim which plant supplies which place.",
     ],
+    authorHeading: "Who is behind the map",
+    author: [
+      "I am Marko Ljubas, and I designed and built this map in my spare time, out of plain curiosity: I wanted to see in one place how the power system of Croatia and its neighbours is really connected, from the plant to the border.",
+      "Nobody commissioned the map, nobody funds it and it earns nothing: there are no ads and no paid tiers. Everything it shows comes from the open sources listed on this page.",
+      "If you find it useful, if you have spotted something that looks wrong, or if you have an idea for what else is worth showing, do get in touch. Every message is welcome.",
+    ],
+    authorContact: "Contact",
     fixHeading: "Found a mistake?",
     fix: "Most of the data comes from OpenStreetMap, which anyone can edit. A correction made there appears on the map after the next weekly refresh, and everyone who uses that data benefits from it.",
     sourcesHeading: "Sources and licences",

@@ -249,6 +249,11 @@ def apply_gem(
         "plants": len(loaded.plants),
         "nonCommercialPlants": sum(1 for plant in loaded.plants if plant.non_commercial),
     }
+    if loaded.unrecognised_types:
+        info["unrecognisedTypes"] = dict(sorted(loaded.unrecognised_types.items()))
+        log.warning(
+            "GEM types this build does not know, kept as 'other'", extra={"gem": info["unrecognisedTypes"]}
+        )
     log.info("merged GEM plants", extra={"gem": info, "conflation": dict(result.stats)})
     return info, result.report(names), loaded.retired
 
