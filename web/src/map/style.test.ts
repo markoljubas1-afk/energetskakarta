@@ -242,6 +242,31 @@ describe("spotlight", () => {
   });
 });
 
+describe("time machine and the grid", () => {
+  it("lets today's lines and substations step back while it runs, and leaves the plants alone", () => {
+    const options = { palette: PALETTES.dark, labels: null, maskOutside: false, optIn: NOTHING_OPTED_IN };
+    const paintOf = (layers: ReturnType<typeof dataLayers>, id: string): Record<string, unknown> => {
+      const layer = layers.find((candidate) => candidate.id === id);
+      return layer && "paint" in layer ? { ...layer.paint } : {};
+    };
+    const running = dataLayers({ state: parseState("?y=1990&l=lines,substations,plants", "hr"), ...options });
+    const resting = dataLayers({ state: parseState("?l=lines,substations,plants", "hr"), ...options });
+    expect(paintOf(running, "energymap-lines")["line-opacity"]).toBe(0.16);
+    expect(paintOf(running, "energymap-substations")["circle-opacity"]).toBeCloseTo(0.92 * 0.16, 3);
+    expect(paintOf(resting, "energymap-lines")["line-opacity"]).toBeUndefined();
+    expect(paintOf(running, "energymap-plants")["circle-opacity"]).toEqual(
+      paintOf(resting, "energymap-plants")["circle-opacity"],
+    );
+    // a spotlight is the reader's own question and wins over the time machine
+    const lit = dataLayers({
+      state: parseState("?y=1990&l=lines,plants", "hr"),
+      ...options,
+      spotlight: { kind: "technology", value: "hydro" },
+    });
+    expect(paintOf(lit, "energymap-lines")["line-opacity"]).toBe(0.3);
+  });
+});
+
 describe("live layer", () => {
   it("is a valid style with real flow features and stays hidden when off", () => {
     const features = overlay(SAMPLE_LIVE, 0).features;

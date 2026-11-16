@@ -18,6 +18,8 @@ export interface Palette {
   /** extraction sites by what they dig; oil and gas match the pipeline media so one colour means one fuel */
   substance: Record<Substance, string>;
   datacenter: string;
+  /** opacity of the blurred halo under running data centres */
+  datacenterGlow: number;
   charger: string;
   /** cities' consumption: a warm tone, unlike any generation technology */
   city: string;
@@ -114,6 +116,7 @@ const light: Palette = {
   gas: "#B5652B",
   pipeline: { gas: "#B5652B", oil: "#5B4636", other: "#8A6F9E", unknown: "#8A8F96" },
   datacenter: "#2E3B4E",
+  datacenterGlow: 0.3,
   charger: "#8E6480",
   substance: {
     oil: "#5B4636",
@@ -207,6 +210,7 @@ const dark: Palette = {
   gas: "#E09A5F",
   pipeline: { gas: "#E09A5F", oil: "#B89A84", other: "#B8A2CC", unknown: "#9EA5AD" },
   datacenter: "#C3D0E0",
+  datacenterGlow: 0.5,
   charger: "#C9A0BC",
   substance: {
     oil: "#B89A84",

@@ -611,6 +611,8 @@ function Explorer({
                   timeMachine={current.timeline !== undefined}
                   emptyLayers={seen.emptyLayers}
                   onSpotlight={setSpotlight}
+                  plantGridUrl={current.plantGrid ? assetUrl(config.dataBaseUrl, current.plantGrid) : null}
+                  viewBounds={seen.bounds}
                 />
               </ErrorBoundary>
             </aside>

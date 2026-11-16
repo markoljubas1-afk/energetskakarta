@@ -42,7 +42,7 @@ import {
   voltageColor,
   type Expr,
 } from "./layerStyle";
-import { gridOpacity, plantOpacity, type Spotlight } from "./spotlight";
+import { gridOpacity, plantOpacity, TIME_MACHINE_GRID, type Spotlight } from "./spotlight";
 import type { Palette } from "./palette";
 import { priceFill } from "./priceScale";
 import {
@@ -127,15 +127,14 @@ export function dataLayers({
   livePrices = null,
   spotlight = null,
 }: LayerOptions): LayerSpecification[] {
-  // Added only while something is lit: without a spotlight the style is exactly what it always was.
-  const lineLight = spotlight === null ? {} : { "line-opacity": gridOpacity(spotlight, 1) };
+  // Added only while something is lit or the time machine runs: otherwise the style is exactly what it
+  // always was. A spotlight wins over the time machine: it is the reader's own, momentary question.
+  const gridReceded = spotlight !== null || state.year !== null;
+  const gridShare = (full: number) =>
+    spotlight !== null ? gridOpacity(spotlight, full) : Math.round(full * TIME_MACHINE_GRID * 1000) / 1000;
+  const lineLight = gridReceded ? { "line-opacity": gridShare(1) } : {};
   const gridMarkLight = (fill: number) =>
-    spotlight === null
-      ? {}
-      : {
-          "circle-opacity": gridOpacity(spotlight, fill),
-          "circle-stroke-opacity": gridOpacity(spotlight, 1),
-        };
+    gridReceded ? { "circle-opacity": gridShare(fill), "circle-stroke-opacity": gridShare(1) } : {};
   const plantLight = (fill: number) =>
     spotlight === null
       ? {}
@@ -405,7 +404,7 @@ export function dataLayers({
         "line-color": voltageColor(palette),
         "line-width": byZoom(LINE_WIDTH_STOPS, 4),
         "line-blur": byZoom(LINE_WIDTH_STOPS, 3),
-        "line-opacity": gridOpacity(spotlight, palette.lineGlow),
+        "line-opacity": gridReceded ? gridShare(palette.lineGlow) : palette.lineGlow,
       },
     },
     {
@@ -567,6 +566,23 @@ export function dataLayers({
     // Data centres are loads, not generation, so they stay out of the technology palette entirely: one
     // dark slate colour, a ring for the ones not yet running, and a legend entry that names them.
     // (A distinct shape would mean sprites or SDF icons; that machinery is not worth it for one layer.)
+    // A halo under the running ones (2026-11-16): there are few of them and their dots are small, so
+    // with the layer switched on they were close to invisible among the lines. Same colour, blurred, so the
+    // legend's dot still names what glows.
+    {
+      id: `${LAYER_PREFIX}datacenters-glow`,
+      type: "circle",
+      source: GRID_SOURCE,
+      "source-layer": "datacenters",
+      filter: dataCenterFilter(state, true),
+      layout: { visibility: show("datacenters") },
+      paint: {
+        "circle-radius": byZoom(DATACENTER_RADIUS_STOPS, 2.4, 7),
+        "circle-color": palette.datacenter,
+        "circle-blur": 1,
+        "circle-opacity": palette.datacenterGlow,
+      },
+    },
     {
       id: `${LAYER_PREFIX}datacenters-planned`,
       type: "circle",

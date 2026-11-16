@@ -126,9 +126,9 @@ export function datacenterSize(factor: number, minimum: number): Expr {
   return ["case", ["has", "powerMw"], ["max", minimum, ["*", factor, ["sqrt", ["get", "powerMw"]]]], minimum];
 }
 export const DATACENTER_RADIUS_STOPS = [
-  [6, datacenterSize(0.7, 2.6)],
-  [11, datacenterSize(1.4, 4)],
-  [15, datacenterSize(2.4, 6)],
+  [6, datacenterSize(0.7, 3.4)],
+  [11, datacenterSize(1.4, 4.8)],
+  [15, datacenterSize(2.4, 6.5)],
 ] as const;
 
 /** `on` while the pointer rests on the feature (MapView sets the state), otherwise `off`. */

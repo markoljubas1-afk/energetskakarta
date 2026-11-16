@@ -12,8 +12,8 @@
   background-color: var(--intro-night);
   color: var(--intro-ink);
   transition:
-    background-color 900ms var(--ease-out),
-    opacity 900ms var(--ease-out);
+    background-color 350ms var(--ease-out),
+    opacity 350ms var(--ease-out);
 }
 
 /* the map shows through; the overlay still catches the first click, wheel or touch, which skip */
@@ -46,7 +46,7 @@
       color-mix(in srgb, var(--intro-night) 70%, transparent) 100%
     );
   box-shadow: inset 0 70px 90px -60px color-mix(in srgb, var(--intro-cool) 55%, transparent);
-  transition: opacity 900ms var(--ease-out);
+  transition: opacity 350ms var(--ease-out);
 }
 
 .intro[data-phase="play"] .sky {
@@ -58,7 +58,7 @@
   isolation: isolate;
   padding: 0 16px;
   text-align: center;
-  transition: transform 1200ms var(--ease-out);
+  transition: transform 450ms var(--ease-out);
 }
 
 /* over the map the title keeps a soft patch of night behind it, so it reads over bright cities too */
@@ -73,7 +73,7 @@
     transparent
   );
   opacity: 0;
-  transition: opacity 900ms var(--ease-out);
+  transition: opacity 350ms var(--ease-out);
 }
 
 .intro[data-phase="play"] .titleBlock::before {
@@ -109,8 +109,8 @@
   color: transparent;
   filter: drop-shadow(0 0 22px color-mix(in srgb, var(--intro-warm) 28%, transparent));
   animation:
-    intro-rise 900ms var(--ease-out) both,
-    intro-sweep 1700ms 450ms var(--ease-out) both;
+    intro-rise 350ms var(--ease-out) both,
+    intro-sweep 600ms 150ms var(--ease-out) both;
 }
 
 .rule {
@@ -122,7 +122,7 @@
   background: linear-gradient(90deg, transparent, var(--intro-warm), var(--intro-cool), transparent);
   box-shadow: 0 0 14px color-mix(in srgb, var(--intro-warm) 60%, transparent);
   transform: scaleX(0);
-  animation: intro-rule 1200ms 650ms var(--ease-out) both;
+  animation: intro-rule 450ms 200ms var(--ease-out) both;
 }
 
 .skip {

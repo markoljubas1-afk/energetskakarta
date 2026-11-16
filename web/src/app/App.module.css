@@ -312,7 +312,7 @@
 .app[data-intro="handoff"] :is(.mobileBar, .side, .details, .legend, .dock),
 .app[data-intro="handoff"] :global(.maplibregl-ctrl-top-right),
 .app[data-intro="handoff"] :global(.maplibregl-ctrl-scale) {
-  animation: intro-chrome-in 900ms var(--ease-out) both;
+  animation: intro-chrome-in 350ms var(--ease-out) both;
 }
 
 @keyframes intro-chrome-in {

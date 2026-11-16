@@ -76,4 +76,51 @@ describe("OverviewPanel", () => {
     await user.click(await screen.findByRole("button", { name: "Pokušaj ponovno" }));
     expect(await screen.findByText("972 MW")).toBeInTheDocument();
   });
+  it("adds up what is on the map when asked, from the plant grid, and says it is approximate", async () => {
+    const grid = {
+      version: 1,
+      cellDeg: 0.25,
+      fields: ["lon", "lat", "technology", "status", "count", "withCapacity", "capacityMw"],
+      rows: [
+        [16.5, 45.75, "hydro", "operating", 1, 1, 276],
+        [14.5, 46.0, "nuclear", "operating", 1, 1, 696], // Krško: outside the view below
+      ],
+    };
+    const asked: string[] = [];
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = input instanceof Request ? input.url : input.toString();
+      asked.push(url);
+      return Promise.resolve(jsonResponse(url.endsWith("plantgrid.json") ? grid : stats));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const user = userEvent.setup();
+    renderWithI18n(
+      <OverviewPanel
+        statsUrl="https://d.test/stats.json"
+        countries={new Set()}
+        theme="dark"
+        plantGridUrl="https://d.test/plantgrid.json"
+        viewBounds={[16.0, 45.5, 17.0, 46.0]}
+      />,
+    );
+    expect(await screen.findByText("972 MW")).toBeInTheDocument();
+    // the grid is not fetched until the view is asked for
+    expect(asked.some((url) => url.endsWith("plantgrid.json"))).toBe(false);
+
+    await user.selectOptions(screen.getByRole("combobox", { name: "Područje" }), "VIEW");
+    expect(await screen.findByText(/^Približno: zbrajaju se polja od oko 25 km/)).toBeInTheDocument();
+    expect(screen.getByText("1 elektrana")).toBeInTheDocument();
+    expect(screen.queryByText("972 MW")).not.toBeInTheDocument();
+    // lines and substations are counted per country only: the view does not show them
+    expect(screen.queryByText("78 km")).not.toBeInTheDocument();
+  });
+
+  it("does not offer the view where the build has no plant grid", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse(stats)));
+    renderWithI18n(
+      <OverviewPanel statsUrl="https://d.test/stats.json" countries={new Set()} theme="light" />,
+    );
+    await screen.findByText("972 MW");
+    expect(screen.queryByRole("option", { name: "Ono što je na karti" })).not.toBeInTheDocument();
+  });
 });

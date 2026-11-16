@@ -29,6 +29,8 @@ export interface InView {
    * layer list says so, instead of leaving a ticked box next to an empty map.
    */
   emptyLayers: ReadonlySet<LayerKey>;
+  /** west, south, east, north of what is on screen; null until the map has settled once */
+  bounds: [number, number, number, number] | null;
 }
 
 export const NOTHING_IN_VIEW: InView = {
@@ -36,7 +38,11 @@ export const NOTHING_IN_VIEW: InView = {
   substances: null,
   extractionKinds: null,
   emptyLayers: new Set(),
+  bounds: null,
 };
+
+/** Three decimals (about 100 m): finer than anything the overview adds up, and stable between idles. */
+const coordinate = (value: number): number => Math.round(value * 1000) / 1000;
 
 /** The style layers that draw each layer of the list (those served as tiles, which have zoom thresholds). */
 const DRAWN_BY: Partial<Record<LayerKey, readonly string[]>> = {
@@ -89,6 +95,12 @@ export function inView(map: MapLibreMap): InView {
     substances: values(map, [`${LAYER_PREFIX}extraction`], "substance", SUBSTANCES),
     extractionKinds: values(map, [`${LAYER_PREFIX}extraction`], "kind", EXTRACTION_KINDS),
     emptyLayers: emptyLayers(map),
+    bounds: [
+      coordinate(map.getBounds().getWest()),
+      coordinate(map.getBounds().getSouth()),
+      coordinate(map.getBounds().getEast()),
+      coordinate(map.getBounds().getNorth()),
+    ],
   };
 }
 
@@ -99,6 +111,10 @@ export function sameInView(a: InView, b: InView): boolean {
     same(a.technologies, b.technologies) &&
     same(a.substances, b.substances) &&
     same(a.extractionKinds, b.extractionKinds) &&
-    same(a.emptyLayers, b.emptyLayers)
+    same(a.emptyLayers, b.emptyLayers) &&
+    (a.bounds === b.bounds ||
+      (a.bounds !== null &&
+        b.bounds !== null &&
+        a.bounds.every((value, index) => value === b.bounds?.[index])))
   );
 }

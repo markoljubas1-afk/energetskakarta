@@ -51,6 +51,8 @@ export const CurrentSchema = z.object({
   cities: z.string().optional(),
   /** capacity in operation by year and retired plants, for the time machine; absent in older builds */
   timeline: z.string().optional(),
+  /** plants added up by cell, for "what is on the map" in the overview (data/plantGrid.ts) */
+  plantGrid: z.string().optional(),
 });
 
 export type Current = z.infer<typeof CurrentSchema>;

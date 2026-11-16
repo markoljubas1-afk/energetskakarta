@@ -20,6 +20,13 @@ export const BACKGROUND = 0.3;
 
 const round = (value: number): number => Math.round(value * 1000) / 1000;
 
+/**
+ * While the time machine runs, the grid steps this far back: the story is which plants stood in that year,
+ * and the lines are today's (they have no years in the sources), so they stay only as a faint ground to
+ * place the plants on.
+ */
+export const TIME_MACHINE_GRID = 0.16;
+
 /** Opacity of a plant mark that is `full` when nothing is spotlighted. */
 export function plantOpacity(spotlight: Spotlight, full: number): Opacity {
   if (spotlight === null) return full;

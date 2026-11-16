@@ -8,6 +8,7 @@ Key layout in the bucket:
     builds/<build_id>/search.json            immutable; name search index for the website
     builds/<build_id>/stats.json             immutable; per-country totals
     builds/<build_id>/timeline.json          immutable; capacity by year for the time machine (optional)
+    builds/<build_id>/plantgrid.json         immutable; plants added up by cell, for "what is on screen"
     builds/<build_id>/<layer>.ndjson.gz      immutable; the ODbL database download
     current.json                             tiny pointer, short cache, written LAST
 
@@ -49,7 +50,8 @@ POINTER_CACHE = "public, max-age=60, must-revalidate"
 DEFAULT_KEEP = 5
 PRODUCTS: tuple[str, ...] = ("search.json", "stats.json")
 # Published when the build has them (the change report exists only when a baseline was compared).
-OPTIONAL_PRODUCTS: tuple[str, ...] = ("diff.json", "cities.json", "timeline.json")
+# plantgrid.json is written by every build since 2026-11-16; older local builds do not have it.
+OPTIONAL_PRODUCTS: tuple[str, ...] = ("diff.json", "cities.json", "timeline.json", "plantgrid.json")
 
 
 class PublishError(RuntimeError):
@@ -348,6 +350,7 @@ def pointer_document(
         **({"diff": base + "diff.json"} if "diff.json" in present else {}),
         **({"cities": base + "cities.json"} if "cities.json" in present else {}),
         **({"timeline": base + "timeline.json"} if "timeline.json" in present else {}),
+        **({"plantGrid": base + "plantgrid.json"} if "plantgrid.json" in present else {}),
     }
 
 

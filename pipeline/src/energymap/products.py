@@ -1,10 +1,12 @@
-"""Small derived products published with every build: the search index and summary statistics.
+"""Small derived products published with every build: the search index, summary statistics and the
+plant grid.
 
-Both are computed from the validated records, so they can never disagree with the map layers.
+All are computed from the validated records, so they can never disagree with the map layers.
 """
 
 from __future__ import annotations
 
+import math
 from collections import defaultdict
 from collections.abc import Iterable
 from typing import Any
@@ -24,6 +26,11 @@ from energymap.schema import (
 
 SEARCH_VERSION = 1
 STATS_VERSION = 1
+PLANT_GRID_VERSION = 1
+PLANT_GRID_FILE = "plantgrid.json"
+#: Side of a cell in degrees: about 28 km north-south and 20 km east-west at the region's latitudes.
+PLANT_GRID_CELL_DEG = 0.25
+PLANT_GRID_FIELDS = ("lon", "lat", "technology", "status", "count", "withCapacity", "capacityMw")
 SEARCH_FIELDS = ("id", "name", "layer", "country", "lon", "lat", "detail")
 
 VoltageClass = str
@@ -104,6 +111,50 @@ def _plain(value: Any) -> Any:
     if isinstance(value, dict):
         return {k: _plain(v) for k, v in sorted(value.items())}
     return value
+
+
+def plant_grid(plants: Iterable[PowerPlant]) -> dict[str, Any]:
+    """Plants added up by cell, technology and status, so the website can say what is in the part of the
+    map on screen.
+
+    Neither of the other products can answer that: tiles at a low zoom do not carry small plants, and the
+    search index has only the named ones and no status. A row is ``[lon, lat, technology, status, count,
+    withCapacity, capacityMw]``, where ``lon, lat`` is the south-west corner of a cell of
+    ``PLANT_GRID_CELL_DEG`` degrees. The totals over all cells equal those of ``statistics`` over all
+    countries; the tests hold the two together.
+    """
+    cells: dict[tuple[int, int, str, str], list[float]] = defaultdict(lambda: [0, 0, 0.0])
+    for plant in plants:
+        lon, lat = plant.location
+        key = (
+            math.floor(lon / PLANT_GRID_CELL_DEG),
+            math.floor(lat / PLANT_GRID_CELL_DEG),
+            plant.technology.value,
+            plant.status.value,
+        )
+        bucket = cells[key]
+        bucket[0] += 1
+        if plant.capacity_mw is not None:
+            bucket[1] += 1
+            bucket[2] += plant.capacity_mw
+    rows = [
+        [
+            round(ix * PLANT_GRID_CELL_DEG, 2),
+            round(iy * PLANT_GRID_CELL_DEG, 2),
+            technology,
+            status,
+            int(count),
+            int(with_capacity),
+            round(capacity, 3),
+        ]
+        for (ix, iy, technology, status), (count, with_capacity, capacity) in sorted(cells.items())
+    ]
+    return {
+        "version": PLANT_GRID_VERSION,
+        "cellDeg": PLANT_GRID_CELL_DEG,
+        "fields": list(PLANT_GRID_FIELDS),
+        "rows": rows,
+    }
 
 
 def statistics(

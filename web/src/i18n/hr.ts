@@ -68,6 +68,10 @@ export const hr = {
   overviewTitle: "Instalirana snaga",
   overviewScope: "Područje",
   overviewRegion: "Cijela regija",
+  overviewView: "Ono što je na karti",
+  overviewViewEmpty: "U ovom dijelu karte nema elektrana.",
+  overviewViewNote:
+    "Približno: zbrajaju se polja od oko 25 km koja prikaz dodiruje, pa rub prikaza može uključiti i elektranu tik izvan njega. Pomaknite ili približite kartu i brojke će se promijeniti.",
   overviewOperating: "U pogonu",
   overviewPipeline: "U izgradnji i planirano",
   overviewLines: "Dalekovodi u pogonu",

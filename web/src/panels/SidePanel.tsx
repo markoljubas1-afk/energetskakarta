@@ -25,6 +25,9 @@ interface Props {
   emptyLayers?: ReadonlySet<LayerKey>;
   /** a row of the overview is pointed at: the map lights that technology or voltage */
   onSpotlight?: (spotlight: Spotlight) => void;
+  /** for "what is on the map" in the overview: the plant grid of this build and the map's current extent */
+  plantGridUrl?: string | null;
+  viewBounds?: [number, number, number, number] | null;
 }
 
 const ICONS = { filters: SlidersHorizontal, overview: ChartColumn, changes: Sparkles } as const;
@@ -43,6 +46,8 @@ export function SidePanel({
   timeMachine = false,
   emptyLayers = NO_LAYERS,
   onSpotlight,
+  plantGridUrl = null,
+  viewBounds = null,
 }: Props) {
   const { t } = useI18n();
   const id = useId();
@@ -108,6 +113,8 @@ export function SidePanel({
             statsUrl={statsUrl}
             countries={state.countries}
             theme={theme}
+            plantGridUrl={plantGridUrl}
+            viewBounds={viewBounds}
             {...(onSpotlight ? { onSpotlight } : {})}
           />
         )}

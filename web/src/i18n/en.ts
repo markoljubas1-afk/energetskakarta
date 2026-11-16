@@ -69,6 +69,10 @@ export const en: Dictionary = {
   overviewTitle: "Installed capacity",
   overviewScope: "Area",
   overviewRegion: "Whole region",
+  overviewView: "What is on the map",
+  overviewViewEmpty: "No power plants in this part of the map.",
+  overviewViewNote:
+    "Approximate: cells of about 25 km that the view touches are added up, so the edge of the view may include a plant just outside it. Move or zoom the map and the figures follow.",
   overviewOperating: "Operating",
   overviewPipeline: "Under construction and planned",
   overviewLines: "Lines in operation",

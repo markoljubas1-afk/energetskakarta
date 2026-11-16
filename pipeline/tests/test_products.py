@@ -94,3 +94,41 @@ def test_build_writes_search_and_stats(make_build: BuildFactory) -> None:
 
     manifest = json.loads((build / "manifest.json").read_text())
     assert manifest["scope"] == ["HR"]
+
+
+def test_the_plant_grid_adds_up_to_the_statistics(make_build: BuildFactory) -> None:
+    """The grid answers "what is in this part of the map"; over the whole map it must say what the
+    per-country statistics say, technology by technology and status by status."""
+    build = make_build(datetime(2026, 9, 16, 12, tzinfo=UTC))
+    grid = json.loads((build / "plantgrid.json").read_text())
+    assert grid["version"] == 1 and grid["cellDeg"] == 0.25
+    assert grid["fields"] == ["lon", "lat", "technology", "status", "count", "withCapacity", "capacityMw"]
+    assert grid["rows"], "the fixture has plants"
+
+    from_grid: dict[tuple[str, str], list[float]] = {}
+    for lon, lat, technology, status, count, with_capacity, capacity in grid["rows"]:
+        # a cell's corner is a multiple of the cell size
+        assert lon / 0.25 == pytest.approx(round(lon / 0.25)) and lat / 0.25 == pytest.approx(
+            round(lat / 0.25)
+        )
+        total = from_grid.setdefault((technology, status), [0, 0, 0.0])
+        total[0] += count
+        total[1] += with_capacity
+        total[2] += capacity
+
+    from_stats: dict[tuple[str, str], list[float]] = {}
+    stats = json.loads((build / "stats.json").read_text())
+    for by_technology in stats["plants"].values():
+        for technology, by_status in by_technology.items():
+            for status, bucket in by_status.items():
+                total = from_stats.setdefault((technology, status), [0, 0, 0.0])
+                total[0] += bucket["count"]
+                total[1] += bucket["withCapacity"]
+                total[2] += bucket["capacityMw"]
+
+    assert from_grid.keys() == from_stats.keys()
+    for key, (count, with_capacity, capacity) in from_grid.items():
+        assert [count, with_capacity] == from_stats[key][:2]
+        assert capacity == pytest.approx(from_stats[key][2])
+    # the plant at 16.51°E 45.81°N (osm:way/109) lies in the cell whose corner is 16.5, 45.75
+    assert [16.5, 45.75, "pumped_storage", "operating", 1, 1, 276.0] in grid["rows"]

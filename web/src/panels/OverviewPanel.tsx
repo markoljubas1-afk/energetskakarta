@@ -2,7 +2,8 @@ import { useState } from "react";
 
 import { useAsync } from "../app/useAsync";
 import { fetchJson } from "../data/current";
-import { StatsSchema, summarize } from "../data/stats";
+import { PlantGridSchema, summarizeView, type Bounds } from "../data/plantGrid";
+import { StatsSchema, summarize, type CountrySummary } from "../data/stats";
 import { isOneOf, SCOPE_COUNTRIES, type CountryCode } from "../domain";
 import { useI18n } from "../i18n";
 import { Skeleton } from "./Skeleton";
@@ -18,18 +19,35 @@ interface Props {
   theme: Theme;
   /** a row is pointed at (or left): the map lights that technology or voltage */
   onSpotlight?: (spotlight: Spotlight) => void;
+  /** plants added up by cell (data/plantGrid.ts); builds before 2026-11-16 have none */
+  plantGridUrl?: string | null;
+  /** what the map shows right now, once it has said so */
+  viewBounds?: Bounds | null;
 }
 
-type Area = CountryCode | "ALL";
+/** "VIEW": the part of the map that is on screen, added up from the plant grid. */
+type Area = CountryCode | "ALL" | "VIEW";
 
-export function OverviewPanel({ statsUrl, countries, theme, onSpotlight }: Props) {
+export function OverviewPanel({
+  statsUrl,
+  countries,
+  theme,
+  onSpotlight,
+  plantGridUrl = null,
+  viewBounds = null,
+}: Props) {
   const i18n = useI18n();
   const { t } = i18n;
   const palette = PALETTES[theme];
   const [choice, setChoice] = useState<Area | null>(null);
   const [only] = countries.size === 1 ? [...countries] : [];
-  const area: Area = choice ?? only ?? "ALL";
+  const viewOffered = plantGridUrl !== null && viewBounds !== null;
+  const chosen: Area = choice ?? only ?? "ALL";
+  const area: Area = chosen === "VIEW" && !viewOffered ? "ALL" : chosen;
   const [stats, retry] = useAsync(statsUrl, (signal) => fetchJson(statsUrl, StatsSchema, signal));
+  // fetched only once somebody asks for the view
+  const gridUrl = area === "VIEW" ? plantGridUrl : null;
+  const [grid, retryGrid] = useAsync(gridUrl, (signal) => fetchJson(gridUrl ?? "", PlantGridSchema, signal));
 
   if (!stats || stats.status === "loading") {
     return <Skeleton label={t("loadingData")} rows={6} />;
@@ -45,7 +63,24 @@ export function OverviewPanel({ statsUrl, countries, theme, onSpotlight }: Props
     );
   }
 
-  const summary = summarize(stats.value, area, SCOPE_COUNTRIES);
+  const inView = area === "VIEW";
+  if (inView && grid?.status === "error") {
+    return (
+      <p className={styles.muted} role="alert">
+        {t("overviewFailed")}{" "}
+        <button type="button" className={styles.link} onClick={retryGrid}>
+          {t("retry")}
+        </button>
+      </p>
+    );
+  }
+  const viewSummary =
+    inView && grid?.status === "ready" && viewBounds ? summarizeView(grid.value, viewBounds) : null;
+  // lines, substations and data centres are counted per country only; the view has plants
+  const summary: CountrySummary = viewSummary
+    ? { ...viewSummary, lineKm: [], substations: 0, datacenters: { count: 0, powerMw: 0, withPower: 0 } }
+    : summarize(stats.value, inView ? "ALL" : area, SCOPE_COUNTRIES);
+  const waitingForView = inView && viewSummary === null;
   const largest = Math.max(1, ...summary.technologies.map((row) => row.operatingMw + row.pipelineMw));
   const plants = summary.technologies.reduce((sum, row) => sum + row.plants, 0);
 
@@ -57,10 +92,11 @@ export function OverviewPanel({ statsUrl, countries, theme, onSpotlight }: Props
           value={area}
           onChange={(event) => {
             const value = event.target.value;
-            setChoice(value === "ALL" || isOneOf(SCOPE_COUNTRIES, value) ? value : "ALL");
+            setChoice(value === "ALL" || value === "VIEW" || isOneOf(SCOPE_COUNTRIES, value) ? value : "ALL");
           }}
         >
           <option value="ALL">{t("overviewRegion")}</option>
+          {viewOffered && <option value="VIEW">{t("overviewView")}</option>}
           {SCOPE_COUNTRIES.map((code) => (
             <option key={code} value={code}>
               {i18n.country(code)}
@@ -70,8 +106,10 @@ export function OverviewPanel({ statsUrl, countries, theme, onSpotlight }: Props
       </label>
 
       <h3 className={styles.heading}>{t("overviewTitle")}</h3>
-      {summary.technologies.length === 0 ? (
-        <p className={styles.muted}>{t("overviewEmpty")}</p>
+      {waitingForView ? (
+        <Skeleton label={t("loadingData")} rows={4} />
+      ) : summary.technologies.length === 0 ? (
+        <p className={styles.muted}>{inView ? t("overviewViewEmpty") : t("overviewEmpty")}</p>
       ) : (
         <>
           <dl className={styles.totals}>
@@ -146,7 +184,8 @@ export function OverviewPanel({ statsUrl, countries, theme, onSpotlight }: Props
         </>
       )}
 
-      <dl className={styles.totals}>
+      {inView && <p className={styles.note}>{t("overviewViewNote")}</p>}
+      <dl className={styles.totals} hidden={inView}>
         <div>
           <dt>{t("overviewSubstations")}</dt>
           <dd>{i18n.number(summary.substations)}</dd>

@@ -56,6 +56,7 @@ def test_publish_uploads_everything_and_pointer_last(make_build: BuildFactory) -
         base + "extraction.ndjson.gz", base + "extraction.pmtiles",
         base + "search.json", base + "stats.json", "current.json",
         base + "timeline.json",  # the fixture has plants with a start year, so the time machine has a file
+        base + "plantgrid.json",
     }  # fmt: skip
 
     pointer = json.loads(store.get_bytes("current.json") or b"")

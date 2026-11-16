@@ -23,7 +23,7 @@ import type { Palette } from "./palette";
 export type IntroStage = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 export const INTRO_SETTLE: IntroStage = 6;
 /** Paint changes between stages fade this long. */
-export const INTRO_TRANSITION_MS = 900;
+export const INTRO_TRANSITION_MS = 300;
 
 const INTRO_PREFIX = `${LAYER_PREFIX}intro-`;
 export const INTRO_NIGHT_LAYER = `${INTRO_PREFIX}night`;

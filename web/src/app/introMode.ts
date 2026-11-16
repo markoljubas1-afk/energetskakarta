@@ -35,13 +35,18 @@ export function introMode(env: IntroEnvironment): IntroMode {
   return env.reducedMotion ? "still" : "full";
 }
 
+/**
+ * The whole intro lasts about two seconds on a wide screen (decision 2026-11-16; it was close to eight):
+ * title 450 ms, flight 1200 ms (introFlight.ts), a moment to settle, hand-off 350 ms. Long enough to be a
+ * scene, short enough that nobody waits for the map.
+ */
 export const INTRO_TIMING = {
-  /** the title is on its own at least this long, so it can be read */
-  titleMs: 1800,
+  /** the title is on its own at least this long before the flight begins */
+  titleMs: 450,
   /** the intro stops waiting for the map after this; the page then loads as it always has */
-  giveUpMs: 9000,
+  giveUpMs: 5000,
   /** the overlay fades and the panels come back, while the map settles (INTRO_TRANSITION_MS) */
-  handoffMs: 900,
+  handoffMs: 350,
   /** still mode: how long the title stays once the map is there */
-  stillMs: 1200,
+  stillMs: 600,
 } as const;

@@ -44,18 +44,18 @@ export function flightPlan(final: { center: [number, number]; zoom: number }, wi
     return {
       start: { center: [lng - 6, lat - 10], zoom: 1.9, pitch: 0, bearing: 0 },
       legs: [
-        { to: overAdriatic, durationMs: 2400 },
-        { to: end, durationMs: 2200 },
+        { to: overAdriatic, durationMs: 650 },
+        { to: end, durationMs: 550 },
       ],
       globe: { from: final.zoom - 1.6, to: final.zoom - 0.9 },
-      totalMs: 4600,
+      totalMs: 1200,
     };
   }
   return {
     start: { ...overAdriatic, zoom: Math.max(final.zoom - 1.3, 2.5), pitch: 45, bearing: -12 },
-    legs: [{ to: end, durationMs: 3600 }],
+    legs: [{ to: end, durationMs: 1000 }],
     globe: null,
-    totalMs: 3600,
+    totalMs: 1000,
   };
 }
 
@@ -66,4 +66,4 @@ export function flightPlan(final: { center: [number, number]; zoom: number }, wi
 export const INTRO_STAGE_AT = [0, 0.28, 0.4, 0.52, 0.64, 0.72] as const;
 
 /** After the camera arrives the flows run for a moment before everything settles. */
-export const SETTLE_DELAY_MS = 600;
+export const SETTLE_DELAY_MS = 150;
