@@ -146,7 +146,7 @@ jobs:
           SITE_URL: ${{ vars.SITE_URL }}
         run: |
           if [ -z "$SITE_URL" ]; then
-            echo "::error::SITE_URL is not set (Settings → Variables), e.g. https://energetska-karta.tmit.hr"
+            echo "::error::SITE_URL is not set (Settings → Variables), e.g. https://gridatlas.eu"
             exit 1
           fi
       - name: Build

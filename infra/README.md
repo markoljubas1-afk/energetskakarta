@@ -175,7 +175,7 @@ token s dozvolom **Account → Cloudflare Pages → Edit**.
 |---|---|
 | `DATA_BASE_URL` | javna adresa bucketa iz A.2, npr. `https://podaci.tvoja-domena.hr/` |
 | `PAGES_PROJECT` | ime Pages projekta iz koraka 1, npr. `energetska-karta` |
-| `SITE_URL` | `https://energetska-karta.tmit.hr` (odluka 2026-11-08), bez kose crte na kraju; iz nje nastaju canonical poveznice, sitemap, `og:image` i `llms.txt`. Produkcijski build na `main` bez nje pada |
+| `SITE_URL` | `https://gridatlas.eu` (odluka 2026-11-16; prije toga je planirana poddomena na tmit.hr), bez kose crte na kraju; iz nje nastaju canonical poveznice, sitemap, `og:image` i `llms.txt`. Produkcijski build na `main` bez nje pada |
 
 Dok `PAGES_PROJECT` nije postavljen, workflow `web` pokreće provjere i e2e testove, a objavu preskače.
 Stranica se objavljuje i nakon svakog uspješnog pokretanja podatkovnih workflowa (`osm-scheduled`,
@@ -184,17 +184,18 @@ stranice za tražilice (`/o-karti/`, `/zemlja/*`, `/objekt/*`, izvještaji, site
 podataka u trenutku builda. Neuspjelo ili preskočeno pokretanje ne gradi ništa i ne prekida objavu u tijeku.
 Kad je postavljen, a `DATA_BASE_URL` nije, build namjerno pada, da se nikad ne objavi stranica bez podataka.
 
-## 4. Vlastita domena: `energetska-karta.tmit.hr`
+## 4. Vlastita domena: `gridatlas.eu`
 
 1. Cloudflare → **Workers & Pages** → projekt `energetska-karta` → **Custom domains** → **Set up a custom
-   domain** → `energetska-karta.tmit.hr`.
+   domain** → `gridatlas.eu`.
 2. DNS zapis:
-   - ako je zona `tmit.hr` na Cloudflareu, Cloudflare zapis doda sam;
-   - ako nije, kod pružatelja DNS-a za `tmit.hr` dodaj `CNAME energetska-karta → energetska-karta.pages.dev`
-     (prvo korak 1, pa tek onda CNAME; obrnutim redom Pages domenu ne potvrdi).
+   - ako je zona `gridatlas.eu` na Cloudflareu, Cloudflare zapis doda sam;
+   - ako nije, zona se prvo mora prebaciti na Cloudflare: vršna domena (bez poddomene) na Pagesu radi samo
+     kad su joj Cloudflareovi poslužitelji imena upisani kod registra.
+   Po želji isto ponovi za `www.gridatlas.eu`, da radi i ta adresa.
 3. Kad Cloudflare pokaže **Active** (certifikat se izda sam, obično za nekoliko minuta): GitHub varijabla
-   `SITE_URL` = `https://energetska-karta.tmit.hr` i ponovno pokreni workflow `web`.
-4. MapTiler: dodaj `energetska-karta.tmit.hr` u **Allowed HTTP origins** (dio C).
+   `SITE_URL` = `https://gridatlas.eu` i ponovno pokreni workflow `web`.
+4. MapTiler: dodaj `gridatlas.eu` u **Allowed HTTP origins** (dio C).
 5. `energetska-karta.pages.dev` ostaje dostupna, ali sve stranice imaju canonical na vlastitu domenu, pa
    tražilice indeksiraju samo nju.
 
@@ -202,20 +203,20 @@ Kad je postavljen, a `DATA_BASE_URL` nije, build namjerno pada, da se nikad ne o
 **Metrics** → **Web Analytics** → Enable. Cloudflare sam dodaje svoju skriptu na stranice; CSP je već dopušta
 (`web/vite/securityHeaders.ts`), a druge skripte izvana i dalje ne prolaze.
 
-Ako je `tmit.hr` na Cloudflareu, istim putem (R2 → bucket → **Custom domains**) poveži i
-`podaci.energetska-karta.tmit.hr` za podatke (A.2): `r2.dev` ima ograničenje prometa i nije za produkciju.
+Ako je `gridatlas.eu` na Cloudflareu, istim putem (R2 → bucket → **Custom domains**) poveži i
+`podaci.gridatlas.eu` za podatke (A.2): `r2.dev` ima ograničenje prometa i nije za produkciju.
 
 ## 5. Kako se objavljuje
 
 Workflow `web` pokreće provjere i e2e testove, a tek kad oboje prođe objavljuje:
-- grana `main` → produkcija `https://energetska-karta.tmit.hr` (i `https://energetska-karta.pages.dev`)
+- grana `main` → produkcija `https://gridatlas.eu` (i `https://energetska-karta.pages.dev`)
 - ostale grane i pull requestovi → pregledna verzija s vlastitom adresom
 
 # C. MapTiler: podloga karte
 
 1. Registracija na <https://cloud.maptiler.com> (besplatni plan).
 2. **API keys** → novi ključ → **Allowed HTTP origins**: `energetska-karta.pages.dev`,
-   `*.energetska-karta.pages.dev` i `energetska-karta.tmit.hr`. Ključ je vidljiv u pregledniku, pa ga samo
+   `*.energetska-karta.pages.dev` i `gridatlas.eu`. Ključ je vidljiv u pregledniku, pa ga samo
    ovo ograničenje štiti od tuđeg korištenja.
 3. Ključ spremi kao GitHub secret `MAPTILER_KEY`.
 

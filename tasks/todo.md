@@ -1482,7 +1482,7 @@ radimo povijest iz PDF-ova; (4) dodatni jezici (C6) da ili kasnije.
 
 ### Faze 15 i 16 — odluke i napravljeno (2026-11-08)
 
-**Odluke korisnika (2026-11-08):** domena `energetska-karta.tmit.hr` (Cloudflare Pages); HEP ODS je **dao
+**Odluke korisnika (2026-11-08):** domena `gridatlas.eu` (Cloudflare Pages); HEP ODS je **dao
 dopuštenje** za ponovnu upotrebu podataka s karte, ali API ni CSV neće postojati („radi najbolje moguće i
 vidi kako ćemo osvježavati"); dalje se radi bez čekanja („dok čekamo možemo dalje raditi?"). Otvoreno: 16-A3
 (jezik iz putanje) i 16-C6 (dodatni jezici).

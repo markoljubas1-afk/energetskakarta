@@ -36,7 +36,7 @@ Varijabla (**isti izbornik → Variables**):
 | `DATA_BASE_URL` | javna adresa bucketa, npr. `https://pub-xxxx.r2.dev/` |
 | `PAGES_PROJECT` | ime Cloudflare Pages projekta, npr. `energetska-karta`; dok je nema, stranica se ne objavljuje (provjere rade) |
 | `INDEXNOW_KEY` | ključ za IndexNow: 32 znamenke heksadecimalno (npr. `openssl rand -hex 16`); nije tajna, objavljuje se kao `/<ključ>.txt`. S njim Bing, Yandex i partneri saznaju za nove stranice odmah nakon objave |
-| `SITE_URL` | `https://energetska-karta.tmit.hr` (bez kose crte na kraju; postavljanje domene: `infra/README.md`, B.4); iz nje se rade canonical poveznice, sitemap, slike za dijeljenje i `llms.txt`. Produkcijski build na `main` bez nje pada |
+| `SITE_URL` | `https://gridatlas.eu` (bez kose crte na kraju; postavljanje domene: `infra/README.md`, B.4); iz nje se rade canonical poveznice, sitemap, slike za dijeljenje i `llms.txt`. Produkcijski build na `main` bez nje pada |
 | `SCHEDULE_OSM` | `true` tek kad korak 3 prođe: uključuje tjedno ažuriranje karte i mjesečni EMODnet |
 | `SCHEDULE_ENTSOE` | `true` tek kad korak 5 prođe: uključuje dnevne podatke i tokove svaki sat |
 | `SCHEDULE_GAS` | `true` kad **Actions → gas-daily** jednom ručno prođe (ne treba ključ, samo R2): uključuje dnevnu proizvodnju plina (ENTSOG) |

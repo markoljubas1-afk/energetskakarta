@@ -295,7 +295,7 @@ Kod: `pipeline/src/energymap/hep/capacity.py`, `web/src/data/hep.ts`, `web/src/s
 
 ### SEO 2.0: tražilice i AI pretraživanje (Faza 16)
 
-Domena je `https://energetska-karta.tmit.hr` (`SITE_URL`, postavljanje u `infra/README.md`, B.4); produkcijski
+Domena je `https://gridatlas.eu` (`SITE_URL`, postavljanje u `infra/README.md`, B.4); produkcijski
 deploy bez nje pada.
 
 - **Početna** dobiva u prerenderu apsolutni canonical, `og:url`, `og:image`, `WebSite` JSON-LD s adresom i

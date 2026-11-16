@@ -67,7 +67,7 @@ function dateParts(lang: Lang, date: Date): { full: string; dayMonth: string; ye
   };
 }
 
-/** The host for a reader ("energetska-karta.tmit.hr"); a relative address stays as it is. */
+/** The host for a reader ("gridatlas.eu"); a relative address stays as it is. */
 export function hostOf(url: string): string {
   try {
     return new URL(url).host;

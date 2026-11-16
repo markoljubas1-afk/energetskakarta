@@ -137,5 +137,5 @@ def make_client() -> httpx.Client:
         timeout=httpx.Timeout(30.0, read=300.0),
         follow_redirects=True,
         transport=httpx.HTTPTransport(retries=3),
-        headers={"User-Agent": "energymap-pipeline/0.1 (+https://energetska-karta.tmit.hr)"},
+        headers={"User-Agent": "energymap-pipeline/0.1 (+https://gridatlas.eu)"},
     )
