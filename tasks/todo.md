@@ -1189,8 +1189,10 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
   povijesti zemlje (npr. gornja i donja trećina zadnjih 30 dana), a brojka je uvijek ispisana. (3) Savjeti
   „upali / ugasi” ostaju blagi i bez emojija; karta ne zna cijenu koju kućanstvo plaća. (4) Zemlja se ne
   pogađa po IP adresi posjetitelja (privatnost); bira se na kartici, zadano Hrvatska.
-- Preduvjet (otvoren): podaci „uživo” nisu pouzdano svježi. GitHub je 16. 11. od 24 zakazana pokretanja
-  `live-hourly` izvršio samo dva, a ENTSO-E je popodne vraćao greške. Semafor koji pokazuje sedam sati staro
+- Preduvjet (otvoren): podaci „uživo” nisu pouzdano svježi. GitHub je satni raspored
+  `live-hourly` (svaki sat u :12) u dvadesetak sati pokrenuo samo tri puta (15. 11. u 22:46, 16. 11. u 02:42 i
+  11:04 UTC), a nakon uključivanja `SCHEDULE_ENTSOE` u 13:20 nijednom u iduća tri i pol sata; ENTSO-E je uz to
+  popodne vraćao greške. Semafor koji pokazuje sedam sati staro
   stanje bio bi netočan, pa prije njega treba: pouzdan okidač (vanjski, npr. Cloudflare Worker s rasporedom
   koji poziva `workflow_dispatch`) i prikaz starosti podatka; stariji od dva sata prikazuje se sivo, bez boje.
 - Pristup: `live.py` uz proizvodnju računa udio obnovljivih po satu i pragove; nova kartica u traci uživo i
