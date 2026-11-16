@@ -21,6 +21,9 @@ export default defineConfig(({ command, mode }) => {
       sourcemap: true,
       // MapLibre alone is ~1 MB minified; it is loaded lazily with the map, so the shell stays small.
       chunkSizeWarningLimit: 1100,
+      // Small font subsets would be inlined as data: URLs, which the site's policy (font-src 'self') refuses:
+      // fonts always stay files. Everything else keeps Vite's default limit.
+      assetsInlineLimit: (filePath: string) => (/\.woff2?$/.test(filePath) ? false : undefined),
     },
     test: {
       environment: "jsdom",
