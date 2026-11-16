@@ -24,9 +24,12 @@ export function Header({ theme, page, onPage, onToggleTheme, onToggleLang, child
       <a className={styles.skip} href="#map">
         {t("skipToMap")}
       </a>
-      {/* The name alone (decision 2026-11-16): no mark and no second line next to it. */}
+      {/* The name as the intro writes it, and what it is in small letters (decision 2026-11-16). */}
       <div className={styles.brand}>
-        <strong>{t("appName")}</strong>
+        <strong aria-label={t("appName")}>
+          Grid<span>Atlas</span>
+        </strong>
+        <span className={styles.tagline}>{t("appTagline")}</span>
       </div>
       <div className={styles.search}>{page === "map" ? children : null}</div>
       <div className={styles.pages} role="group" aria-label={t("pageLabel")}>

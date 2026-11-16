@@ -98,9 +98,7 @@ test("a chart is passed on with its source: link to the card, citation, CSV and 
   await expect(card.getByText(/^Izvor: ENTSO-E Transparency Platform · stanje /)).toBeVisible();
   await card.getByText("Podijeli").click();
   await card.getByRole("button", { name: "Citiraj" }).click();
-  await expect(
-    card.getByText(/^Izvor: Regionalna energetska karta \(.+\), prema podacima ENTSO-E/),
-  ).toBeVisible();
+  await expect(card.getByText(/^Izvor: GridAtlas \(.+\), prema podacima ENTSO-E/)).toBeVisible();
   const csv = page.waitForEvent("download");
   await card.getByRole("button", { name: "Preuzmi podatke (CSV)" }).click();
   expect((await csv).suggestedFilename()).toMatch(

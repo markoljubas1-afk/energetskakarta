@@ -120,7 +120,7 @@ describe("App", () => {
     expect(window.location.search).toBe("");
     expect(screen.getByRole("tab", { name: "Filters" })).toHaveAttribute("aria-selected", "true");
     expect(document.title).toBe(
-      "Regional Energy Map – power plants, transmission lines and substations of Croatia and the region",
+      "GridAtlas – regional energy map: power plants, transmission lines and substations of Croatia and the region",
     );
   });
 

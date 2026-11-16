@@ -197,7 +197,7 @@ describe("sitemap, robots and llms.txt", () => {
 
   it("describes the site for assistants with working links", () => {
     const text = llmsTxt(site);
-    expect(text.startsWith("# Regional Energy Map")).toBe(true);
+    expect(text.startsWith("# GridAtlas")).toBe(true);
     expect(text).toContain("(https://karta.example/en/about/)");
     expect(text).toContain("(https://podaci.example/builds/b/lines.ndjson.gz)");
     expect(text).toContain("ODbL");

@@ -1,9 +1,10 @@
 import type { Dictionary } from "./hr";
 
 export const en: Dictionary = {
-  appName: "Regional Energy Map",
+  appName: "GridAtlas",
+  appTagline: "Regional energy map",
   documentTitle:
-    "Regional Energy Map – power plants, transmission lines and substations of Croatia and the region",
+    "GridAtlas – regional energy map: power plants, transmission lines and substations of Croatia and the region",
   skipToMap: "Skip to map",
   searchPlaceholder: "Search for a plant, city, mine…",
   searchLabel: "Search",

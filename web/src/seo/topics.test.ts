@@ -187,7 +187,7 @@ describe("asset pages", () => {
     const dc = page("/objekt/dc-primjer/");
     expect(dc.title).toBe("DC Primjer: podatkovni centar, Hrvatska");
     expect(dc.description).toBe(
-      "Podatkovni centar DC Primjer, Hrvatska. Podaci, izvori i položaj na Regionalnoj energetskoj karti.",
+      "Podatkovni centar DC Primjer, Hrvatska. Podaci, izvori i položaj na GridAtlasu.",
     );
     expect(dc.description).not.toContain("()");
   });
@@ -261,12 +261,12 @@ describe("home page", () => {
     const en = homeHtml(template, site, "en");
     expect(en).toContain('<html lang="en" data-theme="dark">');
     expect(en).toContain(
-      "<title>Regional Energy Map – power plants, transmission lines and substations of Croatia and the region</title>",
+      "<title>GridAtlas – regional energy map: power plants, transmission lines and substations of Croatia and the region</title>",
     );
     expect(en).toContain('<link rel="canonical" href="https://karta.example/en/">');
     expect(en).toContain('<meta property="og:locale" content="en_GB" />');
-    expect(en).toContain("<h1>Regional Energy Map</h1>");
-    expect(en).not.toContain("<h1>Regionalna energetska karta</h1>");
+    expect(en).toContain("<h1>GridAtlas: Regional energy map</h1>");
+    expect(en).not.toContain("<h1>GridAtlas: Regionalna energetska karta</h1>");
     expect(en).toContain('<a href="/en/country/hr/">Croatia</a></td><td>316 MW</td>');
     expect(en).toContain('<p lang="hr">Na hrvatskom:');
     for (const html of [en, homeHtml(template, site, "hr")]) {
@@ -386,7 +386,7 @@ describe("files for search engines and assistants", () => {
       "@type": "Dataset",
       creator: {
         "@type": "Organization",
-        name: "Regionalna energetska karta",
+        name: "GridAtlas",
         url: "https://karta.example/",
       },
       spatialCoverage: { "@type": "Place", geo: { "@type": "GeoShape", box: "44 13 46 17" } },

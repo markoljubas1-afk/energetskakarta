@@ -31,7 +31,7 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
   hr: {
     title: "Edukacijski kutak: kako radi elektroenergetski sustav",
     description:
-      "Kako struja putuje od elektrane do utičnice, što znače MW, MWh i kV, što su dalekovod, trafostanica i interkonektor, i kako sve to pronaći na Regionalnoj energetskoj karti.",
+      "Kako struja putuje od elektrane do utičnice, što znače MW, MWh i kV, što su dalekovod, trafostanica i interkonektor, i kako sve to pronaći na GridAtlasu.",
     lead: [
       "Struja se ne može spremiti u skladište kao roba: u svakom trenutku mora se proizvesti točno onoliko koliko se troši. Zato je elektroenergetski sustav jedan veliki, stalno uravnoteženi stroj koji se proteže preko cijelog kontinenta.",
       "Ovdje su u nekoliko minuta čitanja objašnjeni njegovi glavni dijelovi i riječi koje karta koristi. Uz svako objašnjenje je poveznica koja otvara kartu baš na tome.",
@@ -130,7 +130,7 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
   en: {
     title: "Learning corner: how the power system works",
     description:
-      "How electricity gets from a plant to a socket, what MW, MWh and kV mean, what a transmission line, a substation and an interconnector are, and how to find them all on the Regional Energy Map.",
+      "How electricity gets from a plant to a socket, what MW, MWh and kV mean, what a transmission line, a substation and an interconnector are, and how to find them all on GridAtlas.",
     lead: [
       "Electricity cannot be kept in a warehouse like goods: at every moment exactly as much has to be generated as is being used. That makes the power system one large, constantly balanced machine that spans a whole continent.",
       "A few minutes of reading here explain its main parts and the words the map uses. Each explanation comes with a link that opens the map on exactly that.",

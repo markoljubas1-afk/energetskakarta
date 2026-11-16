@@ -13,9 +13,9 @@ const other = (lang: Lang): Lang => (lang === "hr" ? "en" : "hr");
 
 const COPY = {
   hr: {
-    title: "Podrška i partneri: kako pomoći Regionalnoj energetskoj karti",
+    title: "Podrška i partneri: kako pomoći GridAtlasu",
     description:
-      "Regionalna energetska karta je neovisan, besplatan projekt otvorenih podataka. Kako ga podržati: dijeljenjem i citiranjem, podacima, partnerstvom i potporom, i tko ga podržava.",
+      "GridAtlas je neovisan, besplatan projekt otvorenih podataka. Kako ga podržati: dijeljenjem i citiranjem, podacima, partnerstvom i potporom, i tko ga podržava.",
     heading: "Podrška i partneri",
     linkText: "Podržite projekt",
     lead: [
@@ -45,9 +45,9 @@ const COPY = {
       "Financijeri i partneri ne utječu na podatke ni na način njihova prikaza. Podaci dolaze iz otvorenih izvora navedenih uz svaki zapis, a popis svih koji projekt podržavaju uvijek je javan na ovoj stranici.",
   },
   en: {
-    title: "Support and partners: how to help the Regional Energy Map",
+    title: "Support and partners: how to help GridAtlas",
     description:
-      "The Regional Energy Map is an independent, free open-data project. How to support it: by sharing and citing, with data, partnerships and funding, and who supports it.",
+      "GridAtlas is an independent, free open-data project. How to support it: by sharing and citing, with data, partnerships and funding, and who supports it.",
     heading: "Support and partners",
     linkText: "Support the project",
     lead: [

@@ -9,7 +9,7 @@ export interface ChartPictureText {
   title: string;
   /** what is shown: "Hrvatska · mjesečno" */
   subtitle: string;
-  /** "Izvor: ENTSO-E Transparency Platform · stanje 14. 11. 2026. · Regionalna energetska karta" */
+  /** "Izvor: ENTSO-E Transparency Platform · stanje 14. 11. 2026. · GridAtlas" */
   credits: string;
   /** the permalink, written out */
   link: string;

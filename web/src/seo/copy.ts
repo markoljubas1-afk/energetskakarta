@@ -206,7 +206,7 @@ export interface Copy {
 }
 
 const hr: Copy = {
-  siteTitle: "Regionalna energetska karta",
+  siteTitle: "GridAtlas",
   keywords: [
     "elektrane",
     "dalekovodi",
@@ -223,7 +223,7 @@ const hr: Copy = {
   about: {
     title: "O karti: izvori, licence i način rada",
     intro: [
-      "Regionalna energetska karta je otvorena, besplatna karta elektroenergetske infrastrukture Hrvatske i šire regije: Slovenije, Mađarske, Srbije, Bosne i Hercegovine, Crne Gore, Italije i Austrije.",
+      "GridAtlas je regionalna energetska karta: otvoren i besplatan prikaz elektroenergetske infrastrukture Hrvatske i šire regije (Slovenije, Mađarske, Srbije, Bosne i Hercegovine, Crne Gore, Italije i Austrije).",
       "Prikazuje elektrane po tehnologiji i snazi, dalekovode i kabele po naponu, trafostanice, podmorske cjevovode i vjetroelektrane na Jadranu, podatkovne centre, punionice za električna vozila, naftne i plinske bušotine, platforme i rudnike, dnevnu proizvodnju plina po zemlji te satne tokove struje preko granica i cijene na dan-unaprijed tržištima.",
     ],
     whatHeading: "Koje podatke karta sadrži",
@@ -332,7 +332,7 @@ const hr: Copy = {
   },
   asset: {
     description: (kind, name, detail, country) =>
-      `${kind} ${name}${detail ? ` (${detail})` : ""}${country ? `, ${country}` : ""}. Podaci, izvori i položaj na Regionalnoj energetskoj karti.`,
+      `${kind} ${name}${detail ? ` (${detail})` : ""}${country ? `, ${country}` : ""}. Podaci, izvori i položaj na GridAtlasu.`,
     title: (name, kind, figure, country) =>
       `${name}: ${kind}${figure ? ` ${figure}` : ""}${country ? `, ${country}` : ""}`,
     cityTitle: (name, country) => `${name}: potrošnja struje po namjeni${country ? `, ${country}` : ""}`,
@@ -457,7 +457,7 @@ const hr: Copy = {
     },
     title: (plural, where) => `${plural} ${where}: popis, snaga i karta`,
     description: (plural, where, count, total) =>
-      `${plural} ${where} na Regionalnoj energetskoj karti: popis (ukupno ${count}${total ? `, zbroj upisane snage ${total}` : ""}), položaj i izvori. Otvoreni podaci, tjedno ažurirani.`,
+      `${plural} ${where} na GridAtlasu: popis (ukupno ${count}${total ? `, zbroj upisane snage ${total}` : ""}), položaj i izvori. Otvoreni podaci, tjedno ažurirani.`,
     lead: (count, total) =>
       `Ukupno na karti: ${count}${total ? ` · zbroj upisane snage (svi statusi): ${total}` : ""}. Brojke su ono što je upisano u izvorima, pa su donja granica stvarnog stanja.`,
     truncated: (shown, total) => `Prikazano je ${shown} najvećih od ${total}; svi su na karti.`,
@@ -490,7 +490,7 @@ const hr: Copy = {
       "Otvorena karta elektrana, dalekovoda i trafostanica Hrvatske i regije, s tokovima struje i cijenama uživo.",
   },
   notFound: {
-    title: "Stranica nije pronađena (404) – Regionalna energetska karta",
+    title: "Stranica nije pronađena (404) – GridAtlas",
     heading: "Stranica nije pronađena",
     text: "Ova adresa ne postoji ili je objekt uklonjen iz izvora podataka (npr. iz OpenStreetMapa) pri zadnjoj obnovi.",
     textOther: "This page does not exist, or the asset was removed from the source data in the last refresh.",
@@ -528,7 +528,7 @@ const hr: Copy = {
 };
 
 const en: Copy = {
-  siteTitle: "Regional Energy Map",
+  siteTitle: "GridAtlas",
   keywords: [
     "power plants",
     "transmission lines",
@@ -545,7 +545,7 @@ const en: Copy = {
   about: {
     title: "About the map: sources, licences and how it works",
     intro: [
-      "The Regional Energy Map is an open, free map of the electricity infrastructure of Croatia and the wider region: Slovenia, Hungary, Serbia, Bosnia and Herzegovina, Montenegro, Italy and Austria.",
+      "GridAtlas is a regional energy map: an open, free picture of the electricity infrastructure of Croatia and the wider region (Slovenia, Hungary, Serbia, Bosnia and Herzegovina, Montenegro, Italy and Austria).",
       "It shows power plants by technology and capacity, transmission lines and cables by voltage, substations, offshore pipelines and wind farms in the Adriatic, data centres, charging stations for electric vehicles, oil and gas wells, platforms and mines, daily gas production per country, and hourly cross-border electricity flows and day-ahead prices.",
     ],
     whatHeading: "What the map contains",
@@ -654,7 +654,7 @@ const en: Copy = {
   },
   asset: {
     description: (kind, name, detail, country) =>
-      `${kind} ${name}${detail ? ` (${detail})` : ""}${country ? `, ${country}` : ""}. Data, sources and location on the Regional Energy Map.`,
+      `${kind} ${name}${detail ? ` (${detail})` : ""}${country ? `, ${country}` : ""}. Data, sources and location on GridAtlas.`,
     title: (name, kind, figure, country) =>
       `${name}: ${kind}${figure ? ` ${figure}` : ""}${country ? `, ${country}` : ""}`,
     cityTitle: (name, country) => `${name}: electricity use by purpose${country ? `, ${country}` : ""}`,
@@ -778,7 +778,7 @@ const en: Copy = {
     },
     title: (plural, where) => `${plural} ${where}: list, capacity and map`,
     description: (plural, where, count, total) =>
-      `${plural} ${where} on the Regional Energy Map: the list (${count} in total${total ? `, ${total} of recorded capacity` : ""}), locations and sources. Open data, updated weekly.`,
+      `${plural} ${where} on GridAtlas: the list (${count} in total${total ? `, ${total} of recorded capacity` : ""}), locations and sources. Open data, updated weekly.`,
     lead: (count, total) =>
       `On the map: ${count}${total ? ` · recorded capacity, all statuses: ${total}` : ""}. The figures are what the sources record, so they are a lower bound.`,
     truncated: (shown, total) => `Showing the ${shown} largest of ${total}; all of them are on the map.`,
@@ -811,7 +811,7 @@ const en: Copy = {
       "An open map of power plants, transmission lines and substations in Croatia and the region, with live power flows and prices.",
   },
   notFound: {
-    title: "Page not found (404) – Regional Energy Map",
+    title: "Page not found (404) – GridAtlas",
     heading: "Page not found",
     text: "This page does not exist, or the asset was removed from the source data (for example OpenStreetMap) in the last refresh.",
     textOther: "Ova adresa ne postoji ili je objekt uklonjen iz izvora podataka pri zadnjoj obnovi.",

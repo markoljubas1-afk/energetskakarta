@@ -214,7 +214,7 @@ describe("EnergyView", () => {
     await user.click(within(card).getByRole("button", { name: "Citiraj" }));
     expect(
       within(card).getByText(
-        /^Izvor: Regionalna energetska karta \(.+\), prema podacima ENTSO-E Transparency Platform; stanje 16\. rujna 2026\.$/,
+        /^Izvor: GridAtlas \(.+\), prema podacima ENTSO-E Transparency Platform; stanje 16\. rujna 2026\.$/,
       ),
     ).toBeInTheDocument();
     expect(within(card).getByText(/\[Skup podataka\]\. Preuzeto /)).toBeInTheDocument();

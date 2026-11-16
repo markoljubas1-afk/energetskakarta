@@ -54,16 +54,14 @@ describe("ChartShare", () => {
     expect(screen.getByText("Za objavu")).toBeInTheDocument();
     expect(
       screen.getByText(
-        /^Regionalna energetska karta\. \(2026, 14\. studenoga\)\. Proizvodnja po izvoru i potrošnja: Hrvatska · mjesečno \[Skup podataka\]\. Preuzeto 15\. studenoga 2026\. s /,
+        /^GridAtlas\. \(2026, 14\. studenoga\)\. Proizvodnja po izvoru i potrošnja: Hrvatska · mjesečno \[Skup podataka\]\. Preuzeto 15\. studenoga 2026\. s /,
       ),
     ).toBeInTheDocument();
     expect(screen.getByText(/@misc\{energetskakarta2026,/)).toBeInTheDocument();
     const [first] = screen.getAllByRole("button", { name: "Kopiraj" });
     if (!first) throw new Error("no copy button");
     await userEvent.click(first);
-    expect(writeClipboard).toHaveBeenLastCalledWith(
-      expect.stringMatching(/^Izvor: Regionalna energetska karta/),
-    );
+    expect(writeClipboard).toHaveBeenLastCalledWith(expect.stringMatching(/^Izvor: GridAtlas/));
   });
 
   it("downloads the card's numbers as CSV, with a BOM so Excel reads č, ć and š", () => {

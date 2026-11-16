@@ -1,8 +1,10 @@
 /** Croatian is the source dictionary; every other language must provide the same keys. */
 export const hr = {
-  appName: "Regionalna energetska karta",
+  appName: "GridAtlas",
+  appTagline: "Regionalna energetska karta",
   /** the browser tab and what search engines show for the home page; matches <title> in index.html */
-  documentTitle: "Regionalna energetska karta – elektrane, dalekovodi i trafostanice Hrvatske i regije",
+  documentTitle:
+    "GridAtlas – regionalna energetska karta: elektrane, dalekovodi i trafostanice Hrvatske i regije",
   skipToMap: "Preskoči na kartu",
   searchPlaceholder: "Traži elektranu, grad, rudnik…",
   searchLabel: "Pretraga",

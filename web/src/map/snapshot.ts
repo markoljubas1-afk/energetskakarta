@@ -4,7 +4,7 @@
  */
 
 export interface SnapshotText {
-  /** "Regionalna energetska karta · 19. 9. 2026." */
+  /** "GridAtlas · 19. 9. 2026." */
   title: string;
   /** every credit line, joined; wrapped to the width of the picture */
   attribution: string;

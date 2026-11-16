@@ -98,7 +98,7 @@ describe("embed code", () => {
     const code = screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Ugradi na svoju stranicu" });
     expect(code.value).toContain("embed=1");
     expect(code.value).toContain("&amp;l=plants");
-    expect(code.value).toContain('title="Regionalna energetska karta"');
+    expect(code.value).toContain('title="GridAtlas"');
     await user.click(screen.getByRole("button", { name: "Kopiraj kod" }));
     expect(write).toHaveBeenCalledWith(expect.stringContaining("<iframe"));
     expect(await screen.findByRole("button", { name: "Kod je kopiran." })).toBeInTheDocument();

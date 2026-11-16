@@ -6,7 +6,7 @@ import type { Lang } from "../state/url";
 
 export interface CiteInput {
   lang: Lang;
-  /** the site's name in that language ("Regionalna energetska karta") */
+  /** the site's name in that language ("GridAtlas") */
   site: string;
   /** what is cited: a chart ("Proizvodnja po izvoru i potrošnja: Hrvatska, mjesečno") or a page's title */
   title: string;

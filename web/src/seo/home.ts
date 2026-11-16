@@ -120,7 +120,7 @@ function englishIntro(): string {
     (code) => `<a href="${PATHS.en.country(code.toLowerCase())}">${e(i18n.country(code))}</a>`,
   ).join(", ");
   return [
-    `<h1>${e(i18n.t("appName"))}</h1>`,
+    `<h1>${e(i18n.t("appName"))}: ${e(i18n.t("appTagline"))}</h1>`,
     `<p>${e(copy.home.intro)}</p>`,
     `<ul><li><a href="${PATHS.en.about}">${e(copy.about.title)}</a></li><li>${e(copy.nav.countries)}: ${countries}</li><li><a href="${PATHS.hr.about}" lang="hr">O karti (hrvatski)</a></li></ul>`,
   ].join("\n        ");

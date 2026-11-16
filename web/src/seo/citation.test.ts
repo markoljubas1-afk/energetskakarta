@@ -20,9 +20,9 @@ describe("how to cite a static page", () => {
     // the geothermal page is dated by its own document (15 November), not by the map's release (Faza 31)
     const cite = pageCitation(page, site);
     expect(cite.apa).toBe(
-      "Regionalna energetska karta. (2026, 15. studenoga). Geotermalna energija u Hrvatskoj [Skup podataka]. https://karta.example/geotermalna-energija/",
+      "GridAtlas. (2026, 15. studenoga). Geotermalna energija u Hrvatskoj [Skup podataka]. https://karta.example/geotermalna-energija/",
     );
-    expect(cite.text).toBe("Izvor: Regionalna energetska karta (karta.example); stanje 15. studenoga 2026.");
+    expect(cite.text).toBe("Izvor: GridAtlas (karta.example); stanje 15. studenoga 2026.");
   });
 
   it("shows it at the end of every page and in its Markdown twin", () => {
@@ -30,7 +30,7 @@ describe("how to cite a static page", () => {
     expect(html).toContain('<section class="cite"><h2>Kako citirati</h2>');
     expect(html.indexOf('class="cite"')).toBeLessThan(html.indexOf("</main>"));
     expect(pageMarkdown(page, site)).toContain(
-      "- Kako citirati (APA): Regionalna energetska karta. (2026, 15. studenoga). Geotermalna energija u Hrvatskoj",
+      "- Kako citirati (APA): GridAtlas. (2026, 15. studenoga). Geotermalna energija u Hrvatskoj",
     );
     const en = buildPages(site).find((p) => p.path === "/en/geothermal-energy/");
     expect(en && renderPage(en, site)).toContain("<h2>How to cite</h2>");

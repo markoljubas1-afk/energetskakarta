@@ -1172,7 +1172,10 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 ### 35-4 Uvod s natpisom GridAtlas — GOTOVO 2026-11-16
 - Uvodni ekran prvog posjeta: natpis „GridAtlas” slovo po slovo („Atlas” u toplo-hladnom svjetlu vodova), crta
   koja se pali s iskrom koja je pretrči, ispod naziv karte; trajanje ostaje oko dvije sekunde (odluka od
-  istog dana). Naziv stranice drugdje je i dalje „Regionalna energetska karta” — otvoreno pitanje vlasniku.
+  istog dana).
+- Ime (odluka vlasnika 2026-11-16): stranica se zove **GridAtlas**, a „Regionalna energetska karta” je njezin
+  opis. Promijenjeno: zaglavlje karte i statičnih stranica (ime + opis), naslovi i `og:` oznake, tekstovi, citat
+  i natpis na slikama za dijeljenje. Nije promijenjeno: slika `og.png` (u njoj je staro ime), README i upute.
 - Ideja: svijetla točka krene od vjetroelektrane u Dalmaciji, prođe stvarnim vodovima 400 kV do Zagreba i
   završi u distribucijskoj mreži; karta je prati, a trag iza nje ostaje svijetliti. Kontrole: pusti, pauza,
   ispočetka.

@@ -151,6 +151,7 @@ ${head(page, site)}
 <body>
 <header>
 <strong>${e(copy.siteTitle)}</strong>
+<span class="tagline">${e(i18n.t("appTagline"))}</span>
 <nav aria-label="${page.lang === "hr" ? "Glavna navigacija" : "Main navigation"}">
 <a href="${mapHref}">${ICONS.map}${e(copy.nav.map)}</a>
 <a href="${PATHS[page.lang].about}">${ICONS.about}${e(copy.nav.about)}</a>
