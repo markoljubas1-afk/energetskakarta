@@ -90,6 +90,23 @@ describe("Markdown twins", () => {
     expect(headersFile("/d/")).toContain("/*.md\n  Content-Type: text/markdown; charset=utf-8");
   });
 
+  it("leave out the pages of single objects, whose machine-readable twin is their JSON in the API", () => {
+    const pages = buildPages(site);
+    const files = staticFiles(site, undefined, { template: readTemplate() });
+    const plant = pages.find((p) => p.path === "/objekt/osm-way-2/");
+    if (!plant) throw new Error("the fixture's plant page is missing");
+    expect(files.has("objekt/osm-way-2/index.html")).toBe(true);
+    expect(files.has("objekt/osm-way-2/index.md")).toBe(false);
+    const html = renderPage(plant, site);
+    expect(html).not.toContain('type="text/markdown"');
+    expect(html).toContain('type="application/json"');
+    // every other page keeps its twin, and no twin is written for a page that says it has none
+    for (const page of pages) {
+      const twin = `${page.path.replace(/^\//, "")}index.md`;
+      expect(files.has(twin)).toBe(page.markdownTwin !== false);
+    }
+  });
+
   it("put the main English pages into llms-full.txt and announce both in llms.txt", () => {
     const full = llmsFull(buildPages(site), site);
     expect(full).toContain("## About the map");

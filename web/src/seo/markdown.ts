@@ -127,7 +127,7 @@ export function llmsFull(pages: readonly StaticPage[], site: SiteData): string {
   const chosen = pages.filter(wanted);
   return [
     `# ${COPY.en.siteTitle}: full text of the main pages`,
-    `${COPY.en.siteDescription} Every page also exists as Markdown: add index.md to its address. Croatian pages: ${site.siteUrl ?? ""}/o-karti/index.md`,
+    `${COPY.en.siteDescription} Every page also exists as Markdown: add index.md to its address (the pages of single plants, substations and cities have their JSON in the API instead). Croatian pages: ${site.siteUrl ?? ""}/o-karti/index.md`,
     ...chosen.map((page) => pageMarkdown(page, site).replace(/^# /, "## ").replace(/\n## /g, "\n### ")),
   ].join("\n\n---\n\n");
 }

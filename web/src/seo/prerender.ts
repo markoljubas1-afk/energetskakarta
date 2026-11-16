@@ -34,7 +34,7 @@ import { homeHtml } from "./home";
 import { llmsFull, markdownPath, pageMarkdown } from "./markdown";
 import { renderNotFound, renderPage } from "./html";
 import { isValidKey, keyFileName } from "./indexnow";
-import type { SiteData, StaticPage } from "./site";
+import { APP_FILE_ALLOWANCE, PAGES_FILE_LIMIT, type SiteData, type StaticPage } from "./site";
 import { buildPages } from "./pages";
 import { llmsTxt, robotsTxt, sitemapFiles } from "./sitemap";
 
@@ -293,7 +293,7 @@ export function staticFiles(
   const relative = (p: string): string => p.replace(/^\/+/, "");
   for (const page of pages) {
     files.set(relative(path.posix.join(page.path, "index.html")), renderPage(page, site));
-    files.set(relative(markdownPath(page.path)), pageMarkdown(page, site));
+    if (page.markdownTwin !== false) files.set(relative(markdownPath(page.path)), pageMarkdown(page, site));
   }
   files.set("llms-full.txt", llmsFull(pages, site));
   if (options.template !== undefined) {
@@ -336,6 +336,13 @@ export async function writeStaticFiles(
   const template = await readFile(path.resolve(outDir, "index.html"), "utf8");
   const previous = await loadPreviousManifest(site.siteUrl);
   const files = staticFiles(site, options.indexNowKey, { template, previous });
+  // Said here, with numbers, rather than by the upload failing after the tests and the build have run.
+  if (files.size + APP_FILE_ALLOWANCE > PAGES_FILE_LIMIT) {
+    throw new Error(
+      `The site would have ${String(files.size)} static files plus the application's; a Cloudflare Pages ` +
+        `deployment takes ${String(PAGES_FILE_LIMIT)}. Raise a page threshold in seo/site.ts or drop a kind of file.`,
+    );
+  }
   for (const [relative, content] of files) {
     const target = path.resolve(outDir, relative);
     await mkdir(path.dirname(target), { recursive: true });

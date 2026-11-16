@@ -48,7 +48,9 @@ function head(page: StaticPage, site: SiteData): string {
     xDefault,
     ...og,
     `<link rel="icon" href="/favicon.svg" type="image/svg+xml">`,
-    `<link rel="alternate" type="text/markdown" href="${e(markdownPath(page.path))}">`,
+    ...(page.markdownTwin === false
+      ? []
+      : [`<link rel="alternate" type="text/markdown" href="${e(markdownPath(page.path))}">`]),
     ...(page.apiPath
       ? [
           `<link rel="alternate" type="application/json" href="${e(site.siteUrl ? site.siteUrl + page.apiPath : page.apiPath)}">`,

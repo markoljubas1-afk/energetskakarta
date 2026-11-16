@@ -24,6 +24,10 @@ import { DATASET_LICENSE } from "./license";
 
 /** A plant gets its own page from this capacity, a substation from this voltage, a city from this use. */
 export const ASSET_PAGE_MIN_MW = 10;
+/** What one Cloudflare Pages deployment takes; the build refuses to go past it rather than fail on upload. */
+export const PAGES_FILE_LIMIT = 20_000;
+/** Files the application adds to the static pages (scripts, styles, fonts, source maps, the icon). */
+export const APP_FILE_ALLOWANCE = 250;
 
 export const ASSET_PAGE_MIN_KV = 220;
 
@@ -95,6 +99,13 @@ export interface StaticPage {
   breadcrumbs: Crumb[];
   /** the open JSON twin of this page (seo/api.ts), when there is one */
   apiPath?: string;
+  /**
+   * False for the page of one object (a plant, a substation, a city, a mine): its machine-readable twin is
+   * its JSON in the API, and a Markdown copy of each one doubles the number of files. With the Global
+   * Energy Monitor's plants the site passed the 20 000 files a Cloudflare Pages deployment takes, and
+   * stopped deploying (2026-11-16).
+   */
+  markdownTwin?: false;
   /**
    * Links to neighbouring pages (the previous and next monthly report), shown after the sections but left out
    * of the page hash: a new neighbour does not make an unchanged page look changed (Faza 31).

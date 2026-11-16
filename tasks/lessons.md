@@ -384,3 +384,10 @@
 - Rule going forward: prije prve objave novog izdanja izvora pogledati zbroj po tehnologiji za jednu poznatu
   zemlju (Hrvatska: hidro ~1,5 GW, plin ~1,1 GW, vjetar ~1,1 GW). Otvoreno: nepoznata vrsta i prazan stupac goriva
   trebaju brojač u statistici builda, da se ovo vidi i bez ručne provjere.
+
+### L-070 — Granica domaćina koju testovi ne poznaju (2026-11-16)
+- What happened: nakon spajanja s GEM-om objava je pala: „Pages only supports up to 20,000 files”. Stranica je
+  imala 20 251 datoteku, od toga 14 212 za stranice pojedinih objekata (HTML i Markdown, na dva jezika).
+- Root cause: broj stranica raste s podacima, a ograničenje Cloudflare Pagesa nije bilo nigdje u kodu.
+- Rule going forward: stranica jednog objekta nema Markdown blizanca (ima JSON u API-ju); `prerender` odbija
+  build koji bi prešao `PAGES_FILE_LIMIT` i kaže brojke. Novo ograničenje domaćina upisuje se kao provjera u buildu.

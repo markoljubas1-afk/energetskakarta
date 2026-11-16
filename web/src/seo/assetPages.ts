@@ -293,5 +293,6 @@ export function assetPage(
     lastModified: site.current.createdAt,
     breadcrumbs,
     apiPath: API_PATHS.asset(slug),
+    markdownTwin: false,
   };
 }
