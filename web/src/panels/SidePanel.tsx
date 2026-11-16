@@ -5,6 +5,7 @@ import { useI18n } from "../i18n";
 import type { Theme } from "../map/palette";
 import { PANELS, type AppState, type Panel } from "../state/url";
 import { ChangesPanel, type Locate } from "./ChangesPanel";
+import type { LayerKey } from "../domain";
 import { FiltersPanel } from "./FiltersPanel";
 import { OverviewPanel } from "./OverviewPanel";
 import styles from "./SidePanel.module.css";
@@ -19,12 +20,16 @@ interface Props {
   theme: Theme;
   /** whether this data release has a timeline for the time machine (Faza 18-3) */
   timeMachine?: boolean;
+  /** layers that are on but have nothing on screen right now */
+  emptyLayers?: ReadonlySet<LayerKey>;
 }
 
 const ICONS = { filters: SlidersHorizontal, overview: ChartColumn, changes: Sparkles } as const;
 const LABELS = { filters: "tabFilters", overview: "tabOverview", changes: "tabChanges" } as const;
 
 /** WAI-ARIA tabs: arrow keys move between tabs, the active tab is remembered in the URL. */
+const NO_LAYERS: ReadonlySet<LayerKey> = new Set();
+
 export function SidePanel({
   state,
   setState,
@@ -33,6 +38,7 @@ export function SidePanel({
   onLocate,
   theme,
   timeMachine = false,
+  emptyLayers = NO_LAYERS,
 }: Props) {
   const { t } = useI18n();
   const id = useId();
@@ -85,7 +91,13 @@ export function SidePanel({
         className={styles.body}
       >
         {current === "filters" && (
-          <FiltersPanel state={state} setState={setState} theme={theme} timeMachine={timeMachine} />
+          <FiltersPanel
+            state={state}
+            setState={setState}
+            theme={theme}
+            timeMachine={timeMachine}
+            emptyLayers={emptyLayers}
+          />
         )}
         {current === "overview" && (
           <OverviewPanel statsUrl={statsUrl} countries={state.countries} theme={theme} />

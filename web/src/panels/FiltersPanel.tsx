@@ -30,6 +30,8 @@ interface Props {
   theme: Theme;
   /** whether this data release has a timeline for the time machine */
   timeMachine?: boolean;
+  /** layers that are on but have nothing on screen right now (map/inView.ts) */
+  emptyLayers?: ReadonlySet<LayerKey>;
 }
 
 export function toggled<T>(set: ReadonlySet<T>, value: T): Set<T> {
@@ -136,7 +138,15 @@ function Chip({
   );
 }
 
-export function FiltersPanel({ state, setState, theme, timeMachine = false }: Props) {
+const NO_LAYERS: ReadonlySet<LayerKey> = new Set();
+
+export function FiltersPanel({
+  state,
+  setState,
+  theme,
+  timeMachine = false,
+  emptyLayers = NO_LAYERS,
+}: Props) {
   const i18n = useI18n();
   const { t } = i18n;
   const palette = PALETTES[theme];
@@ -189,6 +199,11 @@ export function FiltersPanel({ state, setState, theme, timeMachine = false }: Pr
         {noteOpen && (
           <p id={`layer-note-${layer}`} className={styles.layerNote}>
             {t(note)}
+          </p>
+        )}
+        {state.layers.has(layer) && emptyLayers.has(layer) && (
+          <p className={styles.layerHint} role="status">
+            {t("layerNothingHere")}
           </p>
         )}
       </div>

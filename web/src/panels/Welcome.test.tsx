@@ -7,7 +7,7 @@ import { useWelcome, Welcome } from "./Welcome";
 
 function Harness({ selected, embed = false }: { selected: string | null; embed?: boolean }) {
   const [shown, dismiss] = useWelcome(embed, selected);
-  const entries = { live: vi.fn(), changes: null, cities: vi.fn() };
+  const entries = { live: vi.fn(), capacity: vi.fn(), changes: null, cities: vi.fn() };
   return shown ? <Welcome entries={entries} onClose={dismiss} /> : <p>gone</p>;
 }
 
@@ -39,7 +39,9 @@ describe("welcome card", () => {
     const user = userEvent.setup();
     const live = vi.fn();
     const onClose = vi.fn();
-    renderWithI18n(<Welcome entries={{ live, changes: vi.fn(), cities: vi.fn() }} onClose={onClose} />);
+    renderWithI18n(
+      <Welcome entries={{ live, capacity: vi.fn(), changes: vi.fn(), cities: vi.fn() }} onClose={onClose} />,
+    );
     expect(screen.getByRole("button", { name: /Što je novo/ })).toBeVisible();
     await user.click(screen.getByRole("button", { name: /Tokovi struje uživo/ }));
     expect(live).toHaveBeenCalledOnce();
@@ -47,11 +49,21 @@ describe("welcome card", () => {
   });
 
   it("links the support page in one quiet line only when that page is on", () => {
-    const entries = { live: vi.fn(), changes: null, cities: vi.fn() };
+    const entries = { live: vi.fn(), capacity: vi.fn(), changes: null, cities: vi.fn() };
     const { unmount } = renderWithI18n(<Welcome entries={entries} onClose={vi.fn()} />);
     expect(screen.queryByRole("link", { name: "Podržite ga" })).not.toBeInTheDocument();
     unmount();
     renderWithI18n(<Welcome entries={entries} onClose={vi.fn()} support />);
     expect(screen.getByRole("link", { name: "Podržite ga" })).toHaveAttribute("href", "/podrska/");
+  });
+  it("opens on the grid's free capacity while the live flows are not published", async () => {
+    const user = userEvent.setup();
+    const capacity = vi.fn();
+    renderWithI18n(
+      <Welcome entries={{ live: null, capacity, changes: null, cities: vi.fn() }} onClose={vi.fn()} />,
+    );
+    expect(screen.queryByRole("button", { name: /Tokovi struje uživo/ })).toBeNull();
+    await user.click(screen.getByRole("button", { name: /Gdje u mreži ima mjesta/ }));
+    expect(capacity).toHaveBeenCalledOnce();
   });
 });

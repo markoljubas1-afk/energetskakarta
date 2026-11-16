@@ -194,6 +194,17 @@
   line-height: 1.4;
 }
 
+/* a layer that is on but has nothing in this view: said next to its tick, in the accent colour */
+.layerHint {
+  grid-column: 1 / -1;
+  margin: 2px 0 4px 26px;
+  padding-left: 8px;
+  border-left: 2px solid var(--accent);
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 /* time machine entry (Faza 18-3) */
 .hint {
   margin: 0 0 8px;

@@ -10,6 +10,7 @@ import {
   SUBSTANCES,
   TECHNOLOGIES,
   type ExtractionKind,
+  type LayerKey,
   type Substance,
   type Technology,
   isOneOf,
@@ -22,9 +23,44 @@ export interface InView {
   /** null when the extraction layer is not drawn */
   substances: ReadonlySet<Substance> | null;
   extractionKinds: ReadonlySet<ExtractionKind> | null;
+  /**
+   * Layers that are switched on and drawn, but have nothing on screen: the map is too far out for them
+   * (cities, chargers and the distribution network wait for a closer view) or there is none here. The
+   * layer list says so, instead of leaving a ticked box next to an empty map.
+   */
+  emptyLayers: ReadonlySet<LayerKey>;
 }
 
-export const NOTHING_IN_VIEW: InView = { technologies: null, substances: null, extractionKinds: null };
+export const NOTHING_IN_VIEW: InView = {
+  technologies: null,
+  substances: null,
+  extractionKinds: null,
+  emptyLayers: new Set(),
+};
+
+/** The style layers that draw each layer of the list (those served as tiles, which have zoom thresholds). */
+const DRAWN_BY: Partial<Record<LayerKey, readonly string[]>> = {
+  lines: ["lines", "lines-planned", "interconnectors"],
+  substations: ["substations", "substations-planned"],
+  plants: ["plants", "plants-planned"],
+  pipelines: ["pipelines", "pipelines-planned"],
+  datacenters: ["datacenters", "datacenters-planned"],
+  cities: ["cities"],
+  distribution: ["distribution-lines", "distribution-substations"],
+  chargers: ["chargers"],
+  extraction: ["extraction"],
+};
+
+function emptyLayers(map: MapLibreMap): ReadonlySet<LayerKey> {
+  const empty = new Set<LayerKey>();
+  for (const [key, names] of Object.entries(DRAWN_BY) as [LayerKey, readonly string[]][]) {
+    const shown = names
+      .map((name) => `${LAYER_PREFIX}${name}`)
+      .filter((id) => map.getLayer(id) !== undefined && map.getLayoutProperty(id, "visibility") !== "none");
+    if (shown.length > 0 && map.queryRenderedFeatures({ layers: shown }).length === 0) empty.add(key);
+  }
+  return empty;
+}
 
 function values<T extends string>(
   map: MapLibreMap,
@@ -52,6 +88,7 @@ export function inView(map: MapLibreMap): InView {
     ),
     substances: values(map, [`${LAYER_PREFIX}extraction`], "substance", SUBSTANCES),
     extractionKinds: values(map, [`${LAYER_PREFIX}extraction`], "kind", EXTRACTION_KINDS),
+    emptyLayers: emptyLayers(map),
   };
 }
 
@@ -61,6 +98,7 @@ export function sameInView(a: InView, b: InView): boolean {
   return (
     same(a.technologies, b.technologies) &&
     same(a.substances, b.substances) &&
-    same(a.extractionKinds, b.extractionKinds)
+    same(a.extractionKinds, b.extractionKinds) &&
+    same(a.emptyLayers, b.emptyLayers)
   );
 }

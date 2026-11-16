@@ -42,6 +42,7 @@ import {
   type TileUrls,
 } from "./layers";
 import type { StyleState } from "./filters";
+import { firstViewBounds } from "./firstView";
 import { inView, sameInView, NOTHING_IN_VIEW, type InView } from "./inView";
 import { flightPlan, INTRO_STAGE_AT, SETTLE_DELAY_MS, type Camera, type Flight } from "./introFlight";
 import { INTRO_SETTLE, introLayers, introStyle, type IntroStage } from "./introStyle";
@@ -262,7 +263,13 @@ export function MapView(props: Props) {
       });
       chrome.observe(corner);
     }
-    if (!initial) map.fitBounds(regionBounds, { padding: 24, animate: false });
+    if (!initial) {
+      const { clientWidth, clientHeight } = container.current;
+      map.fitBounds(firstViewBounds(regionBounds, clientWidth, clientHeight), {
+        padding: 24,
+        animate: false,
+      });
+    }
     if (introActiveRef.current) {
       // the view the map would open on is where the intro lands; it starts out on the globe
       const [lng, lat] = map.getCenter().toArray();

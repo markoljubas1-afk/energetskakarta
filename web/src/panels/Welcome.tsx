@@ -1,4 +1,4 @@
-import { ArrowLeftRight, Building2, Sparkles, X } from "lucide-react";
+import { ArrowLeftRight, Building2, Gauge, Sparkles, X } from "lucide-react";
 import { useState } from "react";
 
 import { useI18n } from "../i18n";
@@ -41,7 +41,10 @@ export function useWelcome(embed: boolean, selected: string | null): [boolean, (
 }
 
 export interface WelcomeEntries {
-  live: () => void;
+  /** null while the hourly flows and prices are not published: a first door must never open on nothing */
+  live: (() => void) | null;
+  /** where the grid has room for new plants; stands in for `live` while there is none */
+  capacity: () => void;
   /** null when this build has no change report */
   changes: (() => void) | null;
   cities: () => void;
@@ -72,13 +75,23 @@ export function Welcome({ entries, onClose, support = false }: Props) {
       <p className={styles.lead}>{t("welcomeLead")}</p>
       <ul className={styles.entries}>
         <li>
-          <button type="button" onClick={take(entries.live)}>
-            <ArrowLeftRight size={18} strokeWidth={1.75} aria-hidden="true" />
-            <span>
-              <strong>{t("welcomeLive")}</strong>
-              <small>{t("welcomeLiveNote")}</small>
-            </span>
-          </button>
+          {entries.live ? (
+            <button type="button" onClick={take(entries.live)}>
+              <ArrowLeftRight size={18} strokeWidth={1.75} aria-hidden="true" />
+              <span>
+                <strong>{t("welcomeLive")}</strong>
+                <small>{t("welcomeLiveNote")}</small>
+              </span>
+            </button>
+          ) : (
+            <button type="button" onClick={take(entries.capacity)}>
+              <Gauge size={18} strokeWidth={1.75} aria-hidden="true" />
+              <span>
+                <strong>{t("welcomeCapacity")}</strong>
+                <small>{t("welcomeCapacityNote")}</small>
+              </span>
+            </button>
+          )}
         </li>
         {entries.changes && (
           <li>

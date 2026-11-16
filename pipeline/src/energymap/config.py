@@ -29,6 +29,17 @@ SCOPE_CODES: frozenset[str] = frozenset(COUNTRY_BY_CODE)
 
 # lon_min, lat_min, lon_max, lat_max — covers all countries in scope plus a margin for neighbours.
 REGION_BBOX: tuple[float, float, float, float] = (5.5, 35.0, 24.5, 49.5)
+# How far the website lets the map be dragged: the data's bounds plus 12° of longitude and 8° of latitude
+# (web/src/map/MapView.tsx, regionMaxBounds). Country borders are published for all of it. They were cut
+# at REGION_BBOX, so the veil over the countries outside the scope ended in a straight line across
+# Germany, Romania and North Africa, and whatever lay beyond looked like another map.
+MAP_MARGIN_DEG: tuple[float, float] = (12.0, 8.0)
+MAP_BBOX: tuple[float, float, float, float] = (
+    REGION_BBOX[0] - MAP_MARGIN_DEG[0],
+    REGION_BBOX[1] - MAP_MARGIN_DEG[1],
+    REGION_BBOX[2] + MAP_MARGIN_DEG[0],
+    REGION_BBOX[3] + MAP_MARGIN_DEG[1],
+)
 
 GEOFABRIK_INDEX_URL = "https://download.geofabrik.de/index-v1-nogeom.json"
 # Pinned release so country borders never change underneath a build. Natural Earth is public domain.

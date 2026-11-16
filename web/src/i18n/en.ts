@@ -78,6 +78,7 @@ export const en: Dictionary = {
   overviewNote:
     "From OpenStreetMap. Capacity is only summed where it is recorded, so figures are incomplete for now.",
   overviewMissing: "{count} without recorded capacity",
+  layerNothingHere: "Nothing from this layer in this part of the map. Zoom in or move the map.",
   overviewEmpty: "No power plant data for this area yet.",
   overviewFailed: "The overview did not load.",
   detailsLabel: "Asset details",
@@ -255,6 +256,8 @@ export const en: Dictionary = {
     "Power plants, the grid, consumption and what is happening right now — for eight countries, from open sources. Three places to start:",
   welcomeLive: "Live electricity flows",
   welcomeLiveNote: "How much power crosses each border this hour, and at what price",
+  welcomeCapacity: "Where the grid has room",
+  welcomeCapacityNote: "Free capacity for new plants, by substation (HEP ODS)",
   welcomeChanges: "What is new since the last release",
   welcomeChangesNote: "Added, changed and removed objects, each linked to the map",
   welcomeCities: "Cities and consumption",

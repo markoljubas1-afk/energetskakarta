@@ -326,14 +326,18 @@ function Explorer({
   // pipeline publishes every hour, so an open map reloads in the background and follows the current hour.
   // the intro shows the flows for a moment when the hour's data is there; the live layer stays off
   const introFlows = intro.map !== null;
+  // The welcome card lives in the details slot until the reader has used the map.
+  const [welcomeShown, dismissWelcome] = useWelcome(state.embed, state.selected);
+  // the card's first door is the live layer only when there is something behind it, so it asks too
   const [liveData, retryLive] = useAsync(
-    state.live || introFlows ? "live/current.json" : null,
+    state.live || introFlows || welcomeShown ? "live/current.json" : null,
     (signal) => loadLive(config.dataBaseUrl, signal),
     { refreshMs: LIVE_REFRESH_MS },
   );
   const liveNow = useHourClock(state.live);
   const liveDoc =
     liveData?.status === "ready" && liveData.value.kind === "ready" ? liveData.value.live : null;
+  const livePublished = liveDoc !== null;
   const liveIndex = liveDoc ? pickHour(liveDoc, state.liveHour, liveNow) : 0;
   const liveOverlay = useMemo(
     () => ((state.live || introFlows) && liveDoc ? overlay(liveDoc, liveIndex) : null),
@@ -440,14 +444,17 @@ function Explorer({
     },
     [onLocate, setSheetOpen],
   );
-  // The welcome card lives in the details slot until the reader has used the map.
-  const [welcomeShown, dismissWelcome] = useWelcome(state.embed, state.selected);
   // what is on screen, for the legend; the map reports it only when it changes
   const [seen, setSeen] = useState<InView>(NOTHING_IN_VIEW);
   const welcomeEntries = useMemo<WelcomeEntries>(
     () => ({
-      live: () => {
-        setState((s) => ({ ...s, live: true }));
+      live: livePublished
+        ? () => {
+            setState((s) => ({ ...s, live: true }));
+          }
+        : null,
+      capacity: () => {
+        setState((s) => ({ ...s, layers: new Set([...s.layers, "capacity"]) }));
       },
       changes: current.diff
         ? () => {
@@ -459,7 +466,7 @@ function Explorer({
         setState((s) => ({ ...s, layers: new Set([...s.layers, "cities"]), panel: "overview" }));
       },
     }),
-    [setState, setSheetOpen, current.diff],
+    [setState, setSheetOpen, current.diff, livePublished],
   );
 
   const closeDetails = useCallback(() => {
@@ -573,6 +580,7 @@ function Explorer({
                   onLocate={locateAndShowMap}
                   theme={theme}
                   timeMachine={current.timeline !== undefined}
+                  emptyLayers={seen.emptyLayers}
                 />
               </ErrorBoundary>
             </aside>

@@ -58,7 +58,7 @@ def ensure_borders(paths: config.Paths, client: httpx.Client) -> Path:
 def load_index(borders: Path, scope: frozenset[str]) -> CountryIndex:
     index = CountryIndex.from_geojson(
         borders,
-        bbox=config.REGION_BBOX,
+        bbox=config.MAP_BBOX,
         min_segment_m=config.INTERCONNECTOR_MIN_SEGMENT_M,
         coastal_tolerance_deg=config.COASTAL_TOLERANCE_DEG,
     )
@@ -403,7 +403,7 @@ def publish(
             city_records = [r for _, r in sorted(result.cities.items())]
             _write_layer(staging / "cities.ndjson", [r.to_feature() for r in city_records])
             write_json_atomic(staging / "cities.json", city_register(city_records), compact=True)
-        _write_layer(staging / "countries.ndjson", index.boundary_features(config.REGION_BBOX, scope))
+        _write_layer(staging / "countries.ndjson", index.boundary_features(config.MAP_BBOX, scope))
         plants = [r for _, r in sorted(result.plants.items())]
         substations = [r for _, r in sorted(result.substations.items())]
         lines = [r for _, r in sorted(result.lines.items())]

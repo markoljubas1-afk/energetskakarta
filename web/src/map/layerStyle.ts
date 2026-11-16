@@ -87,19 +87,23 @@ export const LINE_WIDTH_STOPS = [
   ],
 ] as const;
 
-/** Radius ∝ √capacity, so area tracks MW; unknown capacity gets a small fixed dot. */
-export function plantSize(factor: number, minimum: number): Expr {
+/**
+ * Radius ∝ √capacity, so area tracks MW; unknown capacity gets a small fixed dot. Capped, as cities are: at
+ * the overview of the region the largest plants would otherwise cover their neighbours, and one wrong
+ * figure in a source would cover a province (it did: a 21 GW "solar farm" near Ravenna).
+ */
+export function plantSize(factor: number, minimum: number, maximum: number): Expr {
   return [
     "case",
     ["has", "capacityMw"],
-    ["max", minimum, ["*", factor, ["sqrt", ["get", "capacityMw"]]]],
+    ["min", maximum, ["max", minimum, ["*", factor, ["sqrt", ["get", "capacityMw"]]]]],
     minimum,
   ];
 }
 export const PLANT_RADIUS_STOPS = [
-  [4, plantSize(0.35, 2)],
-  [10, plantSize(0.9, 3.5)],
-  [15, plantSize(1.6, 6)],
+  [4, plantSize(0.35, 2, 13)],
+  [10, plantSize(0.9, 3.5, 34)],
+  [15, plantSize(1.6, 6, 64)],
 ] as const;
 
 export const SUBSTATION_RADIUS_STOPS = [

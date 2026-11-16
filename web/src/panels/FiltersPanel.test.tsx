@@ -117,4 +117,21 @@ describe("layer groups and notes", () => {
     expect(screen.queryByRole("button", { name: "O sloju: Elektrane" })).toBeNull();
     expect(screen.getByRole("group", { name: "Uživo" })).toBeVisible();
   });
+  it("says so when a layer that is on has nothing in this view, and only then", () => {
+    const state = { ...defaultState("hr"), layers: new Set(["lines", "cities"] as const) };
+    const hint = "Na ovom dijelu karte nema ničega iz ovog sloja. Približite kartu ili je pomaknite.";
+    const { unmount } = renderWithI18n(
+      <FiltersPanel
+        state={state}
+        theme="dark"
+        setState={() => undefined}
+        emptyLayers={new Set(["cities", "chargers"] as const)}
+      />,
+    );
+    // cities are on and empty; chargers are empty too but switched off, so nothing is said about them
+    expect(screen.getAllByText(hint)).toHaveLength(1);
+    unmount();
+    renderWithI18n(<FiltersPanel state={state} theme="dark" setState={() => undefined} />);
+    expect(screen.queryByText(hint)).not.toBeInTheDocument();
+  });
 });
