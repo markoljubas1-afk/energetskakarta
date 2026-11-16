@@ -7,7 +7,7 @@ import { useWelcome, Welcome } from "./Welcome";
 
 function Harness({ selected, embed = false }: { selected: string | null; embed?: boolean }) {
   const [shown, dismiss] = useWelcome(embed, selected);
-  const entries = { live: vi.fn(), capacity: vi.fn(), changes: null, cities: vi.fn() };
+  const entries = { live: vi.fn(), capacity: vi.fn(), changes: null, cities: vi.fn(), story: vi.fn() };
   return shown ? <Welcome entries={entries} onClose={dismiss} /> : <p>gone</p>;
 }
 
@@ -40,7 +40,10 @@ describe("welcome card", () => {
     const live = vi.fn();
     const onClose = vi.fn();
     renderWithI18n(
-      <Welcome entries={{ live, capacity: vi.fn(), changes: vi.fn(), cities: vi.fn() }} onClose={onClose} />,
+      <Welcome
+        entries={{ live, capacity: vi.fn(), changes: vi.fn(), cities: vi.fn(), story: vi.fn() }}
+        onClose={onClose}
+      />,
     );
     expect(screen.getByRole("button", { name: /Što je novo/ })).toBeVisible();
     await user.click(screen.getByRole("button", { name: /Tokovi struje uživo/ }));
@@ -49,7 +52,7 @@ describe("welcome card", () => {
   });
 
   it("links the support page in one quiet line only when that page is on", () => {
-    const entries = { live: vi.fn(), capacity: vi.fn(), changes: null, cities: vi.fn() };
+    const entries = { live: vi.fn(), capacity: vi.fn(), changes: null, cities: vi.fn(), story: vi.fn() };
     const { unmount } = renderWithI18n(<Welcome entries={entries} onClose={vi.fn()} />);
     expect(screen.queryByRole("link", { name: "Podržite ga" })).not.toBeInTheDocument();
     unmount();
@@ -60,10 +63,29 @@ describe("welcome card", () => {
     const user = userEvent.setup();
     const capacity = vi.fn();
     renderWithI18n(
-      <Welcome entries={{ live: null, capacity, changes: null, cities: vi.fn() }} onClose={vi.fn()} />,
+      <Welcome
+        entries={{ live: null, capacity, changes: null, cities: vi.fn(), story: vi.fn() }}
+        onClose={vi.fn()}
+      />,
     );
     expect(screen.queryByRole("button", { name: /Tokovi struje uživo/ })).toBeNull();
     await user.click(screen.getByRole("button", { name: /Gdje u mreži ima mjesta/ }));
     expect(capacity).toHaveBeenCalledOnce();
+  });
+});
+
+describe("the door to the first story", () => {
+  it("starts the story and puts the card away", async () => {
+    const story = vi.fn();
+    const onClose = vi.fn();
+    renderWithI18n(
+      <Welcome
+        entries={{ live: null, capacity: vi.fn(), changes: null, cities: vi.fn(), story }}
+        onClose={onClose}
+      />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: /Vođena priča: put struje/ }));
+    expect(story).toHaveBeenCalledOnce();
+    expect(onClose).toHaveBeenCalledOnce();
   });
 });

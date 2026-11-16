@@ -261,6 +261,8 @@ export const hr = {
   welcomeTitle: "Dobro došli na energetsku kartu",
   welcomeLead:
     "Elektrane, mreža, potrošnja i ono što se događa upravo sada — za osam zemalja, iz otvorenih izvora. Tri mjesta za početak:",
+  welcomeStory: "Vođena priča: put struje",
+  welcomeStoryNote: "Šest koraka od elektrane do utičnice; karta vas vodi sama",
   welcomeLive: "Tokovi struje uživo",
   welcomeLiveNote: "Koliko struje ovaj sat prelazi granice i po kojoj cijeni",
   welcomeCapacity: "Gdje u mreži ima mjesta",

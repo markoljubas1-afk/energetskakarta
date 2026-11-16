@@ -265,6 +265,8 @@ export const en: Dictionary = {
   welcomeTitle: "Welcome to the energy map",
   welcomeLead:
     "Power plants, the grid, consumption and what is happening right now — for eight countries, from open sources. Three places to start:",
+  welcomeStory: "A guided story: the journey of electricity",
+  welcomeStoryNote: "Six steps from the plant to the socket; the map leads the way",
   welcomeLive: "Live electricity flows",
   welcomeLiveNote: "How much power crosses each border this hour, and at what price",
   welcomeCapacity: "Where the grid has room",

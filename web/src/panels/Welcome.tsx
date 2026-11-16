@@ -1,4 +1,4 @@
-import { ArrowLeftRight, Building2, Gauge, Sparkles, X } from "lucide-react";
+import { ArrowLeftRight, Building2, Gauge, Route, Sparkles, X } from "lucide-react";
 import { useState } from "react";
 
 import { useI18n } from "../i18n";
@@ -48,6 +48,8 @@ export interface WelcomeEntries {
   /** null when this build has no change report */
   changes: (() => void) | null;
   cities: () => void;
+  /** starts the first guided story (stories/stories.ts) */
+  story: () => void;
 }
 
 interface Props {
@@ -74,6 +76,15 @@ export function Welcome({ entries, onClose, support = false }: Props) {
       </div>
       <p className={styles.lead}>{t("welcomeLead")}</p>
       <ul className={styles.entries}>
+        <li>
+          <button type="button" onClick={take(entries.story)}>
+            <Route size={18} strokeWidth={1.75} aria-hidden="true" />
+            <span>
+              <strong>{t("welcomeStory")}</strong>
+              <small>{t("welcomeStoryNote")}</small>
+            </span>
+          </button>
+        </li>
         <li>
           {entries.live ? (
             <button type="button" onClick={take(entries.live)}>

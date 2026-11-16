@@ -1140,7 +1140,7 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
   s edukacijske stranice. Razlike od plana: koraci pokazuju mjesta, ne pojedine objekte (objekt može nestati
   iz podataka, mjesto ne može), pa provjera postojanja objekata nije potrebna; istaknuti sloj koraka izvodi
   se iz koraka, a ne sprema kao stanje. Pregledano na snimkama (računalo i mobitel), e2e `story.spec.ts`.
-- Otvoreno: ulaz u priče iz same karte (npr. s kartice dobrodošlice); sada se do njih dolazi s `/edukacija/`.
+- Ulaz iz karte: prva vrata na kartici dobrodošlice pokreću „Put struje” (dodano isti dan).
 - Cilj: priča od 4–6 koraka u kojoj se karta sama pomakne, uključi potrebne slojeve i istakne objekte dok
   čitatelj čita kratki tekst; „Dalje” i „Natrag”, izlaz u svakom trenutku vraća kartu kakva je bila.
 - Prve priče: „Put struje od elektrane do utičnice”, „Odakle struja u Hrvatskoj”, „Zašto su granice važne”
@@ -1154,6 +1154,26 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
   koji na podacima iz CI-ja provjerava da svi navedeni objekti postoje); smanjeno kretanje (bez leta, skok).
 - Provjera: jedinični testovi za svaku priču (svaki korak daje valjano stanje), e2e za prolaz kroz jednu
   priču na računalu i mobitelu, ručni pregled snimki.
+
+### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom (prijedlog vlasnika 2026-11-16; čeka potvrdu)
+- Ideja: svijetla točka krene od vjetroelektrane u Dalmaciji, prođe stvarnim vodovima 400 kV do Zagreba i
+  završi u distribucijskoj mreži; karta je prati, a trag iza nje ostaje svijetliti. Kontrole: pusti, pauza,
+  ispočetka.
+- Ispravci prijedloga: naslov je kilovatsat (energija), ne kilovat (snaga) — edukacijska stranica upravo tu
+  razliku objašnjava. Struja ne putuje kao paket; priča to mora reći u zadnjem koraku („ovo je slika, ne
+  fizika”). Napon se uz vjetroelektranu diže na 110 ili 220 kV, a na 400 kV tek u velikoj trafostanici.
+- Odnos prema pravilima projekta: karta inače ne animira kretanje po vodovima jer bi se čitalo kao smjer toka
+  (`glowBreath.ts`). Ovdje je iznimka dopuštena jer je unutar priče i izričito označena kao ilustracija; izvan
+  priče se ništa ne mijenja.
+- Pristup: (1) build iz geometrije vodova 400 kV složi graf i izračuna najkraći put između dviju trafostanica
+  zadanih položajem; put ide u podatke kao `routes.json` (izvor: OSM, ODbL), pa prati stvarne vodove svake
+  gradnje; ako puta nema, priča se ne nudi. (2) Mehanizam priča dobiva korak „putovanje”: točka se pomiče po
+  putu u `requestAnimationFrame`, položaj se računa vlastitom funkcijom (dvadesetak redaka; Turf.js nije
+  potreban), karta je prati. Uz smanjeno kretanje prikazuje se cijeli put odjednom.
+- Alternativa (odbačena): ručno nacrtana linija u kodu — ne bi pratila stvarne vodove i zastarjela bi.
+- Rizici: graf iz OSM-a ima prekide (vodovi koji se ne dodiruju točno) → prag spajanja krajeva i test na
+  stvarnim podacima prije objave; put kroz krivu trafostanicu → ručni pregled na karti.
+- Provjera: jedinični testovi grafa i funkcije položaja, e2e za pauzu i nastavak, snimke.
 
 ## Faza 11 — „živa slika": što još može biti uživo (pregled 2026-09-19, odgovor na pitanje)
 

@@ -520,6 +520,9 @@ function Explorer({
       cities: () => {
         setState((s) => ({ ...s, layers: new Set([...s.layers, "cities"]), panel: "overview" }));
       },
+      story: () => {
+        setState((s) => ({ ...s, story: "put-struje" }));
+      },
     }),
     [setState, setSheetOpen, current.diff, livePublished],
   );
