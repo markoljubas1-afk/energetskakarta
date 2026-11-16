@@ -43,6 +43,7 @@ import {
   type Expr,
 } from "./layerStyle";
 import { gridOpacity, plantOpacity, TIME_MACHINE_GRID, type Spotlight } from "./spotlight";
+import type { Around } from "../data/nearby";
 import type { Palette } from "./palette";
 import { priceFill } from "./priceScale";
 import {
@@ -125,6 +126,8 @@ export interface LayerOptions {
    * cell. Null when the build has no such overview: then nothing is drawn below that zoom, as before.
    */
   chargerOverviewBelow?: number | null;
+  /** the grid next to the selected plant (data/nearby.ts): its substation and lines are lit; null: nothing */
+  around?: Around | null;
 }
 
 export function dataLayers({
@@ -136,6 +139,7 @@ export function dataLayers({
   livePrices = null,
   spotlight = null,
   chargerOverviewBelow = null,
+  around = null,
 }: LayerOptions): LayerSpecification[] {
   // Added only while something is lit or the time machine runs: otherwise the style is exactly what it
   // always was. A spotlight wins over the time machine: it is the reader's own, momentary question.
@@ -940,6 +944,47 @@ export function dataLayers({
       },
     });
   }
+  // The grid next to the selected plant: the lines that end at its nearest substation, and that
+  // substation. Drawn from the tiles whether or not the lines and substations layers are switched on: the
+  // reader asked about this plant, not for another layer.
+  if (around) {
+    const isLine: ExpressionSpecification = ["in", ["get", "id"], ["literal", around.lines]];
+    layers.push(
+      {
+        id: `${LAYER_PREFIX}around-lines-glow`,
+        type: "line",
+        source: GRID_SOURCE,
+        "source-layer": "lines",
+        filter: isLine,
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": palette.traveller, "line-width": 8, "line-blur": 6, "line-opacity": 0.5 },
+      },
+      {
+        id: `${LAYER_PREFIX}around-lines`,
+        type: "line",
+        source: GRID_SOURCE,
+        "source-layer": "lines",
+        filter: isLine,
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": palette.traveller, "line-width": 2 },
+      },
+      {
+        id: `${LAYER_PREFIX}around-substation`,
+        type: "circle",
+        source: GRID_SOURCE,
+        "source-layer": "substations",
+        filter: ["==", ["get", "id"], around.substation],
+        paint: {
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 6, 5, 12, 10],
+          "circle-color": palette.traveller,
+          "circle-opacity": 0.25,
+          "circle-stroke-color": palette.traveller,
+          "circle-stroke-width": 2,
+        },
+      },
+    );
+  }
+
   // A guided story's point of light and the trail behind it (stories/travel.ts), above everything else.
   // The source is empty unless a story is showing its traveller, so these layers normally draw nothing.
   layers.push(

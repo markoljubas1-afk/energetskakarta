@@ -11,6 +11,7 @@ Key layout in the bucket:
     builds/<build_id>/plantgrid.json         immutable; plants added up by cell, for "what is on screen"
     builds/<build_id>/chargergrid.json       immutable; charging stations added up by cell, for wide zooms
     builds/<build_id>/routes.json            immutable; routes along real lines, for the guided stories
+    builds/<build_id>/nearby.json            immutable; each plant's nearest substation and its lines
     builds/<build_id>/<layer>.ndjson.gz      immutable; the ODbL database download
     current.json                             tiny pointer, short cache, written LAST
 
@@ -60,6 +61,7 @@ OPTIONAL_PRODUCTS: tuple[str, ...] = (
     "plantgrid.json",
     "chargergrid.json",
     "routes.json",
+    "nearby.json",
 )
 
 
@@ -362,6 +364,7 @@ def pointer_document(
         **({"plantGrid": base + "plantgrid.json"} if "plantgrid.json" in present else {}),
         **({"chargerGrid": base + "chargergrid.json"} if "chargergrid.json" in present else {}),
         **({"routes": base + "routes.json"} if "routes.json" in present else {}),
+        **({"nearby": base + "nearby.json"} if "nearby.json" in present else {}),
     }
 
 

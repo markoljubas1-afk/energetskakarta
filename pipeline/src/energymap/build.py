@@ -23,6 +23,7 @@ from energymap.gem import normalize as gem_normalize
 from energymap.gem import read as gem_read
 from energymap.geo.countries import CountryIndex, codes_in
 from energymap.marine import emodnet
+from energymap.nearby import NEARBY_FILE, nearby
 from energymap.osm.download import (
     DownloadError,
     SourceState,
@@ -433,6 +434,7 @@ def publish(
             staging / "stats.json", statistics(plants, substations, lines, index, scope, centres)
         )
         write_json_atomic(staging / PLANT_GRID_FILE, plant_grid(plants), compact=True)
+        write_json_atomic(staging / NEARBY_FILE, nearby(plants, substations, lines), compact=True)
         # absent when the lines no longer connect a route's ends: the website then does not offer its story
         story_routes = routes(lines)
         if story_routes["routes"]:

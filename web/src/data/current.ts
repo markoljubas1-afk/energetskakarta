@@ -57,6 +57,8 @@ export const CurrentSchema = z.object({
   chargerGrid: z.string().optional(),
   /** routes along real lines for the guided stories (data/routes.ts); absent when the lines make none */
   routes: z.string().optional(),
+  /** each plant's nearest substation and the lines ending there (data/nearby.ts); absent in older builds */
+  nearby: z.string().optional(),
 });
 
 export type Current = z.infer<typeof CurrentSchema>;

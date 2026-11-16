@@ -45,6 +45,7 @@ import {
 } from "./layers";
 import { TRAVEL_SOURCE } from "./sources";
 import type { Traveller } from "../stories/travel";
+import type { Around } from "../data/nearby";
 import type { StyleState } from "./filters";
 import { firstViewBounds } from "./firstView";
 import { BREATH_EVERY_MS, BREATH_FADE_MS, BREATH_STEP_MS, breathes, breathPeak } from "./glowBreath";
@@ -146,6 +147,8 @@ interface Props {
   state: AppState;
   /** one technology or voltage lit from the legend or the overview (spotlight.ts) */
   spotlight?: Spotlight;
+  /** the grid next to the selected plant, lit on the map (data/nearby.ts) */
+  around?: Around | null;
   onViewChange: (view: { lng: number; lat: number; zoom: number }) => void;
   onSelect: (selection: Selection | null) => void;
   onBasemap: (kind: Basemap["kind"]) => void;
@@ -180,6 +183,7 @@ interface Hovered {
 export function MapView(props: Props) {
   const { tiles, regionBounds, maptilerKey, attribution, theme, state, live, gas, timeline } = props;
   const spotlight = props.spotlight ?? null;
+  const around = props.around ?? null;
   const geothermal = props.geothermal ?? null;
   const capacity = props.capacity ?? null;
   const { onViewChange, onSelect, onBasemap, onReady, onInView, onGeothermalSite, onCapacityStation } = props;
@@ -601,6 +605,7 @@ export function MapView(props: Props) {
       optIn,
       livePrices: live?.prices ?? null,
       spotlight,
+      around,
       chargerOverviewBelow:
         tiles.chargerOverview !== undefined && tiles.chargers ? tiles.chargers.minZoom : null,
     });
@@ -637,6 +642,7 @@ export function MapView(props: Props) {
     stage,
     flight,
     spotlight,
+    around,
     i18n,
   ]);
 

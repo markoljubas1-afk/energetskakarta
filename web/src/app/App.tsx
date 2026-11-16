@@ -27,6 +27,7 @@ import type { Spotlight } from "../map/spotlight";
 import { StoryCard } from "../panels/StoryCard";
 import { GreenLight } from "../panels/GreenLight";
 import { loadRoutes } from "../data/routes";
+import { aroundOf, loadNearby } from "../data/nearby";
 import { measure } from "../stories/travel";
 import { useTravel } from "../stories/useTravel";
 import { applyStep, leave, remember, sameBefore, STORIES, type Before } from "../stories/stories";
@@ -573,6 +574,21 @@ function Explorer({
     [setState, setSheetOpen, current.diff, livePublished],
   );
 
+  // The grid next to a plant: asked for once a plant is first selected; a failure only means nothing is lit.
+  const plantSelected = shownDetails?.kind === "plant";
+  const [wantNearby, setWantNearby] = useState(false);
+  if (plantSelected && !wantNearby) setWantNearby(true);
+  const nearbyUrl = wantNearby && current.nearby ? assetUrl(config.dataBaseUrl, current.nearby) : null;
+  const [nearbyData] = useAsync(nearbyUrl, (signal) => loadNearby(nearbyUrl ?? "", signal));
+  const selectedId = state.selected;
+  const around = useMemo(
+    () =>
+      plantSelected && selectedId && nearbyData?.status === "ready"
+        ? aroundOf(nearbyData.value, selectedId)
+        : null,
+    [plantSelected, selectedId, nearbyData],
+  );
+
   // Photographs are asked for once, when something is first selected; a failure only means no picture.
   const [wantImages, setWantImages] = useState(false);
   if (state.selected !== null && !wantImages) setWantImages(true);
@@ -611,6 +627,7 @@ function Explorer({
             tiles={tiles}
             regionBounds={current.tiles.grid.bounds}
             spotlight={shownSpotlight}
+            around={around}
             maptilerKey={config.maptilerKey}
             live={liveOverlay}
             gas={gasFeatures}
@@ -733,6 +750,7 @@ function Explorer({
                   id={state.selected}
                   selection={shownDetails}
                   onClose={closeDetails}
+                  around={around}
                   photo={
                     images?.status === "ready" && images.value.kind === "ready"
                       ? photoOf(images.value.index, config.dataBaseUrl, state.selected)

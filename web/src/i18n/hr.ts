@@ -103,6 +103,10 @@ export const hr = {
   detailsHvdc: "Istosmjerni prijenos (HVDC)",
   detailsEditOsm: "Pogledaj ili ispravi u OpenStreetMapu",
   photoCredit: "Foto: {author},",
+  detailsAround: "Najbliža trafostanica",
+  detailsAroundValue: "{distance} od elektrane; u njoj završava vodova: {lines}",
+  detailsAroundNote:
+    "Istaknuto na karti. Prema položaju u podacima; izvori ne bilježe na što je elektrana priključena.",
   detailsNotLoaded: "Objekt je izvan trenutnog prikaza. Približite kartu da biste vidjeli detalje.",
   kind_line: "Dalekovod",
   kind_cable: "Kabel",

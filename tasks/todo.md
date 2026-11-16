@@ -1074,7 +1074,14 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 - Datoteke: novi modul `pipeline/wikimedia/`, shema (`PowerPlant.image`), `tiles.py`, web `DetailsPanel`,
   `securityHeaders.ts`, atribucija uz sliku.
 
-### 33-2b Klik na elektranu ističe njezinu trafostanicu i vodove (dogovoreno 2026-11-16)
+### 33-2b Klik na elektranu ističe njezinu trafostanicu i vodove — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `nearby.json`)
+- Izvedeno: `pipeline/src/energymap/nearby.py` za svaku elektranu traži najbližu trafostanicu u pogonu unutar
+  2 km; upisuje je samo ako druga nije ni upola toliko blizu i ako u njoj (unutar 0,6 km) završava barem jedan
+  vod u pogonu. Na podacima od 16. 11.: 2379 elektrana (552 od 1496 s 10 MW i više); ručno provjereno Krško,
+  Plomin, HE Dubrovnik, Zakučac. Karta: slojevi `around-*` ističu trafostanicu i te vodove i kad su slojevi
+  mreže isključeni; u kartici redak „Najbliža trafostanica” s udaljenošću, brojem vodova i napomenom da izvori
+  ne bilježe na što je elektrana priključena. Ističe se jedan korak (vodovi iz te trafostanice), ne dalje.
+- Uočeno pri provjeri: uz Krško postoje dva zapisa elektrane (OSM i GEM) — pitanje spajanja izvora, nije dirano.
 - Zašto ne u vremeplovu: vodovi u izvorima nemaju godinu izgradnje, a pripadnost voda elektrani nigdje nije
   zapisana; pogađanje po blizini tvrdilo bi ono što ne znamo. U vremeplovu se zato mreža samo prigušuje.
 - Pristup: u buildu se iz geometrije složi graf (krajevi vodova koji se dodiruju, trafostanice na krajevima);

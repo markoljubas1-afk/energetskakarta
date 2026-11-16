@@ -104,6 +104,10 @@ export const en: Dictionary = {
   detailsHvdc: "Direct current (HVDC)",
   detailsEditOsm: "View or correct in OpenStreetMap",
   photoCredit: "Photo: {author},",
+  detailsAround: "Nearest substation",
+  detailsAroundValue: "{distance} from the plant; lines ending there: {lines}",
+  detailsAroundNote:
+    "Lit on the map. By position in the data; the sources do not record what a plant is connected to.",
   detailsNotLoaded: "This asset is outside the current view. Zoom in to see its details.",
   kind_line: "Power line",
   kind_cable: "Cable",

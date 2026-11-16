@@ -656,3 +656,32 @@ describe("charging stations on a wide view", () => {
     expect(dataSources(tiles, {}, optIn)["energymap-chargers-overview"]).toBeUndefined();
   });
 });
+
+describe("the grid next to a selected plant", () => {
+  const options = { palette: PALETTES.dark, labels: null, maskOutside: false, optIn: NOTHING_OPTED_IN };
+  const around = { substation: "osm:way/10", metres: 334, lines: ["osm:way/20", "osm:way/21"] };
+  const ids = (layers: { id: string }[]) =>
+    layers.map((layer) => layer.id).filter((id) => id.includes("around"));
+
+  it("lights the substation and its lines, whether or not their layers are switched on", () => {
+    const state = parseState("?l=plants&sel=osm:way/1", "hr");
+    const layers = dataLayers({ state, ...options, around });
+    expect(ids(layers)).toEqual([
+      "energymap-around-lines-glow",
+      "energymap-around-lines",
+      "energymap-around-substation",
+    ]);
+    const lines = layers.find((layer) => layer.id === "energymap-around-lines");
+    expect(lines?.type === "line" && lines.filter).toEqual(["in", ["get", "id"], ["literal", around.lines]]);
+    const substation = layers.find((layer) => layer.id === "energymap-around-substation");
+    expect(substation?.type === "circle" && substation.filter).toEqual(["==", ["get", "id"], "osm:way/10"]);
+    const composed = composeStyle(fallbackStyle(PALETTES.dark), dataSources(tiles, {}), layers);
+    expect(validateStyleMin(composed).map((e) => e.message)).toEqual([]);
+  });
+
+  it("adds nothing when the plant has no plain answer", () => {
+    const state = parseState("?l=plants&sel=osm:way/1", "hr");
+    expect(ids(dataLayers({ state, ...options, around: null }))).toEqual([]);
+    expect(ids(dataLayers({ state, ...options }))).toEqual([]);
+  });
+});

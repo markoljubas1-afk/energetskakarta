@@ -17,6 +17,7 @@ import { osmUrl, SECTORS } from "../domain";
 import { useI18n, type I18n } from "../i18n";
 import { latest } from "../data/gas";
 import type { Photo } from "../data/images";
+import type { Around } from "../data/nearby";
 import { polyline, sparkline } from "./sparkline";
 import type { CitySelection, GasSelection, Selection } from "../map/selection";
 import styles from "./DetailsPanel.module.css";
@@ -31,6 +32,8 @@ interface Props {
   onClose: () => void;
   /** the asset's photograph, when the data has one (data/images.ts) */
   photo?: Photo | null;
+  /** a plant's nearest substation and the lines ending there, lit on the map (data/nearby.ts) */
+  around?: Around | null;
 }
 
 const ENTSOG_URL = "https://transparency.entsog.eu/";
@@ -257,7 +260,7 @@ function CityDetails({ city, i18n }: { city: CitySelection; i18n: I18n }) {
   );
 }
 
-export function DetailsPanel({ id, selection, onClose, photo = null }: Props) {
+export function DetailsPanel({ id, selection, onClose, photo = null, around = null }: Props) {
   const i18n = useI18n();
   const { t } = i18n;
 
@@ -314,6 +317,15 @@ export function DetailsPanel({ id, selection, onClose, photo = null }: Props) {
           )}
           <Row label={t("detailsOperator")}>{selection.operator ?? t("unknown")}</Row>
           <Row label={t("detailsCountry")}>{i18n.country(selection.country)}</Row>
+          {around && (
+            <Row label={t("detailsAround")}>
+              {t("detailsAroundValue", {
+                distance: `${i18n.number(around.metres, 0)} m`,
+                lines: around.lines.length,
+              })}
+              <span className={styles.aside}>{t("detailsAroundNote")}</span>
+            </Row>
+          )}
         </dl>
       );
     } else if (selection.kind === "charger") {
