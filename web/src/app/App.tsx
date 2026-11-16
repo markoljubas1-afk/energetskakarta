@@ -492,6 +492,11 @@ function Explorer({
     [setState, setSheetOpen, current.diff, livePublished],
   );
 
+  const closeCapacity = useCallback(() => {
+    setCapStation(null);
+    setState((s) => ({ ...s, layers: new Set([...s.layers].filter((layer) => layer !== "capacity")) }));
+  }, [setState, setCapStation]);
+
   const closeDetails = useCallback(() => {
     setState((s) => ({ ...s, selected: null }));
   }, [setState]);
@@ -649,6 +654,7 @@ function Explorer({
                     selected={capStation}
                     onSelect={setCapStation}
                     onRetry={retryCap}
+                    onClose={closeCapacity}
                   />
                 </ErrorBoundary>
               </div>

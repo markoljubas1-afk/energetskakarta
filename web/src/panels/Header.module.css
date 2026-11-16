@@ -33,24 +33,44 @@
 
 .brand strong {
   display: block;
+  font-size: 15px;
   font-weight: 600;
+  letter-spacing: -0.01em;
   line-height: 1.2;
 }
 
+/* a quiet second line: small capitals under the name, not a second title competing with it */
 .tagline {
   display: block;
-  font-size: 13px;
+  margin-top: 2px;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  line-height: 1.2;
+  text-transform: uppercase;
   color: var(--muted);
 }
 
+/*
+ * The mark carries the map's own light: the warm-to-cool line that runs under the intro's title. A flat
+ * square in the ink colour read as a white block in the dark theme, heavier than the name next to it.
+ */
 .mark {
   display: grid;
   place-items: center;
+  flex: none;
   width: 36px;
   height: 36px;
   border-radius: var(--radius-md);
-  background: var(--ink);
-  color: var(--canvas);
+  background: linear-gradient(135deg, var(--intro-warm), var(--intro-cool));
+  color: var(--intro-night);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--intro-cool) 35%, transparent);
+}
+
+:global(:root[data-theme="dark"]) .mark {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--intro-cool) 40%, transparent),
+    0 0 16px color-mix(in srgb, var(--intro-cool) 28%, transparent);
 }
 
 .search {

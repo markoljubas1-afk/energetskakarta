@@ -37,6 +37,8 @@ test("the live bar explains the price colours on the map", async ({ page }) => {
 test("the live bar says what the grid's electricity is made of", async ({ page }) => {
   await page.goto("/?live=1");
   await expect(page.locator('[data-map-status="ready"]')).toBeVisible();
+  // the card is folded under its title, so the bar leaves the map and its arrows in view
+  await page.locator("summary", { hasText: "Od čega je struja u mreži" }).click();
   const mix = page.getByRole("region", { name: "Od čega je struja u mreži" });
   await expect(mix.getByText(/Struja se u mreži miješa/)).toBeVisible();
   await expect(mix.getByText(/^Ukupno u tom satu:/)).toBeVisible();

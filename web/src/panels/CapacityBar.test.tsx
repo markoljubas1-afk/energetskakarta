@@ -71,4 +71,19 @@ describe("CapacityBar", () => {
     await userEvent.click(screen.getByRole("button", { name: "Pokušaj ponovno" }));
     expect(onRetry).toHaveBeenCalled();
   });
+  it("can be closed as a whole: the bar's own button switches the layer off", async () => {
+    const onClose = vi.fn();
+    renderWithI18n(
+      <CapacityBar
+        data={ready}
+        theme="dark"
+        selected={null}
+        onSelect={vi.fn()}
+        onRetry={vi.fn()}
+        onClose={onClose}
+      />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Zatvori slobodni kapacitet" }));
+    expect(onClose).toHaveBeenCalledOnce();
+  });
 });

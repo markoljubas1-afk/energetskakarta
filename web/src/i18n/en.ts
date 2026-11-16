@@ -392,6 +392,7 @@ export const en: Dictionary = {
   capTitle: "Free capacity for new plants (HEP ODS)",
   capPick: "Click a substation on the map for its category and free capacity.",
   capCloseStation: "Close substation",
+  capClose: "Close free capacity",
   capUpgraded: "With a 110/x kV upgrade",
   capFree: "Free",
   capStationPage: "The substation's history and details",

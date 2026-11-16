@@ -386,6 +386,7 @@ export const hr = {
   capTitle: "Slobodni kapacitet za nove elektrane (HEP ODS)",
   capPick: "Klikni trafostanicu na karti za njezinu kategoriju i slobodni kapacitet.",
   capCloseStation: "Zatvori trafostanicu",
+  capClose: "Zatvori slobodni kapacitet",
   capUpgraded: "S nadogradnjom TS 110/x kV",
   capFree: "Slobodno",
   capStationPage: "Povijest i pojedinosti trafostanice",

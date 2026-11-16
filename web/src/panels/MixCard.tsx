@@ -20,6 +20,8 @@ interface Props {
   hourLabel: (index: number) => string;
   /** where the map is looking, offered when the visitor does not share a location */
   mapCenter: { lat: number; lng: number } | null;
+  /** false where the card sits under a heading of its own (the live bar folds it under its title) */
+  heading?: boolean;
 }
 
 /** Shares under this are folded into one "other sources" line. */
@@ -29,7 +31,7 @@ const SMALL = 0.02;
  * "What the grid's electricity is made of" for the live layer's hour (Faza 19), with "near me" under it.
  * Electricity mixes in the grid: the card shows shares of sources in an hour, never a plant-to-house path.
  */
-export function MixCard({ live, index, theme, hourLabel, mapCenter }: Props) {
+export function MixCard({ live, index, theme, hourLabel, mapCenter, heading = true }: Props) {
   const i18n = useI18n();
   const { t } = i18n;
   const countries = mixCountries(live);
@@ -55,7 +57,7 @@ export function MixCard({ live, index, theme, hourLabel, mapCenter }: Props) {
   return (
     <section className={styles.card} aria-label={t("mixTitle")}>
       <div className={styles.head}>
-        <h3>{t("mixTitle")}</h3>
+        {heading && <h3>{t("mixTitle")}</h3>}
         <div className={styles.headActions}>
           <select
             id="mix-country"

@@ -63,14 +63,30 @@
   font-weight: 600;
 }
 
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* Both closes (the bar's and the station card's): a visible button of a size that can be hit. The card's
+   used to be a 23 px glyph without an outline, easy to miss on the dark surface. */
 .close {
   display: grid;
   place-items: center;
-  padding: 3px;
-  border: 1px solid transparent;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
   border-radius: var(--radius-sm);
-  background: var(--surface);
+  background: var(--surface-2);
+  color: var(--ink);
   cursor: pointer;
+}
+
+.close:hover {
+  background: var(--accent-soft);
 }
 
 @media (pointer: coarse) {

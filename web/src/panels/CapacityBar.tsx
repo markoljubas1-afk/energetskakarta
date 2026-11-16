@@ -20,9 +20,11 @@ interface Props {
   selected: string | null;
   onSelect: (id: string | null) => void;
   onRetry: () => void;
+  /** closes the whole bar by switching the layer off, as the live bar's and the time machine's ✕ do */
+  onClose?: () => void;
 }
 
-export function CapacityBar({ data, theme, selected, onSelect, onRetry }: Props) {
+export function CapacityBar({ data, theme, selected, onSelect, onRetry, onClose }: Props) {
   const i18n = useI18n();
   const { t, lang } = i18n;
   const copy = CAPACITY_COPY[lang];
@@ -60,7 +62,14 @@ export function CapacityBar({ data, theme, selected, onSelect, onRetry }: Props)
 
   return (
     <section className={styles.bar} aria-label={t("layer_capacity")}>
-      <h2>{t("capTitle")}</h2>
+      <div className={styles.head}>
+        <h2>{t("capTitle")}</h2>
+        {onClose && (
+          <button type="button" className={styles.close} onClick={onClose} aria-label={t("capClose")}>
+            <X size={16} strokeWidth={1.75} aria-hidden="true" />
+          </button>
+        )}
+      </div>
       <ul className={styles.legend} aria-label={copy.categoriesHeading}>
         {CATEGORIES.map((category) => (
           <li key={category}>

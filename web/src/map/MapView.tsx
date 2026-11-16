@@ -35,6 +35,7 @@ import {
   GRID_SOURCE,
   INTERACTIVE_LAYERS,
   LAYER_PREFIX,
+  LINE_GLOW_LAYER,
   optedIn,
   SELECTABLE,
   SELECTED_RING_STROKE,
@@ -43,6 +44,7 @@ import {
 } from "./layers";
 import type { StyleState } from "./filters";
 import { firstViewBounds } from "./firstView";
+import { BREATH_EVERY_MS, BREATH_FADE_MS, BREATH_STEP_MS, breathes, breathPeak } from "./glowBreath";
 import type { Spotlight } from "./spotlight";
 import { inView, sameInView, NOTHING_IN_VIEW, type InView } from "./inView";
 import { flightPlan, INTRO_STAGE_AT, SETTLE_DELAY_MS, type Camera, type Flight } from "./introFlight";
@@ -670,6 +672,51 @@ export function MapView(props: Props) {
       cancelAnimationFrame(frame);
     };
   }, [animateFlows, live, state.live, reducedMotion]);
+
+  // The grid breathes (glowBreath.ts): now and then the glow under the lines swells and settles. Between
+  // breaths nothing is scheduled and the map rests.
+  const breathing = breathes({
+    resting: palette.lineGlow,
+    linesShown: state.layers.has("lines"),
+    reducedMotion,
+    intro: stage !== null,
+    spotlight: spotlight !== null,
+  });
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !breathing) return;
+    const resting = palette.lineGlow;
+    const peak = breathPeak(resting);
+    let step = 0;
+    const steps = Math.round((2 * BREATH_FADE_MS) / BREATH_STEP_MS);
+    let fade: number | undefined;
+    const breathe = (): void => {
+      if (document.hidden || !settledRef.current || !map.getLayer(LINE_GLOW_LAYER)) return;
+      step = 0;
+      window.clearInterval(fade);
+      fade = window.setInterval(() => {
+        step += 1;
+        // up and down along one smooth hump, ending exactly where it began
+        const lift = Math.sin((Math.PI * step) / steps) ** 2;
+        const done = step >= steps;
+        if (map.getLayer(LINE_GLOW_LAYER)) {
+          map.setPaintProperty(
+            LINE_GLOW_LAYER,
+            "line-opacity",
+            done ? resting : resting + (peak - resting) * lift,
+          );
+        }
+        if (done) window.clearInterval(fade);
+      }, BREATH_STEP_MS);
+    };
+    const timer = window.setInterval(breathe, BREATH_EVERY_MS);
+    return () => {
+      window.clearInterval(timer);
+      window.clearInterval(fade);
+      // a breath cut short must not leave the glow half-way up
+      if (map.getLayer(LINE_GLOW_LAYER)) map.setPaintProperty(LINE_GLOW_LAYER, "line-opacity", resting);
+    };
+  }, [breathing, palette.lineGlow]);
 
   // A new selection announces itself: every selection ring swells twice and settles, so the eye finds
   // the object among hundreds of points. One short loop, never while the style is still settling, and
