@@ -6,6 +6,7 @@ import type { Theme } from "../map/palette";
 import { PANELS, type AppState, type Panel } from "../state/url";
 import { ChangesPanel, type Locate } from "./ChangesPanel";
 import type { LayerKey } from "../domain";
+import type { Spotlight } from "../map/spotlight";
 import { FiltersPanel } from "./FiltersPanel";
 import { OverviewPanel } from "./OverviewPanel";
 import styles from "./SidePanel.module.css";
@@ -22,6 +23,8 @@ interface Props {
   timeMachine?: boolean;
   /** layers that are on but have nothing on screen right now */
   emptyLayers?: ReadonlySet<LayerKey>;
+  /** a row of the overview is pointed at: the map lights that technology or voltage */
+  onSpotlight?: (spotlight: Spotlight) => void;
 }
 
 const ICONS = { filters: SlidersHorizontal, overview: ChartColumn, changes: Sparkles } as const;
@@ -39,6 +42,7 @@ export function SidePanel({
   theme,
   timeMachine = false,
   emptyLayers = NO_LAYERS,
+  onSpotlight,
 }: Props) {
   const { t } = useI18n();
   const id = useId();
@@ -100,7 +104,12 @@ export function SidePanel({
           />
         )}
         {current === "overview" && (
-          <OverviewPanel statsUrl={statsUrl} countries={state.countries} theme={theme} />
+          <OverviewPanel
+            statsUrl={statsUrl}
+            countries={state.countries}
+            theme={theme}
+            {...(onSpotlight ? { onSpotlight } : {})}
+          />
         )}
         {current === "changes" && diffUrl !== null && <ChangesPanel diffUrl={diffUrl} onLocate={onLocate} />}
       </div>

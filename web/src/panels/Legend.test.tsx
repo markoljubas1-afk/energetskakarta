@@ -1,5 +1,6 @@
 import { fireEvent, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
 
 import { I18nProvider } from "../i18n";
 import { renderWithI18n } from "../test/render";
@@ -115,5 +116,27 @@ describe("Legend", () => {
       </I18nProvider>,
     );
     expect(screen.getByText("Ispod 60 kV")).toBeInTheDocument();
+  });
+  it("lights a technology or a voltage on the map while its row is pointed at", async () => {
+    const user = userEvent.setup();
+    const onSpotlight = vi.fn();
+    renderWithI18n(
+      <Legend
+        theme="dark"
+        compact={false}
+        distribution={false}
+        chargers={false}
+        extraction={false}
+        gas={false}
+        cities={false}
+        onSpotlight={onSpotlight}
+      />,
+    );
+    await user.hover(screen.getByText("Hidro"));
+    expect(onSpotlight).toHaveBeenLastCalledWith({ kind: "technology", value: "hydro" });
+    await user.hover(screen.getByText("380 kV i više"));
+    expect(onSpotlight).toHaveBeenLastCalledWith({ kind: "voltage", value: "380+" });
+    await user.unhover(screen.getByText("380 kV i više"));
+    expect(onSpotlight).toHaveBeenLastCalledWith(null);
   });
 });

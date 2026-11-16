@@ -42,6 +42,7 @@ import {
   voltageColor,
   type Expr,
 } from "./layerStyle";
+import { gridOpacity, plantOpacity, type Spotlight } from "./spotlight";
 import type { Palette } from "./palette";
 import { priceFill } from "./priceScale";
 import {
@@ -113,6 +114,8 @@ export interface LayerOptions {
   optIn: OptIn;
   /** Day-ahead prices at the live layer's hour (EUR/MWh per country); the countries are filled by them. */
   livePrices?: Partial<Record<CountryCode, number>> | null;
+  /** one technology or voltage lit, the rest receding (spotlight.ts); null: everything as it is */
+  spotlight?: Spotlight;
 }
 
 export function dataLayers({
@@ -122,7 +125,24 @@ export function dataLayers({
   maskOutside,
   optIn,
   livePrices = null,
+  spotlight = null,
 }: LayerOptions): LayerSpecification[] {
+  // Added only while something is lit: without a spotlight the style is exactly what it always was.
+  const lineLight = spotlight === null ? {} : { "line-opacity": gridOpacity(spotlight, 1) };
+  const gridMarkLight = (fill: number) =>
+    spotlight === null
+      ? {}
+      : {
+          "circle-opacity": gridOpacity(spotlight, fill),
+          "circle-stroke-opacity": gridOpacity(spotlight, 1),
+        };
+  const plantLight = (fill: number) =>
+    spotlight === null
+      ? {}
+      : {
+          "circle-opacity": plantOpacity(spotlight, fill),
+          "circle-stroke-opacity": plantOpacity(spotlight, 1),
+        };
   const { distribution: showDistribution, chargers: showChargers, extraction: showExtraction } = optIn;
   const show = (key: LayerKey) => visible(state.layers.has(key));
   const layers: LayerSpecification[] = [];
@@ -385,7 +405,7 @@ export function dataLayers({
         "line-color": voltageColor(palette),
         "line-width": byZoom(LINE_WIDTH_STOPS, 4),
         "line-blur": byZoom(LINE_WIDTH_STOPS, 3),
-        "line-opacity": palette.lineGlow,
+        "line-opacity": gridOpacity(spotlight, palette.lineGlow),
       },
     },
     {
@@ -395,7 +415,11 @@ export function dataLayers({
       "source-layer": "lines",
       filter: ["all", ["get", "isInterconnector"], lineFilter(state, true)],
       layout: { visibility: show("lines"), "line-cap": "round" },
-      paint: { "line-color": palette.interconnector, "line-width": byZoom(LINE_WIDTH_STOPS, 3.2) },
+      paint: {
+        "line-color": palette.interconnector,
+        "line-width": byZoom(LINE_WIDTH_STOPS, 3.2),
+        ...lineLight,
+      },
     },
     {
       id: `${LAYER_PREFIX}lines-planned`,
@@ -404,7 +428,12 @@ export function dataLayers({
       "source-layer": "lines",
       filter: lineFilter(state, false),
       layout: { visibility: show("lines") },
-      paint: { "line-color": voltageColor(palette), "line-width": lineWidth, "line-dasharray": [2, 2] },
+      paint: {
+        "line-color": voltageColor(palette),
+        "line-width": lineWidth,
+        "line-dasharray": [2, 2],
+        ...lineLight,
+      },
     },
     {
       id: `${LAYER_PREFIX}lines`,
@@ -413,7 +442,7 @@ export function dataLayers({
       "source-layer": "lines",
       filter: lineFilter(state, true),
       layout: { visibility: show("lines"), "line-cap": "round", "line-join": "round" },
-      paint: { "line-color": voltageColor(palette), "line-width": lineWidth },
+      paint: { "line-color": voltageColor(palette), "line-width": lineWidth, ...lineLight },
     },
     {
       id: `${LAYER_PREFIX}lines-selected`,
@@ -450,6 +479,7 @@ export function dataLayers({
         "circle-radius": substationRadius,
         "circle-color": voltageColor(palette),
         ...hollow(voltageColor(palette)),
+        ...gridMarkLight(0.15),
       },
     },
     {
@@ -459,7 +489,12 @@ export function dataLayers({
       "source-layer": "substations",
       filter: substationFilter(state, true),
       layout: { visibility: show("substations") },
-      paint: { "circle-radius": substationRadius, "circle-color": voltageColor(palette), ...solid },
+      paint: {
+        "circle-radius": substationRadius,
+        "circle-color": voltageColor(palette),
+        ...solid,
+        ...gridMarkLight(0.92),
+      },
     },
     {
       id: `${LAYER_PREFIX}plants-planned`,
@@ -475,6 +510,7 @@ export function dataLayers({
         "circle-radius": plantRadius,
         "circle-color": technologyColor(palette),
         ...hollow(technologyColor(palette)),
+        ...plantLight(0.15),
       },
     },
     {
@@ -488,7 +524,12 @@ export function dataLayers({
         visibility: show("plants"),
         "circle-sort-key": ["-", ["coalesce", ["get", "capacityMw"], 0]],
       },
-      paint: { "circle-radius": plantRadius, "circle-color": technologyColor(palette), ...solid },
+      paint: {
+        "circle-radius": plantRadius,
+        "circle-color": technologyColor(palette),
+        ...solid,
+        ...plantLight(0.92),
+      },
     },
     // Time machine (Faza 18-3): plants GEM lists as retired, from the timeline. While they ran they look
     // like any plant; once closed they stay as grey outlines, unlike the coloured rings of planned plants.

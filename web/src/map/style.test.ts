@@ -198,6 +198,50 @@ describe("labelFonts", () => {
   });
 });
 
+describe("spotlight", () => {
+  const options = {
+    state: defaultState("hr"),
+    palette: PALETTES.dark,
+    labels: null,
+    maskOutside: false,
+    optIn: NOTHING_OPTED_IN,
+  };
+  const paintOf = (layers: ReturnType<typeof dataLayers>, id: string): Record<string, unknown> => {
+    const layer = layers.find((candidate) => candidate.id === id);
+    return layer && "paint" in layer ? { ...layer.paint } : {};
+  };
+
+  it("changes nothing while nothing is lit", () => {
+    expect(dataLayers({ ...options, spotlight: null })).toEqual(dataLayers(options));
+  });
+
+  it("lights one technology in a valid style: its plants stay, the others and the grid recede", () => {
+    const layers = dataLayers({ ...options, spotlight: { kind: "technology", value: "hydro" } });
+    const style = composeStyle(fallbackStyle(PALETTES.dark), dataSources(tiles, {}), layers);
+    expect(validateStyleMin(style).map((e) => e.message)).toEqual([]);
+    expect(paintOf(layers, "energymap-plants")["circle-opacity"]).toEqual([
+      "case",
+      ["==", ["get", "technology"], "hydro"],
+      0.92,
+      0.11,
+    ]);
+    expect(paintOf(layers, "energymap-lines")["line-opacity"]).toBe(0.3);
+    // the same marks, in the same order: a spotlight never adds or removes a layer
+    expect(layers.map((layer) => layer.id)).toEqual(dataLayers(options).map((layer) => layer.id));
+  });
+
+  it("lights one voltage class on lines and substations, and lets the plants step back", () => {
+    const layers = dataLayers({ ...options, spotlight: { kind: "voltage", value: "380+" } });
+    const style = composeStyle(fallbackStyle(PALETTES.dark), dataSources(tiles, {}), layers);
+    expect(validateStyleMin(style).map((e) => e.message)).toEqual([]);
+    const lines = paintOf(layers, "energymap-lines")["line-opacity"];
+    expect(Array.isArray(lines) && lines[0]).toBe("case");
+    const stations = paintOf(layers, "energymap-substations")["circle-opacity"];
+    expect(Array.isArray(stations) && stations[0]).toBe("case");
+    expect(paintOf(layers, "energymap-plants")["circle-opacity"]).toBe(0.276);
+  });
+});
+
 describe("live layer", () => {
   it("is a valid style with real flow features and stays hidden when off", () => {
     const features = overlay(SAMPLE_LIVE, 0).features;

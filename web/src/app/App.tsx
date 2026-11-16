@@ -14,6 +14,7 @@ import { I18nProvider, useI18n } from "../i18n";
 import type { Basemap } from "../map/basemap";
 import type { InView } from "../map/inView";
 import { NOTHING_IN_VIEW } from "../map/inView";
+import type { Spotlight } from "../map/spotlight";
 import type { TileUrls } from "../map/layers";
 import type { MapApi } from "../map/MapView";
 import type { Selection } from "../map/selection";
@@ -446,6 +447,8 @@ function Explorer({
   );
   // what is on screen, for the legend; the map reports it only when it changes
   const [seen, setSeen] = useState<InView>(NOTHING_IN_VIEW);
+  // what a legend or overview row lights on the map while it is pointed at; never part of the link
+  const [spotlight, setSpotlight] = useState<Spotlight>(null);
   const welcomeEntries = useMemo<WelcomeEntries>(
     () => ({
       live: livePublished
@@ -494,6 +497,7 @@ function Explorer({
           <MapView
             tiles={tiles}
             regionBounds={current.tiles.grid.bounds}
+            spotlight={spotlight}
             maptilerKey={config.maptilerKey}
             live={liveOverlay}
             gas={gasFeatures}
@@ -581,6 +585,7 @@ function Explorer({
                   theme={theme}
                   timeMachine={current.timeline !== undefined}
                   emptyLayers={seen.emptyLayers}
+                  onSpotlight={setSpotlight}
                 />
               </ErrorBoundary>
             </aside>
@@ -610,6 +615,7 @@ function Explorer({
               gas={state.layers.has("gas")}
               cities={state.layers.has("cities")}
               inView={seen}
+              onSpotlight={setSpotlight}
             />
           </div>
 

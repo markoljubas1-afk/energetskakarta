@@ -43,6 +43,7 @@ import {
 } from "./layers";
 import type { StyleState } from "./filters";
 import { firstViewBounds } from "./firstView";
+import type { Spotlight } from "./spotlight";
 import { inView, sameInView, NOTHING_IN_VIEW, type InView } from "./inView";
 import { flightPlan, INTRO_STAGE_AT, SETTLE_DELAY_MS, type Camera, type Flight } from "./introFlight";
 import { INTRO_SETTLE, introLayers, introStyle, type IntroStage } from "./introStyle";
@@ -123,6 +124,8 @@ interface Props {
   onCapacityStation?: (id: string) => void;
   theme: Theme;
   state: AppState;
+  /** one technology or voltage lit from the legend or the overview (spotlight.ts) */
+  spotlight?: Spotlight;
   onViewChange: (view: { lng: number; lat: number; zoom: number }) => void;
   onSelect: (selection: Selection | null) => void;
   onBasemap: (kind: Basemap["kind"]) => void;
@@ -156,6 +159,7 @@ interface Hovered {
 
 export function MapView(props: Props) {
   const { tiles, regionBounds, maptilerKey, attribution, theme, state, live, gas, timeline } = props;
+  const spotlight = props.spotlight ?? null;
   const geothermal = props.geothermal ?? null;
   const capacity = props.capacity ?? null;
   const { onViewChange, onSelect, onBasemap, onReady, onInView, onGeothermalSite, onCapacityStation } = props;
@@ -536,6 +540,7 @@ export function MapView(props: Props) {
       maskOutside: value.kind === "maptiler",
       optIn,
       livePrices: live?.prices ?? null,
+      spotlight,
     });
     const composed = composeStyle(
       value.style,
@@ -569,6 +574,7 @@ export function MapView(props: Props) {
     reducedMotion,
     stage,
     flight,
+    spotlight,
     i18n,
   ]);
 

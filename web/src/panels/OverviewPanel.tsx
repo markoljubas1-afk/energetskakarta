@@ -8,17 +8,21 @@ import { useI18n } from "../i18n";
 import { Skeleton } from "./Skeleton";
 import { PALETTES, type Theme } from "../map/palette";
 import styles from "./OverviewPanel.module.css";
+import type { Spotlight } from "../map/spotlight";
+import { spotHandlers } from "./spot";
 
 interface Props {
   statsUrl: string;
   /** Country filter from the map; a single selected country becomes the default area. */
   countries: ReadonlySet<CountryCode>;
   theme: Theme;
+  /** a row is pointed at (or left): the map lights that technology or voltage */
+  onSpotlight?: (spotlight: Spotlight) => void;
 }
 
 type Area = CountryCode | "ALL";
 
-export function OverviewPanel({ statsUrl, countries, theme }: Props) {
+export function OverviewPanel({ statsUrl, countries, theme, onSpotlight }: Props) {
   const i18n = useI18n();
   const { t } = i18n;
   const palette = PALETTES[theme];
@@ -86,7 +90,10 @@ export function OverviewPanel({ statsUrl, countries, theme }: Props) {
             {summary.technologies.map((row) => {
               const color = palette.technology[row.technology];
               return (
-                <li key={row.technology}>
+                <li
+                  key={row.technology}
+                  {...spotHandlers(onSpotlight, { kind: "technology", value: row.technology })}
+                >
                   <div className={styles.barHead}>
                     <span className={styles.dot} style={{ background: color }} aria-hidden="true" />
                     <span className={styles.name}>{i18n.technology(row.technology)}</span>
@@ -125,7 +132,7 @@ export function OverviewPanel({ statsUrl, countries, theme }: Props) {
           <h3 className={styles.heading}>{t("overviewLines")}</h3>
           <ul className={styles.list}>
             {summary.lineKm.map(({ voltage, km }) => (
-              <li key={voltage}>
+              <li key={voltage} {...spotHandlers(onSpotlight, { kind: "voltage", value: voltage })}>
                 <span
                   className={styles.line}
                   style={{ background: palette.voltage[voltage] }}

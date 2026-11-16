@@ -4,6 +4,8 @@ import { useState } from "react";
 import { SUBSTANCES, TECHNOLOGIES, VOLTAGE_CLASSES } from "../domain";
 import { useI18n } from "../i18n";
 import { NOTHING_IN_VIEW, type InView } from "../map/inView";
+import type { Spotlight } from "../map/spotlight";
+import { spotHandlers } from "./spot";
 import { PALETTES, type Theme } from "../map/palette";
 import styles from "./Legend.module.css";
 
@@ -23,6 +25,8 @@ interface Props {
   cities: boolean;
   /** what the map is showing right now; kinds that are not on screen are played down */
   inView?: InView;
+  /** a row is pointed at (or left): the map lights that voltage or technology */
+  onSpotlight?: (spotlight: Spotlight) => void;
 }
 
 export function Legend({
@@ -34,6 +38,7 @@ export function Legend({
   gas,
   cities,
   inView = NOTHING_IN_VIEW,
+  onSpotlight,
 }: Props) {
   // absent only when the map has said what it shows and this is not among it
   const absent = (set: ReadonlySet<string> | null, value: string): boolean => set !== null && !set.has(value);
@@ -59,7 +64,7 @@ export function Legend({
       <h3>{t("legendVoltage")}</h3>
       <ul className={styles.voltages}>
         {VOLTAGE_CLASSES.filter((klass) => distribution || klass !== "<60").map((klass) => (
-          <li key={klass}>
+          <li key={klass} {...spotHandlers(onSpotlight, { kind: "voltage", value: klass })}>
             <span className={styles.line} style={{ background: palette.voltage[klass] }} aria-hidden="true" />
             {i18n.voltage(klass)}
           </li>
@@ -68,7 +73,11 @@ export function Legend({
       <h3>{t("legendTechnology")}</h3>
       <ul className={styles.technologies}>
         {TECHNOLOGIES.map((tech) => (
-          <li key={tech} data-absent={absent(inView.technologies, tech) || undefined}>
+          <li
+            key={tech}
+            data-absent={absent(inView.technologies, tech) || undefined}
+            {...spotHandlers(onSpotlight, { kind: "technology", value: tech })}
+          >
             <span
               className={styles.dot}
               style={{ background: palette.technology[tech] }}
