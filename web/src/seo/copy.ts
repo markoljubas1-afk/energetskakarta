@@ -39,6 +39,7 @@ export interface Copy {
     authorHeading: string;
     author: string[];
     authorContact: string;
+    authorQrAlt: string;
     sourcesHeading: string;
     updatesHeading: string;
     updates: string;
@@ -252,11 +253,12 @@ const hr: Copy = {
     ],
     authorHeading: "Tko stoji iza karte",
     author: [
-      "Kartu sam osmislio i izradio ja, Marko Ljubas, u slobodno vrijeme i iz čiste znatiželje: htio sam na jednom mjestu vidjeti kako je elektroenergetski sustav Hrvatske i susjedstva zaista povezan, od elektrane do granice.",
-      "Karta nije nastala po narudžbi, nitko je ne financira i na njoj se ne zarađuje: nema oglasa ni plaćenih razina. Sve što prikazuje dolazi iz otvorenih izvora navedenih na ovoj stranici.",
-      "Ako vam je korisna, ako ste uočili nešto što ne štima ili imate ideju što bi još vrijedilo prikazati, javite se. Svaka poruka je dobrodošla.",
+      "Ovo je isključivo neovisni hobi projekt. Karta je potpuno besplatna, nema oglasa, ne tražim komercijalna sponzorstva i na njoj se ne zarađuje. Sve što vidite temelji se na otvorenim izvorima podataka.",
+      "Ako vam se sviđa to što radim i želite mi simbolično pomoći u pokrivanju troškova servera i daljnjeg razvoja, možete me „počastiti kavom” putem dobrovoljne donacije preko KEKS Paya. Naravno, bez ikakve obveze – projekt je i ostaje besplatan za sve.",
+      "Ako ste uočili nešto što ne štima ili imate ideju što bi još vrijedilo prikazati, javite se. Svaka poruka je dobrodošla!",
     ],
-    authorContact: "Kontakt",
+    authorContact: "Kontakt: Marko Ljubas, e-mail",
+    authorQrAlt: "QR kod za donaciju preko KEKS Paya",
     fixHeading: "Našli ste grešku?",
     fix: "Većina podataka dolazi iz OpenStreetMapa, koji svatko može urediti. Ispravak upisan ondje pojavit će se na karti nakon sljedećeg tjednog osvježavanja, i od njega imaju korist svi koji te podatke koriste.",
     sourcesHeading: "Izvori i licence",
@@ -571,11 +573,12 @@ const en: Copy = {
     ],
     authorHeading: "Who is behind the map",
     author: [
-      "I am Marko Ljubas, and I designed and built this map in my spare time, out of plain curiosity: I wanted to see in one place how the power system of Croatia and its neighbours is really connected, from the plant to the border.",
-      "Nobody commissioned the map, nobody funds it and it earns nothing: there are no ads and no paid tiers. Everything it shows comes from the open sources listed on this page.",
-      "If you find it useful, if you have spotted something that looks wrong, or if you have an idea for what else is worth showing, do get in touch. Every message is welcome.",
+      "This is purely an independent hobby project. The map is completely free, has no ads, I am not looking for commercial sponsorship and it earns nothing. Everything you see is based on open data sources.",
+      "If you like what I do and would like to help a little with the cost of servers and further development, you can “buy me a coffee” with a voluntary donation through KEKS Pay. No obligation, of course – the project is and stays free for everyone.",
+      "If you have spotted something that looks wrong, or have an idea for what else is worth showing, do get in touch. Every message is welcome!",
     ],
-    authorContact: "Contact",
+    authorContact: "Contact: Marko Ljubas, email",
+    authorQrAlt: "QR code for a donation through KEKS Pay",
     fixHeading: "Found a mistake?",
     fix: "Most of the data comes from OpenStreetMap, which anyone can edit. A correction made there appears on the map after the next weekly refresh, and everyone who uses that data benefits from it.",
     sourcesHeading: "Sources and licences",

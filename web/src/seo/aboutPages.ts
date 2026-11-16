@@ -62,7 +62,7 @@ export function aboutPage(site: SiteData, lang: Lang): StaticPage {
       { heading: about.fixHeading, html: `<p>${e(about.fix)}</p>` },
       {
         heading: about.authorHeading,
-        html: `${about.author.map((p) => `<p>${e(p)}</p>`).join("")}<p>${e(about.authorContact)}: <a href="mailto:${e(AUTHOR_EMAIL)}">${e(AUTHOR_EMAIL)}</a></p>`,
+        html: `${about.author.map((p) => `<p>${e(p)}</p>`).join("")}<p><img src="/keks-pay.png" alt="${e(about.authorQrAlt)}" width="200" height="200" loading="lazy"></p><p>${e(about.authorContact)}: <a href="mailto:${e(AUTHOR_EMAIL)}">${e(AUTHOR_EMAIL)}</a></p>`,
       },
       {
         heading: about.faqHeading,
