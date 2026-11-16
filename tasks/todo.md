@@ -1096,6 +1096,33 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
       (ostaje odluka o nekomercijalnosti iz CLAUDE.md).
 - [x] Zaglavlje (2026-11-16): samo naziv, bez znaka i podnaslova.
 
+## Faza 34 — Sunčani potencijal i punionice na širem zumu (prijedlog 2026-11-16, čeka potvrdu vlasnika)
+
+### 34-1 Punionice vidljive i na širem zumu
+- Stanje: 19.754 punionice iz OSM-a su u podacima, ali se crtaju tek od zuma 11, pa sloj nakon uključivanja
+  na razini regije izgleda prazan.
+- Pristup: u buildu zbroj po ćeliji (kao `plantgrid.json`), na karti krugovi s brojem do zuma 10, od zuma 11
+  pojedinačne punionice kao i sada. Alternativa (odbačena): tippecanoe klasteri — brojke ovise o zumu i teže
+  se provjeravaju.
+- Datoteke: `products.py`, `publish.py`, `data/current.ts`, `map/layers.ts`, i18n napomena sloja.
+- Provjera: zbroj ćelija = broj punionica u buildu; e2e: sloj uključen na početnom pogledu nešto prikazuje.
+
+### 34-2 Sloj „Sunčani potencijal"
+- Cilj: prva orijentacija za one koji planiraju sunčane elektrane: očekivana godišnja proizvodnja po kWp,
+  uz ono što karta već ima (vodovi, trafostanice, HEP-ov slobodni kapacitet).
+- Izvor: Global Solar Atlas (Svjetska banka / Solargis), sloj PVOUT, GeoTIFF, razlučivost oko 1 km. Katalog
+  Svjetske banke navodi CC BY 4.0; točan tekst atribucije stoji u metapodacima svakog preuzimanja i mora se
+  pročitati prije ugradnje (provjereno pretragom 2026-11-16, ne i na samom preuzimanju).
+- PVGIS (JRC): službena stranica zabranjuje pozive iz preglednika (AJAX/CORS), ograničenje 30 poziva u
+  sekundi po IP-u. Dakle samo kao poveznica „izračunaj za ovu točku" ili iz pipelinea, ne iz karte.
+- Pristup: jednokratan posao (kao `eurostat-update`): raster izrezan na regiju → obojene rasterske pločice
+  (PMTiles) + rjeđa mreža vrijednosti (JSON) za očitanje na klik. Na karti neobavezan sloj s legendom; klik
+  daje vrijednost, izvor i napomenu da je riječ o modelu.
+- Otvoreno: alat za raster u CI-ju (GDAL/rasterio), veličina pločica u bucketu, treba li korak 2 (najbliža
+  trafostanica i HEP kapacitet u istoj kartici) odmah ili kasnije.
+- Što sloj NE govori (mora pisati uz njega): zaštićena područja, namjena zemljišta, nagib, vlasništvo.
+- Rizik: licenca ili atribucija drukčija od očekivane → sloj se ne objavljuje dok se ne razjasni.
+
 ## Faza 11 — „živa slika": što još može biti uživo (pregled 2026-09-19, odgovor na pitanje)
 
 Cilj je da što više bude **uživo**. Ovo su izvori koji to stvarno omogućuju, složeni po tome što traže:
