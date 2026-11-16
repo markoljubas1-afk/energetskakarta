@@ -1175,6 +1175,29 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
   stvarnim podacima prije objave; put kroz krivu trafostanicu → ručni pregled na karti.
 - Provjera: jedinični testovi grafa i funkcije položaja, e2e za pauzu i nastavak, snimke.
 
+## Faza 36 — „Koliko je struja sada zelena” (prijedlog vlasnika 2026-11-16: „semafor”; čeka potvrdu)
+
+- Cilj: jedna rečenica i boja koja kaže koliki dio struje proizvedene u zemlji ovaj sat dolazi iz obnovljivih
+  izvora, da se apstraktni „miks” prevede u svakodnevnu odluku (kad puniti auto, kad uključiti perilicu).
+- Što već imamo: `live/current.json` nosi proizvodnju po tehnologiji i satu za HR, SI, HU, AT, BA, RS, ME (ne i
+  IT). Cloudflare Worker iz prijedloga nije potreban za izračun: to radi pipeline, karta čita gotovu datoteku.
+- Što NEMAMO: potrošnju (opterećenje) po satu, pa „vršno opterećenje” iz prijedloga zasad ne možemo tvrditi.
+  Uvoz je vidljiv samo kao tok preko granice, bez podatka iz čega je proizveden.
+- Ispravci prijedloga: (1) „koristiš 100 % zelenu energiju” nije točno ni kad je udio visok — mreža je
+  zajednička i uvoz se ne vidi; tekst mora reći „udio u domaćoj proizvodnji”. (2) Pragovi 30 % i 60 % su
+  proizvoljni i u zemlji s puno hidroelektrana bili bi gotovo uvijek zeleni; pragovi se računaju iz vlastite
+  povijesti zemlje (npr. gornja i donja trećina zadnjih 30 dana), a brojka je uvijek ispisana. (3) Savjeti
+  „upali / ugasi” ostaju blagi i bez emojija; karta ne zna cijenu koju kućanstvo plaća. (4) Zemlja se ne
+  pogađa po IP adresi posjetitelja (privatnost); bira se na kartici, zadano Hrvatska.
+- Preduvjet (otvoren): podaci „uživo” nisu pouzdano svježi. GitHub je 16. 11. od 24 zakazana pokretanja
+  `live-hourly` izvršio samo dva, a ENTSO-E je popodne vraćao greške. Semafor koji pokazuje sedam sati staro
+  stanje bio bi netočan, pa prije njega treba: pouzdan okidač (vanjski, npr. Cloudflare Worker s rasporedom
+  koji poziva `workflow_dispatch`) i prikaz starosti podatka; stariji od dva sata prikazuje se sivo, bez boje.
+- Pristup: `live.py` uz proizvodnju računa udio obnovljivih po satu i pragove; nova kartica u traci uživo i
+  odjeljak na edukacijskoj stranici („Zašto je važno kada trošiš”); klik ističe na karti tehnologiju koja u
+  tom satu najviše proizvodi (postojeći `spotlight`).
+- Provjera: jedinični testovi izračuna i pragova, test za zastarjeli podatak, e2e za karticu.
+
 ## Faza 11 — „živa slika": što još može biti uživo (pregled 2026-09-19, odgovor na pitanje)
 
 Cilj je da što više bude **uživo**. Ovo su izvori koji to stvarno omogućuju, složeni po tome što traže:
