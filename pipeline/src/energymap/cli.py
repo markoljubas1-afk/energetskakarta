@@ -5,6 +5,7 @@ energymap tiles build              PMTiles for a build
 energymap publish r2               upload a build to Cloudflare R2
 energymap eurostat fetch|publish-* official renewable shares (Eurostat)
 energymap images update            photographs of plants from Wikimedia Commons
+energymap solar fetch|publish-*    solar potential (Global Solar Atlas)
 """
 
 from __future__ import annotations
@@ -45,6 +46,8 @@ from energymap.hep import capacity as hep_capacity
 from energymap.images import wikimedia
 from energymap.marine import emodnet
 from energymap.osm.download import DownloadError, make_client
+from energymap.solar import download as solar_download
+from energymap.solar import potential as solar_potential
 from energymap.validate import BuildValidationError
 
 logger = logging.getLogger("energymap")
@@ -305,6 +308,19 @@ def parser() -> argparse.ArgumentParser:
                 help="publish even if a published area or indicator lost its latest year",
             )
 
+    solar = groups.add_parser(
+        "solar", help="solar potential: expected yearly output of photovoltaics (Global Solar Atlas)"
+    ).add_subparsers(dest="step", required=True)
+    for name, text in (
+        ("fetch", "download each country's raster archive into data/solar"),
+        ("publish-r2", "build the picture and the values from data/solar and publish them to Cloudflare R2"),
+        ("publish-dir", "the same, to a local mirror"),
+    ):
+        step = solar.add_parser(name, help=text)
+        _data_dir(step)
+        if name == "publish-dir":
+            step.add_argument("--out", type=Path, required=True, help="target directory, e.g. ../web/.data")
+
     src = groups.add_parser("sources", help="source files kept in the data bucket").add_subparsers(
         dest="step", required=True
     )
@@ -485,6 +501,36 @@ def run(args: argparse.Namespace) -> None:
                 images_store, assets, client, datetime.now(UTC), allow_drop=args.allow_drop
             )
         print(json.dumps({"plantsWithWikidata": len(assets), "photographs": len(index["images"])}))
+    elif args.group == "solar":
+        solar_dir = paths.root / "solar"
+        if args.step == "fetch":
+            with make_client() as client:
+                fetched = solar_download.fetch(client, solar_dir)
+            print(
+                json.dumps({"archives": len(fetched), "bytes": sum(path.stat().st_size for path in fetched)})
+            )
+        else:
+            archives = sorted(solar_dir.glob("*.zip"))
+            if not archives:
+                raise BuildValidationError([f"no archives in {solar_dir}; run `energymap solar fetch` first"])
+            solar_store: publish.ObjectStore = (
+                publish.R2Store.from_env() if args.step == "publish-r2" else publish.DirectoryStore(args.out)
+            )
+            solar_document, solar_image = solar_potential.build(
+                [solar_potential.read_archive(path) for path in archives], datetime.now(UTC)
+            )
+            solar_published = solar_potential.publish_solar(solar_store, solar_document, solar_image)
+            print(
+                json.dumps(
+                    {
+                        "image": solar_published["image"],
+                        "bytes": len(solar_image),
+                        "countries": solar_published["countries"],
+                        "min": solar_published["min"],
+                        "max": solar_published["max"],
+                    }
+                )
+            )
     elif args.group == "eurostat":
         shares_file = paths.root / "eurostat" / "renewables.json"
         if args.step == "fetch":
@@ -614,6 +660,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         eurostat_renewables.EurostatSourceError,
         eurostat_renewables.EurostatDataError,
         wikimedia.ImagesError,
+        solar_potential.SolarDataError,
         CountryDataError,
         tiles.TilesError,
         publish.PublishError,
