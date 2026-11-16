@@ -226,3 +226,25 @@ describe("normalizeSiteUrl", () => {
     expect(normalizeSiteUrl(undefined)).toBeNull();
   });
 });
+
+describe("about page", () => {
+  it("says what the map is for, how to read it, how it is made, what it is not and where to fix a mistake", () => {
+    const pages = buildPages(site);
+    const hr = pages.find((page) => page.path === "/o-karti/");
+    const en = pages.find((page) => page.path === "/en/about/");
+    if (!hr || !en) throw new Error("the about pages are missing");
+    expect(hr.sections.map((section) => section.heading)).toEqual(
+      expect.arrayContaining([
+        "Čemu karta služi",
+        "Kako čitati kartu",
+        "Kako karta nastaje",
+        "Što karta nije",
+        "Našli ste grešku?",
+      ]),
+    );
+    // the same sections in the same order in both languages
+    expect(en.sections).toHaveLength(hr.sections.length);
+    expect(renderPage(en, site)).toContain("Nothing is estimated or filled in.");
+    expect(renderPage(hr, site)).toContain("Ništa se ne procjenjuje ni ne nadopunjuje.");
+  });
+});

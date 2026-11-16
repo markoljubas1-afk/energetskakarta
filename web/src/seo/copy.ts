@@ -25,6 +25,17 @@ export interface Copy {
     intro: string[];
     whatHeading: string;
     what: string[];
+    /** who the map is for, how to read it, how it is made, what it is not, and where to correct a mistake */
+    purposeHeading: string;
+    purpose: string[];
+    readingHeading: string;
+    reading: string[];
+    methodHeading: string;
+    method: string[];
+    limitsHeading: string;
+    limits: string[];
+    fixHeading: string;
+    fix: string;
     sourcesHeading: string;
     updatesHeading: string;
     updates: string;
@@ -206,6 +217,38 @@ const hr: Copy = {
       "Trafostanice s najvišim naponom, podmorski cjevovodi (plin, nafta) i planirane vjetroelektrane na moru, podatkovni centri s objavljenom snagom, punionice s brojem mjesta, crpilišta i rudnici prema sirovini (samo lokacija, bez proizvodnje).",
       "Uživo: satni neto tokovi između zemalja i cijene struje po satu, te proizvodnja i potrošnja po mjesecima i godinama.",
     ],
+    purposeHeading: "Čemu karta služi",
+    purpose: [
+      "Tko planira elektranu ili veći priključak vidi gdje su dalekovodi i trafostanice te, za Hrvatsku, koliko slobodnog kapaciteta objavljuje HEP ODS.",
+      "Novinari, studenti i istraživači dobivaju brojke s izvorom i datumom, koje se mogu citirati, preuzeti i provjeriti.",
+      "Svi ostali mogu vidjeti odakle dolazi struja: što je izgrađeno, gdje i kada, i što se u mreži događa ovaj sat.",
+    ],
+    readingHeading: "Kako čitati kartu",
+    reading: [
+      "Boja voda i trafostanice označava napon, a boja elektrane tehnologiju. Legenda je uvijek na karti.",
+      "Površina kruga elektrane raste sa snagom. Puni krug je elektrana u pogonu; prazan prsten ili isprekidana crta je ono što je u izgradnji ili planirano.",
+      "Karta se otvara samo s dalekovodima. Ostali slojevi uključuju se u popisu slojeva, a pretraga i poveznice sami uključe sloj onoga što otvaraju.",
+      "Slobodni kapacitet: crveno znači da trafostanica prema objavi HEP ODS-a nema mogućnosti prihvata, zeleno da ima, izraženije što je kapacitet veći.",
+      "Tokovi uživo su neto razmjena između dviju zemalja u jednom satu: strelica pokazuje smjer, a debljina snagu.",
+      "Vremeplov pokazuje koje su elektrane radile u odabranoj godini.",
+    ],
+    methodHeading: "Kako karta nastaje",
+    method: [
+      "Jednom tjedno preuzimaju se podaci OpenStreetMapa za svih osam zemalja i iz njih se izdvajaju elektrane, vodovi, trafostanice i ostali objekti.",
+      "Elektrane se uparuju s bazom Global Energy Monitor. Gdje se zapisi poklapaju, objekt nosi oba izvora; što postoji samo u jednom, ostaje označeno tim izvorom.",
+      "Svaki zapis prolazi provjere. Snaga koja je nemoguća za tu vrstu elektrane ne prikazuje se, a lokacija koja ne odgovara navedenoj zemlji ispravlja se ili izostavlja. Ništa se ne procjenjuje ni ne nadopunjuje.",
+      "Nova objava uspoređuje se s prethodnom. Ako provjere ne prođu ili broj objekata neobjašnjivo padne, objava se odbija i na karti ostaje zadnja ispravna.",
+      "Uz svaki objekt ostaje zapisano odakle je podatak, pod kojom licencom i kada je preuzet.",
+    ],
+    limitsHeading: "Što karta nije",
+    limits: [
+      "Nije službeni registar. Podaci dolaze iz otvorenih izvora i mogu kasniti za stanjem na terenu ili biti nepotpuni.",
+      "Zbroj snage je donja granica: zbraja se samo ono što je u izvorima upisano.",
+      "Slobodni kapaciteti su informativni i ne jamče priključenje; mjerodavan je HEP ODS.",
+      "Struja se u mreži miješa, pa karta ne tvrdi iz koje elektrane dolazi struja u pojedino mjesto.",
+    ],
+    fixHeading: "Našli ste grešku?",
+    fix: "Većina podataka dolazi iz OpenStreetMapa, koji svatko može urediti. Ispravak upisan ondje pojavit će se na karti nakon sljedećeg tjednog osvježavanja, i od njega imaju korist svi koji te podatke koriste.",
     sourcesHeading: "Izvori i licence",
     updatesHeading: "Koliko su podaci svježi",
     updates:
@@ -486,6 +529,38 @@ const en: Copy = {
       "Substations with their highest voltage, offshore pipelines (gas, oil) and planned offshore wind farms, data centres with published power, charging stations with their number of points, wells and mines by substance (location only, no production).",
       "Live: hourly net flows between countries and hourly electricity prices, plus generation and consumption by month and year.",
     ],
+    purposeHeading: "What the map is for",
+    purpose: [
+      "Anyone planning a plant or a large connection sees where the lines and substations are and, for Croatia, how much free capacity HEP ODS publishes.",
+      "Journalists, students and researchers get figures with a source and a date, which can be cited, downloaded and checked.",
+      "Everyone else can see where electricity comes from: what was built, where and when, and what is happening in the grid this hour.",
+    ],
+    readingHeading: "How to read the map",
+    reading: [
+      "The colour of a line or substation is its voltage; the colour of a plant is its technology. The legend is always on the map.",
+      "The area of a plant's circle grows with its capacity. A filled circle is a plant in operation; a hollow ring or a dashed line is something under construction or planned.",
+      "The map opens with transmission lines only. The other layers are switched on in the layer list, and a search result or a link switches on the layer of what it opens.",
+      "Free capacity: red means the substation has no room according to HEP ODS, green means it has, stronger the more room there is.",
+      "Live flows are the net exchange between two countries in one hour: the arrow shows the direction, its width the power.",
+      "The time machine shows which plants were running in the chosen year.",
+    ],
+    methodHeading: "How the map is made",
+    method: [
+      "Once a week the OpenStreetMap data of all eight countries is downloaded, and plants, lines, substations and the other objects are extracted from it.",
+      "Plants are matched with the Global Energy Monitor database. Where records agree, the object carries both sources; what exists in only one stays marked with that source.",
+      "Every record is checked. A capacity that is impossible for that kind of plant is not shown, and a location that does not fit the stated country is corrected or left out. Nothing is estimated or filled in.",
+      "A new release is compared with the previous one. If the checks fail or the number of objects drops without explanation, the release is refused and the last good one stays on the map.",
+      "Every object keeps a record of where its data came from, under which licence and when it was retrieved.",
+    ],
+    limitsHeading: "What the map is not",
+    limits: [
+      "It is not an official register. The data comes from open sources and may lag behind reality or be incomplete.",
+      "Total capacity is a lower bound: only what the sources state is added up.",
+      "Free capacities are informative and do not guarantee a connection; HEP ODS is the authority.",
+      "Electricity mixes in the grid, so the map does not claim which plant supplies which place.",
+    ],
+    fixHeading: "Found a mistake?",
+    fix: "Most of the data comes from OpenStreetMap, which anyone can edit. A correction made there appears on the map after the next weekly refresh, and everyone who uses that data benefits from it.",
     sourcesHeading: "Sources and licences",
     updatesHeading: "How fresh the data is",
     updates:

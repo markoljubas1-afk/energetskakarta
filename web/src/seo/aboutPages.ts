@@ -47,11 +47,16 @@ export function aboutPage(site: SiteData, lang: Lang): StaticPage {
     heading: about.title,
     lead: about.intro.map((p) => `<p>${e(p)}</p>`).join(""),
     sections: [
+      { heading: about.purposeHeading, html: list(about.purpose.map(e)) },
       { heading: about.whatHeading, html: list(about.what.map(e)) },
+      { heading: about.readingHeading, html: list(about.reading.map(e)) },
+      { heading: about.methodHeading, html: list(about.method.map(e)) },
       { heading: about.sourcesHeading, html: list(sources.map((s) => e(i18n.t(`attr_${s}`)))) },
       { heading: copy.nav.countries, html: list(countries) },
       { heading: about.updatesHeading, html: `<p>${e(about.updates)}</p>` },
+      { heading: about.limitsHeading, html: list(about.limits.map(e)) },
       { heading: about.downloadsHeading, html: `<p>${e(about.downloadsNote)}</p>${list(downloads)}` },
+      { heading: about.fixHeading, html: `<p>${e(about.fix)}</p>` },
       {
         heading: about.faqHeading,
         html: about.faq.map((f) => `<h3>${e(f.question)}</h3><p>${e(f.answer)}</p>`).join(""),
