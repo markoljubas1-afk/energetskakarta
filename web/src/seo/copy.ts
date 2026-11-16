@@ -175,7 +175,15 @@ export interface Copy {
   };
   notFound: { title: string; heading: string; text: string; textOther: string; linksHeading: string };
   breadcrumbHome: string;
-  nav: { map: string; about: string; countries: string; cities: string; api: string; otherLang: string };
+  nav: {
+    map: string;
+    about: string;
+    learn: string;
+    countries: string;
+    cities: string;
+    api: string;
+    otherLang: string;
+  };
   footer: string;
   labels: {
     technology: string;
@@ -492,6 +500,7 @@ const hr: Copy = {
   nav: {
     map: "Karta",
     about: "O karti",
+    learn: "Edukacija",
     countries: "Zemlje",
     cities: "Gradovi",
     api: "API",
@@ -812,6 +821,7 @@ const en: Copy = {
   nav: {
     map: "Map",
     about: "About",
+    learn: "Learn",
     countries: "Countries",
     cities: "Cities",
     api: "API",

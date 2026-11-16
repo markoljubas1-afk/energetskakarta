@@ -125,6 +125,7 @@ ${head(page, site)}
 <nav aria-label="${page.lang === "hr" ? "Glavna navigacija" : "Main navigation"}">
 <a href="${mapHref}">${e(copy.nav.map)}</a>
 <a href="${PATHS[page.lang].about}">${e(copy.nav.about)}</a>
+<a href="${PATHS[page.lang].learn}">${e(copy.nav.learn)}</a>
 ${site.cities ? `<a href="${PATHS[page.lang].cities}">${e(copy.nav.cities)}</a>` : ""}
 ${site.capacity ? `<a href="${PATHS[page.lang].capacity}">${e(page.lang === "hr" ? "Kapaciteti" : "Grid capacity")}</a>` : ""}
 <a href="${PATHS[page.lang].api}">${e(copy.nav.api)}</a>

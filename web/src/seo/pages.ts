@@ -6,6 +6,7 @@ import { type SearchHit, toHit } from "../data/search";
 import { SCOPE_COUNTRIES } from "../domain";
 import { LANGS } from "../state/url";
 import { aboutPage, apiPage } from "./aboutPages";
+import { learnPage } from "./learnPages";
 import { assetContext } from "./assetFacts";
 import { assetPage, citiesPage, pageWorthy } from "./assetPages";
 import type { HubKey } from "./copy";
@@ -49,6 +50,7 @@ export function buildPages(site: SiteData): StaticPage[] {
   const hubs = groupHubs(site);
   for (const lang of LANGS) {
     pages.push(aboutPage(site, lang));
+    pages.push(learnPage(site, lang));
     pages.push(apiPage(site, lang));
     if (site.cities) pages.push(citiesPage(site, lang, site.cities));
     pages.push(largestPage(site, lang));

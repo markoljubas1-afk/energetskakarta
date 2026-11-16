@@ -1,4 +1,4 @@
-import { ChartColumnStacked, Info, Languages, Map as MapIcon, Moon, Sun } from "lucide-react";
+import { ChartColumnStacked, GraduationCap, Info, Languages, Map as MapIcon, Moon, Sun } from "lucide-react";
 
 import { useI18n } from "../i18n";
 import { PATHS } from "../seo/pages";
@@ -48,6 +48,10 @@ export function Header({ theme, page, onPage, onToggleTheme, onToggleLang, child
         })}
       </div>
       <div className={styles.actions}>
+        <a className={styles.textButton} href={PATHS[lang].learn}>
+          <GraduationCap size={16} strokeWidth={1.75} aria-hidden="true" />
+          <span className={styles.buttonLabel}>{t("learnLink")}</span>
+        </a>
         <a className={styles.textButton} href={PATHS[lang].about}>
           <Info size={16} strokeWidth={1.75} aria-hidden="true" />
           <span className={styles.buttonLabel}>{t("aboutLink")}</span>

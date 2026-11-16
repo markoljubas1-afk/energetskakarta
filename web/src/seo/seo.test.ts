@@ -79,9 +79,9 @@ describe("buildPages", () => {
       "/objekt/osm-node-50/",
       "/objekt/dc-primjer/",
     ]);
-    // per language: about, API, largest plants (3) + 8 countries + HR topic pages (pumped storage, solar,
-    // substations, data centres: 4) + 3 assets = 18
-    expect(pages).toHaveLength(2 * (3 + SCOPE_COUNTRIES.length + 4 + 3));
+    // per language: about, learning corner, API, largest plants (4) + 8 countries + HR topic pages (pumped
+    // storage, solar, substations, data centres: 4) + 3 assets = 19
+    expect(pages).toHaveLength(2 * (4 + SCOPE_COUNTRIES.length + 4 + 3));
     expect(ASSET_PAGE_MIN_MW).toBe(10);
     expect(ASSET_PAGE_MIN_KV).toBe(220);
   });

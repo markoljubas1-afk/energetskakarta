@@ -202,6 +202,7 @@ export const hr = {
   attr_naturalearth: "Granice: Natural Earth",
   pageLabel: "Prikaz",
   aboutLink: "O karti",
+  learnLink: "Edukacija",
   pageMap: "Karta",
   pageEnergy: "Proizvodnja kroz vrijeme",
   energyTitle: "Proizvodnja i potrošnja kroz vrijeme",

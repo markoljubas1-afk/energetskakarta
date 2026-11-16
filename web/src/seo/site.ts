@@ -122,6 +122,7 @@ export interface Crumb {
 
 interface Paths {
   about: string;
+  learn: string;
   api: string;
   cities: string;
   largest: string;
@@ -187,6 +188,7 @@ export const HUB_KEYS: readonly HubKey[] = [...TECHNOLOGIES, "substations", "dat
 export const PATHS: Record<Lang, Paths> = {
   hr: {
     about: "/o-karti/",
+    learn: "/edukacija/",
     api: "/api/",
     cities: "/gradovi/",
     largest: "/najvece-elektrane/",
@@ -206,6 +208,7 @@ export const PATHS: Record<Lang, Paths> = {
   },
   en: {
     about: "/en/about/",
+    learn: "/en/learn/",
     api: "/en/api/",
     cities: "/en/cities/",
     largest: "/en/largest-power-plants/",

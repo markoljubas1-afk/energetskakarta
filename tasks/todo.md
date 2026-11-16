@@ -1085,7 +1085,7 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 
 ### 33-3 Ostalo iz razgovora
 - [ ] Vremeplov kao film (brojač snage, automatsko puštanje).
-- [ ] Vođene ture umjesto kartice dobrodošlice.
+- [ ] Vođene ture umjesto kartice dobrodošlice → razrađeno u Fazi 35-2.
 - [ ] Statične stranice zemalja: ključne brojke, graf, slika karte.
 - [x] GEM: nepoznata vrsta kao brojač po nazivu u statistici builda i u manifestu (L-069); na tablici iz
       rujna 2026. takvih je 0 od 4057 jedinica. Prazan stupac goriva nije brojan zasebno.
@@ -1126,6 +1126,29 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
   trafostanica i HEP kapacitet u istoj kartici) odmah ili kasnije.
 - Što sloj NE govori (mora pisati uz njega): zaštićena područja, namjena zemljišta, nagib, vlasništvo.
 - Rizik: licenca ili atribucija drukčija od očekivane → sloj se ne objavljuje dok se ne razjasni.
+
+## Faza 35 — Edukacijski kutak (dogovoreno 2026-11-16: pojmovnik i vođene priče, pojmovnik prvi)
+
+### 35-1 Stranica „Edukacija” — GOTOVO 2026-11-16
+- `/edukacija/` i `/en/learn/` (`web/src/seo/learnPages.ts`): put struje u četiri koraka, snaga i energija,
+  pojmovnik od 13 pojmova (i kao `DefinedTermSet`), poveznice koje otvaraju kartu na opisanom sloju.
+- Poveznica u zaglavlju karte (ikona kape) i u navigaciji statičnih stranica. Test drži HR i EN u paru i
+  provjerava da svaka poveznica vodi na pogled koji karta razumije.
+
+### 35-2 Vođene priče na karti (plan; nije započeto)
+- Cilj: priča od 4–6 koraka u kojoj se karta sama pomakne, uključi potrebne slojeve i istakne objekte dok
+  čitatelj čita kratki tekst; „Dalje” i „Natrag”, izlaz u svakom trenutku vraća kartu kakva je bila.
+- Prve priče: „Put struje od elektrane do utičnice”, „Odakle struja u Hrvatskoj”, „Zašto su granice važne”
+  (interkonektori i tokovi uživo).
+- Pristup: priča je podatak (`web/src/stories/*.ts`: koraci s pogledom, slojevima, odabirom, istaknutom
+  tehnologijom ili naponom i tekstom na HR i EN), a ne poseban kod. Jedna komponenta kartice u okviru
+  detalja; korak postavlja stanje aplikacije istim putem kao i poveznica (`parseState`), pa nema drugog
+  mehanizma prikaza. Priča se pokreće s `?story=<ključ>` (dijeljivo) i s edukacijske stranice.
+- Alternativa (odbačena): snimljeni video ili slike — ne ostaje interaktivno i zastarijeva sa svakim buildom.
+- Rizici: objekt na koji se priča poziva nestane iz podataka (korak se tada prikazuje bez odabira, uz test
+  koji na podacima iz CI-ja provjerava da svi navedeni objekti postoje); smanjeno kretanje (bez leta, skok).
+- Provjera: jedinični testovi za svaku priču (svaki korak daje valjano stanje), e2e za prolaz kroz jednu
+  priču na računalu i mobitelu, ručni pregled snimki.
 
 ## Faza 11 — „živa slika": što još može biti uživo (pregled 2026-09-19, odgovor na pitanje)
 

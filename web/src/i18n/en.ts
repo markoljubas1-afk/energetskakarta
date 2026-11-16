@@ -206,6 +206,7 @@ export const en: Dictionary = {
   attr_naturalearth: "Borders: Natural Earth",
   pageLabel: "View",
   aboutLink: "About",
+  learnLink: "Learn",
   pageMap: "Map",
   pageEnergy: "Generation over time",
   energyTitle: "Generation and load over time",
