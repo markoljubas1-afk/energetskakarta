@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { StatsSchema, summarize } from "./stats";
+import { StatsSchema, statusTotals, summarize } from "./stats";
 
 const stats = StatsSchema.parse({
   version: 1,
@@ -76,5 +76,37 @@ describe("summarize", () => {
     });
     // a build from before the layer existed simply has no such section
     expect(summarize(stats, "HR", ["HR"]).datacenters).toEqual({ count: 0, powerMw: 0, withPower: 0 });
+  });
+});
+
+describe("statusTotals", () => {
+  const byStatus = StatsSchema.parse({
+    version: 1,
+    voltageClasses: ["380+"],
+    note: "",
+    plants: {
+      HR: {
+        hydro: { operating: { count: 3, capacityMw: 100, withCapacity: 3 } },
+        solar: {
+          planned: { count: 2, capacityMw: 9, withCapacity: 1 },
+          construction: { count: 1, capacityMw: 5, withCapacity: 1 },
+        },
+      },
+      SI: { wind: { planned: { count: 4, capacityMw: 40, withCapacity: 4 } } },
+    },
+    substations: {},
+    lineKm: {
+      HR: { "380+": { operating: 1000, construction: 12.5 }, "110-219": { planned: 3 } },
+      SI: { "380+": { planned: 7 } },
+    },
+  });
+
+  it("counts plants and line kilometres by status, for the chosen countries or for all of them", () => {
+    expect(statusTotals(byStatus, new Set())).toEqual({
+      operating: { plants: 3, lineKm: 1000 },
+      construction: { plants: 1, lineKm: 12.5 },
+      planned: { plants: 6, lineKm: 10 },
+    });
+    expect(statusTotals(byStatus, new Set(["SI"] as const)).planned).toEqual({ plants: 4, lineKm: 7 });
   });
 });

@@ -119,3 +119,41 @@ export function summarize(
     datacenters: centres,
   };
 }
+
+export interface StatusTotal {
+  plants: number;
+  lineKm: number;
+}
+
+/**
+ * How many plants and how many kilometres of line there are in each status, in the given countries (all of
+ * them when none is chosen). The filter's status switches say it, because "under construction" and "planned"
+ * are a tiny part of the map and switching them looks as if nothing happened.
+ */
+export function statusTotals(
+  stats: Stats,
+  countries: ReadonlySet<CountryCode>,
+): Record<(typeof STATUSES)[number], StatusTotal> {
+  const totals = Object.fromEntries(STATUSES.map((status) => [status, { plants: 0, lineKm: 0 }])) as Record<
+    (typeof STATUSES)[number],
+    StatusTotal
+  >;
+  const wanted = (code: string): boolean => countries.size === 0 || countries.has(code as CountryCode);
+  for (const [code, byTechnology] of Object.entries(stats.plants)) {
+    if (!wanted(code)) continue;
+    for (const byStatus of Object.values(byTechnology)) {
+      for (const [status, bucket] of Object.entries(byStatus)) {
+        if (isOneOf(STATUSES, status)) totals[status].plants += bucket.count;
+      }
+    }
+  }
+  for (const [code, byClass] of Object.entries(stats.lineKm)) {
+    if (!wanted(code)) continue;
+    for (const byStatus of Object.values(byClass)) {
+      for (const [status, km] of Object.entries(byStatus)) {
+        if (isOneOf(STATUSES, status)) totals[status].lineKm += km;
+      }
+    }
+  }
+  return totals;
+}

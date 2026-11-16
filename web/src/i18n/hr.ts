@@ -37,6 +37,7 @@ export const hr = {
   status_operating: "U pogonu",
   status_construction: "U izgradnji",
   status_planned: "Planirano",
+  statusHowMany: "{status}: {plants} i {km} vodova.",
   voltage: "Napon",
   voltage_380: "380 kV i više",
   voltage_220: "220–379 kV",

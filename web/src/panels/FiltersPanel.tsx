@@ -23,6 +23,9 @@ import { useI18n } from "../i18n";
 import { PALETTES, type Theme } from "../map/palette";
 import { defaultState, MIN_MW_STEPS, serializeState, type AppState } from "../state/url";
 import styles from "./FiltersPanel.module.css";
+import { useAsync } from "../app/useAsync";
+import { fetchJson } from "../data/current";
+import { StatsSchema, statusTotals } from "../data/stats";
 
 interface Props {
   state: AppState;
@@ -32,6 +35,8 @@ interface Props {
   timeMachine?: boolean;
   /** layers that are on but have nothing on screen right now (map/inView.ts) */
   emptyLayers?: ReadonlySet<LayerKey>;
+  /** per-country totals, for the line under the status switches; without it the line is left out */
+  statsUrl?: string | null;
 }
 
 export function toggled<T>(set: ReadonlySet<T>, value: T): Set<T> {
@@ -146,7 +151,10 @@ export function FiltersPanel({
   theme,
   timeMachine = false,
   emptyLayers = NO_LAYERS,
+  statsUrl = null,
 }: Props) {
+  const [stats] = useAsync(statsUrl, (signal) => fetchJson(statsUrl ?? "", StatsSchema, signal));
+  const byStatus = stats?.status === "ready" ? statusTotals(stats.value, state.countries) : null;
   const i18n = useI18n();
   const { t } = i18n;
   const palette = PALETTES[theme];
@@ -270,6 +278,19 @@ export function FiltersPanel({
             </Chip>
           ))}
         </div>
+        {byStatus && (
+          <p className={styles.hint}>
+            {(["construction", "planned"] as const)
+              .map((status) =>
+                t("statusHowMany", {
+                  status: t(`status_${status}`),
+                  plants: i18n.plural("overviewPlants", byStatus[status].plants),
+                  km: i18n.km(byStatus[status].lineKm),
+                }),
+              )
+              .join(" ")}
+          </p>
+        )}
       </Section>
 
       <Section title={t("voltage")}>

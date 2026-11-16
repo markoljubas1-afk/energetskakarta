@@ -1069,6 +1069,15 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 - Datoteke: novi modul `pipeline/wikimedia/`, shema (`PowerPlant.image`), `tiles.py`, web `DetailsPanel`,
   `securityHeaders.ts`, atribucija uz sliku.
 
+### 33-2b Klik na elektranu ističe njezinu trafostanicu i vodove (dogovoreno 2026-11-16)
+- Zašto ne u vremeplovu: vodovi u izvorima nemaju godinu izgradnje, a pripadnost voda elektrani nigdje nije
+  zapisana; pogađanje po blizini tvrdilo bi ono što ne znamo. U vremeplovu se zato mreža samo prigušuje.
+- Pristup: u buildu se iz geometrije složi graf (krajevi vodova koji se dodiruju, trafostanice na krajevima);
+  za elektranu se nađe najbliža trafostanica unutar praga i vodovi koji iz nje izlaze. U podatke ide popis
+  identifikatora; karta ih ističe kad je elektrana odabrana. Gdje veza nije jednoznačna, ne ističe se ništa.
+- Odluke: prag udaljenosti elektrana–trafostanica; koliko koraka od trafostanice se ističe (predlog: jedan).
+- Provjera: ručno na desetak poznatih elektrana (NE Krško, HE Dubrovnik, TE Plomin) prije objave.
+
 ### 33-3 Ostalo iz razgovora
 - [ ] Vremeplov kao film (brojač snage, automatsko puštanje).
 - [ ] Vođene ture umjesto kartice dobrodošlice.

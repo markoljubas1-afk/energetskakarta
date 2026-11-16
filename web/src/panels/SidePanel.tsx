@@ -106,6 +106,7 @@ export function SidePanel({
             theme={theme}
             timeMachine={timeMachine}
             emptyLayers={emptyLayers}
+            statsUrl={statsUrl}
           />
         )}
         {current === "overview" && (

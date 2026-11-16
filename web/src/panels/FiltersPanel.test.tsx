@@ -1,10 +1,10 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { defaultState, parseState, serializeState, type AppState } from "../state/url";
-import { renderWithI18n } from "../test/render";
+import { jsonResponse, renderWithI18n } from "../test/render";
 import { LAYER_KEYS } from "../domain";
 import { FiltersPanel, LAYER_GROUPS, resetFilters, toggled } from "./FiltersPanel";
 
@@ -136,5 +136,30 @@ describe("layer groups and notes", () => {
     unmount();
     renderWithI18n(<FiltersPanel state={state} theme="dark" setState={() => undefined} />);
     expect(screen.queryByText(hint)).not.toBeInTheDocument();
+  });
+  it("says how much is under construction and planned, so those switches are not a mystery", async () => {
+    const stats = {
+      version: 1,
+      voltageClasses: ["380+"],
+      note: "",
+      plants: { HR: { solar: { planned: { count: 2, capacityMw: 9, withCapacity: 1 } } } },
+      substations: {},
+      lineKm: { HR: { "380+": { operating: 1000, construction: 243 } } },
+    };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse(stats)));
+    renderWithI18n(
+      <FiltersPanel
+        state={defaultState("hr")}
+        theme="dark"
+        setState={() => undefined}
+        statsUrl="https://d.test/stats.json"
+      />,
+    );
+    expect(
+      await screen.findByText(
+        /U izgradnji: 0 elektrana i 243 km vodova\. Planirano: 2 elektrane i 0 km vodova\./,
+      ),
+    ).toBeInTheDocument();
+    vi.unstubAllGlobals();
   });
 });
