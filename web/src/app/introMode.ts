@@ -36,13 +36,14 @@ export function introMode(env: IntroEnvironment): IntroMode {
 }
 
 /**
- * The whole intro lasts about two seconds on a wide screen (decision 2026-11-16; it was close to eight):
- * title 450 ms, flight 1200 ms (introFlight.ts), a moment to settle, hand-off 350 ms. Long enough to be a
- * scene, short enough that nobody waits for the map.
+ * The name stands alone for two seconds (the owner's decision of 2026-11-16, after seeing it flash by at
+ * 450 ms): long enough to read the wordmark and watch the line light up. Then the flight (1200 ms,
+ * introFlight.ts), a moment to settle and the hand-off (350 ms): about three and a half seconds in all on
+ * a wide screen. Any key, click or scroll still skips it at once.
  */
 export const INTRO_TIMING = {
   /** the title is on its own at least this long before the flight begins */
-  titleMs: 450,
+  titleMs: 2000,
   /** the intro stops waiting for the map after this; the page then loads as it always has */
   giveUpMs: 5000,
   /** the overlay fades and the panels come back, while the map settles (INTRO_TRANSITION_MS) */
