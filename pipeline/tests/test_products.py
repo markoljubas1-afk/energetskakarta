@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 from datetime import UTC, datetime
 
 import pytest
@@ -8,7 +9,8 @@ from shapely.geometry import LineString
 
 from conftest import BuildFactory
 from energymap.geo.countries import CountryIndex
-from energymap.products import VOLTAGE_CLASSES, voltage_class
+from energymap.products import VOLTAGE_CLASSES, charger_grid, voltage_class
+from energymap.schema import ChargingStation
 
 
 @pytest.mark.parametrize(
@@ -132,3 +134,45 @@ def test_the_plant_grid_adds_up_to_the_statistics(make_build: BuildFactory) -> N
         assert capacity == pytest.approx(from_stats[key][2])
     # the plant at 16.51°E 45.81°N (osm:way/109) lies in the cell whose corner is 16.5, 45.75
     assert [16.5, 45.75, "pumped_storage", "operating", 1, 1, 276.0] in grid["rows"]
+
+
+def test_the_charger_grid_adds_up_to_the_stations_in_the_build(make_build: BuildFactory) -> None:
+    build = make_build(datetime(2026, 9, 16, 12, tzinfo=UTC))
+    grid = json.loads((build / "chargergrid.json").read_text())
+    assert grid["type"] == "FeatureCollection" and grid["version"] == 1 and grid["cellDeg"] == 0.25
+    lines = (build / "chargers.ndjson").read_text(encoding="utf-8").splitlines()
+    stations = [json.loads(line) for line in lines if line.strip()]
+    assert stations, "the fixture has charging stations"
+    cells = [(f["geometry"]["coordinates"], f["properties"]) for f in grid["features"]]
+    assert sum(p["count"] for _, p in cells) == len(stations)
+    assert sum(p["points"] for _, p in cells) == sum(s["properties"].get("points") or 0 for s in stations)
+    for (lon, lat), properties in cells:
+        # a circle sits among its stations: inside the cell, and the country, they were counted in
+        inside = [
+            s for s in stations
+            if s["properties"]["country"] == properties["country"]
+            and s["properties"]["status"] == properties["status"]
+            and math.floor(s["geometry"]["coordinates"][0] / 0.25) == math.floor(lon / 0.25)
+            and math.floor(s["geometry"]["coordinates"][1] / 0.25) == math.floor(lat / 0.25)
+        ]  # fmt: skip
+        assert len(inside) == properties["count"]
+
+
+def test_stations_of_two_countries_in_one_cell_stay_apart() -> None:
+    def station(number: int, country: str, lon: float, points: int | None) -> ChargingStation:
+        return ChargingStation.model_validate(
+            {
+                "id": f"osm:node/{number}", "name": None, "points": points, "country": country,
+                "location": (lon, 45.51), "status": "operating", "operator": None,
+                "provenance": [{"source": "openstreetmap", "source_id": f"node/{number}",
+                                "license": "ODbL-1.0", "retrieved_at": "2026-09-16T12:00:00Z"}],
+            }
+        )  # fmt: skip
+
+    grid = charger_grid(
+        [station(1, "HR", 15.60, 2), station(2, "HR", 15.70, None), station(3, "SI", 15.62, 4)]
+    )
+    assert [(f["properties"], f["geometry"]["coordinates"]) for f in grid["features"]] == [
+        ({"country": "HR", "status": "operating", "count": 2, "points": 2}, [15.65, 45.51]),
+        ({"country": "SI", "status": "operating", "count": 1, "points": 4}, [15.62, 45.51]),
+    ]

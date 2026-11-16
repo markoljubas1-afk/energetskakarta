@@ -543,6 +543,8 @@ export function MapView(props: Props) {
       optIn,
       livePrices: live?.prices ?? null,
       spotlight,
+      chargerOverviewBelow:
+        tiles.chargerOverview !== undefined && tiles.chargers ? tiles.chargers.minZoom : null,
     });
     const composed = composeStyle(
       value.style,

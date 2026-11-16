@@ -356,7 +356,8 @@ export const hr = {
     "OpenStreetMap i naš ručni popis; uz svaki ručni zapis stoji izvor. Popis nije potpun: otvorene baze za regiju nema.",
   legendDatacenter: "Podatkovni centar",
   layer_chargers: "Punionice (EV)",
-  layer_chargers_note: "Punionice za električna vozila prema OpenStreetMapu. Vidljive od bližeg zumiranja.",
+  layer_chargers_note:
+    "Punionice za električna vozila prema OpenStreetMapu. Na širem pogledu krug pokazuje koliko ih je na tom području; pojedinačne punionice vide se od bližeg zumiranja.",
   legendCharger: "Punionica",
   layer_extraction: "Crpilišta i rudnici",
   layer_extraction_note:

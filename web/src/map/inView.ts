@@ -53,7 +53,7 @@ const DRAWN_BY: Partial<Record<LayerKey, readonly string[]>> = {
   datacenters: ["datacenters", "datacenters-planned"],
   cities: ["cities"],
   distribution: ["distribution-lines", "distribution-substations"],
-  chargers: ["chargers"],
+  chargers: ["chargers", "chargers-overview"],
   extraction: ["extraction"],
 };
 

@@ -53,6 +53,8 @@ export const CurrentSchema = z.object({
   timeline: z.string().optional(),
   /** plants added up by cell, for "what is on the map" in the overview (data/plantGrid.ts) */
   plantGrid: z.string().optional(),
+  /** charging stations added up by cell (GeoJSON), drawn where single stations are not yet in the tiles */
+  chargerGrid: z.string().optional(),
 });
 
 export type Current = z.infer<typeof CurrentSchema>;

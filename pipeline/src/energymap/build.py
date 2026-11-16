@@ -34,7 +34,15 @@ from energymap.osm.download import (
 )
 from energymap.osm.extract import ExtractResult, extract
 from energymap.osm.prefilter import filtered_path, prefilter
-from energymap.products import PLANT_GRID_FILE, city_register, plant_grid, search_index, statistics
+from energymap.products import (
+    CHARGER_GRID_FILE,
+    PLANT_GRID_FILE,
+    charger_grid,
+    city_register,
+    plant_grid,
+    search_index,
+    statistics,
+)
 from energymap.tiles import LAYERS
 from energymap.timeline import TIMELINE_FILE, build_timeline
 from energymap.validate import BuildValidationError, check_counts
@@ -424,6 +432,11 @@ def publish(
             staging / "stats.json", statistics(plants, substations, lines, index, scope, centres)
         )
         write_json_atomic(staging / PLANT_GRID_FILE, plant_grid(plants), compact=True)
+        write_json_atomic(
+            staging / CHARGER_GRID_FILE,
+            charger_grid(r for _, r in sorted(result.chargers.items())),
+            compact=True,
+        )
         for name, content in (extra or {}).items():
             write_json_atomic(staging / name, content)
         if timeline is not None:

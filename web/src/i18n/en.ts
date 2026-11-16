@@ -362,7 +362,7 @@ export const en: Dictionary = {
   legendDatacenter: "Data centre",
   layer_chargers: "Charging stations (EV)",
   layer_chargers_note:
-    "Electric vehicle charging stations from OpenStreetMap. Shown from closer zoom levels.",
+    "Electric vehicle charging stations from OpenStreetMap. On a wide view a disc shows how many there are in that area; single stations appear from closer zoom levels.",
   legendCharger: "Charging station",
   layer_extraction: "Wells and mines",
   layer_extraction_note:

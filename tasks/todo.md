@@ -1098,7 +1098,11 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 
 ## Faza 34 — Sunčani potencijal i punionice na širem zumu (prijedlog 2026-11-16, čeka potvrdu vlasnika)
 
-### 34-1 Punionice vidljive i na širem zumu
+### 34-1 Punionice vidljive i na širem zumu — GOTOVO 2026-11-16 (vidljivo nakon prve gradnje s `chargergrid.json`)
+- Izvedeno: build piše `chargergrid.json` (GeoJSON, točka po ćeliji 0,25°, zemlji i statusu; na podacima od
+  16. 11.: 19.754 punionice u 1150 točaka, oko 150 kB). Karta ga crta ispod zuma arhive (11) kao krugove čija
+  površina raste s brojem; broj se ispisuje od zuma 8 kad podloga ima font. Filtri zemlje i statusa vrijede.
+- Uz to (isti dan, na zahtjev): sjaj ispod elektrana u pogonu u tamnoj temi (`plants-glow`, `plantGlow`).
 - Stanje: 19.754 punionice iz OSM-a su u podacima, ali se crtaju tek od zuma 11, pa sloj nakon uključivanja
   na razini regije izgleda prazan.
 - Pristup: u buildu zbroj po ćeliji (kao `plantgrid.json`), na karti krugovi s brojem do zuma 10, od zuma 11

@@ -15,6 +15,7 @@ from shapely.geometry import LineString
 
 from energymap.geo.countries import CountryIndex
 from energymap.schema import (
+    ChargingStation,
     CityEnergy,
     DataCenter,
     ExtractionSite,
@@ -31,6 +32,8 @@ PLANT_GRID_FILE = "plantgrid.json"
 #: Side of a cell in degrees: about 28 km north-south and 20 km east-west at the region's latitudes.
 PLANT_GRID_CELL_DEG = 0.25
 PLANT_GRID_FIELDS = ("lon", "lat", "technology", "status", "count", "withCapacity", "capacityMw")
+CHARGER_GRID_VERSION = 1
+CHARGER_GRID_FILE = "chargergrid.json"
 SEARCH_FIELDS = ("id", "name", "layer", "country", "lon", "lat", "detail")
 
 VoltageClass = str
@@ -111,6 +114,52 @@ def _plain(value: Any) -> Any:
     if isinstance(value, dict):
         return {k: _plain(v) for k, v in sorted(value.items())}
     return value
+
+
+def charger_grid(chargers: Iterable[ChargingStation]) -> dict[str, Any]:
+    """Charging stations added up by cell, country and status, as GeoJSON the map draws at zooms where single
+    stations are not in the tiles.
+
+    Stations are in the tiles only from a close zoom (there are tens of thousands), so at the zoom the map
+    opens at the layer would show nothing. A feature is a point at the mean position of a cell's stations
+    in one country and status (a circle then sits where they are, not on a grid corner). ``count`` is how
+    many stations it stands for and ``points`` the sum of their stated charging points, over those that
+    state one. Country and status are kept apart so the map's filters apply to the circles as they do to
+    the stations. Cells are the plant grid's. The counts add up to the number of stations in the build.
+    """
+    cells: dict[tuple[int, int, str, str], list[float]] = defaultdict(lambda: [0.0, 0.0, 0, 0])
+    for charger in chargers:
+        lon, lat = charger.location
+        bucket = cells[
+            (
+                math.floor(lon / PLANT_GRID_CELL_DEG),
+                math.floor(lat / PLANT_GRID_CELL_DEG),
+                charger.country,
+                charger.status.value,
+            )
+        ]
+        bucket[0] += lon
+        bucket[1] += lat
+        bucket[2] += 1
+        bucket[3] += charger.points or 0
+    return {
+        "type": "FeatureCollection",
+        "version": CHARGER_GRID_VERSION,
+        "cellDeg": PLANT_GRID_CELL_DEG,
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [round(lon / count, 4), round(lat / count, 4)]},
+                "properties": {
+                    "country": country,
+                    "status": status,
+                    "count": int(count),
+                    "points": int(points),
+                },
+            }
+            for (_, _, country, status), (lon, lat, count, points) in sorted(cells.items())
+        ],
+    }
 
 
 def plant_grid(plants: Iterable[PowerPlant]) -> dict[str, Any]:

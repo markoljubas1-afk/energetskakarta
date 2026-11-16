@@ -20,6 +20,8 @@ export interface Palette {
   datacenter: string;
   /** opacity of the blurred halo under running data centres */
   datacenterGlow: number;
+  /** opacity of the halo under running plants; 0: none (the light theme, like the lines' glow) */
+  plantGlow: number;
   charger: string;
   /** cities' consumption: a warm tone, unlike any generation technology */
   city: string;
@@ -117,6 +119,7 @@ const light: Palette = {
   pipeline: { gas: "#B5652B", oil: "#5B4636", other: "#8A6F9E", unknown: "#8A8F96" },
   datacenter: "#2E3B4E",
   datacenterGlow: 0.3,
+  plantGlow: 0,
   charger: "#8E6480",
   substance: {
     oil: "#5B4636",
@@ -211,6 +214,7 @@ const dark: Palette = {
   pipeline: { gas: "#E09A5F", oil: "#B89A84", other: "#B8A2CC", unknown: "#9EA5AD" },
   datacenter: "#C3D0E0",
   datacenterGlow: 0.5,
+  plantGlow: 0.38,
   charger: "#C9A0BC",
   substance: {
     oil: "#B89A84",

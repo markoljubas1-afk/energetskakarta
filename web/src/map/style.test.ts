@@ -595,3 +595,64 @@ describe("the intro's stages (Faza 22)", () => {
     }
   });
 });
+
+describe("charging stations on a wide view", () => {
+  const withOverview = { ...tiles, chargerOverview: "https://podaci.test/chargergrid.json" };
+  const on = parseState("?l=chargers&c=HR,SI", "hr");
+  const options = { palette: PALETTES.dark, maskOutside: false };
+  const ids = (layers: { id: string }[]) =>
+    layers.map((layer) => layer.id).filter((id) => id.includes("chargers"));
+
+  it("draws the stations added up by cell below the zoom where single stations start", () => {
+    const optIn = optedIn(withOverview, on.layers);
+    const layers = dataLayers({
+      state: on,
+      ...options,
+      labels: ["Noto Sans Regular"],
+      optIn,
+      chargerOverviewBelow: 11,
+    });
+    expect(ids(layers)).toEqual([
+      "energymap-chargers-overview",
+      "energymap-chargers-overview-count",
+      "energymap-chargers",
+      "energymap-chargers-selected",
+    ]);
+    const overview = layers.find((layer) => layer.id === "energymap-chargers-overview");
+    const single = layers.find((layer) => layer.id === "energymap-chargers");
+    // the same countries and statuses as the stations themselves, and never both at one zoom
+    expect(overview?.type === "circle" && overview.filter).toEqual(
+      single?.type === "circle" && single.filter,
+    );
+    expect(overview?.maxzoom).toBe(11);
+    const sources = dataSources(withOverview, {}, optIn);
+    expect(sources["energymap-chargers-overview"]).toEqual({
+      type: "geojson",
+      data: "https://podaci.test/chargergrid.json",
+    });
+    const composed = composeStyle(fallbackStyle(PALETTES.dark), sources, layers);
+    expect(validateStyleMin(composed).map((e) => e.message)).toEqual([]);
+  });
+
+  it("leaves the numbers out without a font, and asks for nothing while the layer is off", () => {
+    const optIn = optedIn(withOverview, on.layers);
+    expect(
+      ids(dataLayers({ state: on, ...options, labels: null, optIn, chargerOverviewBelow: 11 })),
+    ).not.toContain("energymap-chargers-overview-count");
+    const off = defaultState("hr");
+    const none = optedIn(withOverview, off.layers);
+    expect(dataSources(withOverview, {}, none)["energymap-chargers-overview"]).toBeUndefined();
+    expect(
+      ids(dataLayers({ state: off, ...options, labels: null, optIn: none, chargerOverviewBelow: 11 })),
+    ).toEqual([]);
+  });
+
+  it("is as before for a build that has no overview", () => {
+    const optIn = optedIn(tiles, on.layers);
+    expect(ids(dataLayers({ state: on, ...options, labels: null, optIn }))).toEqual([
+      "energymap-chargers",
+      "energymap-chargers-selected",
+    ]);
+    expect(dataSources(tiles, {}, optIn)["energymap-chargers-overview"]).toBeUndefined();
+  });
+});

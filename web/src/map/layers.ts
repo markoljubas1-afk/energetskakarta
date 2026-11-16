@@ -49,6 +49,7 @@ import {
   BOUNDARY_SOURCE,
   CAPACITY_LAYER,
   CAPACITY_SOURCE,
+  CHARGER_OVERVIEW_SOURCE,
   CHARGER_SOURCE,
   DISTRIBUTION_SOURCE,
   EXTRACTION_SOURCE,
@@ -72,6 +73,7 @@ export {
   BOUNDARY_SOURCE,
   CAPACITY_LAYER,
   CAPACITY_SOURCE,
+  CHARGER_OVERVIEW_SOURCE,
   CHARGER_SOURCE,
   dataSources,
   DISTRIBUTION_SOURCE,
@@ -116,6 +118,11 @@ export interface LayerOptions {
   livePrices?: Partial<Record<CountryCode, number>> | null;
   /** one technology or voltage lit, the rest receding (spotlight.ts); null: everything as it is */
   spotlight?: Spotlight;
+  /**
+   * The zoom from which single charging stations are in the tiles; below it they are drawn added up by
+   * cell. Null when the build has no such overview: then nothing is drawn below that zoom, as before.
+   */
+  chargerOverviewBelow?: number | null;
 }
 
 export function dataLayers({
@@ -126,6 +133,7 @@ export function dataLayers({
   optIn,
   livePrices = null,
   spotlight = null,
+  chargerOverviewBelow = null,
 }: LayerOptions): LayerSpecification[] {
   // Added only while something is lit or the time machine runs: otherwise the style is exactly what it
   // always was. A spotlight wins over the time machine: it is the reader's own, momentary question.
@@ -250,6 +258,68 @@ export function dataLayers({
         },
       },
     );
+  }
+
+  if (showChargers && chargerOverviewBelow !== null) {
+    // Below the zoom where stations are drawn one by one: a disc per cell and country, its area growing
+    // with the number of stations. Discs are small while cells are small on screen and translucent, so
+    // dense regions read as denser, not as a pile.
+    const size: ExpressionSpecification = [
+      "interpolate",
+      ["linear"],
+      ["sqrt", ["get", "count"]],
+      1,
+      4,
+      30,
+      26,
+    ];
+    layers.push({
+      id: `${LAYER_PREFIX}chargers-overview`,
+      type: "circle",
+      source: CHARGER_OVERVIEW_SOURCE,
+      maxzoom: chargerOverviewBelow,
+      filter: chargerFilter(state),
+      paint: {
+        // a cell doubles in width with every zoom level; its disc grows more slowly, so it never fills it
+        "circle-radius": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          5,
+          ["*", 0.45, size],
+          8,
+          ["*", 1.2, size],
+          11,
+          ["*", 2.6, size],
+        ],
+        "circle-color": palette.charger,
+        "circle-opacity": 0.6,
+        "circle-stroke-color": palette.charger,
+        "circle-stroke-width": 1,
+        "circle-stroke-opacity": 0.9,
+      },
+    });
+    if (labels) {
+      layers.push({
+        id: `${LAYER_PREFIX}chargers-overview-count`,
+        type: "symbol",
+        source: CHARGER_OVERVIEW_SOURCE,
+        // from the zoom at which a cell is wide enough on screen for its number
+        minzoom: 8,
+        maxzoom: chargerOverviewBelow,
+        filter: chargerFilter(state),
+        layout: {
+          "text-field": ["number-format", ["get", "count"], { locale: state.lang }],
+          "text-font": labels,
+          "text-size": 11,
+        },
+        paint: {
+          "text-color": palette.labelText,
+          "text-halo-color": palette.labelHalo,
+          "text-halo-width": 1.2,
+        },
+      });
+    }
   }
 
   if (showChargers) {
@@ -495,6 +565,27 @@ export function dataLayers({
         ...gridMarkLight(0.92),
       },
     },
+    // A halo under the running plants (2026-11-16), like the one under the lines and the data centres: in
+    // the dark theme a plant is a light, not only a dot. Its own technology colour, blurred; a spotlight
+    // dims it with its plant. The light theme has no glow anywhere (palette.plantGlow is 0 there).
+    ...(palette.plantGlow > 0
+      ? [
+          {
+            id: `${LAYER_PREFIX}plants-glow`,
+            type: "circle",
+            source: GRID_SOURCE,
+            "source-layer": "plants",
+            filter: plantFilter(state, true),
+            layout: { visibility: show("plants") },
+            paint: {
+              "circle-radius": byZoom(PLANT_RADIUS_STOPS, 2.2, 4),
+              "circle-color": technologyColor(palette),
+              "circle-blur": 1,
+              "circle-opacity": plantOpacity(spotlight, palette.plantGlow),
+            },
+          } satisfies LayerSpecification,
+        ]
+      : []),
     {
       id: `${LAYER_PREFIX}plants-planned`,
       type: "circle",

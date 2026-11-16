@@ -306,6 +306,7 @@ function Explorer({
       boundaries: assetUrl(config.dataBaseUrl, current.tiles.boundaries.url),
       gridMaxZoom: current.tiles.grid.maxZoom,
       boundariesMaxZoom: current.tiles.boundaries.maxZoom,
+      ...(current.chargerGrid ? { chargerOverview: assetUrl(config.dataBaseUrl, current.chargerGrid) } : {}),
       ...(current.tiles.distribution
         ? {
             distribution: {

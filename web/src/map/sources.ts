@@ -11,6 +11,8 @@ export const GRID_SOURCE = "energymap-grid";
 export const BOUNDARY_SOURCE = "energymap-boundaries";
 export const DISTRIBUTION_SOURCE = "energymap-distribution";
 export const CHARGER_SOURCE = "energymap-chargers";
+/** charging stations added up by cell (pipeline products.charger_grid), for zooms below the archive's */
+export const CHARGER_OVERVIEW_SOURCE = "energymap-chargers-overview";
 export const EXTRACTION_SOURCE = "energymap-extraction";
 export const LAYER_PREFIX = "energymap-";
 export const LIVE_SOURCE = "energymap-live";
@@ -102,6 +104,8 @@ const OPT_IN_SOURCE: Record<OptInArchive, string> = {
 };
 
 export interface TileUrls extends Partial<Record<OptInArchive, OptionalArchive>> {
+  /** GeoJSON of charging stations added up by cell; builds before 2026-11-16 have none */
+  chargerOverview?: string;
   grid: string;
   boundaries: string;
   gridMaxZoom: number;
@@ -144,6 +148,11 @@ export function dataSources(
       maxzoom: archive.maxZoom,
       promoteId: FEATURE_ID,
     };
+  }
+  // MapLibre fetches the address itself, and only while the layer is on. The file is made by our own
+  // build, in the shape MapLibre reads (GeoJSON), so nothing has to pass through the app.
+  if (optIn.chargers && urls.chargerOverview !== undefined) {
+    optional[CHARGER_OVERVIEW_SOURCE] = { type: "geojson", data: urls.chargerOverview };
   }
   return {
     // always present, so switching the live layer on or off is a plain data/visibility diff
