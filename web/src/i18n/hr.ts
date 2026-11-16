@@ -241,6 +241,7 @@ export const hr = {
   storyDone: "Završi",
   storyProgress: "Korak {step} od {total}",
   learnLink: "Edukacija",
+  authorLink: "Tko stoji iza",
   pageMap: "Karta",
   pageEnergy: "Proizvodnja kroz vrijeme",
   energyTitle: "Proizvodnja i potrošnja kroz vrijeme",

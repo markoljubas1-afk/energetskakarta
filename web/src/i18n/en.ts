@@ -243,6 +243,7 @@ export const en: Dictionary = {
   storyDone: "Finish",
   storyProgress: "Step {step} of {total}",
   learnLink: "Learn",
+  authorLink: "Who is behind",
   pageMap: "Map",
   pageEnergy: "Generation over time",
   energyTitle: "Generation and load over time",

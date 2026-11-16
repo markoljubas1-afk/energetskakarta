@@ -190,3 +190,53 @@
     white-space: nowrap;
   }
 }
+
+/*
+ * The header has grown (learning corner, who is behind it). Room is made in this order as the window
+ * narrows: the description next to the name goes first, then the words on the buttons, and on the
+ * narrowest phones the one button whose page is also linked from every static page.
+ */
+.search {
+  min-width: 170px;
+}
+
+@media (max-width: 1320px) {
+  .tagline {
+    display: none;
+  }
+}
+
+@media (max-width: 1180px) {
+  .buttonLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .textButton {
+    padding: 0 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .actions {
+    gap: 4px;
+  }
+  .textButton {
+    padding: 0 8px;
+  }
+  .iconButton {
+    width: 34px;
+  }
+  .pages button {
+    padding: 6px 7px;
+  }
+}
+
+@media (max-width: 400px) {
+  .optional {
+    display: none;
+  }
+}
