@@ -7,6 +7,7 @@ import {
   Building2,
   Gauge,
   GraduationCap,
+  UserRound,
   Info,
   Globe,
   Map as MapIcon,
@@ -127,6 +128,7 @@ const ICONS = {
   map: icon(MapIcon),
   about: icon(Info),
   learn: icon(GraduationCap),
+  author: icon(UserRound),
   cities: icon(Building2),
   capacity: icon(Gauge),
   api: icon(Braces),
@@ -156,6 +158,7 @@ ${head(page, site)}
 <a href="${mapHref}">${ICONS.map}${e(copy.nav.map)}</a>
 <a href="${PATHS[page.lang].about}">${ICONS.about}${e(copy.nav.about)}</a>
 <a href="${PATHS[page.lang].learn}">${ICONS.learn}${e(copy.nav.learn)}</a>
+<a href="${PATHS[page.lang].author}">${ICONS.author}${e(copy.nav.author)}</a>
 ${site.cities ? `<a href="${PATHS[page.lang].cities}">${ICONS.cities}${e(copy.nav.cities)}</a>` : ""}
 ${site.capacity ? `<a href="${PATHS[page.lang].capacity}">${ICONS.capacity}${e(page.lang === "hr" ? "Kapaciteti" : "Grid capacity")}</a>` : ""}
 <a href="${PATHS[page.lang].api}">${ICONS.api}${e(copy.nav.api)}</a>

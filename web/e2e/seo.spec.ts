@@ -92,7 +92,7 @@ test.describe("without JavaScript", () => {
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "http://localhost:4173/");
     await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
       "content",
-      "http://localhost:4173/og.png",
+      "http://localhost:4173/og-gridatlas.png",
     );
   });
 });

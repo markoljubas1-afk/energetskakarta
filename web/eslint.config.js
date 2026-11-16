@@ -7,6 +7,8 @@ export default tseslint.config(
   {
     ignores: [
       "dist",
+      // one-off Node scripts (the share image): not part of the app's TypeScript project
+      "scripts",
       ".prerender",
       ".prerender-notify",
       "coverage",

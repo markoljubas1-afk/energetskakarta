@@ -24,7 +24,7 @@ import { API_PATHS } from "./paths";
 /** Where index.html wants the generated head tags and the summary; both must be present (L-025). */
 export const HEAD_MARKER = "<!--seo:head-->";
 export const BODY_MARKER = "<!--seo:body-->";
-export const OG_IMAGE = "/og.png";
+export const OG_IMAGE = "/og-gridatlas.png";
 
 /** The script-safe JSON-LD element: "<" never appears literally, so no value can close it early. */
 export function jsonLdScript(doc: Record<string, unknown>): string {

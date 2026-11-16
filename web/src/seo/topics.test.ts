@@ -245,7 +245,7 @@ describe("home page", () => {
     expect(html).not.toContain(HEAD_MARKER);
     expect(html).not.toContain(BODY_MARKER);
     expect(html).toContain('<link rel="canonical" href="https://karta.example/">');
-    expect(html).toContain('<meta property="og:image" content="https://karta.example/og.png">');
+    expect(html).toContain('<meta property="og:image" content="https://karta.example/og-gridatlas.png">');
     expect(html).toContain('<meta property="og:url" content="https://karta.example/">');
     const ld = [...html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/gs)].map(
       ([, body]) => JSON.parse(body ?? "{}") as Record<string, unknown>,
@@ -286,7 +286,7 @@ describe("home page", () => {
   it("keeps working without a site address, and refuses a template without markers", () => {
     const bare = homeHtml(template, { ...site, siteUrl: null });
     expect(bare).not.toContain('rel="canonical"');
-    expect(bare).toContain('<meta property="og:image" content="/og.png">');
+    expect(bare).toContain('<meta property="og:image" content="/og-gridatlas.png">');
     expect(() => homeHtml("<html><head></head><body></body></html>", site)).toThrow("marker");
   });
 });
