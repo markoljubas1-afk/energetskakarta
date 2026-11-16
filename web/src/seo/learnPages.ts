@@ -16,6 +16,8 @@ interface LearnCopy {
   journey: string[];
   unitsHeading: string;
   units: string[];
+  timingHeading: string;
+  timing: string[];
   termsHeading: string;
   /** term, explanation */
   terms: [string, string][];
@@ -49,6 +51,12 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
       "Energija (megavatsat, MWh) kaže koliko je proizvedeno ili potrošeno kroz neko vrijeme. To je kao prijeđeni put.",
       "Primjer: elektrana od 100 MW koja deset sati radi punom snagom proizvede 1000 MWh.",
       "Na karti uz elektranu piše instalirana snaga, a na stranici „Proizvodnja kroz vrijeme” energija po satima, danima i mjesecima.",
+    ],
+    timingHeading: "Zašto je važno kada trošiš",
+    timing: [
+      "Struja se proizvodi u istom trenutku u kojem se troši. Kad usred sunčanog ili vjetrovitog dana uključite perilicu, veći dio te struje dolazi iz sunca i vjetra; u zimsku večer, kad svi kuhaju i griju se, više rade elektrane na plin i ugljen.",
+      "Na karti, uz datum podataka, stoji točka u boji i postotak: udio obnovljivih izvora u onome što elektrane te zemlje proizvode ovaj sat. Zeleno je od 65 %, žuto od 35 %, ispod toga crveno.",
+      "To je udio u domaćoj proizvodnji, prema podacima ENTSO-E-a. Ne govori o uvozu ni o cijeni koju plaća kućanstvo, pa je putokaz, a ne račun. Podatak stiže sat do dva nakon samog sata; ako je stariji od četiri sata, točka je siva.",
     ],
     termsHeading: "Pojmovnik",
     terms: [
@@ -148,6 +156,12 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
       "Energy (megawatt-hour, MWh) says how much was generated or used over some time. It is like the distance travelled.",
       "An example: a 100 MW plant running at full power for ten hours generates 1,000 MWh.",
       "On the map a plant carries its installed power; the “Generation over time” page shows energy by hour, day and month.",
+    ],
+    timingHeading: "Why it matters when you use it",
+    timing: [
+      "Electricity is generated at the very moment it is used. When you start the washing machine in the middle of a sunny or windy day, more of that electricity comes from sun and wind; on a winter evening, when everyone is cooking and heating, gas and coal plants work harder.",
+      "On the map, next to the date of the data, there is a coloured dot and a percentage: the share of renewable sources in what that country's plants are generating this hour. Green from 65 %, amber from 35 %, red below that.",
+      "It is the share of domestic generation, from ENTSO-E's figures. It says nothing about imports or about the price a household pays, so it is a signpost, not a bill. The figure arrives an hour or two after the hour itself; when it is more than four hours old the dot is grey.",
     ],
     termsHeading: "Glossary",
     terms: [
@@ -253,6 +267,7 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
         html: `<ol>${copy.journey.map((step) => `<li>${e(step)}</li>`).join("")}</ol>`,
       },
       { heading: copy.unitsHeading, html: list(copy.units.map(e)) },
+      { heading: copy.timingHeading, html: copy.timing.map((p) => `<p>${e(p)}</p>`).join("") },
       { heading: copy.termsHeading, html: definitions(copy.terms.map(([term, text]) => [term, e(text)])) },
       { heading: copy.tryHeading, html: `<p>${e(copy.tryIntro)}</p>${list(tries)}` },
     ],

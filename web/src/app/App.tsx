@@ -7,7 +7,15 @@ import { loadLive, overlay, pickHour } from "../data/live";
 import { GEOTHERMAL_KEY, geothermalFeatures, loadGeothermal, type GeothermalLoad } from "../data/geothermal";
 import { capacityOverlay, HEP_KEYS, loadHep, type HepLoad } from "../data/hep";
 import { loadTimeline, retiredFeatures } from "../data/timeline";
-import { DATA_SOURCES, isOneOf, type DataSource, type LayerKey } from "../domain";
+import {
+  DATA_SOURCES,
+  isOneOf,
+  type CountryCode,
+  type DataSource,
+  type LayerKey,
+  type Technology,
+} from "../domain";
+import { PATHS } from "../seo/pages";
 import { assetUrl, loadCurrent, type Current } from "../data/current";
 import type { SearchHit } from "../data/search";
 import { I18nProvider, useI18n } from "../i18n";
@@ -17,6 +25,7 @@ import { loadImages, photoOf } from "../data/images";
 import { NOTHING_IN_VIEW } from "../map/inView";
 import type { Spotlight } from "../map/spotlight";
 import { StoryCard } from "../panels/StoryCard";
+import { GreenLight } from "../panels/GreenLight";
 import { loadRoutes } from "../data/routes";
 import { measure } from "../stories/travel";
 import { useTravel } from "../stories/useTravel";
@@ -355,11 +364,12 @@ function Explorer({
   const [welcomeShown, dismissWelcome] = useWelcome(state.embed, state.selected);
   // the card's first door is the live layer only when there is something behind it, so it asks too
   const [liveData, retryLive] = useAsync(
-    state.live || introFlows || welcomeShown ? "live/current.json" : null,
+    // always on the full site: the status bar says how green the electricity is right now (GreenLight)
+    state.live || introFlows || welcomeShown || !state.embed ? "live/current.json" : null,
     (signal) => loadLive(config.dataBaseUrl, signal),
     { refreshMs: LIVE_REFRESH_MS },
   );
-  const liveNow = useHourClock(state.live);
+  const liveNow = useHourClock(state.live || !state.embed);
   const liveDoc =
     liveData?.status === "ready" && liveData.value.kind === "ready" ? liveData.value.live : null;
   const livePublished = liveDoc !== null;
@@ -504,6 +514,16 @@ function Explorer({
   useEffect(() => {
     if (!story && mapApi) mapApi.level();
   }, [story, mapApi]);
+  // from the green light: the plants of that country on the map, with what generates the most lit
+  const showGenerating = (country: CountryCode, technology: Technology): void => {
+    setState((s) => ({
+      ...s,
+      page: "map",
+      layers: new Set([...s.layers, "plants"]),
+      countries: new Set([country]),
+    }));
+    setSpotlight({ kind: "technology", value: technology });
+  };
   const leaveStory = (): void => {
     setState((s) => leave(s, beforeStory));
     const view = beforeStory.view;
@@ -800,7 +820,18 @@ function Explorer({
               basemap={basemap}
               basemapExpected={config.maptilerKey !== null}
               map={mapApi}
-            />
+            >
+              {liveDoc && !state.embed && (
+                <ErrorBoundary area="green" fallback={() => null}>
+                  <GreenLight
+                    live={liveDoc}
+                    now={liveNow}
+                    onShow={showGenerating}
+                    learnHref={PATHS[i18n.lang].learn}
+                  />
+                </ErrorBoundary>
+              )}
+            </StatusBar>
           </div>
         </>
       )}

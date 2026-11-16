@@ -1,4 +1,5 @@
 import { Download, TriangleAlert } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { assetUrl, type Current } from "../data/current";
 import { DOWNLOAD_KEYS } from "../domain";
@@ -32,9 +33,19 @@ interface Props {
   map: MapApi | null;
   /** Injected in tests; defaults to the current time. */
   now?: Date;
+  /** one more item after the data's date: how green the electricity is right now (GreenLight.tsx) */
+  children?: ReactNode;
 }
 
-export function StatusBar({ current, dataBaseUrl, basemap, basemapExpected, map, now = new Date() }: Props) {
+export function StatusBar({
+  current,
+  dataBaseUrl,
+  basemap,
+  basemapExpected,
+  map,
+  now = new Date(),
+  children,
+}: Props) {
   const { t, date, locale } = useI18n();
   // phones get the numeric date: the long one alone would fill the single row the bar has there
   const shortDate = new Intl.DateTimeFormat(locale, { dateStyle: "short" }).format(
@@ -59,6 +70,7 @@ export function StatusBar({ current, dataBaseUrl, basemap, basemapExpected, map,
         <span className={styles.narrow}>{t("dataVersion", { date: shortDate })}</span>
         {stale && ` ${t("dataStale", { days: age })}`}
       </span>
+      {children}
       <PopoverMenu
         label={t("download")}
         triggerClassName={styles.trigger}

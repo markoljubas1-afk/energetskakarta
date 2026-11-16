@@ -1195,7 +1195,17 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
   stvarnim podacima prije objave; put kroz krivu trafostanicu → ručni pregled na karti.
 - Provjera: jedinični testovi grafa i funkcije položaja, e2e za pauzu i nastavak, snimke.
 
-## Faza 36 — „Koliko je struja sada zelena” (prijedlog vlasnika 2026-11-16: „semafor”; čeka potvrdu)
+## Faza 36 — „Koliko je struja sada zelena” (prijedlog vlasnika 2026-11-16: „semafor”) — PRVA VERZIJA GOTOVA 2026-11-16
+
+- Izvedeno (jednostavnije od plana ispod, uz pristanak vlasnika): točka u boji i postotak u traci stanja karte
+  (`GreenLight.tsx`, `data/greenShare.ts`), kartica s brojkom, tri stanja po fiksnim granicama (35 % i 65 %),
+  usporedbom s istim satom jučer, tehnologijom koja najviše proizvodi, izborom zemlje i gumbom koji tu
+  tehnologiju ističe na karti. Podatak stariji od četiri sata prikazuje se sivo. Odjeljak „Zašto je važno kada
+  trošiš” na edukacijskoj stranici. Podaci uživo sada se učitavaju pri svakom posjetu (oko 37 kB).
+- Nije napravljeno: pragovi iz vlastite povijesti zemlje, vršno opterećenje (nemamo potrošnju po satu), zeleni
+  ili crveni okvir oko karte, e2e test (jedinični testovi i ručni prolaz na stvarnim podacima).
+- Preduvjet svježih podataka: Worker je napisan (`infra/trigger-worker`), čeka vlasnikov token i objavu.
+
 
 - Cilj: jedna rečenica i boja koja kaže koliki dio struje proizvedene u zemlji ovaj sat dolazi iz obnovljivih
   izvora, da se apstraktni „miks” prevede u svakodnevnu odluku (kad puniti auto, kad uključiti perilicu).
