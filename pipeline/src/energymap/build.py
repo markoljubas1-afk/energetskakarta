@@ -43,6 +43,7 @@ from energymap.products import (
     search_index,
     statistics,
 )
+from energymap.routes import ROUTES_FILE, routes
 from energymap.tiles import LAYERS
 from energymap.timeline import TIMELINE_FILE, build_timeline
 from energymap.validate import BuildValidationError, check_counts
@@ -432,6 +433,10 @@ def publish(
             staging / "stats.json", statistics(plants, substations, lines, index, scope, centres)
         )
         write_json_atomic(staging / PLANT_GRID_FILE, plant_grid(plants), compact=True)
+        # absent when the lines no longer connect a route's ends: the website then does not offer its story
+        story_routes = routes(lines)
+        if story_routes["routes"]:
+            write_json_atomic(staging / ROUTES_FILE, story_routes, compact=True)
         write_json_atomic(
             staging / CHARGER_GRID_FILE,
             charger_grid(r for _, r in sorted(result.chargers.items())),

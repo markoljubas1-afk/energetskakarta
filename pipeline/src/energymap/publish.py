@@ -10,6 +10,7 @@ Key layout in the bucket:
     builds/<build_id>/timeline.json          immutable; capacity by year for the time machine (optional)
     builds/<build_id>/plantgrid.json         immutable; plants added up by cell, for "what is on screen"
     builds/<build_id>/chargergrid.json       immutable; charging stations added up by cell, for wide zooms
+    builds/<build_id>/routes.json            immutable; routes along real lines, for the guided stories
     builds/<build_id>/<layer>.ndjson.gz      immutable; the ODbL database download
     current.json                             tiny pointer, short cache, written LAST
 
@@ -58,6 +59,7 @@ OPTIONAL_PRODUCTS: tuple[str, ...] = (
     "timeline.json",
     "plantgrid.json",
     "chargergrid.json",
+    "routes.json",
 )
 
 
@@ -359,6 +361,7 @@ def pointer_document(
         **({"timeline": base + "timeline.json"} if "timeline.json" in present else {}),
         **({"plantGrid": base + "plantgrid.json"} if "plantgrid.json" in present else {}),
         **({"chargerGrid": base + "chargergrid.json"} if "chargergrid.json" in present else {}),
+        **({"routes": base + "routes.json"} if "routes.json" in present else {}),
     }
 
 
