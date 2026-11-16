@@ -22,6 +22,8 @@ export interface Palette {
   datacenterGlow: number;
   /** opacity of the halo under running plants; 0: none (the light theme, like the lines' glow) */
   plantGlow: number;
+  /** the point of light of a guided story and its trail */
+  traveller: string;
   charger: string;
   /** cities' consumption: a warm tone, unlike any generation technology */
   city: string;
@@ -120,6 +122,7 @@ const light: Palette = {
   datacenter: "#2E3B4E",
   datacenterGlow: 0.3,
   plantGlow: 0,
+  traveller: "#D97A00",
   charger: "#8E6480",
   substance: {
     oil: "#5B4636",
@@ -215,6 +218,7 @@ const dark: Palette = {
   datacenter: "#C3D0E0",
   datacenterGlow: 0.5,
   plantGlow: 0.38,
+  traveller: "#FFD166",
   charger: "#C9A0BC",
   substance: {
     oil: "#B89A84",

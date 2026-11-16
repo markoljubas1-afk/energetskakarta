@@ -23,6 +23,8 @@ export const GEOTHERMAL_SOURCE = "energymap-geothermal";
 export const GEOTHERMAL_SITES_LAYER = `${LAYER_PREFIX}geothermal-sites`;
 /** HEP ODS substations by acceptance category (data/hep.ts), loaded while the layer is on (Faza 25) */
 export const CAPACITY_SOURCE = "energymap-capacity";
+/** the point of light of a guided story and its trail (stories/travel.ts); filled by MapApi.showTraveller */
+export const TRAVEL_SOURCE = "energymap-travel";
 export const CAPACITY_LAYER = `${LAYER_PREFIX}capacity`;
 /** retired plants for the time machine (data/timeline.ts); a GeoJSON source like the live layer */
 export const TIMELINE_SOURCE = "energymap-timeline";
@@ -161,6 +163,9 @@ export function dataSources(
     [TIMELINE_SOURCE]: { type: "geojson", data: timeline ?? EMPTY },
     [GEOTHERMAL_SOURCE]: { type: "geojson", data: geothermal ?? EMPTY },
     [CAPACITY_SOURCE]: { type: "geojson", data: capacity ?? EMPTY },
+    // always declared and empty; the map fills it directly while a story's light travels, because a new
+    // style sixty times a second would be the wrong tool for moving one point
+    [TRAVEL_SOURCE]: { type: "geojson", data: EMPTY },
     [GRID_SOURCE]: {
       type: "vector",
       url: `pmtiles://${urls.grid}`,

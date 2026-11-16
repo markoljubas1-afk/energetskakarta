@@ -55,6 +55,8 @@ export const CurrentSchema = z.object({
   plantGrid: z.string().optional(),
   /** charging stations added up by cell (GeoJSON), drawn where single stations are not yet in the tiles */
   chargerGrid: z.string().optional(),
+  /** routes along real lines for the guided stories (data/routes.ts); absent when the lines make none */
+  routes: z.string().optional(),
 });
 
 export type Current = z.infer<typeof CurrentSchema>;

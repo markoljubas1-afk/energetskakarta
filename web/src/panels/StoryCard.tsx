@@ -1,7 +1,8 @@
-import { ArrowLeft, ArrowRight, Check, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Pause, Play, RotateCcw, X } from "lucide-react";
 
 import { useI18n } from "../i18n";
 import type { Story } from "../stories/stories";
+import type { TravelControls } from "../stories/useTravel";
 import styles from "./StoryCard.module.css";
 
 interface Props {
@@ -11,6 +12,8 @@ interface Props {
   onStep: (step: number) => void;
   /** the story ends: by its last button or by closing the card */
   onLeave: () => void;
+  /** this step's point of light is travelling: its controls (stories/useTravel.ts) */
+  travel?: TravelControls | null;
 }
 
 /**
@@ -18,7 +21,7 @@ interface Props {
  * sentences, and the way on. The map itself is moved by the app (app/App.tsx); the card only says which
  * step is wanted.
  */
-export function StoryCard({ story, step, onStep, onLeave }: Props) {
+export function StoryCard({ story, step, onStep, onLeave, travel = null }: Props) {
   const { t, lang } = useI18n();
   const current = story.steps[step];
   if (!current) return null;
@@ -36,6 +39,23 @@ export function StoryCard({ story, step, onStep, onLeave }: Props) {
         <h2>{current.title[lang]}</h2>
         <p className={styles.text}>{current.text[lang]}</p>
       </div>
+      {travel && (
+        <div className={styles.travel}>
+          <button type="button" onClick={travel.toggle} disabled={travel.arrived}>
+            {travel.playing && !travel.arrived ? (
+              <Pause size={14} strokeWidth={1.75} aria-hidden="true" />
+            ) : (
+              <Play size={14} strokeWidth={1.75} aria-hidden="true" />
+            )}
+            {t(travel.playing && !travel.arrived ? "storyPause" : "storyPlay")}
+          </button>
+          <button type="button" onClick={travel.replay}>
+            <RotateCcw size={14} strokeWidth={1.75} aria-hidden="true" />
+            {t("storyReplay")}
+          </button>
+          <span>{t("storyIllustration")}</span>
+        </div>
+      )}
       <div className={styles.foot}>
         <ol
           className={styles.dots}

@@ -25,6 +25,11 @@ export interface StoryStep {
   countries?: readonly CountryCode[];
   /** one technology or voltage lit, the rest receding */
   spotlight?: Exclude<Spotlight, null>;
+  /**
+   * The story's point of light in this step: waiting at the start of the route, travelling its whole
+   * length, or arrived at its end. Absent: no light.
+   */
+  traveller?: "start" | "travel" | "end";
   title: Text;
   text: Text;
 }
@@ -33,6 +38,8 @@ export interface Story {
   key: StoryKey;
   title: Text;
   summary: Text;
+  /** the route its point of light follows (data/routes.ts); the story is offered only when the data has it */
+  route?: string;
   steps: readonly StoryStep[];
 }
 
@@ -103,6 +110,67 @@ export const STORIES: Record<StoryKey, Story> = {
         text: {
           hr: "Struja se ne skladišti u mreži: koliko se u ovom trenutku troši, toliko se u ovom trenutku proizvodi. Zato je cijela ova slika jedan stroj koji nikad ne staje.",
           en: "Electricity is not stored in the grid: as much as is being used right now is being generated right now. That makes this whole picture one machine that never stops.",
+        },
+      },
+    ],
+  },
+  kilovatsat: {
+    key: "kilovatsat",
+    title: { hr: "Put jednog kilovatsata", en: "The journey of one kilowatt-hour" },
+    summary: {
+      hr: "Točka svjetla putuje stvarnim dalekovodima od vjetra u Dalmaciji do utičnice u Zagrebu.",
+      en: "A point of light travels along real transmission lines from the wind in Dalmatia to a socket in Zagreb.",
+    },
+    route: "dalmacija-zagreb",
+    steps: [
+      {
+        view: { lng: 16.45, lat: 43.78, zoom: 8.4 },
+        layers: ["lines", "plants"],
+        spotlight: { kind: "technology", value: "wind" },
+        title: { hr: "Ovdje hvatamo vjetar", en: "Here we catch the wind" },
+        text: {
+          hr: "Istaknute su vjetroelektrane u zaleđu Dalmacije. Kad puše, proizvode struju, ali potrošači su daleko: do Zagreba je oko 250 kilometara zračne linije.",
+          en: "The wind farms of the Dalmatian hinterland are lit. When it blows they generate electricity, but the users are far away: Zagreb is about 250 kilometres off as the crow flies.",
+        },
+      },
+      {
+        view: { lng: 16.501, lat: 43.602, zoom: 10.2 },
+        layers: ["lines", "substations"],
+        traveller: "start",
+        title: { hr: "Priprema za put", en: "Getting ready for the road" },
+        text: {
+          hr: "Uz elektranu se napon diže na 110 ili 220 kilovolta, a u velikoj trafostanici Konjsko kraj Splita na 400. Što je napon viši, manje se energije izgubi na dugom putu.",
+          en: "At the plant the voltage is raised to 110 or 220 kilovolts, and at the large Konjsko substation near Split to 400. The higher the voltage, the less energy is lost on a long way.",
+        },
+      },
+      {
+        view: { lng: 15.45, lat: 44.72, zoom: 6.7 },
+        layers: ["lines"],
+        spotlight: { kind: "voltage", value: "380+" },
+        traveller: "travel",
+        title: { hr: "Energetska autocesta", en: "The energy motorway" },
+        text: {
+          hr: "Točka ide stvarnim vodovima od 400 kilovolta: od Konjskog preko Velebita i Meline kod Rijeke do Tumbra kraj Zagreba, oko četiristo kilometara. Tom mrežom upravlja HOPS.",
+          en: "The point follows real 400-kilovolt lines: from Konjsko over Velebit and Melina near Rijeka to Tumbri near Zagreb, about four hundred kilometres. HOPS runs this grid.",
+        },
+      },
+      {
+        view: { lng: 15.868, lat: 45.681, zoom: 10.2 },
+        layers: ["lines", "substations"],
+        traveller: "end",
+        title: { hr: "Silazak s autoceste", en: "Leaving the motorway" },
+        text: {
+          hr: "U trafostanici Tumbri napon se spušta s 400 na 110 kilovolta. Odavde vodovi nižeg napona kreću prema gradu i njegovim trafostanicama.",
+          en: "At the Tumbri substation the voltage is lowered from 400 to 110 kilovolts. From here lower-voltage lines set off towards the city and its substations.",
+        },
+      },
+      {
+        view: { lng: 15.98, lat: 45.81, zoom: 11.6 },
+        layers: ["lines", "substations", "distribution"],
+        title: { hr: "Do utičnice, uz jednu ispravku", en: "To the socket, with one correction" },
+        text: {
+          hr: "Distribucijska mreža spušta napon do 230 volti u utičnici. I ispravka: struja ne putuje kao paket. Kilovatsat koji Zagreb troši netko u mreži proizvodi u istom trenutku; točka je bila slika, ne fizika.",
+          en: "The distribution grid lowers the voltage to 230 volts at the socket. And a correction: electricity does not travel as a parcel. The kilowatt-hour Zagreb uses is generated somewhere in the grid at the same moment; the point was a picture, not physics.",
         },
       },
     ],

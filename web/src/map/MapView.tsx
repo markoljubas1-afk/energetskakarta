@@ -5,6 +5,7 @@ import {
   Map as MapLibreMap,
   Marker,
   NavigationControl,
+  GeoJSONSource,
   ScaleControl,
   setWorkerUrl,
   type LngLatBoundsLike,
@@ -42,6 +43,8 @@ import {
   SELECTED_RING_SUFFIX,
   type TileUrls,
 } from "./layers";
+import { TRAVEL_SOURCE } from "./sources";
+import type { Traveller } from "../stories/travel";
 import type { StyleState } from "./filters";
 import { firstViewBounds } from "./firstView";
 import { BREATH_EVERY_MS, BREATH_FADE_MS, BREATH_STEP_MS, breathes, breathPeak } from "./glowBreath";
@@ -99,6 +102,8 @@ export interface MapApi {
    * a plain jump for readers who asked their system for less motion.
    */
   travelTo: (lng: number, lat: number, zoom: number) => void;
+  /** A guided story's point of light and the trail behind it; null takes both off the map. */
+  showTraveller: (traveller: Traveller | null) => void;
   /** A PNG of the current view with the credits written into the picture. */
   snapshot: () => Promise<Blob>;
 }
@@ -459,6 +464,30 @@ export function MapView(props: Props) {
     onReady({
       flyTo: (lng, lat, zoom) => {
         map.flyTo({ center: [lng, lat], zoom, essential: true });
+      },
+      showTraveller: (traveller) => {
+        const source = map.getSource(TRAVEL_SOURCE);
+        if (!(source instanceof GeoJSONSource)) return;
+        // the data is set at once; the promise only reports when the map has drawn it
+        void source.setData(
+          traveller === null
+            ? { type: "FeatureCollection", features: [] }
+            : {
+                type: "FeatureCollection",
+                features: [
+                  {
+                    type: "Feature",
+                    properties: {},
+                    geometry: { type: "LineString", coordinates: traveller.trail },
+                  },
+                  {
+                    type: "Feature",
+                    properties: {},
+                    geometry: { type: "Point", coordinates: traveller.head },
+                  },
+                ],
+              },
+        );
       },
       travelTo: (lng, lat, zoom) => {
         // not `essential`: MapLibre then jumps instead of flying under prefers-reduced-motion

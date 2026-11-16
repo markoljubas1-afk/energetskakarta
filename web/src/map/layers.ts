@@ -65,6 +65,7 @@ import {
   LIVE_SOURCE,
   PRICE_FILL_LAYER,
   TIMELINE_SOURCE,
+  TRAVEL_SOURCE,
   type OptIn,
 } from "./sources";
 
@@ -96,6 +97,7 @@ export {
   PRICE_FILL_LAYER,
   SELECTABLE,
   TIMELINE_SOURCE,
+  TRAVEL_SOURCE,
   type OptIn,
   type OptInArchive,
   type OptionalArchive,
@@ -938,5 +940,49 @@ export function dataLayers({
       },
     });
   }
+  // A guided story's point of light and the trail behind it (stories/travel.ts), above everything else.
+  // The source is empty unless a story is showing its traveller, so these layers normally draw nothing.
+  layers.push(
+    {
+      id: `${LAYER_PREFIX}travel-trail-glow`,
+      type: "line",
+      source: TRAVEL_SOURCE,
+      filter: ["==", ["geometry-type"], "LineString"],
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: { "line-color": palette.traveller, "line-width": 9, "line-blur": 7, "line-opacity": 0.55 },
+    },
+    {
+      id: `${LAYER_PREFIX}travel-trail`,
+      type: "line",
+      source: TRAVEL_SOURCE,
+      filter: ["==", ["geometry-type"], "LineString"],
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: { "line-color": palette.traveller, "line-width": 2.4 },
+    },
+    {
+      id: `${LAYER_PREFIX}travel-head-glow`,
+      type: "circle",
+      source: TRAVEL_SOURCE,
+      filter: ["==", ["geometry-type"], "Point"],
+      paint: {
+        "circle-radius": 18,
+        "circle-color": palette.traveller,
+        "circle-blur": 1,
+        "circle-opacity": 0.7,
+      },
+    },
+    {
+      id: `${LAYER_PREFIX}travel-head`,
+      type: "circle",
+      source: TRAVEL_SOURCE,
+      filter: ["==", ["geometry-type"], "Point"],
+      paint: {
+        "circle-radius": 5.5,
+        "circle-color": "#ffffff",
+        "circle-stroke-color": palette.traveller,
+        "circle-stroke-width": 2.5,
+      },
+    },
+  );
   return layers;
 }

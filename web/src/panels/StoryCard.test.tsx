@@ -32,4 +32,38 @@ describe("StoryCard", () => {
     await userEvent.click(screen.getByRole("button", { name: "Zatvori priču" }));
     expect(onLeave).toHaveBeenCalledTimes(2);
   });
+
+  it("has no controls for a step without a travelling light, and pause, play and replay for one with it", async () => {
+    const plain = renderWithI18n(<StoryCard story={story} step={0} onStep={vi.fn()} onLeave={vi.fn()} />);
+    expect(screen.queryByRole("button", { name: "Pauza" })).not.toBeInTheDocument();
+    plain.unmount();
+
+    const toggle = vi.fn();
+    const replay = vi.fn();
+    const show = (playing: boolean, arrived: boolean) =>
+      renderWithI18n(
+        <StoryCard
+          story={story}
+          step={0}
+          onStep={vi.fn()}
+          onLeave={vi.fn()}
+          travel={{ playing, arrived, toggle, replay }}
+        />,
+      );
+    const moving = show(true, false);
+    await userEvent.click(screen.getByRole("button", { name: "Pauza" }));
+    expect(toggle).toHaveBeenCalledOnce();
+    expect(screen.getByText("Točka je ilustracija, ne stvarni tok.")).toBeInTheDocument();
+    moving.unmount();
+
+    const paused = show(false, false);
+    expect(screen.getByRole("button", { name: "Pusti" })).toBeEnabled();
+    paused.unmount();
+
+    // arrived: nothing left to play, only to start again
+    show(true, true);
+    expect(screen.getByRole("button", { name: "Pusti" })).toBeDisabled();
+    await userEvent.click(screen.getByRole("button", { name: "Ispočetka" }));
+    expect(replay).toHaveBeenCalledOnce();
+  });
 });

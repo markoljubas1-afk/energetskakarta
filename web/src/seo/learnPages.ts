@@ -229,7 +229,9 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
 
 export function learnPage(site: SiteData, lang: Lang): StaticPage {
   const copy = LEARN_COPY[lang];
-  const stories = STORY_KEYS.map(
+  const stories = STORY_KEYS.filter(
+    (key) => STORIES[key].route === undefined || site.current.routes !== undefined,
+  ).map(
     (key) =>
       `<a href="${e(mapLink(lang, { story: key }))}">${e(STORIES[key].title[lang])}</a>: ${e(STORIES[key].summary[lang])}`,
   );

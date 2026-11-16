@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { LANGS } from "../state/url";
 import { parseState } from "../state/url";
-import { STORY_KEYS } from "../stories/stories";
+import { STORIES, STORY_KEYS } from "../stories/stories";
 import { LEARN_COPY, learnPage } from "./learnPages";
 import { buildPages } from "./pages";
 import { PATHS } from "./site";
@@ -36,9 +36,12 @@ describe("the learning corner", () => {
           .matchAll(/href="([^"]+)"/g),
       ].map((match) => match[1] ?? "");
       const stories = links.filter((link) => link.includes("story="));
+      // the fixture release has no routes, so the story that needs one is not offered
+      const playable = STORY_KEYS.filter((key) => STORIES[key].route === undefined);
+      expect(playable).not.toContain("kilovatsat");
       expect(
         stories.map((link) => parseState(new URL(link, "https://karta.test").search, lang).story),
-      ).toEqual([...STORY_KEYS]);
+      ).toEqual(playable);
       const views = links.filter((link) => !link.includes("story="));
       expect(views).toHaveLength(LEARN_COPY[lang].tries.length);
       for (const [index, link] of views.entries()) {
@@ -57,5 +60,15 @@ describe("the learning corner", () => {
     const [terms] = learnPage(bareSite(), "hr").jsonLd;
     expect(terms?.["@type"]).toBe("DefinedTermSet");
     expect(terms?.hasDefinedTerm).toHaveLength(LEARN_COPY.hr.terms.length);
+  });
+
+  it("offers the story with the travelling light once the release has routes", () => {
+    const site = bareSite();
+    const withRoutes = { ...site, current: { ...site.current, routes: "builds/x/routes.json" } };
+    const html = learnPage(withRoutes, "hr")
+      .sections.map((section) => section.html)
+      .join("");
+    expect(html).toContain('href="/?story=kilovatsat"');
+    expect(html).toContain("Put jednog kilovatsata");
   });
 });

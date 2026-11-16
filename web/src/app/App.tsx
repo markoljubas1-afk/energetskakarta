@@ -17,6 +17,9 @@ import { loadImages, photoOf } from "../data/images";
 import { NOTHING_IN_VIEW } from "../map/inView";
 import type { Spotlight } from "../map/spotlight";
 import { StoryCard } from "../panels/StoryCard";
+import { loadRoutes } from "../data/routes";
+import { measure } from "../stories/travel";
+import { useTravel } from "../stories/useTravel";
 import { applyStep, leave, remember, sameBefore, STORIES, type Before } from "../stories/stories";
 import type { TileUrls } from "../map/layers";
 import type { MapApi } from "../map/MapView";
@@ -477,7 +480,9 @@ function Explorer({
 
   // A guided story (stories/stories.ts): each step sets the layers, lights one kind of thing and moves the
   // map. What the story changes is remembered while no story plays and given back when it ends.
-  const story = state.story ? STORIES[state.story] : null;
+  // a story whose point of light needs a route is played only by a build that has routes
+  const asked = state.story ? STORIES[state.story] : null;
+  const story = asked && (asked.route === undefined || current.routes !== undefined) ? asked : null;
   const [storyStep, setStoryStep] = useState(0);
   const [storyPlaying, setStoryPlaying] = useState(state.story);
   if (storyPlaying !== state.story) {
@@ -501,6 +506,22 @@ function Explorer({
   };
   // a step's own light, unless the reader is pointing at something in the legend right now
   const shownSpotlight = spotlight ?? step?.spotlight ?? null;
+
+  // The story's point of light (stories/useTravel.ts): its route comes from the data, its position goes
+  // straight to the map.
+  const routesUrl = story?.route && current.routes ? assetUrl(config.dataBaseUrl, current.routes) : null;
+  const [routes] = useAsync(routesUrl, (signal) => loadRoutes(routesUrl ?? "", signal));
+  const routeKey = story?.route;
+  const route = useMemo(() => {
+    const found = routes?.status === "ready" && routeKey ? routes.value.routes[routeKey] : undefined;
+    return found ? measure(found.coordinates) : null;
+  }, [routes, routeKey]);
+  const travel = useTravel(
+    mapApi?.showTraveller ?? null,
+    route,
+    step?.traveller ?? null,
+    `${state.story ?? ""}:${storyStep}`,
+  );
   const welcomeEntries = useMemo<WelcomeEntries>(
     () => ({
       live: livePublished
@@ -663,7 +684,13 @@ function Explorer({
           {story && !state.selected && (
             <aside className={styles.details}>
               <ErrorBoundary area="story" fallback={panelFallback}>
-                <StoryCard story={story} step={storyStep} onStep={setStoryStep} onLeave={leaveStory} />
+                <StoryCard
+                  story={story}
+                  step={storyStep}
+                  onStep={setStoryStep}
+                  onLeave={leaveStory}
+                  travel={travel}
+                />
               </ErrorBoundary>
             </aside>
           )}

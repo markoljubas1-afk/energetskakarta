@@ -90,4 +90,19 @@ describe("guided stories", () => {
     expect(isStoryKey("granice")).toBe(true);
     expect(isStoryKey(null)).toBe(false);
   });
+
+  it("gives a point of light only to a story with a route, and lets it travel exactly once", () => {
+    for (const story of Object.values(STORIES)) {
+      const modes = story.steps.flatMap((step) => (step.traveller ? [step.traveller] : []));
+      if (story.route === undefined) {
+        expect(modes, story.key).toEqual([]);
+        continue;
+      }
+      // it waits, travels, and has arrived, in that order; the journey itself runs along the lines
+      expect(modes, story.key).toEqual(["start", "travel", "end"]);
+      const travelling = story.steps.find((step) => step.traveller === "travel");
+      expect(travelling?.layers, story.key).toContain("lines");
+    }
+    expect(STORIES.kilovatsat.route).toBe("dalmacija-zagreb");
+  });
 });

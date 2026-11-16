@@ -1155,7 +1155,14 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 - Provjera: jedinični testovi za svaku priču (svaki korak daje valjano stanje), e2e za prolaz kroz jednu
   priču na računalu i mobitelu, ručni pregled snimki.
 
-### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom (prijedlog vlasnika 2026-11-16; čeka potvrdu)
+### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
+- Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda
+  od 400 kV, prag spajanja krajeva 0,3 km (`pipeline/src/energymap/routes.py`). Karta: `stories/travel.ts`,
+  `useTravel.ts`, sloj `travel-*`, kontrole pauza/pusti/ispočetka na kartici, uz napomenu da je točka
+  ilustracija. Karta ne prati točku, nego pokazuje cijeli put (praćenje bi svaki kadar mijenjalo adresu).
+- Nije napravljeno: e2e za pauzu i nastavak (testni podaci nemaju put; pokriveno jediničnim testovima i
+  ručnim prolazom na stvarnom putu, računalo i mobitel). Na mobitelu kartica prekriva južni kraj puta.
+- Priča se nudi samo kad objava ima `routes`; bez toga je nema ni na edukacijskoj stranici.
 - Ideja: svijetla točka krene od vjetroelektrane u Dalmaciji, prođe stvarnim vodovima 400 kV do Zagreba i
   završi u distribucijskoj mreži; karta je prati, a trag iza nje ostaje svijetliti. Kontrole: pusti, pauza,
   ispočetka.
