@@ -445,6 +445,7 @@ export const en: Dictionary = {
     "For information only; no connection is guaranteed. A category is a band, and a 35/x kV substation is also limited by the one above it.",
   capNone: "HEP ODS's free-capacity data is not published yet.",
   capFailed: "The free-capacity data did not load.",
+  geoClose: "Close geothermal energy",
   geoTitle: "Geothermal energy: the hidden treasure below ground",
   geoToday: "Today",
   geoTodayValue: "{mw} of electricity · {heat}",

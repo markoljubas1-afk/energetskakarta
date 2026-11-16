@@ -15,6 +15,8 @@
 }
 
 .bar h2 {
+  /* the heading takes the room; the share and close buttons keep to the right */
+  flex: 1;
   margin: 0;
   font-size: 14px;
   font-weight: 600;
@@ -216,5 +218,36 @@
 
   .phase {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* the way out of the layer (the same button as on the capacity bar) */
+.close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.close:hover {
+  background: var(--accent-soft);
+}
+
+/* in the loading and error states there is no head row: the button sits to the right of the message */
+.bar > .close {
+  float: right;
+  margin-left: 8px;
+}
+
+@media (pointer: coarse) {
+  .close {
+    min-width: 44px;
+    min-height: 44px;
   }
 }

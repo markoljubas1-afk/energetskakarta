@@ -601,6 +601,11 @@ function Explorer({
     setState((s) => ({ ...s, layers: new Set([...s.layers].filter((layer) => layer !== "capacity")) }));
   }, [setState, setCapStation]);
 
+  const closeGeothermal = useCallback(() => {
+    setGeoSite(null);
+    setState((s) => ({ ...s, layers: new Set([...s.layers].filter((layer) => layer !== "geothermal")) }));
+  }, [setState, setGeoSite]);
+
   const closeDetails = useCallback(() => {
     setState((s) => ({ ...s, selected: null }));
   }, [setState]);
@@ -799,6 +804,7 @@ function Explorer({
                     selected={geoSite}
                     onSelect={setGeoSite}
                     onRetry={retryGeo}
+                    onClose={closeGeothermal}
                   />
                 </ErrorBoundary>
               </div>

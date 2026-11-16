@@ -22,6 +22,8 @@ interface Props {
   selected: string | null;
   onSelect: (id: string | null) => void;
   onRetry: () => void;
+  /** switches the layer off: the bar has its own way out, like the capacity bar */
+  onClose?: () => void;
 }
 
 const STEP_X = [20, 92, 164, 236, 308, 380];
@@ -85,12 +87,18 @@ function Cascade({ site }: { site: GeoSite }) {
 }
 
 /** The geothermal layer's bar: headline figures, the potential's legend, the sites and a site's cascade. */
-export function GeothermalBar({ data, theme, selected, onSelect, onRetry }: Props) {
+export function GeothermalBar({ data, theme, selected, onSelect, onRetry, onClose }: Props) {
   const i18n = useI18n();
   const { t } = i18n;
+  const close = onClose && (
+    <button type="button" className={styles.close} onClick={onClose} aria-label={t("geoClose")}>
+      <X size={16} strokeWidth={1.75} aria-hidden="true" />
+    </button>
+  );
   if (!data || data.status === "loading") {
     return (
       <section className={styles.bar} aria-label={t("layer_geothermal")}>
+        {close}
         <p className={styles.muted} role="status">
           {t("loadingData")}
         </p>
@@ -100,6 +108,7 @@ export function GeothermalBar({ data, theme, selected, onSelect, onRetry }: Prop
   if (data.status === "error" || data.value.kind === "none") {
     return (
       <section className={styles.bar} aria-label={t("layer_geothermal")}>
+        {close}
         <p className={styles.muted} role="alert">
           {data.status === "error" ? t("geoFailed") : t("geoNone")}{" "}
           {data.status === "error" && (
@@ -151,6 +160,7 @@ export function GeothermalBar({ data, theme, selected, onSelect, onRetry }: Prop
           }
           placement="above"
         />
+        {close}
       </div>
       <dl className={styles.figures}>
         <div>

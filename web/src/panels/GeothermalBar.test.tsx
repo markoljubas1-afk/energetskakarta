@@ -85,4 +85,27 @@ describe("GeothermalBar", () => {
     );
     expect(screen.getByText("Geotermalni podaci još nisu objavljeni.")).toBeInTheDocument();
   });
+
+  it("can be closed in every state, and has no button when nobody can close it", () => {
+    const onClose = vi.fn();
+    const bar = (value: Parameters<typeof GeothermalBar>[0]["data"], close?: () => void) => (
+      <GeothermalBar
+        data={value}
+        theme="light"
+        selected={null}
+        onSelect={vi.fn()}
+        onRetry={vi.fn()}
+        {...(close ? { onClose: close } : {})}
+      />
+    );
+    const name = "Zatvori geotermalnu energiju";
+    for (const value of [data, { status: "ready", value: { kind: "none" } } as const, null]) {
+      const view = renderWithI18n(bar(value, onClose));
+      fireEvent.click(screen.getByRole("button", { name }));
+      view.unmount();
+    }
+    expect(onClose).toHaveBeenCalledTimes(3);
+    renderWithI18n(bar(data));
+    expect(screen.queryByRole("button", { name })).not.toBeInTheDocument();
+  });
 });

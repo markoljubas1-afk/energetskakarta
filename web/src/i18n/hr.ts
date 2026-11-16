@@ -443,6 +443,7 @@ export const hr = {
     "Podaci su informativni i ne jamče priključenje. Kategorija je raspon, a trafostanicu 35/x kV ograničava i ona iznad nje.",
   capNone: "Podaci HEP ODS-a o slobodnom kapacitetu još nisu objavljeni.",
   capFailed: "Podaci o slobodnom kapacitetu nisu se učitali.",
+  geoClose: "Zatvori geotermalnu energiju",
   geoTitle: "Geotermalna energija: skriveno blago podzemlja",
   geoToday: "Danas",
   geoTodayValue: "{mw} struje · {heat}",
