@@ -100,6 +100,8 @@ def test_unknown_status_raises() -> None:
      ("oil/gas", "gas turbine", "fossil liquids: fuel oil", Technology.OIL),
      ("oil/gas", "", "fossil liquids: fuel oil, fossil gas: natural gas", Technology.GAS),
      ("bioenergy", "", "", Technology.BIOMASS), ("Solar", "PV", "", Technology.SOLAR),
+     ("utility-scale solar", "PV", None, Technology.SOLAR),  # the type's name since September 2026
+     ("distributed solar", "PV", None, Technology.SOLAR),
      ("tidal", "", "", Technology.OTHER)],
 )  # fmt: skip
 def test_technology(type_: str, tech: str, fuel: str, expected: Technology) -> None:
@@ -177,3 +179,14 @@ def test_broken_rows_have_reasons(patch: dict[str, object], reason: str) -> None
 )  # fmt: skip
 def test_gem_numbers_use_english_format(raw: object, expected: float | None) -> None:
     assert gn._number(raw) == expected
+
+
+def test_the_fuel_column_is_found_under_its_new_name() -> None:
+    """September 2026: "Fuel" became "Fuel (combustion only)"; unread, every oil/gas plant came out as oil."""
+    assert "Fuel (combustion only)" in gem_read_columns()["fuel"]
+
+
+def gem_read_columns() -> dict[str, tuple[str, ...]]:
+    from energymap.gem import read
+
+    return read.COLUMNS

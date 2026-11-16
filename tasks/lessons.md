@@ -376,3 +376,11 @@
 - Rule going forward: točka iz izvora koji navodi zemlju provjerava se prema granicama te zemlje
   (`CountryIndex.is_in_or_near`). Zamijenjene koordinate koje padaju u navedenu zemlju se ispravljaju i broje,
   ostalo se izostavlja i broji. Nakon svake objave pogledati i `tiles.*.bounds`, ne samo brojeve objekata.
+
+### L-069 — Novo izdanje izvora mijenja nazive bez najave (2026-11-16)
+- What happened: GEM tablica iz rujna 2026. prošla je provjeru, ali bi sve plinske elektrane postale naftne, a
+  sve sunčane „ostalo”: stupac „Fuel” sada je „Fuel (combustion only)”, a vrsta „solar” je „utility-scale solar”.
+- Root cause: neobavezan stupac koji nedostaje i nepoznata vrsta padaju na zadanu vrijednost bez upozorenja.
+- Rule going forward: prije prve objave novog izdanja izvora pogledati zbroj po tehnologiji za jednu poznatu
+  zemlju (Hrvatska: hidro ~1,5 GW, plin ~1,1 GW, vjetar ~1,1 GW). Otvoreno: nepoznata vrsta i prazan stupac goriva
+  trebaju brojač u statistici builda, da se ovo vidi i bez ručne provjere.

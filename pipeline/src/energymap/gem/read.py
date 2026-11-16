@@ -26,7 +26,8 @@ COLUMNS: dict[str, tuple[str, ...]] = {
     "unit_name": ("Unit / Phase name", "Unit name", "Phase name"),
     "type": ("Type",),
     "technology": ("Technology",),
-    "fuel": ("Fuel",),
+    # the September 2026 release renamed the column; without it every oil/gas plant read as oil
+    "fuel": ("Fuel", "Fuel (combustion only)"),
     "capacity_mw": ("Capacity (MW)",),
     "status": ("Status",),
     "start_year": ("Start year",),

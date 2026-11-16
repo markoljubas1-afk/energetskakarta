@@ -76,8 +76,10 @@ def technology_of(type_: Any, technology: Any, fuel: Any) -> Technology:
         if "gas" in fuels or kind == "gas":
             return Technology.GAS
         return Technology.OIL
+    # "utility-scale solar" and "distributed solar" since the September 2026 release (it was "solar")
+    if "solar" in kind:
+        return Technology.SOLAR
     simple = {
-        "solar": Technology.SOLAR,
         "wind": Technology.WIND,
         "nuclear": Technology.NUCLEAR,
         "geothermal": Technology.GEOTHERMAL,
