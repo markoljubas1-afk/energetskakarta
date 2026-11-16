@@ -2,6 +2,19 @@
  * Renders a static page model as a complete HTML document: no script, one small inline stylesheet, and
  * everything a crawler wants in <head>. The look follows the app's tokens so the two feel like one site.
  */
+import {
+  Braces,
+  Building2,
+  Gauge,
+  GraduationCap,
+  Info,
+  Languages,
+  Map as MapIcon,
+  type LucideIcon,
+} from "lucide-react";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+
 import { SCOPE_COUNTRIES } from "../domain";
 import { createI18n } from "../i18n";
 import { LANGS } from "../state/url";
@@ -104,6 +117,22 @@ function citeSection(page: StaticPage, site: SiteData): string {
   return `<section class="cite"><h2>${e(copy.heading)}</h2><p><strong>${e(copy.text)}:</strong> ${e(cite.text)}</p><p><strong>${e(copy.apa)}:</strong> ${e(cite.apa)}</p></section>`;
 }
 
+/**
+ * The same icons the map's header uses, as inline SVG: a static page then looks like part of the same site
+ * without loading anything. They are decoration next to a word, so hidden from assistive technology.
+ */
+const icon = (Icon: LucideIcon): string =>
+  renderToStaticMarkup(createElement(Icon, { size: 16, strokeWidth: 1.75, "aria-hidden": true }));
+const ICONS = {
+  map: icon(MapIcon),
+  about: icon(Info),
+  learn: icon(GraduationCap),
+  cities: icon(Building2),
+  capacity: icon(Gauge),
+  api: icon(Braces),
+  language: icon(Languages),
+};
+
 export function renderPage(page: StaticPage, site: SiteData): string {
   const copy = COPY[page.lang];
   const i18n = createI18n(page.lang);
@@ -123,13 +152,13 @@ ${head(page, site)}
 <header>
 <strong>${e(copy.siteTitle)}</strong>
 <nav aria-label="${page.lang === "hr" ? "Glavna navigacija" : "Main navigation"}">
-<a href="${mapHref}">${e(copy.nav.map)}</a>
-<a href="${PATHS[page.lang].about}">${e(copy.nav.about)}</a>
-<a href="${PATHS[page.lang].learn}">${e(copy.nav.learn)}</a>
-${site.cities ? `<a href="${PATHS[page.lang].cities}">${e(copy.nav.cities)}</a>` : ""}
-${site.capacity ? `<a href="${PATHS[page.lang].capacity}">${e(page.lang === "hr" ? "Kapaciteti" : "Grid capacity")}</a>` : ""}
-<a href="${PATHS[page.lang].api}">${e(copy.nav.api)}</a>
-<a href="${page.alternatePath}" lang="${page.lang === "hr" ? "en" : "hr"}" hreflang="${page.lang === "hr" ? "en" : "hr"}">${e(copy.nav.otherLang)}</a>
+<a href="${mapHref}">${ICONS.map}${e(copy.nav.map)}</a>
+<a href="${PATHS[page.lang].about}">${ICONS.about}${e(copy.nav.about)}</a>
+<a href="${PATHS[page.lang].learn}">${ICONS.learn}${e(copy.nav.learn)}</a>
+${site.cities ? `<a href="${PATHS[page.lang].cities}">${ICONS.cities}${e(copy.nav.cities)}</a>` : ""}
+${site.capacity ? `<a href="${PATHS[page.lang].capacity}">${ICONS.capacity}${e(page.lang === "hr" ? "Kapaciteti" : "Grid capacity")}</a>` : ""}
+<a href="${PATHS[page.lang].api}">${ICONS.api}${e(copy.nav.api)}</a>
+<a href="${page.alternatePath}" lang="${page.lang === "hr" ? "en" : "hr"}" hreflang="${page.lang === "hr" ? "en" : "hr"}">${ICONS.language}${e(copy.nav.otherLang)}</a>
 </nav>
 </header>
 <main>

@@ -13,7 +13,8 @@ export const STATIC_STYLE = `
 *{box-sizing:border-box}body{margin:0;background:var(--canvas);color:var(--ink);font:400 16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 header,main,footer{max-width:820px;margin:0 auto;padding:16px 28px}
 header{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;border-bottom:1px solid var(--line)}
-header strong{font-size:17px}nav a{color:var(--accent)}nav{display:flex;gap:16px;flex-wrap:wrap}
+header strong{position:relative;padding-bottom:5px;font-size:17px;letter-spacing:-.015em}header strong::after{content:"";position:absolute;left:0;bottom:0;width:44px;height:2px;border-radius:2px;background:linear-gradient(90deg,#ffc680,#5fb0cc)}
+nav a{color:var(--accent)}nav{display:flex;gap:16px;flex-wrap:wrap}header nav{gap:6px}header nav a{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--line);border-radius:9px;color:var(--ink);font-size:14px;font-weight:600;text-decoration:none}header nav a:hover{border-color:var(--accent)}header nav a svg{flex:none;color:var(--accent)}
 main{background:var(--surface);margin-top:16px;border-radius:14px;padding:24px 28px;overflow-x:auto}
 main p,main li,.lead{max-width:68ch}
 h1{font-size:28px;line-height:1.2;margin:0 0 8px}h2{font-size:19px;margin:28px 0 8px}h3{font-size:17px;margin:24px 0 4px}h3+p{margin-top:0}

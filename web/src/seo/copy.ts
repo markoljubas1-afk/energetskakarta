@@ -206,7 +206,7 @@ export interface Copy {
 }
 
 const hr: Copy = {
-  siteTitle: "Regionalna energetska karta – Hrvatska i regija",
+  siteTitle: "Regionalna energetska karta",
   keywords: [
     "elektrane",
     "dalekovodi",
@@ -528,7 +528,7 @@ const hr: Copy = {
 };
 
 const en: Copy = {
-  siteTitle: "Regional Energy Map – Croatia and the region",
+  siteTitle: "Regional Energy Map",
   keywords: [
     "power plants",
     "transmission lines",

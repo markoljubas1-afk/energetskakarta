@@ -146,7 +146,7 @@ describe("grid capacity pages", () => {
   });
 
   it("appear in the navigation, llms.txt and the API index", () => {
-    expect(html("/o-karti/")).toContain('<a href="/kapaciteti/">Kapaciteti</a>');
+    expect(html("/o-karti/")).toMatch(/<a href="\/kapaciteti\/"><svg[^]*?<\/svg>Kapaciteti<\/a>/);
     expect(llmsTxt(site)).toContain("(https://karta.example/en/grid-capacity/)");
     const index = JSON.parse(apiFiles(site).get("api/index.json") ?? "{}") as {
       capacity?: { current: string };
