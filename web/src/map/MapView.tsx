@@ -95,13 +95,21 @@ function initMapLibre(): void {
   initialized = true;
 }
 
+/** How a guided story looks at the map: tilted (degrees from straight down) and turned (degrees from north). */
+export interface Tilt {
+  pitch: number;
+  bearing: number;
+}
+
 export interface MapApi {
   flyTo: (lng: number, lat: number, zoom: number) => void;
   /**
    * The same, for a move the reader did not ask for by name (a step of a guided story): unhurried, and
    * a plain jump for readers who asked their system for less motion.
    */
-  travelTo: (lng: number, lat: number, zoom: number) => void;
+  travelTo: (lng: number, lat: number, zoom: number, tilt?: Tilt) => void;
+  /** Back to a flat map facing north, if a story left it tilted or turned; otherwise nothing. */
+  level: () => void;
   /** A guided story's point of light and the trail behind it; null takes both off the map. */
   showTraveller: (traveller: Traveller | null) => void;
   /** A PNG of the current view with the credits written into the picture. */
@@ -489,9 +497,21 @@ export function MapView(props: Props) {
               },
         );
       },
-      travelTo: (lng, lat, zoom) => {
-        // not `essential`: MapLibre then jumps instead of flying under prefers-reduced-motion
-        map.flyTo({ center: [lng, lat], zoom, speed: 0.9, curve: 1.3 });
+      travelTo: (lng, lat, zoom, tilt) => {
+        // not `essential`: MapLibre then jumps instead of flying under prefers-reduced-motion. Every move
+        // names its pitch and bearing, so a step after a tilted one is flat again without being told.
+        map.flyTo({
+          center: [lng, lat],
+          zoom,
+          pitch: tilt?.pitch ?? 0,
+          bearing: tilt?.bearing ?? 0,
+          speed: 0.9,
+          curve: 1.3,
+        });
+      },
+      level: () => {
+        // only when there is something to undo: a move that changes nothing would still report a new view
+        if (map.getPitch() !== 0 || map.getBearing() !== 0) map.easeTo({ pitch: 0, bearing: 0 });
       },
       snapshot: async () => {
         const canvas = await captureCanvas();

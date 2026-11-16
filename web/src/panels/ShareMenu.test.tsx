@@ -38,6 +38,7 @@ describe("ShareMenu", () => {
     const map: MapApi = {
       flyTo: vi.fn(),
       travelTo: vi.fn(),
+      level: vi.fn(),
       showTraveller: vi.fn(),
       snapshot: vi.fn().mockResolvedValue(blob),
     };
@@ -75,6 +76,7 @@ describe("ShareMenu", () => {
     const map: MapApi = {
       flyTo: vi.fn(),
       travelTo: vi.fn(),
+      level: vi.fn(),
       showTraveller: vi.fn(),
       snapshot: vi.fn().mockRejectedValue(new Error("no canvas")),
     };

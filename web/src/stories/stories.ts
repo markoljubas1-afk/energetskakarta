@@ -30,6 +30,8 @@ export interface StoryStep {
    * length, or arrived at its end. Absent: no light.
    */
   traveller?: "start" | "travel" | "end";
+  /** the map tilted and turned for this step (degrees); absent: flat, north up */
+  tilt?: { pitch: number; bearing: number };
   title: Text;
   text: Text;
 }
@@ -144,7 +146,9 @@ export const STORIES: Record<StoryKey, Story> = {
         },
       },
       {
-        view: { lng: 15.45, lat: 44.72, zoom: 6.7 },
+        // seen from the south-east, looking along the route towards Zagreb
+        view: { lng: 15.45, lat: 44.85, zoom: 7.1 },
+        tilt: { pitch: 48, bearing: -28 },
         layers: ["lines"],
         spotlight: { kind: "voltage", value: "380+" },
         traveller: "travel",

@@ -1163,6 +1163,16 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 - Nije napravljeno: e2e za pauzu i nastavak (testni podaci nemaju put; pokriveno jediničnim testovima i
   ručnim prolazom na stvarnom putu, računalo i mobitel). Na mobitelu kartica prekriva južni kraj puta.
 - Priča se nudi samo kad objava ima `routes`; bez toga je nema ni na edukacijskoj stranici.
+- Dorade istog dana (drugi prijedlog vlasnika): dok točka putuje karta je nagnuta i okrenuta uz put (pitch 48°,
+  bearing −28°) i nakon priče se sama poravna; traka napretka pod kontrolama (CSS animacija, pauzira se s
+  točkom); Escape sada vraća kartu kakva je bila, kao i križić. Nije uzeto iz prijedloga: Turf.js (nepotreban),
+  ručno nacrtana linija u repozitoriju (put računa gradnja), kamera koja prati točku (svaki kadar bi mijenjao
+  adresu), kontrole na dnu ekrana (ostaju na kartici priče).
+
+### 35-4 Uvod s natpisom GridAtlas — GOTOVO 2026-11-16
+- Uvodni ekran prvog posjeta: natpis „GridAtlas” slovo po slovo („Atlas” u toplo-hladnom svjetlu vodova), crta
+  koja se pali s iskrom koja je pretrči, ispod naziv karte; trajanje ostaje oko dvije sekunde (odluka od
+  istog dana). Naziv stranice drugdje je i dalje „Regionalna energetska karta” — otvoreno pitanje vlasniku.
 - Ideja: svijetla točka krene od vjetroelektrane u Dalmaciji, prođe stvarnim vodovima 400 kV do Zagreba i
   završi u distribucijskoj mreži; karta je prati, a trag iza nje ostaje svijetliti. Kontrole: pusti, pauza,
   ispočetka.

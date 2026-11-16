@@ -54,6 +54,10 @@ export function StoryCard({ story, step, onStep, onLeave, travel = null }: Props
             {t("storyReplay")}
           </button>
           <span>{t("storyIllustration")}</span>
+          <span className={styles.progress} aria-hidden="true">
+            {/* a new journey is a new element, so the bar starts again from empty */}
+            <span key={travel.journey} data-playing={travel.playing} />
+          </span>
         </div>
       )}
       <div className={styles.foot}>

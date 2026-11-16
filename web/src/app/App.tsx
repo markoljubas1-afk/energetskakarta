@@ -293,16 +293,19 @@ function Explorer({
     [onMapReady],
   );
   const [sheetOpen, setSheetOpen] = useState(false);
+  // What a guided story changes is remembered while no story plays, and given back when it ends.
+  const [beforeStory, setBeforeStory] = useState<Before>(() => remember(state));
+  if (state.story === null && !sameBefore(beforeStory, state)) setBeforeStory(remember(state));
   // Escape peels one layer at a time: the details first, then the settings sheet.
   const escape = useMemo<Partial<Record<Shortcut, () => void>>>(
     () => ({
       escape: () => {
         if (state.selected) setState((s) => ({ ...s, selected: null }));
         else if (sheetOpen) setSheetOpen(false);
-        else if (state.story) setState((s) => ({ ...s, story: null }));
+        else if (state.story) setState((s) => leave(s, beforeStory));
       },
     }),
-    [state.selected, state.story, sheetOpen, setState, setSheetOpen],
+    [state.selected, state.story, beforeStory, sheetOpen, setState, setSheetOpen],
   );
   useShortcuts(escape);
 
@@ -489,16 +492,18 @@ function Explorer({
     setStoryPlaying(state.story);
     setStoryStep(0);
   }
-  const [beforeStory, setBeforeStory] = useState<Before>(() => remember(state));
-  if (state.story === null && !sameBefore(beforeStory, state)) setBeforeStory(remember(state));
   const step = story?.steps[storyStep] ?? null;
   const introPlaying = intro.map !== null;
   useEffect(() => {
     // after the intro, which has the map to itself, and once the map can be moved
     if (!step || !mapApi || introPlaying) return;
     setState((s) => applyStep(s, step));
-    mapApi.travelTo(step.view.lng, step.view.lat, step.view.zoom);
+    mapApi.travelTo(step.view.lng, step.view.lat, step.view.zoom, step.tilt);
   }, [step, mapApi, introPlaying, setState]);
+  // however the story ended (its button, the cross, Escape, a new link), the map is flat again
+  useEffect(() => {
+    if (!story && mapApi) mapApi.level();
+  }, [story, mapApi]);
   const leaveStory = (): void => {
     setState((s) => leave(s, beforeStory));
     const view = beforeStory.view;

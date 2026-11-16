@@ -159,3 +159,37 @@
   color: var(--muted);
   font-size: 11.5px;
 }
+
+/* how far the light has come: a thin line under the controls, filled from the left */
+.travel .progress {
+  flex: 1 0 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+/*
+ * Filled over the same fourteen seconds and with the same gentle start and stop as the light's own journey
+ * (stories/travel.ts: TRAVEL_MS, eased), and paused with it. Two clocks, so the bar is a hint of how far
+ * along the journey is, not a measurement.
+ */
+.travel .progress > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: story-progress 14s cubic-bezier(0.45, 0, 0.55, 1) forwards;
+  animation-play-state: paused;
+}
+
+.travel .progress > span[data-playing="true"] {
+  animation-play-state: running;
+}
+
+@keyframes story-progress {
+  to {
+    transform: scaleX(1);
+  }
+}

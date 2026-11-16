@@ -1,6 +1,6 @@
 /*
- * The intro (Faza 22). Night colours are tokens (--intro-*); motion is the title rising, one sweep of light
- * across it and the line beneath lighting up. Under reduced motion the global rule in tokens.css ends every
+ * The intro (Faza 22). Night colours are tokens (--intro-*); motion is the wordmark's letters rising one
+ * after another and the line beneath lighting up with one spark along it. Under reduced motion the global rule in tokens.css ends every
  * animation at once, which leaves the title standing still.
  */
 .intro {
@@ -86,43 +86,104 @@
   transform: translateY(-30vh) scale(0.8);
 }
 
-.title {
+/*
+ * The wordmark: large, tight, each letter rising a moment after the one before it. "Grid" is plain ink;
+ * "Atlas" runs from the warm light of the lines to the cool one, letter by letter (a gradient across
+ * moving letters would need background-clip on transformed children, which browsers do not agree on).
+ */
+.wordmark {
+  display: flex;
+  justify-content: center;
   margin: 0;
-  font-size: clamp(28px, 5.4vw, 66px);
-  font-weight: 600;
-  line-height: 1.08;
-  letter-spacing: -0.01em;
+  font-size: clamp(46px, 10vw, 118px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  filter: drop-shadow(0 0 26px color-mix(in srgb, var(--intro-warm) 30%, transparent));
+}
+
+.part {
+  display: inline-flex;
+}
+
+.part > span {
+  display: inline-block;
+  animation: intro-letter 420ms var(--ease-out) both;
+}
+
+.part:first-child > span:nth-child(1) {
+  animation-delay: 0ms;
+}
+.part:first-child > span:nth-child(2) {
+  animation-delay: 40ms;
+}
+.part:first-child > span:nth-child(3) {
+  animation-delay: 80ms;
+}
+.part:first-child > span:nth-child(4) {
+  animation-delay: 120ms;
+}
+.part:last-child > span:nth-child(1) {
+  animation-delay: 160ms;
+  color: var(--intro-warm);
+}
+.part:last-child > span:nth-child(2) {
+  animation-delay: 200ms;
+  color: color-mix(in srgb, var(--intro-warm) 75%, var(--intro-cool));
+}
+.part:last-child > span:nth-child(3) {
+  animation-delay: 240ms;
+  color: color-mix(in srgb, var(--intro-warm) 50%, var(--intro-cool));
+}
+.part:last-child > span:nth-child(4) {
+  animation-delay: 280ms;
+  color: color-mix(in srgb, var(--intro-warm) 25%, var(--intro-cool));
+}
+.part:last-child > span:nth-child(5) {
+  animation-delay: 320ms;
+  color: var(--intro-cool);
+}
+
+/* what the name stands for, quietly, once the letters are there */
+.title {
+  margin: 16px 0 0;
+  color: color-mix(in srgb, var(--intro-ink) 78%, transparent);
+  font-size: clamp(14px, 1.9vw, 21px);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
   text-wrap: balance;
-  /* one band of warm light crosses the letters once */
-  background: linear-gradient(
-    100deg,
-    var(--intro-ink) 0%,
-    var(--intro-ink) 42%,
-    var(--intro-warm) 50%,
-    var(--intro-ink) 58%,
-    var(--intro-ink) 100%
-  );
-  background-size: 250% 100%;
-  background-position: 100% 0;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  filter: drop-shadow(0 0 22px color-mix(in srgb, var(--intro-warm) 28%, transparent));
-  animation:
-    intro-rise 350ms var(--ease-out) both,
-    intro-sweep 600ms 150ms var(--ease-out) both;
+  animation: intro-rise 400ms 380ms var(--ease-out) both;
 }
 
 .rule {
+  position: relative;
   display: block;
-  width: min(420px, 62vw);
+  width: min(460px, 68vw);
   height: 2px;
-  margin: 20px auto 0;
+  margin: 18px auto 0;
   border-radius: 1px;
   background: linear-gradient(90deg, transparent, var(--intro-warm), var(--intro-cool), transparent);
   box-shadow: 0 0 14px color-mix(in srgb, var(--intro-warm) 60%, transparent);
   transform: scaleX(0);
-  animation: intro-rule 450ms 200ms var(--ease-out) both;
+  animation: intro-rule 500ms 260ms var(--ease-out) both;
+}
+
+/* one spark runs the length of the line as it lights up */
+.rule::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 0 10px 3px color-mix(in srgb, var(--intro-warm) 85%, transparent),
+    0 0 26px 8px color-mix(in srgb, var(--intro-warm) 40%, transparent);
+  opacity: 0;
+  animation: intro-spark 900ms 420ms var(--ease-out) both;
 }
 
 .skip {
@@ -159,12 +220,33 @@
   }
 }
 
-@keyframes intro-sweep {
+@keyframes intro-letter {
   from {
-    background-position: 100% 0;
+    opacity: 0;
+    transform: translateY(0.35em) scale(0.92);
+    filter: blur(6px);
   }
   to {
-    background-position: 0% 0;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes intro-spark {
+  0% {
+    left: 0;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    left: calc(100% - 8px);
+    opacity: 0;
   }
 }
 

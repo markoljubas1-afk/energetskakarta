@@ -47,7 +47,7 @@ describe("StoryCard", () => {
           step={0}
           onStep={vi.fn()}
           onLeave={vi.fn()}
-          travel={{ playing, arrived, toggle, replay }}
+          travel={{ playing, arrived, toggle, replay, journey: "kilovatsat:2#0" }}
         />,
       );
     const moving = show(true, false);

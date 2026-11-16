@@ -10,6 +10,13 @@ import type { IntroMode } from "./introMode";
 import styles from "./Intro.module.css";
 import type { IntroPhase } from "./useIntro";
 
+/** The name in two parts: the second is set in the map's own light. */
+const WORDMARK = [
+  ["G", "r", "i", "d"],
+  ["A", "t", "l", "a", "s"],
+] as const;
+const NAME = "GridAtlas";
+
 /** Keys that move focus or are held for a shortcut; they do not skip. */
 const PASSIVE_KEYS = new Set(["Tab", "Shift", "Control", "Alt", "Meta"]);
 
@@ -38,8 +45,19 @@ export function Intro({ mode, phase, onSkip }: Props) {
     <div className={styles.intro} data-phase={phase} data-mode={mode} data-intro-overlay onClick={onSkip}>
       <div className={styles.sky} aria-hidden="true" />
       <div className={styles.titleBlock}>
-        <p className={styles.title}>{t("introTitle")}</p>
+        {/* The wordmark (2026-11-16): the site's address, letter by letter, over a line that lights up
+            like a transmission line being switched on. Read out as one word, not nine letters. */}
+        <p className={styles.wordmark} aria-label={NAME}>
+          {WORDMARK.map((part) => (
+            <span key={part.join("")} className={styles.part} aria-hidden="true">
+              {part.map((letter, index) => (
+                <span key={`${letter}${String(index)}`}>{letter}</span>
+              ))}
+            </span>
+          ))}
+        </p>
         <span className={styles.rule} aria-hidden="true" />
+        <p className={styles.title}>{t("introTitle")}</p>
       </div>
       <button type="button" className={styles.skip} onClick={onSkip}>
         {t("introSkip")}

@@ -9,6 +9,8 @@ export interface TravelControls {
   arrived: boolean;
   toggle: () => void;
   replay: () => void;
+  /** names this run of the journey: a new one (another step, a replay) starts the progress bar again */
+  journey: string;
 }
 
 const reducedMotion = (): boolean =>
@@ -34,7 +36,6 @@ export function useTravel(
   const progress = useRef(0);
   const shownJourney = useRef<string | null>(null);
   const journey = `${step}#${run}`;
-
   useEffect(() => {
     if (!show) return;
     if (!route || mode === null) {
@@ -79,5 +80,5 @@ export function useTravel(
   }, []);
 
   if (mode !== "travel" || !route) return null;
-  return { playing, arrived: arrivedIn === journey, toggle, replay };
+  return { playing, arrived: arrivedIn === journey, toggle, replay, journey };
 }
