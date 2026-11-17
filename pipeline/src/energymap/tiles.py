@@ -269,6 +269,8 @@ def _plant(props: Mapping[str, Any]) -> dict[str, Any]:
         "commissioningYear": props["commissioningYear"],
         "country": props["country"],
         "operator": props["operator"],
+        # absent from builds made before the field existed
+        "expansionOf": props.get("expansionOf"),
         MINZOOM_ATTRIBUTE: plant_minzoom(props["capacityMw"], props["status"] == "planned"),
     }
 

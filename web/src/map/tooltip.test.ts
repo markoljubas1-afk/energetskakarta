@@ -20,6 +20,16 @@ describe("tooltipFor", () => {
     expect(tooltipFor(plant, en).detail).toBe("Hydro · 276 MW");
   });
 
+  it("says when a plant record is a new part of a running plant, which the source names alike", () => {
+    const props = { name: "NE Primjer", technology: "nuclear", expansionOf: "osm:way/2" };
+    expect(tooltipFor(selection("plants", { ...props, status: "planned" }), i18n).title).toBe(
+      "NE Primjer (planirano proširenje)",
+    );
+    expect(tooltipFor(selection("plants", { ...props, status: "construction" }), en).title).toBe(
+      "NE Primjer (expansion under construction)",
+    );
+  });
+
   it("falls back to the kind when there is no name, and leaves out what is unknown", () => {
     const plant = selection("plants", { technology: "solar" });
     expect(tooltipFor(plant, i18n)).toEqual({ title: "Elektrana", detail: "Sunčana" });

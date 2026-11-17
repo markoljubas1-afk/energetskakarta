@@ -1201,6 +1201,15 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
   nose isto ime kao postojeća elektrana, pa na karti izgledaju kao duplikat; vidi „Za kasnije”.
 - README i opis pipelinea nose naziv GridAtlas. `CLAUDE.md` nije diran (mijenja se samo uz izričit dogovor).
 
+### 35-8 Oznaka „planirano proširenje” — KOD GOTOV 2026-11-17 (vidljivo nakon iduće gradnje podataka)
+- Odluka vlasnika 2026-11-17: planirani zapis na lokaciji postojeće elektrane dobiva jasnu oznaku.
+- Pristup: ime iz izvora se ne mijenja. `conflate.py` (korak 5) planiranom zapisu ili zapisu u izgradnji upiše
+  `expansion_of` = id zapisa u pogonu na istoj GEM lokaciji; pločice nose `expansionOf`. Web uz ime dodaje
+  „(planirano proširenje)” ili „(proširenje u izgradnji)”: natpis na karti, oblačić, naslov kartice, uz
+  objašnjenje u retku statusa. Lokacija bez elektrane u pogonu nije proširenje.
+- Razmotreno i odbijeno: dopisati oznaku u samo ime u podacima (ime više ne bi bilo izvorovo).
+- Nije napravljeno: pretraga i statične stranice elektrana ne nose oznaku (indeks pretrage nema to polje).
+
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda
   od 400 kV, prag spajanja krajeva 0,3 km (`pipeline/src/energymap/routes.py`). Karta: `stories/travel.ts`,

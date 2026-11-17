@@ -177,3 +177,22 @@ def test_overrides_file(tmp_path: Path) -> None:
         path.write_text(bad)
         with pytest.raises(OverridesError, match=message):
             Overrides.load(path)
+
+
+def test_a_planned_part_of_a_running_plant_is_marked_as_its_expansion(index: CountryIndex) -> None:
+    plants = {"osm:way/1": osm("osm:way/1", 16.0, 45.5, name="NE Primjer", tech=Technology.NUCLEAR, mw=700)}
+    running = gem(7, 16.0, 45.5, name="Primjer", tech=Technology.NUCLEAR, mw=700)
+    new_unit = gem(7, 16.0, 45.5, name="Primjer", tech=Technology.NUCLEAR, status=Status.PLANNED, mw=1100)
+    # a location with nothing running yet: its parts are a new plant, not an expansion
+    building = gem(8, 16.3, 45.5, name="Novi", status=Status.CONSTRUCTION)
+    later = gem(8, 16.3, 45.5, name="Novi", status=Status.PLANNED)
+    result = conflate(plants, [new_unit, running, building, later], index=index, scope=SCOPE,
+                      retrieved_at=NOW)  # fmt: skip
+
+    assert result.plants["osm:way/1"].expansion_of is None
+    assert result.plants["gem:L100000000007:planned"].expansion_of == "osm:way/1"
+    assert result.plants["gem:L100000000008:construction"].expansion_of is None
+    assert result.plants["gem:L100000000008:planned"].expansion_of is None
+    assert result.stats["expansions"] == 1
+    feature = result.plants["gem:L100000000007:planned"].to_feature()
+    assert feature["properties"]["expansionOf"] == "osm:way/1"

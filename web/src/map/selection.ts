@@ -127,7 +127,21 @@ export type Selection =
       capacityMw: number | null;
       commissioningYear: number | null;
       country: string;
+      /**
+       * A planned or under-construction part of a plant that already runs at the same place (pipeline
+       * conflate.py). The source names both alike, so the name is shown with a note (expansionNote).
+       */
+      expansion: boolean;
     });
+
+/** What to add to the name of a plant record that is an expansion of a running plant, or null. */
+export function expansionNote(
+  selection: { status: Status; expansion: boolean },
+  t: (key: "expansion_planned" | "expansion_construction") => string,
+): string | null {
+  if (!selection.expansion) return null;
+  return t(selection.status === "construction" ? "expansion_construction" : "expansion_planned");
+}
 
 type Props = Record<string, unknown>;
 
@@ -326,6 +340,7 @@ export function fromProperties(sourceLayer: string, props: Props): Selection | n
       capacityMw: num(props, "capacityMw"),
       commissioningYear: num(props, "commissioningYear"),
       country: str(props, "country") ?? "",
+      expansion: str(props, "expansionOf") !== null,
     };
   }
   return null;

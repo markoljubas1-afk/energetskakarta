@@ -6,6 +6,31 @@ import { renderWithI18n } from "../test/render";
 import { DetailsPanel } from "./DetailsPanel";
 
 describe("DetailsPanel", () => {
+  it("marks a new part of a running plant in the title and explains it", () => {
+    renderWithI18n(
+      <DetailsPanel
+        id="gem:L100000500165:planned"
+        onClose={vi.fn()}
+        selection={{
+          id: "gem:L100000500165:planned",
+          sources: ["gem"],
+          gemUrl: null,
+          kind: "plant",
+          expansion: true,
+          status: "planned",
+          operator: null,
+          name: "NE Primjer",
+          technology: "nuclear",
+          capacityMw: 1100,
+          commissioningYear: 2035,
+          country: "SI",
+        }}
+      />,
+    );
+    expect(screen.getByRole("heading", { name: "NE Primjer (planirano proširenje)" })).toBeInTheDocument();
+    expect(screen.getByText(/Novi dio elektrane koja na istoj lokaciji već radi/)).toBeInTheDocument();
+  });
+
   it("shows a plant with source link", () => {
     renderWithI18n(
       <DetailsPanel
@@ -16,6 +41,7 @@ describe("DetailsPanel", () => {
           sources: ["openstreetmap"],
           gemUrl: null,
           kind: "plant",
+          expansion: false,
           status: "operating",
           operator: null,
           name: "RHE Primjer",
@@ -98,6 +124,7 @@ describe("DetailsPanel", () => {
           sources: ["gem"],
           gemUrl: "https://www.gem.wiki/Vjetroelektrana_Daleko",
           kind: "plant",
+          expansion: false,
           status: "operating",
           operator: "Vjetar d.d.",
           name: "Vjetroelektrana Daleko",

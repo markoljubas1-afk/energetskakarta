@@ -206,6 +206,10 @@ class PowerPlant(_Asset):
     location: Coordinate
     wikidata: WikidataId | None = None
     wikipedia: WikipediaTitle | None = None
+    #: For a planned or under-construction record: the id of the operating plant at the same GEM
+    #: location (conflate.py). The source gives both the same name, so without this the new unit looks
+    #: like a duplicate of the plant it extends.
+    expansion_of: str | None = None
 
     def to_feature(self) -> dict[str, Any]:
         return {

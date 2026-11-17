@@ -19,7 +19,7 @@ import { latest } from "../data/gas";
 import type { Photo } from "../data/images";
 import type { Around } from "../data/nearby";
 import { polyline, sparkline } from "./sparkline";
-import type { CitySelection, GasSelection, Selection } from "../map/selection";
+import { expansionNote, type CitySelection, type GasSelection, type Selection } from "../map/selection";
 import styles from "./DetailsPanel.module.css";
 
 /** EMODnet reports pipe sizes in inches (the trade's nominal sizes); readers here think in millimetres. */
@@ -304,10 +304,15 @@ export function DetailsPanel({ id, selection, onClose, photo = null, around = nu
       </span>
     );
     if (selection.kind === "plant") {
-      title = selection.name ?? t("detailsUnnamed");
+      const note = expansionNote(selection, t);
+      const name = selection.name ?? t("detailsUnnamed");
+      title = note ? `${name} (${note})` : name;
       body = (
         <dl className={styles.rows}>
-          <Row label={t("detailsStatus")}>{status}</Row>
+          <Row label={t("detailsStatus")}>
+            {status}
+            {note && <span className={styles.aside}>{t("expansionAbout")}</span>}
+          </Row>
           <Row label={t("detailsTechnology")}>{i18n.technology(selection.technology)}</Row>
           <Row label={t("detailsCapacity")}>
             {selection.capacityMw !== null ? i18n.power(selection.capacityMw) : t("unknown")}

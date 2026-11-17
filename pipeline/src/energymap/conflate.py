@@ -253,12 +253,15 @@ def conflate(
     result = ConflationResult(plants=dict(osm_plants))
     used_osm: set[str] = set()
     used_gem: set[str] = set()
+    #: GEM plant key -> id of the record it ended up in
+    record_of: dict[str, str] = {}
 
     def accept(candidate: Candidate) -> None:
         osm, gem = osm_plants[candidate.osm_id], gems[candidate.gem_key]
         result.plants[osm.id] = merged_plant(osm, gem, retrieved_at)
         used_osm.add(osm.id)
         used_gem.add(gem.key)
+        record_of[gem.key] = osm.id
         result.matched.append(candidate)
 
     # 1. manual decisions
@@ -322,7 +325,23 @@ def conflate(
         if country != gem.country:
             result.stats["gem_country_differs_from_position"] += 1
         result.plants[f"{GEM_ID_PREFIX}{gem.key}"] = gem_only_plant(gem, country, retrieved_at)
+        record_of[gem.key] = f"{GEM_ID_PREFIX}{gem.key}"
         result.stats["gem_only"] += 1
+
+    # 5. GEM splits a location by status, under one name: the planned or under-construction part of a
+    # plant that already runs is marked as its expansion, so the two do not read as duplicates
+    operating = {
+        gem.location_id: record_of[gem.key]
+        for gem in gems.values()
+        if gem.status is Status.OPERATING and gem.key in record_of
+    }
+    for gem in gems.values():
+        existing = operating.get(gem.location_id)
+        record = record_of.get(gem.key)
+        if gem.status is Status.OPERATING or existing is None or record is None or record == existing:
+            continue
+        result.plants[record] = result.plants[record].model_copy(update={"expansion_of": existing})
+        result.stats["expansions"] += 1
 
     result.stats["matched"] = len(result.matched)
     result.stats["osm_only"] = len(osm_plants) - len(used_osm)

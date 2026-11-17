@@ -48,7 +48,19 @@ describe("fromProperties", () => {
       capacityMw: null,
       commissioningYear: null,
       country: "HR",
+      expansion: false,
     });
+  });
+
+  it("knows a plant record that is a new part of a running plant", () => {
+    const part = fromProperties("plants", {
+      id: "gem:L1:planned",
+      status: "planned",
+      technology: "nuclear",
+      country: "SI",
+      expansionOf: "osm:way/89819245",
+    });
+    expect(part).toMatchObject({ kind: "plant", expansion: true });
   });
 
   it("reads a substation", () => {

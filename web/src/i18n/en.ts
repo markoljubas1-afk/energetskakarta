@@ -38,6 +38,10 @@ export const en: Dictionary = {
   status_operating: "Operating",
   status_construction: "Under construction",
   status_planned: "Planned",
+  expansion_planned: "planned expansion",
+  expansion_construction: "expansion under construction",
+  expansionAbout:
+    "A new part of a plant that already runs at the same place; the existing one is a separate record on the map.",
   statusHowMany: "{status}: {plants} and {km} of lines.",
   voltage: "Voltage",
   voltage_380: "380 kV and above",

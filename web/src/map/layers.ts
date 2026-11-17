@@ -2,6 +2,8 @@
 import type { ExpressionSpecification, LayerSpecification } from "maplibre-gl";
 
 import type { CountryCode, LayerKey } from "../domain";
+import { en } from "../i18n/en";
+import { hr } from "../i18n/hr";
 import {
   chargerFilter,
   cityFilter,
@@ -146,6 +148,8 @@ export function dataLayers({
   around = null,
   solar = false,
 }: LayerOptions): LayerSpecification[] {
+  // the few words the style itself writes on the map
+  const words = state.lang === "en" ? en : hr;
   // Added only while something is lit or the time machine runs: otherwise the style is exactly what it
   // always was. A spotlight wins over the time machine: it is the reader's own, momentary question.
   const gridReceded = spotlight !== null || state.year !== null;
@@ -945,7 +949,25 @@ export function dataLayers({
       filter: ["all", ["has", "name"], plantFilter(state, true)],
       layout: {
         visibility: show("plants"),
-        "text-field": ["get", "name"],
+        // a new part of a running plant carries the plant's own name in the source: say which it is
+        "text-field": [
+          "case",
+          ["has", "expansionOf"],
+          [
+            "concat",
+            ["get", "name"],
+            " (",
+            [
+              "match",
+              ["get", "status"],
+              "construction",
+              words.expansion_construction,
+              words.expansion_planned,
+            ],
+            ")",
+          ],
+          ["get", "name"],
+        ],
         "text-font": labels,
         "text-size": ["interpolate", ["linear"], ["zoom"], 7, 10.5, 12, 12.5],
         "text-offset": [0, 1.1],

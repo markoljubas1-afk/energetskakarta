@@ -5,7 +5,7 @@
 import { latest } from "../data/gas";
 import { isOneOf, TECHNOLOGIES } from "../domain";
 import type { I18n } from "../i18n";
-import type { Selection } from "./selection";
+import { expansionNote, type Selection } from "./selection";
 
 export interface Tooltip {
   title: string;
@@ -57,15 +57,18 @@ export function tooltipFor(selection: Selection, i18n: I18n): Tooltip {
       };
     case "substation":
       return { title: selection.name ?? kind, detail: join(kind, kv(i18n, selection.voltagesKv), status) };
-    case "plant":
+    case "plant": {
+      const note = expansionNote(selection, i18n.t);
+      const name = selection.name ?? kind;
       return {
-        title: selection.name ?? kind,
+        title: note ? `${name} (${note})` : name,
         detail: join(
           i18n.technology(selection.technology),
           selection.capacityMw !== null ? i18n.power(selection.capacityMw) : null,
           status,
         ),
       };
+    }
     case "pipeline":
       return {
         title: selection.name ?? kind,
