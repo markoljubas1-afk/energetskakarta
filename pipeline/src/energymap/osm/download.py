@@ -6,7 +6,8 @@ from __future__ import annotations
 import hashlib
 import logging
 import re
-from collections.abc import Iterable
+import time
+from collections.abc import Callable, Iterable
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -24,6 +25,32 @@ _CHUNK = 1024 * 1024
 
 class DownloadError(RuntimeError):
     """A source could not be downloaded or verified."""
+
+
+#: Geofabrik is at times unreachable from a GitHub runner for minutes on end ("Network is unreachable" in
+#: three of six builds on 2026-11-17), longer than the transport's own immediate retries last. The waits
+#: between further attempts, in seconds: seven and a half minutes in all before the build gives up.
+RETRY_WAITS_S: tuple[float, ...] = (30.0, 60.0, 120.0, 240.0)
+
+
+def patiently[T](what: str, call: Callable[[], T], *, sleep: Callable[[float], None] = time.sleep) -> T:
+    """Run ``call``, trying again after each wait while the server cannot be reached at all.
+
+    Only transport failures are retried (no connection, a dropped one, a timeout): an answer from the
+    server, even a refusal or a wrong checksum, is an answer and fails at once as before.
+    """
+    for attempt, wait in enumerate((*RETRY_WAITS_S, None), start=1):
+        try:
+            return call()
+        except httpx.TransportError as exc:
+            if wait is None:
+                raise DownloadError(f"{what}: unreachable after {attempt} attempts ({exc})") from exc
+            log.warning(
+                "source unreachable, waiting to try again",
+                extra={"what": what, "attempt": attempt, "wait_s": wait, "error": str(exc)},
+            )
+            sleep(wait)
+    raise AssertionError("unreachable")  # the loop returns or raises
 
 
 @dataclass(frozen=True, slots=True)

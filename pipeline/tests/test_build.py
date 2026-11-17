@@ -13,7 +13,15 @@ import pytest
 
 from energymap import build as pipeline
 from energymap import cli, config
-from energymap.osm.download import DownloadError, download_region, fetch_md5, load_state, resolve_urls
+from energymap.osm.download import (
+    RETRY_WAITS_S,
+    DownloadError,
+    download_region,
+    fetch_md5,
+    load_state,
+    patiently,
+    resolve_urls,
+)
 from energymap.validate import BuildValidationError
 
 INDEX_URL = "https://geo.test/index.json"
@@ -172,3 +180,38 @@ def test_attribution_names_the_hand_kept_list_only_when_it_was_used() -> None:
     assert pipeline.attribution_sources(None, None, used) == ["openstreetmap", "manual", "naturalearth"]
     completed_only = {"total": 2, "fromManualList": 0, "completedFromManualList": 1}
     assert "manual" in pipeline.attribution_sources(None, None, completed_only)
+
+
+def test_an_unreachable_server_is_tried_again_after_a_wait_and_an_answer_is_not() -> None:
+    waits: list[float] = []
+    calls = 0
+
+    def flaky() -> str:
+        nonlocal calls
+        calls += 1
+        if calls < 3:
+            raise httpx.ConnectError("[Errno 101] Network is unreachable")
+        return "index"
+
+    assert patiently("Geofabrik index", flaky, sleep=waits.append) == "index"
+    assert (calls, waits) == (3, [30.0, 60.0])
+
+    # never reachable: every wait is used, then the build fails with a message that says what happened
+    waits.clear()
+
+    def dead() -> str:
+        raise httpx.ConnectTimeout("timed out")
+
+    with pytest.raises(DownloadError, match="croatia: unreachable after 5 attempts"):
+        patiently("croatia", dead, sleep=waits.append)
+    assert waits == list(RETRY_WAITS_S)
+
+    # an answer from the server, even a bad one, is not retried
+    waits.clear()
+
+    def refused() -> str:
+        raise DownloadError("Unexpected checksum file")
+
+    with pytest.raises(DownloadError, match="Unexpected checksum"):
+        patiently("croatia", refused, sleep=waits.append)
+    assert waits == []

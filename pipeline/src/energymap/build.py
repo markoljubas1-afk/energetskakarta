@@ -9,6 +9,7 @@ from collections import Counter
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import asdict
 from datetime import UTC, datetime
+from functools import partial
 from pathlib import Path
 from typing import Any, Final, Literal
 
@@ -30,6 +31,7 @@ from energymap.osm.download import (
     download_region,
     load_state,
     make_client,
+    patiently,
     pbf_path,
     resolve_urls,
 )
@@ -81,9 +83,18 @@ def load_index(borders: Path, scope: frozenset[str]) -> CountryIndex:
 def download(paths: config.Paths, countries: Sequence[config.Country]) -> list[SourceState]:
     paths.ensure()
     with make_client() as client:
-        urls = resolve_urls(client, config.GEOFABRIK_INDEX_URL, [c.geofabrik_id for c in countries])
+        urls = patiently(
+            "Geofabrik index",
+            lambda: resolve_urls(client, config.GEOFABRIK_INDEX_URL, [c.geofabrik_id for c in countries]),
+        )
         ensure_borders(paths, client)
-        return [download_region(client, c.geofabrik_id, urls[c.geofabrik_id], paths.raw) for c in countries]
+        return [
+            patiently(
+                c.geofabrik_id,
+                partial(download_region, client, c.geofabrik_id, urls[c.geofabrik_id], paths.raw),
+            )
+            for c in countries
+        ]
 
 
 LOCAL_BASELINE: Final[Literal["local"]] = "local"
