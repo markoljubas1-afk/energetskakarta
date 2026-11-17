@@ -23,6 +23,23 @@ describe("ShareMenu", () => {
     expect(await screen.findByRole("status")).toHaveTextContent("Poveznica je kopirana.");
   });
 
+  it("opens the device's share sheet with this view where there is one, and hides the button where not", async () => {
+    const user = userEvent.setup();
+    const share = vi.fn().mockRejectedValue(new DOMException("closed", "AbortError"));
+    const errors = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const { unmount } = renderWithI18n(<ShareMenu map={null} nativeShare={share} />);
+    await user.click(screen.getByText("Podijeli"));
+    await user.click(screen.getByRole("button", { name: /^Pošalji/ }));
+    expect(share).toHaveBeenCalledWith({ title: "GridAtlas", url: window.location.href });
+    // closing the sheet is not an error
+    expect(errors).not.toHaveBeenCalled();
+    unmount();
+
+    renderWithI18n(<ShareMenu map={null} nativeShare={null} />);
+    await user.click(screen.getByText("Podijeli"));
+    expect(screen.queryByRole("button", { name: /^Pošalji/ })).not.toBeInTheDocument();
+  });
+
   it("shows the link in a field when the clipboard is not available", async () => {
     const user = userEvent.setup();
     renderWithI18n(<ShareMenu map={null} writeClipboard={() => Promise.reject(new Error("denied"))} />);

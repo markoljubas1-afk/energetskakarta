@@ -1,4 +1,4 @@
-import { Code, Image, Link, Share2 } from "lucide-react";
+import { Code, Image, Link, Send, Share2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { useI18n } from "../i18n";
@@ -15,6 +15,11 @@ interface Props {
   writeClipboard?: (text: string) => Promise<void>;
   /** Injected in tests; defaults to the current time. */
   now?: () => Date;
+  /**
+   * The device's own share sheet (WhatsApp, Viber, mail...), where the browser has one: phones mostly.
+   * null hides the button. Injected in tests; defaults to navigator.share.
+   */
+  nativeShare?: ((data: ShareData) => Promise<void>) | null;
 }
 
 type Copy = { kind: "idle" } | { kind: "done" } | { kind: "failed"; url: string };
@@ -36,8 +41,18 @@ function defaultClipboard(text: string): Promise<void> {
   return navigator.clipboard.writeText(text);
 }
 
-/** Copy the current link, or save the view as a picture with its credits. */
-export function ShareMenu({ map, writeClipboard = defaultClipboard, now = () => new Date() }: Props) {
+function defaultNativeShare(): ((data: ShareData) => Promise<void>) | null {
+  if (typeof navigator.share !== "function") return null;
+  return (data) => navigator.share(data);
+}
+
+/** Send or copy the current link, or save the view as a picture with its credits. */
+export function ShareMenu({
+  map,
+  writeClipboard = defaultClipboard,
+  now = () => new Date(),
+  nativeShare = defaultNativeShare(),
+}: Props) {
   const { t } = useI18n();
   const [copy, setCopy] = useState<Copy>({ kind: "idle" });
   const [picture, setPicture] = useState<Picture>({ kind: "idle" });
@@ -63,6 +78,15 @@ export function ShareMenu({ map, writeClipboard = defaultClipboard, now = () => 
         setCopy({ kind: "failed", url });
       },
     );
+  };
+
+  const onSend = (): void => {
+    if (!nativeShare) return;
+    nativeShare({ title: t("appName"), url: window.location.href }).catch((error: unknown) => {
+      // closing the sheet without sending is the visitor's choice, not a failure
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      console.error("[share] the share sheet failed", error);
+    });
   };
 
   const onPicture = (): void => {
@@ -94,6 +118,14 @@ export function ShareMenu({ map, writeClipboard = defaultClipboard, now = () => 
       }
     >
       <ul>
+        {nativeShare && (
+          <li>
+            <button type="button" className={styles.action} onClick={onSend}>
+              <Send size={14} strokeWidth={1.75} aria-hidden="true" />
+              {t("shareSend")}
+            </button>
+          </li>
+        )}
         <li>
           <button type="button" className={styles.action} onClick={onCopy}>
             <Link size={14} strokeWidth={1.75} aria-hidden="true" />

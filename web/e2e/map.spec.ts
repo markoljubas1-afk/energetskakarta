@@ -31,7 +31,7 @@ test("loads real tiles on the fallback basemap without errors", async ({ page })
   });
   await openMap(page);
   await expect(page.locator("[data-basemap]")).toHaveAttribute("data-basemap", "fallback");
-  await expect(page.locator("[data-data-version]")).toContainText("Podaci od");
+  await expect(page.locator("[data-data-version]")).toContainText("Karta od");
   // no MapTiler key configured: no fallback warning either
   await expect(page.getByText(/Detaljna podloga nije dostupna/)).toHaveCount(0);
   expect(problems).toEqual([]);
@@ -163,7 +163,7 @@ test("switches to English and keeps it on reload", async ({ page }) => {
   await expect(page).toHaveURL(/\/en\/(\?.*)?$/);
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
-  await expect(page.locator("[data-data-version]")).toContainText("Data from");
+  await expect(page.locator("[data-data-version]")).toContainText("Map as of");
 });
 
 test("the map opens dark, and a switch to the light theme is remembered", async ({ page }) => {

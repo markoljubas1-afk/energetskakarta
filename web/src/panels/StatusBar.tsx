@@ -64,10 +64,11 @@ export function StatusBar({
         className={stale ? styles.notice : styles.item}
         role={stale ? "status" : undefined}
         data-data-version=""
+        title={t("mapVersionHint")}
       >
         {stale && <TriangleAlert size={14} strokeWidth={1.75} aria-hidden="true" />}
-        <span className={styles.wide}>{t("dataVersion", { date: date(current.createdAt) })}</span>
-        <span className={styles.narrow}>{t("dataVersion", { date: shortDate })}</span>
+        <span className={styles.wide}>{t("mapVersion", { date: date(current.createdAt) })}</span>
+        <span className={styles.narrow}>{t("mapVersion", { date: shortDate })}</span>
         {stale && ` ${t("dataStale", { days: age })}`}
       </span>
       {children}

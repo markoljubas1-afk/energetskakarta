@@ -38,7 +38,7 @@ describe("StatusBar", () => {
         map={null}
         now={new Date("2026-09-20T12:00:00Z")} />,
     ); // prettier-ignore
-    expect(screen.getByText(/^Podaci od 14\. rujna 2026\.$/)).toBeInTheDocument();
+    expect(screen.getByText(/^Karta od 14\. rujna 2026\.$/)).toBeInTheDocument();
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 

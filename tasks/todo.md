@@ -1177,6 +1177,14 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
   ga ima i kamo s njim” u pet koraka (karta sunca, sjever, Dalmacija, postojeće elektrane, slobodni kapacitet
   mreže). Brojke u tekstu iz samih podataka atlasa (Zagreb oko 1250, Dalmacija oko 1450 kWh/kWp).
 
+### 35-6 Sitne dorade statusne trake i dijeljenja — GOTOVO 2026-11-17
+- Kartica dobrodošlice: „Dobro došli na GridAtlas”.
+- Statusna traka: datum gradnje sada piše „Karta od …” (elektrane i mreža, tjedno), a pločica semafora nosi
+  sat svog podatka („HR 66 % obnovljivo u 07:00”). Odbijen je prijedlog da se upiše vrijeme učitavanja
+  stranice: to nije vrijeme podatka (pravilo „ništa procijenjeno”); sat dolazi iz samih ENTSO-E podataka.
+- Dijeljenje: gumb „Pošalji” otvara izbornik uređaja (Web Share API) gdje ga preglednik ima. OG oznake,
+  slika 1200 × 630 i sitemap već postoje; Search Console je na vlasniku.
+
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda
   od 400 kV, prag spajanja krajeva 0,3 km (`pipeline/src/energymap/routes.py`). Karta: `stories/travel.ts`,

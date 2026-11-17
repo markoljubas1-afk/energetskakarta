@@ -19,7 +19,7 @@ test("a first visit gets three doors into the map, and the card does not come ba
   test.skip(isMobile, "the card is for wide screens: a phone's first screen is the map itself");
   await open(page);
   const card = page.locator("[data-welcome]");
-  await expect(card.getByRole("heading", { name: "Dobro došli na energetsku kartu" })).toBeVisible();
+  await expect(card.getByRole("heading", { name: "Dobro došli na GridAtlas" })).toBeVisible();
   await card.getByRole("button", { name: /Tokovi struje uživo/ }).click();
   await expect(page).toHaveURL(/live=1/);
   await expect(card).toHaveCount(0);

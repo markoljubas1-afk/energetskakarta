@@ -71,7 +71,7 @@ describe("App", () => {
       gridMaxZoom: 14,
       boundariesMaxZoom: 8,
     });
-    expect(screen.getByText("Podaci od 16. rujna 2026.")).toBeInTheDocument();
+    expect(screen.getByText("Karta od 16. rujna 2026.")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Preuzmi bazu" })); // the downloads are in a menu
     expect(screen.getByRole("link", { name: "Elektrane" })).toHaveAttribute(
       "href",

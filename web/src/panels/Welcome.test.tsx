@@ -19,7 +19,7 @@ describe("welcome card", () => {
   it("shows once, is remembered when closed, and lists only the entries the build has", async () => {
     const user = userEvent.setup();
     const { unmount } = renderWithI18n(<Harness selected={null} />);
-    expect(screen.getByRole("heading", { name: "Dobro došli na energetsku kartu" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Dobro došli na GridAtlas" })).toBeVisible();
     expect(screen.queryByRole("button", { name: /Što je novo/ })).toBeNull();
     await user.click(screen.getByRole("button", { name: "Zatvori dobrodošlicu" }));
     expect(screen.getByText("gone")).toBeVisible();

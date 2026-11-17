@@ -62,7 +62,7 @@ export function GreenLight({ live, now, onShow, learnHref }: Props) {
           <span>
             {country} {share} %
           </span>
-          <span className={styles.wide}>{t("greenShort")}</span>
+          <span className={styles.wide}>{t("greenShort", { hour })}</span>
         </>
       }
     >
