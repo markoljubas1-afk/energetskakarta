@@ -1296,9 +1296,14 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 - Korak 1: kartice priča nose ikonu i „Pokreni priču”; poveznice na kartu ikonu karte; pojmovnik je sklopiv
   (`glossary`, `<details>`, bez skripte, čitljiv tražilicama; JSON-LD isti); okvir „Izračunaj za moj krov”
   vodi na PVGIS (`callout`). Markdown inačica stranice čita i `<details>`.
-- Korak 2 (nije počet, treba plan): živa cijena, udio obnovljivih i prevoditelj megavata na samoj stranici.
-  To bi bila prva skripta na statičnim stranicama (CSP dopušta samo vlastite datoteke), pa je arhitekturna
-  odluka: mala zasebna skripta građena iz istih modula kao karta, ne druga implementacija računa.
+- Korak 2 GOTOV (odluka vlasnika: skripta iz istih modula kao karta): okvir „Upravo sada u Hrvatskoj” u
+  odjeljku „Zašto je važno kada trošiš”: udio obnovljivih s bojom pojasa, cijena dan unaprijed (s napomenom
+  kad je ≤ 0), rečenica o megavatima prema kućanstvima, sat podatka i izvori. Stranica nosi riječi i prazna
+  mjesta (okvir je skriven); `src/widgets/learnLive.ts` upiše brojke i pokaže ga. Građen kao zaseban ulaz
+  (`learn-live.js`, 1,85 kB + dijeljeni dijelovi) iz `data/greenShare.ts`, `data/live.ts`,
+  `data/households.ts`; samo za klijentsku gradnju (SSR gradnje zadaju vlastiti ulaz). Bez skripte ili bez
+  podataka okvir ostaje skriven. Prva i jedina skripta na statičnim stranicama; CSP je već dopuštao `'self'`.
+- „Pokreni priču” je gumb koji mijenja boju kad je pokazivač na kartici (zahtjev vlasnika).
 - Korak 3 (nije počet): kartice i okviri na `/tko-stoji-iza/`, `/gradovi/`, `/kapaciteti/`, `/api/`.
 
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)

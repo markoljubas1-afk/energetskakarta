@@ -45,6 +45,16 @@ test("the learning page links to the stories", async ({ page }) => {
     "/?story=granice",
   );
   await expect(page.locator(".glossary details")).toHaveCount(13);
+  // the live box is filled by the page's own small script from the same data the map reads
+  const now = page.locator("[data-live-now]");
+  await expect(now).toBeVisible();
+  await expect(now).toContainText(/\d+ % proizvodnje je iz obnovljivih izvora/);
+  await expect(now).toHaveAttribute("data-band", /^(low|mid|high|stale)$/);
+  await expect(now.locator('[data-part="price"]')).toContainText(
+    /Cijena na burzi \(dan unaprijed\): [\d.,−-]+ €\/MWh/,
+  );
+  // a story card says what it does
+  await expect(page.locator(".doors em").first()).toHaveText("Pokreni priču");
 });
 
 test("the kilowatt-hour story sends a point along a real route, which can be paused and replayed", async ({

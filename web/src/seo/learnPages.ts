@@ -31,6 +31,17 @@ interface LearnCopy {
   /** what a story card does */
   storyStart: string;
   timingHeading: string;
+  /** the live box: its words, with `{slot}` where the script writes a figure (widgets/learnLive.ts) */
+  now: {
+    title: string;
+    share: string;
+    price: string;
+    free: string;
+    stale: string;
+    times: string;
+    part: string;
+    source: string;
+  };
   /** why a wholesale price can fall below zero, and the link that opens the prices on the map */
   priceHeading: string;
   price: string[];
@@ -85,6 +96,18 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
     roof: "Imate krov? Besplatni europski kalkulator PVGIS računa koliko bi baš on dao, uz nagib, orijentaciju i zasjenjenje.",
     roofAction: "Izračunaj za moj krov",
     storyStart: "Pokreni priču",
+    now: {
+      title: "Upravo sada u Hrvatskoj",
+      share: "{share} % proizvodnje je iz obnovljivih izvora",
+      price: "Cijena na burzi (dan unaprijed): {price} €/MWh",
+      free: "Cijena je nula ili niža: tko sada uzme struju na burzi, ne plaća je.",
+      stale: "Podatak je stariji od četiri sata, pa ne govori o ovom trenutku.",
+      times:
+        "Obnovljivi izvori daju {mw} MW: {times} puta više nego što sva kućanstva u zemlji troše u prosjeku ({average} MW, {year}.).",
+      part: "Obnovljivi izvori daju {mw} MW: {percent} % onoga što sva kućanstva u zemlji troše u prosjeku ({average} MW, {year}.).",
+      source:
+        "Sat podatka: {hour}. Izvori: ENTSO-E (proizvodnja i cijena), Eurostat (potrošnja kućanstava). Udio je u domaćoj proizvodnji, bez uvoza; cijena je veleprodajna.",
+    },
     priceHeading: "Zašto struja ponekad ima negativnu cijenu",
     price: [
       "Struja se na burzi prodaje dan unaprijed, za svaki sat posebno. Proizvođači nude koliko mogu dati i po kojoj cijeni, kupci koliko trebaju, i za svaki sat nastane jedna cijena na kojoj se ponuda i potražnja susretnu.",
@@ -218,6 +241,18 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
     roof: "Have a roof? The free European calculator PVGIS works out what that very roof would give, with its tilt, orientation and shading.",
     roofAction: "Calculate for my roof",
     storyStart: "Start the story",
+    now: {
+      title: "Right now in Croatia",
+      share: "{share}% of generation is from renewable sources",
+      price: "Exchange price (day-ahead): {price} €/MWh",
+      free: "The price is zero or below: whoever takes electricity on the exchange now does not pay for it.",
+      stale: "The figure is more than four hours old, so it says nothing about this moment.",
+      times:
+        "Renewable sources give {mw} MW: {times} times what all the country's households use on average ({average} MW, {year}).",
+      part: "Renewable sources give {mw} MW: {percent}% of what all the country's households use on average ({average} MW, {year}).",
+      source:
+        "Hour of the figure: {hour}. Sources: ENTSO-E (generation and price), Eurostat (household consumption). The share is of domestic generation, without imports; the price is wholesale.",
+    },
     priceHeading: "Why electricity sometimes has a negative price",
     price: [
       "Electricity is sold on the exchange a day ahead, hour by hour. Generators offer what they can deliver and at what price, buyers what they need, and each hour gets one price at which supply and demand meet.",
@@ -332,6 +367,27 @@ const SUN_ICON = icon(Sun, 22);
 /** The European Commission's free calculator for a particular roof (the same link the map's solar bar gives). */
 const PVGIS_URL = "https://re.jrc.ec.europa.eu/pvg_tools/en/";
 
+/** The words of a sentence with each `{slot}` turned into an element the script writes a figure into. */
+const slots = (text: string): string => e(text).replace(/\{(\w+)\}/g, '<b data-v="$1"></b>');
+
+/**
+ * The live box (widgets/learnLive.ts): hidden until the script has figures for it. Only `div` and `span`
+ * inside, so the page's Markdown copy, which reads paragraphs and lists, does not pick up empty sentences.
+ */
+function liveNow(now: LearnCopy["now"], dataBaseUrl: string, lang: Lang): string {
+  return [
+    `<div class="now" data-live-now data-base="${e(dataBaseUrl)}" data-country="HR" data-lang="${lang}" hidden>`,
+    `<div class="now-title">${e(now.title)}</div>`,
+    `<div class="now-share"><i></i><span>${slots(now.share)}</span></div>`,
+    `<div data-part="stale" hidden>${e(now.stale)}</div>`,
+    `<div class="now-price" data-part="price" hidden><span>${slots(now.price)}</span> <em>${e(now.free)}</em></div>`,
+    `<div data-part="times" hidden>${slots(now.times)}</div>`,
+    `<div data-part="share" hidden>${slots(now.part)}</div>`,
+    `<div class="now-source">${slots(now.source)}</div>`,
+    `</div><script type="module" src="/learn-live.js"></script>`,
+  ].join("");
+}
+
 export function learnPage(site: SiteData, lang: Lang): StaticPage {
   const copy = LEARN_COPY[lang];
   const stories = STORY_KEYS.filter(
@@ -373,7 +429,10 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
         heading: copy.solarHeading,
         html: `${list(copy.solar.map(e))}${doors([{ href: mapLink(lang, { l: "lines,solar" }), title: copy.solarTry, text: copy.solarTryNote, icon: MAP_ICON }])}${callout(copy.roof, { href: PVGIS_URL, label: copy.roofAction }, SUN_ICON)}`,
       },
-      { heading: copy.timingHeading, html: copy.timing.map((p) => `<p>${e(p)}</p>`).join("") },
+      {
+        heading: copy.timingHeading,
+        html: `${copy.timing.map((p) => `<p>${e(p)}</p>`).join("")}${liveNow(copy.now, site.dataBaseUrl, lang)}`,
+      },
       {
         heading: copy.priceHeading,
         html: `${copy.price.map((p) => `<p>${e(p)}</p>`).join("")}${doors([
