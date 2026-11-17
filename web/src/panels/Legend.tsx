@@ -1,6 +1,7 @@
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 
+import { BAND_LIMITS } from "../data/greenShare";
 import { SUBSTANCES, TECHNOLOGIES, VOLTAGE_CLASSES } from "../domain";
 import { useI18n } from "../i18n";
 import { NOTHING_IN_VIEW, type InView } from "../map/inView";
@@ -17,6 +18,8 @@ interface Props {
   distribution: boolean;
   /** The charging stations layer is on. */
   chargers: boolean;
+  /** the stations are coloured by how green their country's electricity is right now */
+  chargersBanded?: boolean;
   /** The extraction sites layer is on. */
   extraction: boolean;
   /** The gas production layer is on. */
@@ -34,6 +37,7 @@ export function Legend({
   compact,
   distribution,
   chargers,
+  chargersBanded = false,
   extraction,
   gas,
   cities,
@@ -115,9 +119,24 @@ export function Legend({
           <ul className={styles.technologies}>
             <li>
               <span className={styles.dot} style={{ background: palette.charger }} aria-hidden="true" />
-              {t("legendCharger")}
+              {t(chargersBanded ? "legendChargerNoData" : "legendCharger")}
             </li>
+            {chargersBanded &&
+              (["high", "mid", "low"] as const).map((band) => (
+                <li key={band}>
+                  <span
+                    className={styles.dot}
+                    style={{ background: palette.green[band] }}
+                    aria-hidden="true"
+                  />
+                  {t(`legendCharger_${band}`, {
+                    mid: Math.round(BAND_LIMITS.mid * 100),
+                    high: Math.round(BAND_LIMITS.high * 100),
+                  })}
+                </li>
+              ))}
           </ul>
+          {chargersBanded && <p className={styles.note}>{t("legendChargerNote")}</p>}
         </>
       )}
       {extraction && (

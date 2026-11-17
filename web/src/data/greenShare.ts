@@ -94,3 +94,45 @@ export function greenCountries(live: Live): string[] {
     live.hours.some((_, index) => greenAt(live, country, index) !== null),
   );
 }
+
+export interface MixPart {
+  technology: Technology;
+  /** share of the country's own generation in that hour, 0 to 1 */
+  share: number;
+}
+
+/** What a country's plants generated in one hour, by technology, largest first; empty when not reported. */
+export function mixAt(live: Live, country: string, index: number): MixPart[] {
+  const green = greenAt(live, country, index);
+  const byTechnology = live.generation?.[country];
+  if (!green || !byTechnology) return [];
+  const parts: MixPart[] = [];
+  for (const [technology, values] of Object.entries(byTechnology)) {
+    const mw = values[index];
+    if (mw === null || mw === undefined || mw <= 0 || !isOneOf(TECHNOLOGIES, technology)) continue;
+    parts.push({ technology, share: mw / green.totalMw });
+  }
+  return parts.sort((a, b) => b.share - a.share);
+}
+
+export interface NowMix {
+  green: Green;
+  parts: MixPart[];
+}
+
+/** The country's mix in its latest reported hour, or null when there is none or it is too old to be "now". */
+export function mixNow(live: Live, country: string, now: Date): NowMix | null {
+  const green = latestGreen(live, country, now);
+  if (!green || ageHours(green, now) > STALE_AFTER_HOURS) return null;
+  return { green, parts: mixAt(live, country, green.index) };
+}
+
+/** The band of every country whose latest hour is fresh; a country without one is simply absent. */
+export function freshBands(live: Live, now: Date): Record<string, Band> {
+  const bands: Record<string, Band> = {};
+  for (const country of greenCountries(live)) {
+    const mix = mixNow(live, country, now);
+    if (mix) bands[country] = band(mix.green.share);
+  }
+  return bands;
+}

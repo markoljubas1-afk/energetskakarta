@@ -1,4 +1,5 @@
 /** Map colours. One source of truth for the map layers and the legend; tuned for both themes. */
+import type { Band } from "../data/greenShare";
 import type { Medium, Substance, Technology, VoltageClass } from "../domain";
 
 export type Theme = "light" | "dark";
@@ -25,6 +26,8 @@ export interface Palette {
   /** the point of light of a guided story and its trail */
   traveller: string;
   charger: string;
+  /** how green the electricity is right now (data/greenShare.ts): charging stations take their country's band */
+  green: Record<Band, string>;
   /** cities' consumption: a warm tone, unlike any generation technology */
   city: string;
   cityRing: string;
@@ -124,6 +127,7 @@ const light: Palette = {
   plantGlow: 0,
   traveller: "#D97A00",
   charger: "#8E6480",
+  green: { high: "#2E8B57", mid: "#C98A12", low: "#C4534A" },
   substance: {
     oil: "#5B4636",
     gas: "#B5652B",
@@ -220,6 +224,7 @@ const dark: Palette = {
   plantGlow: 0.38,
   traveller: "#FFD166",
   charger: "#C9A0BC",
+  green: { high: "#3FA86B", mid: "#E0A526", low: "#D9655B" },
   substance: {
     oil: "#B89A84",
     gas: "#E09A5F",

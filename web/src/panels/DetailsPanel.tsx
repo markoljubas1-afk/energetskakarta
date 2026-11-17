@@ -19,6 +19,7 @@ import { osmUrl, SECTORS } from "../domain";
 import { useI18n, type I18n } from "../i18n";
 import { latest } from "../data/gas";
 import type { Photo } from "../data/images";
+import type { NowMix } from "../data/greenShare";
 import type { Around } from "../data/nearby";
 import { polyline, sparkline } from "./sparkline";
 import { expansionNote, type CitySelection, type GasSelection, type Selection } from "../map/selection";
@@ -36,7 +37,14 @@ interface Props {
   photo?: Photo | null;
   /** a plant's nearest substation and the lines ending there, lit on the map (data/nearby.ts) */
   around?: Around | null;
+  /** a charging station: what its country's plants are generating right now (data/greenShare.ts) */
+  mix?: NowMix | null;
 }
+
+const percent = (share: number): number => Math.round(share * 100);
+
+/** The largest sources are named; the rest are added up. */
+const MIX_NAMED = 3;
 
 const ENTSOG_URL = "https://transparency.entsog.eu/";
 
@@ -262,7 +270,7 @@ function CityDetails({ city, i18n }: { city: CitySelection; i18n: I18n }) {
   );
 }
 
-export function DetailsPanel({ id, selection, onClose, photo = null, around = null }: Props) {
+export function DetailsPanel({ id, selection, onClose, photo = null, around = null, mix = null }: Props) {
   const i18n = useI18n();
   const { t } = i18n;
   // Folded down to its title, the card gives the map back (on a phone it covers half of it). Kept per
@@ -347,6 +355,31 @@ export function DetailsPanel({ id, selection, onClose, photo = null, around = nu
           {selection.points !== null && <Row label={t("detailsPoints")}>{selection.points}</Row>}
           <Row label={t("detailsOperator")}>{selection.operator ?? t("unknown")}</Row>
           <Row label={t("detailsCountry")}>{i18n.country(selection.country)}</Row>
+          {mix && mix.parts.length > 0 && (
+            <Row label={t("chargerMix")}>
+              {[
+                ...mix.parts
+                  .slice(0, MIX_NAMED)
+                  .map((part) => `${i18n.technology(part.technology)} ${percent(part.share)} %`),
+                ...(mix.parts.length > MIX_NAMED
+                  ? [
+                      `${t("chargerMixRest")} ${percent(
+                        mix.parts.slice(MIX_NAMED).reduce((sum, part) => sum + part.share, 0),
+                      )} %`,
+                    ]
+                  : []),
+              ].join(", ")}
+              <span className={styles.aside}>
+                {t("chargerMixNote", {
+                  country: i18n.country(selection.country),
+                  share: percent(mix.green.share),
+                  hour: new Intl.DateTimeFormat(i18n.locale, { hour: "2-digit", minute: "2-digit" }).format(
+                    new Date(mix.green.hour),
+                  ),
+                })}
+              </span>
+            </Row>
+          )}
         </dl>
       );
     } else if (selection.kind === "extraction") {

@@ -76,4 +76,19 @@ describe("the learning corner", () => {
     expect(html).toContain('href="/?story=kilovatsat"');
     expect(html).toContain("Put jednog kilovatsata");
   });
+
+  it("offers the time machine, some decades back, once the release has a timeline", () => {
+    const site = bareSite();
+    const html = (current: typeof site.current) =>
+      learnPage({ ...site, current }, "hr")
+        .sections.map((section) => section.html)
+        .join("");
+    expect(html(site.current)).not.toContain("Vremeplov");
+    const withTimeline = html({ ...site.current, timeline: "builds/x/timeline.json" });
+    expect(withTimeline).toContain(">Vremeplov</a>");
+    const link = /href="([^"]+)">Vremeplov/.exec(withTimeline)?.[1] ?? "";
+    const state = parseState(new URL(link.replaceAll("&amp;", "&"), "https://karta.test").search, "hr");
+    expect(state.year).toBe(1960);
+    expect([...state.layers]).toContain("plants");
+  });
 });

@@ -45,6 +45,7 @@ import {
 } from "./layers";
 import { TRAVEL_SOURCE } from "./sources";
 import type { Traveller } from "../stories/travel";
+import type { Band } from "../data/greenShare";
 import type { Around } from "../data/nearby";
 import type { SolarImage } from "../data/solar";
 import type { StyleState } from "./filters";
@@ -154,6 +155,8 @@ interface Props {
   onPoint?: (point: { lng: number; lat: number }) => void;
   /** the grid next to the selected plant, lit on the map (data/nearby.ts) */
   around?: Around | null;
+  /** each country's band of green electricity right now, while the charging stations are shown */
+  chargerBands?: Record<string, Band> | null;
   onViewChange: (view: { lng: number; lat: number; zoom: number }) => void;
   onSelect: (selection: Selection | null) => void;
   onBasemap: (kind: Basemap["kind"]) => void;
@@ -189,6 +192,7 @@ export function MapView(props: Props) {
   const { tiles, regionBounds, maptilerKey, attribution, theme, state, live, gas, timeline } = props;
   const spotlight = props.spotlight ?? null;
   const around = props.around ?? null;
+  const chargerBands = props.chargerBands ?? null;
   const geothermal = props.geothermal ?? null;
   const capacity = props.capacity ?? null;
   const solar = props.solar ?? null;
@@ -616,6 +620,7 @@ export function MapView(props: Props) {
       livePrices: live?.prices ?? null,
       spotlight,
       around,
+      chargerBands,
       solar: solar !== null,
       chargerOverviewBelow:
         tiles.chargerOverview !== undefined && tiles.chargers ? tiles.chargers.minZoom : null,
@@ -655,6 +660,7 @@ export function MapView(props: Props) {
     flight,
     spotlight,
     around,
+    chargerBands,
     i18n,
   ]);
 

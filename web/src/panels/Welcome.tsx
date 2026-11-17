@@ -1,4 +1,4 @@
-import { ArrowLeftRight, Building2, Gauge, Route, Sparkles, X } from "lucide-react";
+import { ArrowLeftRight, Building2, Gauge, History, Route, Sparkles, X } from "lucide-react";
 import { useState } from "react";
 
 import { useI18n } from "../i18n";
@@ -50,6 +50,8 @@ export interface WelcomeEntries {
   cities: () => void;
   /** starts the first guided story (stories/stories.ts) */
   story: () => void;
+  /** opens the time machine some decades back; absent or null when this build has no timeline */
+  timeMachine?: (() => void) | null;
 }
 
 interface Props {
@@ -59,7 +61,7 @@ interface Props {
   support?: boolean;
 }
 
-/** Three doors into the map for a first visit, in the slot the details panel uses later. */
+/** A few doors into the map for a first visit, in the slot the details panel uses later. */
 export function Welcome({ entries, onClose, support = false }: Props) {
   const { t, lang } = useI18n();
   const take = (entry: () => void) => () => {
@@ -85,6 +87,17 @@ export function Welcome({ entries, onClose, support = false }: Props) {
             </span>
           </button>
         </li>
+        {entries.timeMachine && (
+          <li>
+            <button type="button" onClick={take(entries.timeMachine)}>
+              <History size={18} strokeWidth={1.75} aria-hidden="true" />
+              <span>
+                <strong>{t("timeMachine")}</strong>
+                <small>{t("welcomeTimeNote")}</small>
+              </span>
+            </button>
+          </li>
+        )}
         <li>
           {entries.live ? (
             <button type="button" onClick={take(entries.live)}>

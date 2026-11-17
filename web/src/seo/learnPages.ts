@@ -3,7 +3,7 @@
  * and links that open the map on what each paragraph describes. Written for someone who has never looked
  * at a grid map; nothing here depends on a data release except the date in the footer.
  */
-import type { Lang } from "../state/url";
+import { TIME_MACHINE_START, type Lang } from "../state/url";
 import { STORIES, STORY_KEYS } from "../stories/stories";
 import { definitions, e, list } from "./markup";
 import { home, mapLink, other, PATHS, type SiteData, type StaticPage } from "./site";
@@ -27,6 +27,8 @@ interface LearnCopy {
   storiesHeading: string;
   storiesIntro: string;
   tryHeading: string;
+  /** the time machine's link: text and what it shows; offered when the build has a timeline */
+  timeTry: [string, string];
   tryIntro: string;
   /** link text, what the reader will see, the map's address parameters */
   tries: [string, string, Record<string, string>][];
@@ -126,6 +128,10 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
     storiesIntro:
       "Priča vas vodi kroz kartu korak po korak: karta se sama pomiče i pokazuje ono o čemu čitate. Traje minutu ili dvije i možete je prekinuti kad god želite.",
     tryHeading: "Isprobajte na karti",
+    timeTry: [
+      "Vremeplov",
+      "kako su elektrane u regiji građene i gašene kroz godine; pomičite godinu i gledajte kartu",
+    ],
     tryIntro: "Svaka poveznica otvara kartu s uključenim upravo onim o čemu je riječ:",
     tries: [
       [
@@ -243,6 +249,10 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
     storiesIntro:
       "A story takes you through the map step by step: the map moves by itself and shows what you are reading about. It takes a minute or two and you can stop whenever you like.",
     tryHeading: "Try it on the map",
+    timeTry: [
+      "Time machine",
+      "how the region's power plants were built and closed over the years; move the year and watch the map",
+    ],
     tryIntro: "Each link opens the map with exactly what it describes switched on:",
     tries: [
       [
@@ -270,9 +280,17 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
     (key) =>
       `<a href="${e(mapLink(lang, { story: key }))}">${e(STORIES[key].title[lang])}</a>: ${e(STORIES[key].summary[lang])}`,
   );
-  const tries = copy.tries.map(
-    ([text, what, params]) => `<a href="${e(mapLink(lang, params))}">${e(text)}</a>: ${e(what)}`,
-  );
+  const tries = [
+    ...copy.tries,
+    ...(site.current.timeline !== undefined
+      ? [
+          [
+            ...copy.timeTry,
+            { l: "lines,plants", y: String(TIME_MACHINE_START) },
+          ] as LearnCopy["tries"][number],
+        ]
+      : []),
+  ].map(([text, what, params]) => `<a href="${e(mapLink(lang, params))}">${e(text)}</a>: ${e(what)}`);
   return {
     path: PATHS[lang].learn,
     lang,

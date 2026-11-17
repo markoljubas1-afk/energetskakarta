@@ -207,4 +207,47 @@ describe("DetailsPanel", () => {
     expect(screen.getByText(/Izvori: EMODnet/)).toBeInTheDocument();
     expect(screen.queryByRole("link")).not.toBeInTheDocument();
   });
+
+  it("tells a charging station's reader what the country's plants generate right now, and what that is not", () => {
+    const green = {
+      index: 3,
+      hour: "2026-11-16T09:00:00+01:00",
+      share: 0.69,
+      totalMw: 1300,
+      renewableMw: 900,
+      top: { technology: "hydro" as const, mw: 600 },
+    };
+    renderWithI18n(
+      <DetailsPanel
+        id="osm:node/9"
+        onClose={vi.fn()}
+        selection={{
+          id: "osm:node/9",
+          sources: ["openstreetmap"],
+          gemUrl: null,
+          kind: "charger",
+          status: "operating",
+          operator: null,
+          name: "Punionica Primjer",
+          points: 2,
+          country: "HR",
+        }}
+        mix={{
+          green,
+          parts: [
+            { technology: "hydro", share: 0.46 },
+            { technology: "wind", share: 0.23 },
+            { technology: "gas", share: 0.2 },
+            { technology: "pumped_storage", share: 0.07 },
+            { technology: "solar", share: 0.04 },
+          ],
+        }}
+      />,
+    );
+    expect(screen.getByText(/Hidro 46 %, Vjetar 23 %, Plin 20 %, ostalo 11 %/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Proizvodnja u zemlji \(Hrvatska\) u satu od 09:00: 69 % iz obnovljivih/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Bez uvoza; nije podatak o ovoj punionici/)).toBeInTheDocument();
+  });
 });

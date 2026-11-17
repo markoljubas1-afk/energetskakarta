@@ -305,9 +305,10 @@ export const hr = {
   layerAbout: "O sloju: {layer}",
   welcomeTitle: "Dobro došli na GridAtlas",
   welcomeLead:
-    "Elektrane, mreža, potrošnja i ono što se događa upravo sada — za osam zemalja, iz otvorenih izvora. Tri mjesta za početak:",
+    "Elektrane, mreža, potrošnja i ono što se događa upravo sada — za osam zemalja, iz otvorenih izvora. Nekoliko mjesta za početak:",
   welcomeStory: "Vođena priča: put struje",
   welcomeStoryNote: "Šest koraka od elektrane do utičnice; karta vas vodi sama",
+  welcomeTimeNote: "Kako su elektrane u regiji građene i gašene kroz godine; pomičite godinu",
   welcomeLive: "Tokovi struje uživo",
   welcomeLiveNote: "Koliko struje ovaj sat prelazi granice i po kojoj cijeni",
   welcomeCapacity: "Gdje u mreži ima mjesta",
@@ -412,6 +413,16 @@ export const hr = {
   layer_chargers_note:
     "Punionice za električna vozila prema OpenStreetMapu. Na širem pogledu krug pokazuje koliko ih je na tom području; pojedinačne punionice vide se od bližeg zumiranja.",
   legendCharger: "Punionica",
+  legendChargerNoData: "Punionica, bez svježih podataka o struji",
+  legendCharger_high: "Struja u zemlji sada: {high} % ili više obnovljivo",
+  legendCharger_mid: "Između {mid} i {high} % obnovljivo",
+  legendCharger_low: "Manje od {mid} % obnovljivo",
+  legendChargerNote:
+    "Boja je udio obnovljivih u proizvodnji struje u zemlji punionice u zadnjem satu (ENTSO-E), bez uvoza. Nije podatak o samoj punionici.",
+  chargerMix: "Struja u mreži sada",
+  chargerMixRest: "ostalo",
+  chargerMixNote:
+    "Proizvodnja u zemlji ({country}) u satu od {hour}: {share} % iz obnovljivih izvora. Bez uvoza; nije podatak o ovoj punionici.",
   layer_extraction: "Crpilišta i rudnici",
   layer_extraction_note:
     "Naftne i plinske bušotine, platforme, rudnici i površinski kopovi prema OpenStreetMapu. Samo gdje se vadi, ne koliko: nijedan otvoreni izvor ne mjeri proizvodnju po bušotini ili rudniku. Zatvoreni objekti nisu prikazani.",

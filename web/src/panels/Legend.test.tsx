@@ -139,4 +139,29 @@ describe("Legend", () => {
     await user.unhover(screen.getByText("380 kV i više"));
     expect(onSpotlight).toHaveBeenLastCalledWith(null);
   });
+
+  it("explains the charging stations' colours while they follow the green share", () => {
+    const props = {
+      theme: "light" as const,
+      compact: false,
+      distribution: false,
+      chargers: true,
+      extraction: false,
+      gas: false,
+      cities: false,
+    };
+    const view = renderWithI18n(<Legend {...props} />);
+    expect(screen.getByText("Punionica")).toBeInTheDocument();
+    expect(screen.queryByText(/bez uvoza/)).not.toBeInTheDocument();
+    view.rerender(
+      <I18nProvider lang="hr">
+        <Legend {...props} chargersBanded />
+      </I18nProvider>,
+    );
+    expect(screen.getByText("Struja u zemlji sada: 65 % ili više obnovljivo")).toBeInTheDocument();
+    expect(screen.getByText("Između 35 i 65 % obnovljivo")).toBeInTheDocument();
+    expect(screen.getByText("Manje od 35 % obnovljivo")).toBeInTheDocument();
+    expect(screen.getByText("Punionica, bez svježih podataka o struji")).toBeInTheDocument();
+    expect(screen.getByText(/bez uvoza\. Nije podatak o samoj punionici/)).toBeInTheDocument();
+  });
 });

@@ -1219,6 +1219,23 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 - Kartica objekta: gumb „Spusti karticu” ostavlja samo naslov; drugi objekt je opet otvara (`DetailsPanel`).
 - Provjera: jedinični test kartice, e2e `live.spec.ts`, ručno mobitel (karta 376 → 632 px) i računalo.
 
+### 35-10 Punionice i semafor, vremeplov kao ulaz, crpilišta od početnog prikaza — KOD GOTOV 2026-11-17
+- Punionice (prijedlog vlasnika, prihvaćena dva od četiri dijela): kartica punionice kaže što elektrane u
+  njezinoj zemlji upravo proizvode (tri najveća izvora + ostalo, udio obnovljivih, sat podatka); točke i
+  pregledni krugovi punionica nose boju pojasa semafora svoje zemlje (`freshBands`, `mixNow` u
+  `data/greenShare.ts`, `palette.green`). Samo uz svjež podatak (do 4 h); inače obična boja. Legenda
+  objašnjava boje i kaže da je to proizvodnja u zemlji, bez uvoza, a ne podatak o punionici.
+  Odbijeno: krug dometa (traži pretpostavke o autu, protivno „ništa procijenjeno”). Odgođeno: veličina po
+  snazi punjača (prvo provjeriti koliko punionica u OSM-u ima snagu).
+- Vremeplov (zahtjev vlasnika): ulaz na kartici dobrodošlice i poveznica na stranici Edukacija, oboje samo
+  kad izdanje ima `timeline`; otvara se na 1960. (`TIME_MACHINE_START`) s uključenim elektranama.
+- Crpilišta i rudnici (prijava vlasnika: „pokazuje samo platforme”): rudnici su u pločicama bili od zuma 8,
+  bušotine od 9, okna od 10, pa je početni prikaz bio prazan. Novo: platforme, rudnici, kopovi od 3,
+  bušotine od 5, okna i potkopi od 6 (`EXTRACTION_MINZOOMS`; svega 6798 objekata). Vidljivo nakon iduće gradnje.
+- E2e dodani za sunčani sloj, semafor i priču s točkom (`solar.spec.ts`, `live.spec.ts`, `story.spec.ts`).
+- Otvoreno, čeka odluku/plan: pratitelj ciljeva 2030 (službeni udio iz Eurostata prema cilju iz NECP-a,
+  ciljeve provjeriti u izvornim dokumentima); skladište plina (GIE AGSI traži vlastiti API ključ).
+
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda
   od 400 kV, prag spajanja krajeva 0,3 km (`pipeline/src/energymap/routes.py`). Karta: `stories/travel.ts`,

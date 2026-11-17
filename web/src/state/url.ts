@@ -107,6 +107,8 @@ export function defaultState(lang: Lang): AppState {
 
 /** Years the time machine accepts in a link: the first public power stations to the end of the century. */
 export const YEAR_RANGE = [1880, 2100] as const;
+/** Where the time machine starts when it is offered as a first door: far enough back for the map to look different. */
+export const TIME_MACHINE_START = 1960;
 
 function parseYear(raw: string | null): number | null {
   if (raw === null || !/^\d{4}$/.test(raw)) return null;

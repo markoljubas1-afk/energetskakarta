@@ -56,15 +56,17 @@ CHARGER_MINZOOM = 11
 CITY_LARGE_POPULATION = 100_000
 CITY_MEDIUM_POPULATION = 20_000
 CITY_MINZOOMS = (5, 7, 9)
-# Extraction sites by kind: the few offshore platforms from the regional view, mines from the country
-# view, wells (hundreds per basin) and shafts, adits and open pits at street level. Own archive: opt-in.
+# Extraction sites by kind. There are only a few thousand in the whole region, so most are in the tiles from
+# the view the map opens at: a layer that showed nothing but the Adriatic platforms until the reader zoomed
+# three levels in read as empty (owner's report 2026-11-17). Shafts and adits, mostly old mine entrances
+# in the Alps, wait one level longer. Own archive: opt-in.
 EXTRACTION_MINZOOMS: dict[str, int] = {
-    "platform": 6,
-    "mine": 8,
-    "well": 9,
-    "shaft": 10,
-    "adit": 10,
-    "quarry": 10,
+    "platform": 3,
+    "mine": 3,
+    "quarry": 3,
+    "well": 5,
+    "shaft": 6,
+    "adit": 6,
 }
 EXTRACTION_ARCHIVE_MINZOOM = min(EXTRACTION_MINZOOMS.values())
 

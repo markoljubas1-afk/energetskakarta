@@ -4,9 +4,12 @@ import {
   ageHours,
   band,
   changeFromYesterday,
+  freshBands,
   greenAt,
   greenCountries,
   latestGreen,
+  mixAt,
+  mixNow,
   STALE_AFTER_HOURS,
 } from "./greenShare";
 import { GREEN_LIVE as LIVE } from "./greenShare.fixture";
@@ -67,5 +70,21 @@ describe("how green the electricity is", () => {
     expect(ageHours(green, new Date("2026-11-16T17:00:00+01:00"))).toBe(7);
     expect(ageHours(green, new Date("2026-11-16T09:30:00+01:00"))).toBe(0);
     expect(STALE_AFTER_HOURS).toBe(4);
+  });
+
+  it("breaks an hour down by technology, largest first, and only calls a fresh hour 'now'", () => {
+    const parts = mixAt(LIVE, "HR", 33);
+    expect(parts[0]).toEqual({ technology: "hydro", share: 600 / 1300 });
+    expect(parts.reduce((sum, part) => sum + part.share, 0)).toBeCloseTo(1, 6);
+    expect(mixAt(LIVE, "HR", 34)).toEqual([]);
+
+    const noon = new Date("2026-11-16T12:30:00+01:00");
+    // Croatia's last hour is 09:00, two full hours old: still now. Slovenia reports to the hour.
+    expect(mixNow(LIVE, "HR", noon)?.green.index).toBe(33);
+    expect(freshBands(LIVE, noon)).toEqual({ HR: "high", SI: "low" });
+    // by the evening Croatia's figure is too old to colour anything, Slovenia's is not
+    const evening = new Date("2026-11-16T20:30:00+01:00");
+    expect(mixNow(LIVE, "HR", evening)).toBeNull();
+    expect(Object.keys(freshBands(LIVE, evening))).toEqual(["SI"]);
   });
 });

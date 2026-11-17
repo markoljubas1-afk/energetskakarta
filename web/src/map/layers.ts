@@ -45,6 +45,7 @@ import {
   type Expr,
 } from "./layerStyle";
 import { gridOpacity, plantOpacity, TIME_MACHINE_GRID, type Spotlight } from "./spotlight";
+import type { Band } from "../data/greenShare";
 import type { Around } from "../data/nearby";
 import type { Palette } from "./palette";
 import { priceFill } from "./priceScale";
@@ -134,6 +135,11 @@ export interface LayerOptions {
   around?: Around | null;
   /** the solar potential picture is declared as a source (layer on and published): draw it */
   solar?: boolean;
+  /**
+   * How green each country's electricity is right now (data/greenShare.ts): charging stations are
+   * coloured by their country's band. Null or a country left out: the plain charger colour.
+   */
+  chargerBands?: Record<string, Band> | null;
 }
 
 export function dataLayers({
@@ -147,6 +153,7 @@ export function dataLayers({
   chargerOverviewBelow = null,
   around = null,
   solar = false,
+  chargerBands = null,
 }: LayerOptions): LayerSpecification[] {
   // the few words the style itself writes on the map
   const words = state.lang === "en" ? en : hr;
@@ -286,6 +293,19 @@ export function dataLayers({
     );
   }
 
+  // one colour per country that has a fresh figure; the others keep the plain charger colour
+  const [firstBand, ...otherBands] = Object.entries(chargerBands ?? {});
+  const chargerColour: ExpressionSpecification | string =
+    firstBand === undefined
+      ? palette.charger
+      : [
+          "match",
+          ["get", "country"],
+          firstBand[0],
+          palette.green[firstBand[1]],
+          ...otherBands.flatMap(([country, band]) => [country, palette.green[band]]),
+          palette.charger,
+        ];
   if (showChargers && chargerOverviewBelow !== null) {
     // Below the zoom where stations are drawn one by one: a disc per cell and country, its area growing
     // with the number of stations. Discs are small while cells are small on screen and translucent, so
@@ -318,9 +338,9 @@ export function dataLayers({
           11,
           ["*", 2.6, size],
         ],
-        "circle-color": palette.charger,
+        "circle-color": chargerColour,
         "circle-opacity": 0.6,
-        "circle-stroke-color": palette.charger,
+        "circle-stroke-color": chargerColour,
         "circle-stroke-width": 1,
         "circle-stroke-opacity": 0.9,
       },
@@ -357,7 +377,7 @@ export function dataLayers({
       filter: chargerFilter(state),
       paint: {
         "circle-radius": ["interpolate", ["linear"], ["zoom"], 11, 2.4, 15, 4.5],
-        "circle-color": palette.charger,
+        "circle-color": chargerColour,
         "circle-opacity": 0.9,
         ...hoverStroke(palette, 0.8, palette.casing),
       },

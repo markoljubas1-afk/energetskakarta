@@ -29,6 +29,7 @@ import { GreenLight } from "../panels/GreenLight";
 import { SolarBar } from "../panels/SolarBar";
 import { loadSolar, SOLAR_KEY, solarImage, type SolarLoad } from "../data/solar";
 import { loadRoutes } from "../data/routes";
+import { freshBands, mixNow } from "../data/greenShare";
 import { aroundOf, loadNearby } from "../data/nearby";
 import { measure } from "../stories/travel";
 import { useTravel } from "../stories/useTravel";
@@ -49,7 +50,15 @@ import { GeothermalBar } from "../panels/GeothermalBar";
 import { StatusBar } from "../panels/StatusBar";
 import { TimeBar } from "../panels/TimeBar";
 import { useWelcome, Welcome, type WelcomeEntries } from "../panels/Welcome";
-import { pathForLang, serializeState, useUrlState, type AppState, type Page, type View } from "../state/url";
+import {
+  pathForLang,
+  TIME_MACHINE_START,
+  serializeState,
+  useUrlState,
+  type AppState,
+  type Page,
+  type View,
+} from "../state/url";
 import styles from "./App.module.css";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { Intro } from "./Intro";
@@ -377,6 +386,14 @@ function Explorer({
   const liveDoc =
     liveData?.status === "ready" && liveData.value.kind === "ready" ? liveData.value.live : null;
   const livePublished = liveDoc !== null;
+  // Charging stations take the colour of how green their country's electricity is right now; without
+  // fresh figures (or in an embed, which does not load them) they keep their own colour.
+  const chargersOn = state.layers.has("chargers");
+  const chargerBands = useMemo(() => {
+    if (!chargersOn || !liveDoc) return null;
+    const bands = freshBands(liveDoc, liveNow);
+    return Object.keys(bands).length > 0 ? bands : null;
+  }, [chargersOn, liveDoc, liveNow]);
   const liveIndex = liveDoc ? pickHour(liveDoc, state.liveHour, liveNow) : 0;
   const liveOverlay = useMemo(
     () => ((state.live || introFlows) && liveDoc ? overlay(liveDoc, liveIndex) : null),
@@ -599,6 +616,7 @@ function Explorer({
     step?.traveller ?? null,
     `${state.story ?? ""}:${storyStep}`,
   );
+  const timelinePublished = current.timeline !== undefined;
   const welcomeEntries = useMemo<WelcomeEntries>(
     () => ({
       live: livePublished
@@ -621,8 +639,13 @@ function Explorer({
       story: () => {
         setState((s) => ({ ...s, story: "put-struje" }));
       },
+      timeMachine: timelinePublished
+        ? () => {
+            setState((s) => ({ ...s, year: TIME_MACHINE_START, layers: new Set([...s.layers, "plants"]) }));
+          }
+        : null,
     }),
-    [setState, setSheetOpen, current.diff, livePublished],
+    [setState, setSheetOpen, current.diff, livePublished, timelinePublished],
   );
 
   // The grid next to a plant: asked for once a plant is first selected; a failure only means nothing is lit.
@@ -697,6 +720,7 @@ function Explorer({
             regionBounds={current.tiles.grid.bounds}
             spotlight={shownSpotlight}
             around={around}
+            chargerBands={chargerBands}
             solar={solarPicture}
             {...(solarOn ? { onPoint: pickSolarPoint } : {})}
             maptilerKey={config.maptilerKey}
@@ -822,6 +846,11 @@ function Explorer({
                   selection={shownDetails}
                   onClose={closeDetails}
                   around={around}
+                  mix={
+                    liveDoc && shownDetails?.kind === "charger"
+                      ? mixNow(liveDoc, shownDetails.country, liveNow)
+                      : null
+                  }
                   photo={
                     images?.status === "ready" && images.value.kind === "ready"
                       ? photoOf(images.value.index, config.dataBaseUrl, state.selected)
@@ -838,6 +867,7 @@ function Explorer({
               compact={state.selected !== null || state.embed || welcomeShown}
               distribution={state.layers.has("distribution")}
               chargers={state.layers.has("chargers")}
+              chargersBanded={chargerBands !== null}
               extraction={state.layers.has("extraction")}
               gas={state.layers.has("gas")}
               cities={state.layers.has("cities")}

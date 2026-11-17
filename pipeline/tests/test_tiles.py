@@ -105,7 +105,7 @@ def test_extraction_rules_stay_inside_their_archive_and_the_filter() -> None:
     }  # fmt: skip
     assert tiles.tile_feature("extraction", feature)["properties"] == {
         "id": "osm:node/80", "status": "operating", "kind": "well", "substance": "gas", "country": "HR",
-        "minzoom": 9,
+        "minzoom": 5,
     }  # fmt: skip
 
 

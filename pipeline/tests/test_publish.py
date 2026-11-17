@@ -80,7 +80,7 @@ def test_publish_uploads_everything_and_pointer_last(make_build: BuildFactory) -
     }
     assert pointer["downloads"]["lines"] == base + "lines.ndjson.gz"
     assert pointer["downloads"]["extraction"] == base + "extraction.ndjson.gz"
-    assert pointer["tiles"]["extraction"]["minZoom"] == 6
+    assert pointer["tiles"]["extraction"]["minZoom"] == 3
     assert pointer["search"] == base + "search.json"
     assert pointer["stats"] == base + "stats.json"
 

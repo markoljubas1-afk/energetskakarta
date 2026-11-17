@@ -88,4 +88,17 @@ describe("the door to the first story", () => {
     expect(story).toHaveBeenCalledOnce();
     expect(onClose).toHaveBeenCalledOnce();
   });
+
+  it("offers the time machine only when the build has a timeline", async () => {
+    const timeMachine = vi.fn();
+    const onClose = vi.fn();
+    const entries = { live: null, capacity: vi.fn(), changes: null, cities: vi.fn(), story: vi.fn() };
+    const { unmount } = renderWithI18n(<Welcome entries={entries} onClose={onClose} />);
+    expect(screen.queryByRole("button", { name: /Vremeplov/ })).not.toBeInTheDocument();
+    unmount();
+    renderWithI18n(<Welcome entries={{ ...entries, timeMachine }} onClose={onClose} />);
+    await userEvent.click(screen.getByRole("button", { name: /Vremeplov.*građene i gašene kroz godine/ }));
+    expect(timeMachine).toHaveBeenCalledOnce();
+    expect(onClose).toHaveBeenCalledOnce();
+  });
 });

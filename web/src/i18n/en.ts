@@ -308,9 +308,10 @@ export const en: Dictionary = {
   layerAbout: "About the layer: {layer}",
   welcomeTitle: "Welcome to GridAtlas",
   welcomeLead:
-    "Power plants, the grid, consumption and what is happening right now — for eight countries, from open sources. Three places to start:",
+    "Power plants, the grid, consumption and what is happening right now — for eight countries, from open sources. A few places to start:",
   welcomeStory: "A guided story: the journey of electricity",
   welcomeStoryNote: "Six steps from the plant to the socket; the map leads the way",
+  welcomeTimeNote: "How the region's power plants were built and closed over the years; move the year",
   welcomeLive: "Live electricity flows",
   welcomeLiveNote: "How much power crosses each border this hour, and at what price",
   welcomeCapacity: "Where the grid has room",
@@ -416,6 +417,16 @@ export const en: Dictionary = {
   layer_chargers_note:
     "Electric vehicle charging stations from OpenStreetMap. On a wide view a disc shows how many there are in that area; single stations appear from closer zoom levels.",
   legendCharger: "Charging station",
+  legendChargerNoData: "Charging station, no fresh figures for its electricity",
+  legendCharger_high: "Electricity in the country now: {high}% or more renewable",
+  legendCharger_mid: "Between {mid} and {high}% renewable",
+  legendCharger_low: "Less than {mid}% renewable",
+  legendChargerNote:
+    "The colour is the renewable share of generation in the station's country in the latest hour (ENTSO-E), without imports. It says nothing about the station itself.",
+  chargerMix: "Electricity in the grid now",
+  chargerMixRest: "other",
+  chargerMixNote:
+    "Generation in the country ({country}) in the hour from {hour}: {share}% from renewable sources. Without imports; it says nothing about this station.",
   layer_extraction: "Wells and mines",
   layer_extraction_note:
     "Oil and gas wells, offshore platforms, mines and open pits from OpenStreetMap. Only where extraction happens, not how much: no open source measures the output of a single well or mine. Closed sites are not shown.",
