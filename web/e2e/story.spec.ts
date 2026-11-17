@@ -46,3 +46,66 @@ test("the learning page links to the stories", async ({ page }) => {
   );
   await expect(page.locator("dl dt")).toHaveCount(13);
 });
+
+test("the kilowatt-hour story sends a point along a real route, which can be paused and replayed", async ({
+  page,
+}) => {
+  // the test build's lines make no route; hand the page one, as a build with routes.json would
+  await page.route(/\/local-data\/current\.json/, async (route) => {
+    const response = await route.fetch();
+    const current = (await response.json()) as Record<string, unknown>;
+    await route.fulfill({ response, json: { ...current, routes: "routes-test.json" } });
+  });
+  await page.route("**/local-data/routes-test.json", (route) =>
+    route.fulfill({
+      json: {
+        version: 1,
+        source: "OpenStreetMap",
+        license: "ODbL-1.0",
+        routes: {
+          "dalmacija-zagreb": {
+            from: "Konjsko",
+            to: "Tumbri",
+            minKv: 380,
+            km: 250,
+            lines: 1,
+            stops: [
+              [16.501, 43.602],
+              [15.868, 45.681],
+            ],
+            coordinates: [
+              [16.501, 43.602],
+              [16.2, 44.6],
+              [15.868, 45.681],
+            ],
+          },
+        },
+      },
+    }),
+  );
+  await open(page, "story=kilovatsat");
+  const card = page.getByRole("region", { name: "Put jednog kilovatsata" });
+  await expect(card.getByRole("heading", { name: "Ovdje hvatamo vjetar" })).toBeVisible();
+  await card.getByRole("button", { name: "Dalje" }).click();
+  await expect(card.getByRole("heading", { name: "Priprema za put" })).toBeVisible();
+  await card.getByRole("button", { name: "Dalje" }).click();
+  await expect(card.getByRole("heading", { name: "Energetska autocesta" })).toBeVisible();
+
+  // the point is on its way: it can be stopped, sent on, and started again
+  await expect(card.getByText("Točka je ilustracija, ne stvarni tok.")).toBeVisible();
+  await card.getByRole("button", { name: "Pauza" }).click();
+  await expect(card.getByRole("button", { name: "Pusti" })).toBeEnabled();
+  await card.getByRole("button", { name: "Pusti" }).click();
+  await expect(card.getByRole("button", { name: "Pauza" })).toBeVisible();
+  await card.getByRole("button", { name: "Ispočetka" }).click();
+  await expect(card.getByRole("button", { name: "Pauza" })).toBeVisible();
+
+  await card.getByRole("button", { name: "Dalje" }).click();
+  await expect(card.getByRole("heading", { name: "Silazak s autoceste" })).toBeVisible();
+  await expect(card.getByRole("button", { name: "Pauza" })).toHaveCount(0);
+});
+
+test("without a route in the build the kilowatt-hour story is not played", async ({ page }) => {
+  await open(page, "story=kilovatsat");
+  await expect(page.getByRole("region", { name: "Put jednog kilovatsata" })).toHaveCount(0);
+});

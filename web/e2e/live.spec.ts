@@ -104,3 +104,17 @@ test("the bars fold away to free the map and come back", async ({ page }) => {
   await page.getByRole("button", { name: "Pokaži kartice" }).click();
   await expect(bar).toBeVisible();
 });
+
+test("the status bar says how green the electricity is, and explains the number", async ({ page }) => {
+  await page.route("https://api.maptiler.com/**", (route) => route.abort());
+  await page.goto("/"); // the pill needs no layer: the hour's data is always loaded
+  await expect(page.locator('[data-map-status="ready"]')).toBeVisible();
+  const pill = page.getByRole("button", { name: /^Udio obnovljivih u proizvodnji struje, Hrvatska: \d+ %$/ });
+  await expect(pill).toBeVisible();
+  await expect(pill).toContainText(/HR \d+ %/);
+  await pill.click();
+  await expect(page.getByText("Koliko je struja sada zelena")).toBeVisible();
+  await expect(page.getByText("proizvodnje je iz obnovljivih izvora")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Zašto je to važno?" })).toHaveAttribute("href", "/edukacija/");
+  await expect(page.getByRole("button", { name: /^Pokaži na karti: / })).toBeVisible();
+});
