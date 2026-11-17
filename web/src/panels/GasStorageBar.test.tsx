@@ -80,8 +80,12 @@ describe("gas storage", () => {
   it("shows how full each facility is, which way the gas goes, and always names GIE", () => {
     renderWithI18n(<GasStorageBar data={ready} onClose={vi.fn()} />);
     const bar = screen.getByRole("region", { name: "Skladišta plina: koliko su puna" });
-    const [first, second] = within(bar).getAllByRole("listitem");
-    // Croatia comes first
+    // Croatia is open; the other countries wait behind one line
+    expect(within(bar).getByText("Skladišta u drugim zemljama (1)")).toBeInTheDocument();
+    expect(within(bar).getByText("UGS Pelda").closest("details")).not.toHaveAttribute("open");
+    expect(within(bar).getByText("UGS Primjer").closest("details")).toBeNull();
+    const [first, second] = bar.querySelectorAll("li");
+    if (!first || !second) throw new Error("two facilities");
     expect(first).toHaveTextContent("UGS Primjer");
     expect(first).toHaveTextContent("Hrvatska · Primjer");
     expect(first).toHaveTextContent("76,6 %");

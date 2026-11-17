@@ -5,6 +5,9 @@ import { readings, type GasStorageLoad, type Reading } from "../data/gasStorage"
 import { useI18n } from "../i18n";
 import styles from "./GasStorageBar.module.css";
 
+/** The country whose storage is shown first and open. */
+const HOME = "HR";
+
 interface Props {
   data: AsyncState<GasStorageLoad> | null;
   /** switches the gas layer off */
@@ -22,8 +25,13 @@ export function GasStorageBar({ data, onClose }: Props) {
   const { t } = i18n;
   if (data?.status !== "ready" || data.value.kind !== "ready") return null;
   const { storage } = data.value;
-  const rows = readings(storage, "HR");
+  const rows = readings(storage, HOME);
   if (rows.length === 0) return null;
+  // The reader's own country stays open; ten facilities at once would cover the map the bar belongs to.
+  // Where the home country has none, the first country's stand in.
+  const lead = rows.some((row) => row.facility.country === HOME) ? HOME : (rows[0]?.facility.country ?? HOME);
+  const shown = rows.filter((row) => row.facility.country === lead);
+  const others = rows.filter((row) => row.facility.country !== lead);
   return (
     <section className={styles.bar} aria-label={t("storageTitle")}>
       <div className={styles.head}>
@@ -33,10 +41,20 @@ export function GasStorageBar({ data, onClose }: Props) {
         </button>
       </div>
       <ul className={styles.list}>
-        {rows.map((row) => (
+        {shown.map((row) => (
           <Row key={row.facility.id} row={row} />
         ))}
       </ul>
+      {others.length > 0 && (
+        <details className={styles.others}>
+          <summary>{t("storageOthers", { count: others.length })}</summary>
+          <ul className={styles.list}>
+            {others.map((row) => (
+              <Row key={row.facility.id} row={row} />
+            ))}
+          </ul>
+        </details>
+      )}
       <p className={styles.note}>
         {t("storageNote")}{" "}
         <a href={storage.sourceUrl} target="_blank" rel="noopener noreferrer">

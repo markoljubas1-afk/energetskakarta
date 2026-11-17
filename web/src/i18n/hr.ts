@@ -555,6 +555,7 @@ export const hr = {
   storageInjecting: "utiskuje se {value} GWh/dan",
   storageWithdrawing: "povlači se {value} GWh/dan",
   storageSteady: "bez neto promjene",
+  storageOthers: "Skladišta u drugim zemljama ({count})",
   storageVolume: "{stored} od {capacity} TWh",
   storageEstimated: "procjena operatora",
   storageNote:
