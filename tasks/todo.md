@@ -1286,6 +1286,9 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
   (`parse_output_kw`: `charging_station:output` i `socket:*:output`; gola brojka ili „220V” se ne čita). Time
   je promijenjena ranija odluka da se snaga uopće ne vodi. Vidljivo nakon iduće gradnje.
 
+- Pratitelj ciljeva: gumb „Pokaži što se gradi i planira: vjetar i sunce” u odjeljku cilja postavlja filtre
+  (zemlja, statusi u izgradnji i planirano, tehnologije vjetar i sunce); poništava se s „Poništi filtre”.
+
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda
   od 400 kV, prag spajanja krajeva 0,3 km (`pipeline/src/energymap/routes.py`). Karta: `stories/travel.ts`,
@@ -1325,6 +1328,29 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 - Rizici: graf iz OSM-a ima prekide (vodovi koji se ne dodiruju točno) → prag spajanja krajeva i test na
   stvarnim podacima prije objave; put kroz krivu trafostanicu → ručni pregled na karti.
 - Provjera: jedinični testovi grafa i funkcije položaja, e2e za pauzu i nastavak, snimke.
+
+## Faza 39 — povijesni ekstremi u sloju „uživo” (prijedlog vlasnika 2026-11-17) — PLAN, čeka potvrdu
+
+- Cilj: tko otvori kartu u običan dan može pogledati dan kad se nešto dogodilo: tokovi, cijene i miks po satu
+  za nekoliko povijesnih dana, na istoj karti i u istoj traci kao „uživo”.
+- Pristup:
+  1. Dani se biraju iz naših podataka, ne po sjećanju. Iz objavljenih dnevnih podataka (ENTSO-E, od 2015.,
+     `energy/daily/*`) za Hrvatsku se računaju rekordi: najveća dnevna proizvodnja iz vjetra, iz sunca, najveća
+     i najmanja potrošnja, najveći udio obnovljivih. Svaki rekord nosi datum i brojku iz podataka.
+  2. Za te datume postojeći `entsoe/live.collect(source, now)` s povijesnim `now` slaže satni dokument u istom
+     obliku kao `live/current.json` (tokovi, cijene, proizvodnja). Objava: `live/days/<datum>.json` i popis
+     `live/days/index.json` (datum, vrsta rekorda, brojka, zemlja).
+  3. Web: u traci „Tokovi i cijene” izbornik „Povijesni dani”; odabir učita taj dokument umjesto današnjeg,
+     traka jasno piše da se gleda prošli dan i nudi povratak na danas. Dan je u adresi (dijeljiva poveznica).
+  4. Workflow: ručni `live-days` (rekordi se rijetko mijenjaju), uz mogućnost mjesečnog ponavljanja.
+- Razmotreno i odbijeno: ručno odabrani „poznati” dani (toplinski val, ispad Krškog). Bez provjerenog datuma
+  i izvora to bi bila tvrdnja koju podaci ne nose; ako se takav dan želi, dodaje se s izvorom u popis.
+- Zahvaćene datoteke: `pipeline/src/energymap/entsoe/` (novi modul za rekorde i dane), `cli.py`, novi
+  workflow; `web/src/data/live.ts`, `panels/LiveBar.tsx`, `state/url.ts`, `app/App.tsx`.
+- Rizici: ENTSO-E za stare datume zna nemati sve nizove (cijene prije spajanja tržišta, tokovi po granici);
+  dan bez podataka se ne objavljuje. Rekord „po danu” ne znači da je i svaki sat tog dana ekstreman, pa traka
+  kaže što je bio rekord. Ograničenje broja zahtjeva prema ENTSO-E-u (jedan dan ≈ kao jedno satno osvježenje).
+- Provjera: jedinični testovi za izbor rekorda i objavu; e2e za izbornik i povratak na danas; ručni prolaz.
 
 ## Faza 38 — pratitelj ciljeva 2030 (prijedlog vlasnika 2026-11-17) — PRVA VERZIJA GOTOVA 2026-11-17
 
