@@ -15,7 +15,7 @@ import json
 import logging
 import sys
 from collections.abc import Callable, Sequence
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 import httpx
@@ -29,6 +29,7 @@ from energymap.cities import read as cities_read
 from energymap.conflate import OverridesError
 from energymap.entsoe import fetch as energy_fetch
 from energymap.entsoe import live as energy_live
+from energymap.entsoe import records as live_records
 from energymap.entsoe import release as energy_release
 from energymap.entsoe.client import EntsoeClient, EntsoeError
 from energymap.entsoe.energy import TIMEZONE as ENERGY_TZ
@@ -203,10 +204,13 @@ def parser() -> argparse.ArgumentParser:
         ("fetch", "fetch the three-day window into data/live/current.json"),
         ("publish-r2", "publish data/live/current.json to Cloudflare R2"),
         ("publish-dir", "publish data/live/current.json to a local mirror"),
+        ("days-fetch", "fetch the hours of the record days (from data/energy) into data/live/days"),
+        ("days-publish-r2", "publish data/live/days to Cloudflare R2"),
+        ("days-publish-dir", "publish data/live/days to a local mirror"),
     ):
         step = live.add_parser(name, help=text)
         _data_dir(step)
-        if name == "publish-dir":
+        if name.endswith("publish-dir"):
             step.add_argument("--out", type=Path, required=True)
 
     gas = groups.add_parser("gas", help="daily gas production entering the grid (ENTSOG)").add_subparsers(
@@ -428,6 +432,56 @@ def run(args: argparse.Namespace) -> None:
                     datacenter_list=args.datacenters,
                     cities=args.cities,
                 )
+            )
+    elif args.group == "live" and args.step.startswith("days-"):
+        days_dir = paths.root / "live" / "days"
+        index_file = days_dir / "index.json"
+        if args.step == "days-fetch":
+            now = datetime.now(UTC)
+            # the last days are still being reported: a record is only looked for before them
+            day_records = live_records.records(
+                energy_release.local_years(paths.root / "energy"), until=now.date() - timedelta(days=2)
+            )
+            if not day_records:
+                raise BuildValidationError(
+                    [f"no daily energy data under {paths.root / 'energy'}; run `energymap energy pull` first"]
+                )
+            fetched_days: list[date] = []
+            with EntsoeClient.from_env() as client:
+                for day in sorted({record.day for record in day_records}):
+                    # one day that ENTSO-E no longer has is left out; the others are still fetched_days
+                    try:
+                        day_document = live_records.collect_day(client, day)
+                    except (EntsoeError, EntsoeParseError, energy_live.LiveDataError) as exc:
+                        logger.warning(
+                            "record day unavailable", extra={"day": day.isoformat(), "error": str(exc)}
+                        )
+                        continue
+                    if not live_records.has_day(day_document, day):
+                        logger.warning("record day has no data", extra={"day": day.isoformat()})
+                        continue
+                    write_json_atomic(days_dir / f"{day.isoformat()}.json", day_document, compact=True)
+                    fetched_days.append(day)
+            days_index = live_records.index_document(day_records, fetched_days, now)
+            write_json_atomic(index_file, days_index)
+            print(
+                json.dumps(
+                    {"days": [d["date"] for d in days_index["days"]], "missing": days_index["missing"]}
+                )
+            )
+        else:
+            if not index_file.exists():
+                raise BuildValidationError([f"{index_file} not found; run `energymap live days-fetch` first"])
+            days_index = read_json(index_file)
+            days_store: publish.ObjectStore = (
+                publish.R2Store.from_env()
+                if args.step == "days-publish-r2"
+                else publish.DirectoryStore(args.out)
+            )
+            live_records.publish_days(
+                days_store,
+                days_index,
+                {d["date"]: read_json(days_dir / f"{d['date']}.json") for d in days_index["days"]},
             )
     elif args.group == "live":
         target_file = paths.root / "live" / "current.json"
