@@ -196,3 +196,15 @@ def test_a_planned_part_of_a_running_plant_is_marked_as_its_expansion(index: Cou
     assert result.stats["expansions"] == 1
     feature = result.plants["gem:L100000000007:planned"].to_feature()
     assert feature["properties"]["expansionOf"] == "osm:way/1"
+
+
+def test_the_search_index_tells_an_expansion_from_the_plant_it_extends(index: CountryIndex) -> None:
+    from energymap.products import search_index
+
+    plants = {"osm:way/1": osm("osm:way/1", 16.0, 45.5, name="NE Primjer", tech=Technology.NUCLEAR, mw=700)}
+    running = gem(7, 16.0, 45.5, name="Primjer", tech=Technology.NUCLEAR, mw=700)
+    new_unit = gem(7, 16.0, 45.5, name="Primjer", tech=Technology.NUCLEAR, status=Status.PLANNED, mw=1100)
+    result = conflate(plants, [new_unit, running], index=index, scope=SCOPE, retrieved_at=NOW)
+
+    details = {row[0]: row[6] for row in search_index(result.plants.values(), [])["rows"]}
+    assert details == {"osm:way/1": "nuclear|700", "gem:L100000000007:planned": "nuclear|1100|planned"}

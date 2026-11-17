@@ -66,7 +66,9 @@ def search_index(
     """Compact, row-oriented index of named point assets, sorted by name for stable output.
 
     ``detail`` is a short machine-readable hint the UI can format per language:
-    ``"<technology>|<capacity MW or empty>"`` for plants, ``"<max kV or empty>"`` for substations and
+    ``"<technology>|<capacity MW or empty>"`` for plants, with ``|<status>`` added when the record is a
+    planned or under-construction part of a plant that already runs (``expansion_of``: the source names
+    both alike, so search has to tell them apart), ``"<max kV or empty>"`` for substations and
     ``"<power MW or empty>"`` for data centres, ``"<inventory year>|<electricity MWh>"`` for cities and
     ``"<kind>|<substance>"`` for extraction sites.
 
@@ -84,7 +86,8 @@ def search_index(
                     "plants",
                     plant.country,
                     *plant.location,
-                    f"{plant.technology}|{capacity}",
+                    f"{plant.technology}|{capacity}"
+                    + (f"|{plant.status.value}" if plant.expansion_of is not None else ""),
                 ]
             )
     for station in substations:

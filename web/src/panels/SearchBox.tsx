@@ -38,7 +38,11 @@ export function SearchBox({ indexUrl, onPick }: Props) {
     const where = hit.country ? i18n.country(hit.country) : "";
     let what: (string | null)[];
     if (hit.kind === "plant") {
-      what = [i18n.technology(hit.technology), hit.capacityMw !== null ? i18n.power(hit.capacityMw) : null];
+      what = [
+        i18n.technology(hit.technology),
+        hit.capacityMw !== null ? i18n.power(hit.capacityMw) : null,
+        hit.expansion ? t(`expansion_${hit.expansion}`) : null,
+      ];
     } else if (hit.kind === "datacenter") {
       what = [t("kind_datacenter"), hit.powerMw !== null ? i18n.power(hit.powerMw) : null];
     } else if (hit.kind === "city") {

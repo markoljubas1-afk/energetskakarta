@@ -1,7 +1,7 @@
 import { fireEvent, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { latestReading, readings, storageOverlay, type GasStorage } from "../data/gasStorage";
+import { countryTotals, latestReading, readings, storageOverlay, type GasStorage } from "../data/gasStorage";
 import { renderWithI18n } from "../test/render";
 import { GasStorageBar } from "./GasStorageBar";
 
@@ -175,5 +175,38 @@ describe("gas storage", () => {
   it("draws no curve from two days of data", () => {
     renderWithI18n(<GasStorageBar data={ready} onClose={vi.fn()} />);
     expect(document.querySelector("polyline")).toBeNull();
+  });
+
+  it("adds a country's facilities up, and leaves a single facility to speak for itself", () => {
+    const [hungary, croatia] = STORAGE.facilities;
+    if (!hungary || !croatia) throw new Error("fixture");
+    // a second Hungarian facility: 10 of 20 TWh, next to the first one's 19.994 of 20.48
+    const two: GasStorage = {
+      ...STORAGE,
+      facilities: [
+        hungary,
+        {
+          ...hungary,
+          id: "21W-MASIK------F",
+          name: "UGS Masik",
+          workingGasTwh: 20,
+          fullPercent: [50, null],
+          inStorageTwh: [10, null],
+        },
+        croatia,
+      ],
+    };
+    const totals = countryTotals(readings(two));
+    expect(totals).toHaveLength(1);
+    expect(totals[0]).toMatchObject({ country: "HU", facilities: 2 });
+    expect(totals[0]?.storedTwh).toBeCloseTo(29.994, 6);
+    expect(totals[0]?.full).toBeCloseTo((29.994 / 40.48) * 100, 6);
+    expect(countryTotals(readings(STORAGE))).toEqual([]);
+
+    renderWithI18n(
+      <GasStorageBar data={{ status: "ready", value: { kind: "ready", storage: two } }} onClose={vi.fn()} />,
+    );
+    const list = screen.getByRole("list", { name: "Ukupno po zemlji", hidden: true });
+    expect(list).toHaveTextContent("Mađarska ukupno 74,1 %: 30 od 40,5 TWh u 2 skladišta");
   });
 });

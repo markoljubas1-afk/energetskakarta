@@ -1,7 +1,7 @@
 import { ArrowDownToLine, ArrowUpFromLine, X } from "lucide-react";
 
 import type { AsyncState } from "../app/useAsync";
-import { readings, type GasStorageLoad, type Reading } from "../data/gasStorage";
+import { countryTotals, readings, type GasStorageLoad, type Reading } from "../data/gasStorage";
 import { useI18n } from "../i18n";
 import styles from "./GasStorageBar.module.css";
 
@@ -37,6 +37,7 @@ export function GasStorageBar({ data, onClose, picked = null }: Props) {
     .filter(open)
     .sort((a, b) => Number(b.facility.id === picked) - Number(a.facility.id === picked));
   const others = rows.filter((row) => !open(row));
+  const totals = countryTotals(rows);
   return (
     <section className={styles.bar} aria-label={t("storageTitle")}>
       <div className={styles.head}>
@@ -53,6 +54,21 @@ export function GasStorageBar({ data, onClose, picked = null }: Props) {
       {others.length > 0 && (
         <details className={styles.others}>
           <summary>{t("storageOthers", { count: others.length })}</summary>
+          {totals.length > 0 && (
+            <ul className={styles.totals} aria-label={t("storageTotals")}>
+              {totals.map((total) => (
+                <li key={total.country}>
+                  <strong>{i18n.country(total.country)}</strong>{" "}
+                  {t("storageTotal", {
+                    full: i18n.number(total.full, 1),
+                    stored: i18n.number(total.storedTwh, 1),
+                    capacity: i18n.number(total.capacityTwh, 1),
+                    facilities: total.facilities,
+                  })}
+                </li>
+              ))}
+            </ul>
+          )}
           <ul className={styles.list}>
             {others.map((row) => (
               <Row key={row.facility.id} row={row} />

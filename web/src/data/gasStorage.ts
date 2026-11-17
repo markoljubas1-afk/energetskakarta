@@ -158,3 +158,35 @@ export function storageOverlay(storage: GasStorage): FeatureCollection<Point, St
   });
   return { type: "FeatureCollection", features };
 }
+
+export interface CountryTotal {
+  country: string;
+  facilities: number;
+  storedTwh: number;
+  capacityTwh: number;
+  /** stored as a part of the capacity, in percent */
+  full: number;
+}
+
+/**
+ * Gas in storage added up by country, over the facilities that state both what they hold and what they can
+ * hold, for countries with more than one of them (a single facility is its own total). Each facility counts
+ * with its own last reported day, so a total can mix two neighbouring gas days.
+ */
+export function countryTotals(rows: readonly Reading[]): CountryTotal[] {
+  const totals = new Map<string, CountryTotal>();
+  for (const row of rows) {
+    const capacity = row.facility.workingGasTwh;
+    if (row.inStorageTwh === null || capacity === null || capacity <= 0) continue;
+    const country = row.facility.country;
+    const total = totals.get(country) ?? { country, facilities: 0, storedTwh: 0, capacityTwh: 0, full: 0 };
+    total.facilities += 1;
+    total.storedTwh += row.inStorageTwh;
+    total.capacityTwh += capacity;
+    totals.set(country, total);
+  }
+  return [...totals.values()]
+    .filter((total) => total.facilities > 1)
+    .map((total) => ({ ...total, full: (total.storedTwh / total.capacityTwh) * 100 }))
+    .sort((a, b) => a.country.localeCompare(b.country));
+}

@@ -589,6 +589,8 @@ export const en: Dictionary = {
   storageInjecting: "injecting {value} GWh/day",
   storageWithdrawing: "withdrawing {value} GWh/day",
   storageSteady: "no net change",
+  storageTotals: "Totals by country",
+  storageTotal: "{full}% in all: {stored} of {capacity} TWh in {facilities} facilities",
   storageTrend: "since {from}: {before}% → {now}%",
   storageOthers: "Storage in other countries ({count})",
   storageVolume: "{stored} of {capacity} TWh",

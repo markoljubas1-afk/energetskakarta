@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { normalize, prepareIndex, search, SearchIndexSchema, type SearchIndex } from "./search";
+import { normalize, prepareIndex, search, SearchIndexSchema, toHit, type SearchIndex } from "./search";
 
 const index: SearchIndex = SearchIndexSchema.parse({
   version: 1,
@@ -51,6 +51,28 @@ describe("search", () => {
     const [hit] = search(prepared, "stari");
     expect(hit).toMatchObject({ kind: "plant", country: null, technology: "solar", capacityMw: 0.5 });
     expect(search(prepared, "nepoznata")[0]).toMatchObject({ kind: "substation", maxVoltageKv: null });
+  });
+
+  it("knows a result that is a new part of a running plant, which the source names alike", () => {
+    expect(
+      toHit(["gem:L1:planned", "NE Primjer", "plants", "SI", 15.5, 45.9, "nuclear|1100|planned"]),
+    ).toMatchObject({
+      kind: "plant",
+      capacityMw: 1100,
+      expansion: "planned",
+    });
+    expect(
+      toHit(["gem:L2:construction", "TE Primjer", "plants", "HU", 19, 47, "gas|500|construction"]),
+    ).toMatchObject({
+      expansion: "construction",
+    });
+    // an ordinary plant, and an index from before the mark existed
+    expect(toHit(["osm:way/1", "HE Dubrovnik", "plants", "HR", 18.1, 42.6, "hydro|252"])).toMatchObject({
+      expansion: null,
+    });
+    expect(toHit(["osm:way/2", "X", "plants", "HR", 18, 42, "hydro|1|operating"])).toMatchObject({
+      expansion: null,
+    });
   });
 
   it("respects the limit", () => {

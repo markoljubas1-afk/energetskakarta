@@ -48,6 +48,11 @@ export type SearchHit =
       lat: number;
       technology: Technology;
       capacityMw: number | null;
+      /**
+       * Set when the record is a new part of a plant that already runs (pipeline conflate.py): the source
+       * names both alike, so the result says which one this is. Null for an ordinary plant.
+       */
+      expansion: "planned" | "construction" | null;
     }
   | {
       kind: "substation";
@@ -97,7 +102,7 @@ export function toHit(row: SearchIndex["rows"][number]): SearchHit {
   const [id, name, layer, rawCountry, lon, lat, detail] = row;
   const country = isOneOf(SCOPE_COUNTRIES, rawCountry) ? rawCountry : null;
   if (layer === "plants") {
-    const [tech = "", capacity = ""] = detail.split("|");
+    const [tech = "", capacity = "", status = ""] = detail.split("|");
     return {
       kind: "plant",
       id,
@@ -107,6 +112,7 @@ export function toHit(row: SearchIndex["rows"][number]): SearchHit {
       lat,
       technology: isOneOf(TECHNOLOGIES, tech) ? tech : "other",
       capacityMw: capacity === "" ? null : Number(capacity),
+      expansion: status === "planned" || status === "construction" ? status : null,
     };
   }
   if (layer === "cities") {

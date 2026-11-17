@@ -1316,6 +1316,13 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
   `/gradovi/` → gradovi na karti; `/kapaciteti/` → slobodni kapacitet na karti i sunce s najbližom
   trafostanicom; `/api/` → Hrvatska kao JSON i karta. Nijedna od tih stranica dosad nije vodila na kartu.
 
+### 35-15 Zbroj skladišta po zemlji; oznaka proširenja u pretrazi i na stranicama — KOD GOTOV 2026-11-17
+- Skladišta plina: u sklopljenom dijelu trake zbroj po zemlji za zemlje s više skladišta (`countryTotals`:
+  ukupno %, TWh od kapaciteta, broj skladišta). Svako skladište ulazi sa svojim zadnjim prijavljenim danom.
+- Proširenja: indeks pretrage uz planirani zapis ili zapis u izgradnji na lokaciji postojeće elektrane nosi
+  status (`"nuclear|1100|planned"`, `products.search_index`); rezultat pretrage i statična stranica elektrane
+  pišu „planirano proširenje” / „proširenje u izgradnji” (`SearchHit.expansion`). Vidljivo nakon iduće gradnje.
+
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda
   od 400 kV, prag spajanja krajeva 0,3 km (`pipeline/src/energymap/routes.py`). Karta: `stories/travel.ts`,

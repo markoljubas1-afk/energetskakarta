@@ -168,9 +168,16 @@ export function assetPage(
   const kind = i18n.t(`kind_${hit.kind}`);
   const country = hit.country ? i18n.country(hit.country) : "";
   const kv = (value: number): string => `${i18n.number(value)} ${i18n.t("unitKv")}`;
+  // a new part of a running plant carries the plant's own name in the source: the page says which it is
+  const expansion = hit.kind === "plant" && hit.expansion ? i18n.t(`expansion_${hit.expansion}`) : null;
+  const named = expansion ? `${hit.name} (${expansion})` : hit.name;
   const detail =
     hit.kind === "plant"
-      ? [i18n.technology(hit.technology), hit.capacityMw !== null ? i18n.power(hit.capacityMw) : null]
+      ? [
+          i18n.technology(hit.technology),
+          hit.capacityMw !== null ? i18n.power(hit.capacityMw) : null,
+          expansion,
+        ]
       : hit.kind === "substation"
         ? [hit.maxVoltageKv !== null ? kv(hit.maxVoltageKv) : null]
         : hit.kind === "datacenter"
@@ -243,7 +250,7 @@ export function assetPage(
     alternatePath: PATHS[other(lang)].asset(slug),
     title,
     description: copy.asset.description(kind, hit.name, detailText, country),
-    heading: hit.name,
+    heading: named,
     lead: `<p>${e(kind)}${detailText ? ` · ${e(detailText)}` : ""}${country ? ` · ${e(country)}` : ""}</p>${extras.lead}`,
     sections: [
       { heading: kind, html: definitions(rows) },

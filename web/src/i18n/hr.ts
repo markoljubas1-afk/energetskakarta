@@ -585,6 +585,8 @@ export const hr = {
   storageInjecting: "utiskuje se {value} GWh/dan",
   storageWithdrawing: "povlači se {value} GWh/dan",
   storageSteady: "bez neto promjene",
+  storageTotals: "Ukupno po zemlji",
+  storageTotal: "ukupno {full} %: {stored} od {capacity} TWh u {facilities} skladišta",
   storageTrend: "od {from}: {before} % → {now} %",
   storageOthers: "Skladišta u drugim zemljama ({count})",
   storageVolume: "{stored} od {capacity} TWh",
