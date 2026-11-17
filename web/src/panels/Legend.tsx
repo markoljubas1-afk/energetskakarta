@@ -116,7 +116,8 @@ export function Legend({
       {chargers && (
         <>
           <h3>{t("layer_chargers")}</h3>
-          <ul className={styles.technologies}>
+          {/* the bands' texts are sentences: one column, or the second one is cut off by the legend's edge */}
+          <ul className={chargersBanded ? styles.voltages : styles.technologies}>
             <li>
               <span className={styles.dot} style={{ background: palette.charger }} aria-hidden="true" />
               {t(chargersBanded ? "legendChargerNoData" : "legendCharger")}

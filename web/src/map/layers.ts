@@ -960,47 +960,55 @@ export function dataLayers({
         "text-halo-width": 1.6,
       },
     });
-    layers.push({
-      id: `${LAYER_PREFIX}plant-labels`,
-      type: "symbol",
+    const plantLabel = {
+      type: "symbol" as const,
       source: GRID_SOURCE,
       "source-layer": "plants",
       minzoom: 7,
-      filter: ["all", ["has", "name"], plantFilter(state, true)],
-      layout: {
-        visibility: show("plants"),
-        // a new part of a running plant carries the plant's own name in the source: say which it is
-        "text-field": [
-          "case",
-          ["has", "expansionOf"],
-          [
-            "concat",
-            ["get", "name"],
-            " (",
-            [
-              "match",
-              ["get", "status"],
-              "construction",
-              words.expansion_construction,
-              words.expansion_planned,
-            ],
-            ")",
-          ],
-          ["get", "name"],
-        ],
-        "text-font": labels,
-        "text-size": ["interpolate", ["linear"], ["zoom"], 7, 10.5, 12, 12.5],
-        // an expansion sits on the very spot of the plant it extends: its label goes under that plant's own
-        // (two lines of it), or the two would collide and only one would ever be drawn
-        "text-offset": ["case", ["has", "expansionOf"], ["literal", [0, 3.6]], ["literal", [0, 1.1]]],
-        "text-anchor": "top",
-        "text-optional": true,
-        "symbol-sort-key": ["-", ["coalesce", ["get", "capacityMw"], 0]],
-      },
       paint: {
         "text-color": palette.labelText,
         "text-halo-color": palette.labelHalo,
         "text-halo-width": 1.4,
+      },
+    };
+    const plantLabelSize: ExpressionSpecification = ["interpolate", ["linear"], ["zoom"], 7, 10.5, 12, 12.5];
+    layers.push({
+      ...plantLabel,
+      id: `${LAYER_PREFIX}plant-labels`,
+      filter: ["all", ["has", "name"], ["!", ["has", "expansionOf"]], plantFilter(state, true)],
+      layout: {
+        visibility: show("plants"),
+        "text-field": ["get", "name"],
+        "text-font": labels,
+        "text-size": plantLabelSize,
+        "text-offset": [0, 1.1],
+        "text-anchor": "top",
+        "text-optional": true,
+        "symbol-sort-key": ["-", ["coalesce", ["get", "capacityMw"], 0]],
+      },
+    });
+    // A new part of a running plant carries the plant's own name in the source and sits on its very spot.
+    // Its label says which it is and goes under the plant's own. It is a layer of its own that is always
+    // drawn: placed with the others it collided with the plant's label and was never shown (2026-11-17).
+    layers.push({
+      ...plantLabel,
+      id: `${LAYER_PREFIX}plant-expansion-labels`,
+      filter: ["all", ["has", "name"], ["has", "expansionOf"], plantFilter(state, true)],
+      layout: {
+        visibility: show("plants"),
+        "text-field": [
+          "concat",
+          ["get", "name"],
+          " (",
+          ["match", ["get", "status"], "construction", words.expansion_construction, words.expansion_planned],
+          ")",
+        ],
+        "text-font": labels,
+        "text-size": plantLabelSize,
+        "text-offset": [0, 4],
+        "text-anchor": "top",
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
       },
     });
   }

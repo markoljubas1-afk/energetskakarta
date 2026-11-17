@@ -91,6 +91,12 @@ describe("generated map style", () => {
     expect(ids(style(defaultState("hr"), "light", null, false))).not.toContain("energymap-plant-labels");
     const withGlyphs = ids(style(defaultState("hr"), "light", ["Noto Sans Regular"], false));
     expect(withGlyphs).toContain("energymap-plant-labels");
+    // a new part of a running plant has a label layer of its own, always drawn under the plant's own label
+    const expansion = style(defaultState("hr"), "light", ["Noto Sans Regular"], false).layers.find(
+      (layer) => layer.id === "energymap-plant-expansion-labels",
+    );
+    expect(expansion?.layout).toMatchObject({ "text-allow-overlap": true, "text-offset": [0, 4] });
+    expect(JSON.stringify(expansion?.layout)).toContain("planirano proširenje");
     // the gas figure is a label too, so it exists only with glyphs and is hidden while the layer is off
     expect(ids(style(defaultState("hr"), "light", null, false))).not.toContain("energymap-gas-labels");
     expect(withGlyphs).toContain("energymap-gas-labels");
