@@ -88,6 +88,8 @@ export interface Reading {
   estimated: boolean;
   /** how the fill changed against the day before in the data, in percentage points; null: no day before */
   change: number | null;
+  /** the fill on every day the facility reported, oldest first, for the small curve of the last weeks */
+  history: { day: string; full: number }[];
 }
 
 /** A facility's last reported day; null when it reported no fill at all. */
@@ -110,6 +112,10 @@ export function latestReading(storage: GasStorage, facility: Facility): Reading 
       direction: net > 0 ? "injecting" : net < 0 ? "withdrawing" : "steady",
       estimated: facility.status[index] === "E",
       change: before == null ? null : Math.round((full - before) * 100) / 100,
+      history: storage.days.flatMap((each, at) => {
+        const value = facility.fullPercent[at];
+        return value == null ? [] : [{ day: each, full: value }];
+      }),
     };
   }
   return null;

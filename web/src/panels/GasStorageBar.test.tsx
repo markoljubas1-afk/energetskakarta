@@ -137,4 +137,43 @@ describe("gas storage", () => {
     expect(first?.closest("details")).toBeNull();
     expect(within(bar).queryByText(/Skladišta u drugim zemljama/)).not.toBeInTheDocument();
   });
+
+  it("draws the last weeks as a small curve and says where the fill started and where it is", () => {
+    const days = ["2026-11-10", "2026-11-11", "2026-11-12", "2026-11-13", "2026-11-14", "2026-11-15"];
+    const [, croatia] = STORAGE.facilities;
+    if (!croatia) throw new Error("fixture");
+    const month: GasStorage = {
+      ...STORAGE,
+      days,
+      facilities: [
+        {
+          ...croatia,
+          status: days.map(() => "C"),
+          // one day not reported: the curve simply has one point fewer
+          fullPercent: [82.1, 81.0, null, 79.2, 77.07, 76.63],
+          inStorageTwh: days.map(() => 3.7),
+          injectionGwhPerDay: days.map(() => 0),
+          withdrawalGwhPerDay: days.map(() => 20),
+        },
+      ],
+    };
+    renderWithI18n(
+      <GasStorageBar
+        data={{ status: "ready", value: { kind: "ready", storage: month } }}
+        onClose={vi.fn()}
+      />,
+    );
+    const bar = screen.getByRole("region", { name: "Skladišta plina: koliko su puna" });
+    expect(bar).toHaveTextContent("od 10. studenoga 2026.: 82,1 % → 76,6 %");
+    const curve = bar.querySelector("polyline");
+    expect(curve?.getAttribute("points")?.split(" ")).toHaveLength(5);
+    // the highest day is at the top of the curve and the lowest at the bottom
+    expect(curve?.getAttribute("points")).toMatch(/^0\.0,2\.0 /);
+    expect(curve?.getAttribute("points")).toMatch(/ 120\.0,24\.0$/);
+  });
+
+  it("draws no curve from two days of data", () => {
+    renderWithI18n(<GasStorageBar data={ready} onClose={vi.fn()} />);
+    expect(document.querySelector("polyline")).toBeNull();
+  });
 });

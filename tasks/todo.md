@@ -1253,7 +1253,11 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 - Provjereno na živoj stranici 2026-11-17 (računalo i mobitel): natpis kod Krškog, klik na krug i na
   pojedinačnu punionicu (kartica s operatorom i miksom), točka i natpis Okolija, klik na nju otvara skladište
   u traci. Dodan e2e za skladišta (`gas.spec.ts`) i stavka skladišta u legendi.
-- Nije napravljeno: povijest zadnjih 30 dana po skladištu; zbroj po zemlji.
+- Povijest zadnjih 30 dana po skladištu: mala krivulja u traci uz „od <dan>: X % → Y %” (krivulja je
+  razvučena između vlastitog minimuma i maksimuma, pa stanje kažu brojke, ne ona).
+- Preuzimanje OSM izvadaka čeka i pokušava ponovno dok je Geofabrik nedostupan (`patiently`, 30/60/120/240 s):
+  2026-11-17 su tri od šest gradnji pale na „Network is unreachable”.
+- Nije napravljeno: zbroj skladišta po zemlji.
 
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda

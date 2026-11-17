@@ -110,6 +110,54 @@ function Row({ row, picked = false }: { row: Reading; picked?: boolean }) {
         {` · ${i18n.date(row.day)}`}
         {row.estimated && ` · ${t("storageEstimated")}`}
       </p>
+      <Trend row={row} />
     </li>
+  );
+}
+
+const TREND_WIDTH = 120;
+const TREND_HEIGHT = 26;
+/** Fewer days than this are not a curve. */
+const TREND_MIN_DAYS = 5;
+
+/**
+ * The fill over the days the data holds (a month): a small curve, with its first and last value in words.
+ * The curve is stretched between its own lowest and highest day to show the direction, so it says nothing
+ * about how full the store is; the two figures next to it do.
+ */
+function Trend({ row }: { row: Reading }) {
+  const i18n = useI18n();
+  const { t } = i18n;
+  const first = row.history[0];
+  const last = row.history[row.history.length - 1];
+  if (row.history.length < TREND_MIN_DAYS || !first || !last) return null;
+  const values = row.history.map((point) => point.full);
+  const low = Math.min(...values);
+  const span = Math.max(...values) - low || 1;
+  const step = TREND_WIDTH / (values.length - 1);
+  const points = values
+    .map((value, index) => {
+      const y = TREND_HEIGHT - 2 - ((value - low) / span) * (TREND_HEIGHT - 4);
+      return `${(index * step).toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(" ");
+  return (
+    <p className={styles.trend}>
+      <svg
+        viewBox={`0 0 ${String(TREND_WIDTH)} ${String(TREND_HEIGHT)}`}
+        width={TREND_WIDTH}
+        height={TREND_HEIGHT}
+        aria-hidden="true"
+      >
+        <polyline points={points} />
+      </svg>
+      <span>
+        {t("storageTrend", {
+          from: i18n.date(first.day),
+          before: i18n.number(first.full, 1),
+          now: i18n.number(last.full, 1),
+        })}
+      </span>
+    </p>
   );
 }
