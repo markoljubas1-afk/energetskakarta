@@ -1,7 +1,8 @@
-import { screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
+import { I18nProvider } from "../i18n";
 import { renderWithI18n } from "../test/render";
 import { DetailsPanel } from "./DetailsPanel";
 
@@ -58,6 +59,41 @@ describe("DetailsPanel", () => {
     const link = screen.getByRole("link", { name: /Pogledaj ili ispravi/ });
     expect(link).toHaveAttribute("href", "https://www.openstreetmap.org/way/109");
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
+  it("folds down to its title and back, and opens again for another object", () => {
+    const plant = {
+      id: "osm:way/109",
+      sources: ["openstreetmap" as const],
+      gemUrl: null,
+      kind: "plant" as const,
+      expansion: false,
+      status: "operating" as const,
+      operator: null,
+      name: "RHE Primjer",
+      technology: "pumped_storage" as const,
+      capacityMw: 276,
+      commissioningYear: 1985,
+      country: "HR",
+    };
+    const view = renderWithI18n(<DetailsPanel id={plant.id} onClose={vi.fn()} selection={plant} />);
+    const panel = screen.getByRole("heading", { name: "RHE Primjer" }).closest("[class*=panel]");
+    fireEvent.click(screen.getByRole("button", { name: "Spusti karticu" }));
+    expect(panel).toHaveAttribute("data-folded");
+    expect(screen.getByRole("button", { name: "Podigni karticu" })).toHaveAttribute("aria-expanded", "false");
+    // the title and the close button stay
+    expect(screen.getByRole("heading", { name: "RHE Primjer" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Zatvori detalje" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Podigni karticu" }));
+    expect(panel).not.toHaveAttribute("data-folded");
+
+    fireEvent.click(screen.getByRole("button", { name: "Spusti karticu" }));
+    view.rerender(
+      <I18nProvider lang="hr">
+        <DetailsPanel id="osm:way/110" onClose={vi.fn()} selection={{ ...plant, id: "osm:way/110" }} />
+      </I18nProvider>,
+    );
+    expect(screen.getByRole("button", { name: "Spusti karticu" })).toHaveAttribute("aria-expanded", "true");
   });
 
   it("shows an interconnector line in English", () => {

@@ -1,4 +1,4 @@
-import { ExternalLink, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, ChevronUp, ExternalLink, SlidersHorizontal, X } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { AppConfig } from "../config";
@@ -431,6 +431,41 @@ function Explorer({
     capFeaturesOf,
   );
   const [capStation, setCapStation] = useState<string | null>(null);
+  // The bars along the bottom can be folded away together, to see the map (on a phone they take up to
+  // half of the screen). Remembered for the bars that were open: opening another one shows them again.
+  const openBars = [
+    capOn && "capacity",
+    solarOn && "solar",
+    geoOn && "geothermal",
+    state.year !== null && "time",
+    state.live && "live",
+  ]
+    .filter(Boolean)
+    .join(",");
+  const [foldedBars, setFoldedBars] = useState<string | null>(null);
+  const barsFolded = openBars !== "" && foldedBars === openBars;
+  // a click on the map that a bar answers brings the bars back
+  const pickSolarPoint = useCallback(
+    (point: { lng: number; lat: number } | null) => {
+      setSolarPoint(point);
+      setFoldedBars(null);
+    },
+    [setSolarPoint, setFoldedBars],
+  );
+  const pickCapStation = useCallback(
+    (id: string | null) => {
+      setCapStation(id);
+      setFoldedBars(null);
+    },
+    [setCapStation, setFoldedBars],
+  );
+  const pickGeoSite = useCallback(
+    (id: string | null) => {
+      setGeoSite(id);
+      setFoldedBars(null);
+    },
+    [setGeoSite, setFoldedBars],
+  );
   // Time machine (Faza 18-3): the timeline loads while the bar is open; the tiles' plants are filtered by
   // the year in the map style, and retired plants come from the timeline as their own small source.
   const timelineKey = state.year !== null ? (current.timeline ?? null) : null;
@@ -663,15 +698,15 @@ function Explorer({
             spotlight={shownSpotlight}
             around={around}
             solar={solarPicture}
-            {...(solarOn ? { onPoint: setSolarPoint } : {})}
+            {...(solarOn ? { onPoint: pickSolarPoint } : {})}
             maptilerKey={config.maptilerKey}
             live={liveOverlay}
             gas={gasFeatures}
             timeline={timelineFeatures}
             geothermal={geoFeatures}
             capacity={capOn ? capFeatures : null}
-            onCapacityStation={setCapStation}
-            onGeothermalSite={setGeoSite}
+            onCapacityStation={pickCapStation}
+            onGeothermalSite={pickGeoSite}
             attribution={i18n.attribution(sources)}
             theme={theme}
             state={mapState}
@@ -811,7 +846,24 @@ function Explorer({
             />
           </div>
 
-          <div className={styles.dock}>
+          <div className={styles.dock} {...(barsFolded ? { "data-folded": "" } : {})}>
+            {openBars !== "" && (
+              <button
+                type="button"
+                className={styles.dockFold}
+                aria-expanded={!barsFolded}
+                onClick={() => {
+                  setFoldedBars(barsFolded ? null : openBars);
+                }}
+              >
+                {barsFolded ? (
+                  <ChevronUp size={15} strokeWidth={1.75} aria-hidden="true" />
+                ) : (
+                  <ChevronDown size={15} strokeWidth={1.75} aria-hidden="true" />
+                )}
+                {t(barsFolded ? "barsUnfold" : "barsFold")}
+              </button>
+            )}
             {capOn && (
               <div className={styles.liveSlot}>
                 <ErrorBoundary area="capacity" fallback={panelFallback}>

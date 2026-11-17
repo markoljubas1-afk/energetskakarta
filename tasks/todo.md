@@ -1210,6 +1210,15 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 - Razmotreno i odbijeno: dopisati oznaku u samo ime u podacima (ime više ne bi bilo izvorovo).
 - Nije napravljeno: pretraga i statične stranice elektrana ne nose oznaku (indeks pretrage nema to polje).
 
+### 35-9 Kartice se mogu spustiti i sakriti (zahtjev vlasnika 2026-11-17) — GOTOVO 2026-11-17
+- Problem: na mobitelu kartice na dnu uzimaju do pola zaslona, a kartica objekta prekriva kartu.
+- Kartice na dnu (kapacitet, sunce, geotermalna, vremeplov, uživo): jedan gumb „Sakrij kartice” / „Pokaži
+  kartice” iznad njih (`App.tsx`, `.dockFold`). Sloj ostaje uključen; pamti se za skup otvorenih kartica, pa
+  ih otvaranje nove ili dodir karte na koji kartica odgovara (točka za sunce, trafostanica, geotermalna
+  lokacija) vraća. Kartice ostaju montirane (stanje reprodukcije se ne gubi).
+- Kartica objekta: gumb „Spusti karticu” ostavlja samo naslov; drugi objekt je opet otvara (`DetailsPanel`).
+- Provjera: jedinični test kartice, e2e `live.spec.ts`, ručno mobitel (karta 376 → 632 px) i računalo.
+
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda
   od 400 kV, prag spajanja krajeva 0,3 km (`pipeline/src/energymap/routes.py`). Karta: `stories/travel.ts`,

@@ -4,9 +4,19 @@
 
 .head {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
   align-items: start;
   gap: 10px;
+}
+
+/* the two buttons sit together */
+.close + .close {
+  margin-left: -6px;
+}
+
+/* folded: the title only, so the map is free again */
+.panel[data-folded] > :not(.head) {
+  display: none;
 }
 
 .icon {

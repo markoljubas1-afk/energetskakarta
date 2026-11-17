@@ -94,3 +94,13 @@ test("flow direction is animated, unless the visitor prefers reduced motion", as
   await expect(page.locator('[data-map-status="ready"]')).toBeVisible();
   await expect(map).not.toHaveAttribute("data-flow-animation", /./);
 });
+
+test("the bars fold away to free the map and come back", async ({ page }) => {
+  await openLive(page);
+  const bar = page.getByRole("region", { name: "Tokovi preko granica i cijene po satu" });
+  await page.getByRole("button", { name: "Sakrij kartice" }).click();
+  await expect(bar).toBeHidden();
+  await expect(page).toHaveURL(/live=1/); // folded, not switched off
+  await page.getByRole("button", { name: "Pokaži kartice" }).click();
+  await expect(bar).toBeVisible();
+});

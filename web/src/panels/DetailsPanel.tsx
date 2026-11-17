@@ -2,6 +2,8 @@ import {
   Building2,
   Cable,
   ExternalLink,
+  ChevronDown,
+  ChevronUp,
   Factory,
   Flame,
   Fuel,
@@ -11,7 +13,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { osmUrl, SECTORS } from "../domain";
 import { useI18n, type I18n } from "../i18n";
@@ -263,6 +265,10 @@ function CityDetails({ city, i18n }: { city: CitySelection; i18n: I18n }) {
 export function DetailsPanel({ id, selection, onClose, photo = null, around = null }: Props) {
   const i18n = useI18n();
   const { t } = i18n;
+  // Folded down to its title, the card gives the map back (on a phone it covers half of it). Kept per
+  // object: choosing another one opens the card again.
+  const [foldedFor, setFoldedFor] = useState<string | null>(null);
+  const folded = foldedFor === id;
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent): void => {
@@ -430,7 +436,7 @@ export function DetailsPanel({ id, selection, onClose, photo = null, around = nu
   }
 
   return (
-    <div className={styles.panel}>
+    <div className={styles.panel} {...(folded ? { "data-folded": "" } : {})}>
       <div className={styles.head}>
         {Icon && (
           <span className={styles.icon} aria-hidden="true">
@@ -441,6 +447,17 @@ export function DetailsPanel({ id, selection, onClose, photo = null, around = nu
           {kind && <p className={styles.kind}>{kind}</p>}
           <h2 aria-live="polite">{title}</h2>
         </div>
+        <button
+          type="button"
+          className={styles.close}
+          aria-expanded={!folded}
+          aria-label={t(folded ? "cardUnfold" : "cardFold")}
+          onClick={() => {
+            setFoldedFor(folded ? null : id);
+          }}
+        >
+          {folded ? <ChevronUp size={18} strokeWidth={1.75} /> : <ChevronDown size={18} strokeWidth={1.75} />}
+        </button>
         <button type="button" className={styles.close} onClick={onClose} aria-label={t("detailsClose")}>
           <X size={18} strokeWidth={1.75} />
         </button>

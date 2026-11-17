@@ -128,6 +128,38 @@
   overscroll-behavior: contain;
 }
 
+/* One small button folds the bars away and brings them back: the map is what the reader came for. */
+.dockFold {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 4px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.dockFold:hover {
+  background: var(--surface-2);
+}
+
+@media (pointer: coarse) {
+  .dockFold {
+    min-height: 40px;
+    padding: 6px 16px;
+  }
+}
+
+.dock[data-folded] .liveSlot {
+  display: none;
+}
+
 /* with the details panel or the welcome card open the bars end where that column begins (56 + 320 + 12) */
 @media (min-width: 1200px) {
   .details ~ .dock {
@@ -179,6 +211,11 @@
     /* the map keeps at least half of the screen */
     max-height: 50dvh;
     pointer-events: auto;
+  }
+
+  /* on a phone the button is a strip of its own above the bars */
+  .dockFold {
+    margin: 6px 0;
   }
 
   .liveSlot {
