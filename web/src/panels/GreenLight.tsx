@@ -10,7 +10,7 @@ import {
   STALE_AFTER_HOURS,
 } from "../data/greenShare";
 import type { Renewables } from "../data/eurostat";
-import type { Live } from "../data/live";
+import { pricesAt, type Live } from "../data/live";
 import { isOneOf, SCOPE_COUNTRIES, type CountryCode, type Technology } from "../domain";
 import { useI18n } from "../i18n";
 import { PopoverMenu } from "../share/PopoverMenu";
@@ -66,6 +66,8 @@ export function GreenLight({
     new Date(green.hour),
   );
   const share = percent(green.share);
+  // the day-ahead price of the same hour, where the country has a market: a green hour is often a cheap one
+  const price = pricesAt(live, green.index).find((row) => row.country === country)?.eur ?? null;
   return (
     <PopoverMenu
       label={t("greenLabel", { country: i18n.country(country), share })}
@@ -120,11 +122,24 @@ export function GreenLight({
               <dd>{t(change >= 0 ? "greenMore" : "greenLess", { points: Math.abs(percent(change)) })}</dd>
             </div>
           )}
+          {price !== null && (
+            <div>
+              <dt>{t("greenPrice")}</dt>
+              <dd>
+                {i18n.number(price, 2)} {t("unitEurMwh")}
+              </dd>
+            </div>
+          )}
           <div>
             <dt>{t("greenHour")}</dt>
             <dd>{stale ? t("greenStale", { hour, hours: age }) : t("greenFresh", { hour })}</dd>
           </div>
         </dl>
+        {price !== null && price <= 0 && (
+          <p className={styles.free} role="note">
+            {t("greenFree")} <a href={learnHref}>{t("freeWhy")}</a>
+          </p>
+        )}
         <button
           type="button"
           className={styles.show}

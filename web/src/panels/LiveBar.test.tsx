@@ -119,4 +119,63 @@ describe("dayRange", () => {
     expect(dayRange(live, 1)).toEqual([1, 2]);
     expect(dayRange(live, 0)).toEqual([0, 0]);
   });
+
+  describe("a price of zero or below", () => {
+    // 16 September: three hours, the middle two at or below zero in Croatia; Italy stays positive
+    const cheap = {
+      ...SAMPLE_LIVE,
+      hours: [
+        "2026-09-16T11:00:00+02:00",
+        "2026-09-16T12:00:00+02:00",
+        "2026-09-16T13:00:00+02:00",
+        "2026-09-17T12:00:00+02:00",
+      ],
+      flows: [],
+      prices: {
+        HR: { zone: "10YHR-HEP------M", eurPerMwh: [12.5, 0, -8.25, -99] },
+        IT_NORD: { zone: "10Y1001A1001A73I", eurPerMwh: [120, 118, 117, 116] },
+      },
+    };
+    const bar = (index: number, onHour = vi.fn()) =>
+      renderWithI18n(
+        <LiveBar
+          theme="light"
+          data={{ status: "ready", value: { kind: "ready", live: cheap } }}
+          index={index}
+          onHour={onHour}
+          onRetry={vi.fn()}
+          learnHref="/edukacija/"
+        />,
+      );
+
+    it("names the day's free hours of that day only, the lowest price, and what kind of price it is", async () => {
+      const onHour = vi.fn();
+      bar(0, onHour);
+      const note = screen.getByRole("note");
+      expect(note).toHaveTextContent("Hrvatska: taj dan cijena pada na nulu ili ispod nje.");
+      expect(note).toHaveTextContent(/Najniža je −8,25 €\/MWh u /);
+      expect(note).toHaveTextContent(/veleprodajna cijena/);
+      expect(within(note).getByRole("link", { name: "Zašto cijena može biti negativna?" })).toHaveAttribute(
+        "href",
+        "/edukacija/",
+      );
+      // two hours on the 16th; the -99 of the 17th belongs to another day
+      const [first, second, ...more] = within(note).getAllByRole("button");
+      expect(first).toBeDefined();
+      expect(more).toHaveLength(0);
+      if (!second) throw new Error("two free hours");
+      await userEvent.click(second);
+      expect(onHour).toHaveBeenCalledWith("2026-09-16T13+02");
+    });
+
+    it("marks the hour being shown, and says nothing on a day without such hours", () => {
+      const view = bar(1);
+      const [first, second] = within(screen.getByRole("note")).getAllByRole("button");
+      expect(first).toHaveAttribute("aria-pressed", "true");
+      expect(second).toHaveAttribute("aria-pressed", "false");
+      view.unmount();
+      renderWithI18n(<LiveBar theme="light" data={ready()} index={0} onHour={vi.fn()} onRetry={vi.fn()} />);
+      expect(screen.queryByRole("note")).not.toBeInTheDocument();
+    });
+  });
 });

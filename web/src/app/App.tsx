@@ -1008,6 +1008,7 @@ function Explorer({
                     onHour={onLiveHour}
                     onRetry={retryLive}
                     onClose={closeLive}
+                    learnHref={PATHS[i18n.lang].learn}
                   />
                 </ErrorBoundary>
               </div>

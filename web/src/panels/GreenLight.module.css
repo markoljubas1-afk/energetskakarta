@@ -170,3 +170,17 @@
     display: none;
   }
 }
+
+/* the wholesale price of the hour is zero or below */
+.free {
+  margin: 0 0 10px;
+  padding: 7px 9px;
+  border-left: 3px solid #3fa86b;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  line-height: 1.4;
+}
+
+.free a {
+  color: var(--accent);
+}

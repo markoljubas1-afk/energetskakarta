@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight, Pause, Play, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import type { AsyncState } from "../app/useAsync";
-import { dayOf, flowsAt, hourKey, pricesAt, type Live, type LiveLoad } from "../data/live";
+import { dayOf, dayRange, flowsAt, freeDay, hourKey, pricesAt, type Live, type LiveLoad } from "../data/live";
 import { useI18n } from "../i18n";
 import { PALETTES, type Theme } from "../map/palette";
 import { PRICE_LEGEND_TICKS, priceGradient, priceTickAt } from "../map/priceScale";
@@ -19,23 +19,26 @@ interface Props {
   onRetry: () => void;
   /** turns the live layer off; without it the bar has no close button */
   onClose?: () => void;
+  /** the learning page, which explains why a price can fall below zero */
+  learnHref?: string;
 }
 
 const DAY_KEYS = { [-1]: "liveYesterday", 0: "liveToday", 1: "liveTomorrow" } as const;
 /** One hour per step while a day plays: slow enough to read the map, a day in about 20 seconds. */
 export const PLAY_STEP_MS = 850;
 
-/** First and last index of the calendar day (in the document's local time) that `index` falls on. */
-export function dayRange(live: Live, index: number): [number, number] {
-  const day = live.hours[index]?.slice(0, 10);
-  let first = index;
-  let last = index;
-  while (first > 0 && live.hours[first - 1]?.slice(0, 10) === day) first--;
-  while (last < live.hours.length - 1 && live.hours[last + 1]?.slice(0, 10) === day) last++;
-  return [first, last];
-}
+export { dayRange };
 
-export function LiveBar({ data, index, theme, mapCenter = null, onHour, onRetry, onClose }: Props) {
+export function LiveBar({
+  data,
+  index,
+  theme,
+  mapCenter = null,
+  onHour,
+  onRetry,
+  onClose,
+  learnHref,
+}: Props) {
   const i18n = useI18n();
   const { t } = i18n;
   const ready = data?.status === "ready" && data.value.kind === "ready" ? data.value.live : null;
@@ -155,6 +158,7 @@ export function LiveBar({ data, index, theme, mapCenter = null, onHour, onRetry,
             {playing ? t("livePause") : t("livePlayDay")}
           </button>
         </div>
+        <FreeNotice live={live} index={index} onHour={onHour} learnHref={learnHref} />
         {prices.some((price) => price.eur !== null) && (
           <div className={styles.scale}>
             <span className={styles.scaleLabel}>{t("livePriceScale")}</span>
@@ -270,5 +274,53 @@ export function LiveBar({ data, index, theme, mapCenter = null, onHour, onRetry,
       </div>
       {body}
     </section>
+  );
+}
+
+/**
+ * "The price is zero or negative": said when the day shown has such hours, with the hours as buttons that go
+ * there. Day-ahead wholesale prices do fall below zero when sun and wind offer more than anyone wants; the
+ * notice says what kind of price it is, because a household's bill does not follow it.
+ */
+function FreeNotice({
+  live,
+  index,
+  onHour,
+  learnHref,
+}: {
+  live: Live;
+  index: number;
+  onHour: (key: string) => void;
+  learnHref?: string | undefined;
+}) {
+  const i18n = useI18n();
+  const { t } = i18n;
+  const day = freeDay(live, index);
+  if (!day) return null;
+  const time = new Intl.DateTimeFormat(i18n.locale, { hour: "2-digit", minute: "2-digit" });
+  const lowest = day.hours.reduce((low, hour) => (hour.eur < low.eur ? hour : low));
+  return (
+    <div className={styles.free} role="note">
+      <p>
+        <strong>{t("freeTitle", { country: i18n.country(day.country) })}</strong>{" "}
+        {t("freeLowest", { eur: i18n.number(lowest.eur, 2), hour: time.format(new Date(lowest.hour)) })}{" "}
+        {t("freeWhat")} {learnHref && <a href={learnHref}>{t("freeWhy")}</a>}
+      </p>
+      <ul aria-label={t("freeHours")}>
+        {day.hours.map((hour) => (
+          <li key={hour.index}>
+            <button
+              type="button"
+              aria-pressed={hour.index === index}
+              onClick={() => {
+                onHour(hourKey(hour.hour));
+              }}
+            >
+              {time.format(new Date(hour.hour))}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

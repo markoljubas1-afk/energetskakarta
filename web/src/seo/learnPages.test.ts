@@ -47,7 +47,9 @@ describe("the learning corner", () => {
       expect(
         solar.map((link) => [...parseState(new URL(link, "https://karta.test").search, lang).layers]),
       ).toEqual([["lines", "solar"]]);
-      const views = links.filter((link) => !link.includes("story=") && !link.includes("solar"));
+      // the section on negative prices opens the hourly prices; it comes before the "try it" list
+      const [price, ...views] = links.filter((link) => !link.includes("story=") && !link.includes("solar"));
+      expect(parseState(new URL(price ?? "", "https://karta.test").search, lang).live).toBe(true);
       expect(views).toHaveLength(LEARN_COPY[lang].tries.length);
       for (const [index, link] of views.entries()) {
         const asked = LEARN_COPY[lang].tries[index]?.[2] ?? {};

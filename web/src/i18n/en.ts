@@ -244,6 +244,14 @@ export const en: Dictionary = {
   greenNote:
     "Share of domestic generation according to ENTSO-E; imports and exports are not counted. Green from {high} %, amber from {mid} %, red below that.",
   greenWhy: "Why does it matter?",
+  greenPrice: "Exchange price (day-ahead)",
+  greenFree:
+    "In this hour electricity on the exchange costs nothing, or whoever takes it is paid to. It is a wholesale price; a household bill does not follow it.",
+  freeTitle: "{country}: that day the price falls to zero or below.",
+  freeLowest: "The lowest is {eur} €/MWh at {hour}.",
+  freeWhat: "It is the wholesale day-ahead price on the exchange; a household bill does not follow it.",
+  freeWhy: "Why can a price be negative?",
+  freeHours: "Hours with a price of zero or below",
   goalTitle: "The 2030 target",
   goalNow: "Official share in {year}: {value}%",
   goalTarget: "Target for 2030: {value}%",

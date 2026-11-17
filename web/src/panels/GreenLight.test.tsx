@@ -74,4 +74,37 @@ describe("GreenLight", () => {
     );
     expect(container).toBeEmptyDOMElement();
   });
+
+  it("puts the hour's exchange price next to the share, and says so when it is zero or below", async () => {
+    // Croatia's hour is index 33 in the fixture; give it a price, first a positive one
+    const priced = (eur: number) => {
+      const eurPerMwh: (number | null)[] = GREEN_LIVE.hours.map(() => null);
+      eurPerMwh[33] = eur;
+      return { ...GREEN_LIVE, prices: { HR: { zone: "10YHR-HEP------M", eurPerMwh } } };
+    };
+    const view = renderWithI18n(
+      <GreenLight live={priced(84.5)} now={SOON_AFTER} onShow={vi.fn()} learnHref="/edukacija/" />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: /Hrvatska: 69 %/ }));
+    const card = (): HTMLElement => {
+      const found = document.querySelector("[data-green]");
+      if (!(found instanceof HTMLElement)) throw new Error("the card is in the document");
+      return found;
+    };
+    expect(card()).toHaveTextContent("Cijena na burzi (dan unaprijed)84,5 €/MWh");
+    expect(within(card()).queryByRole("note")).not.toBeInTheDocument();
+    view.unmount();
+
+    renderWithI18n(
+      <GreenLight live={priced(-3.2)} now={SOON_AFTER} onShow={vi.fn()} learnHref="/edukacija/" />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: /Hrvatska: 69 %/ }));
+    expect(card()).toHaveTextContent("−3,2 €/MWh");
+    const note = within(card()).getByRole("note");
+    expect(note).toHaveTextContent(/ne stoji ništa ili se onome tko je uzme još i plaća/);
+    expect(within(note).getByRole("link", { name: "Zašto cijena može biti negativna?" })).toHaveAttribute(
+      "href",
+      "/edukacija/",
+    );
+  });
 });

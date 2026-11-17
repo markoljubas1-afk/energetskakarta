@@ -21,6 +21,10 @@ interface LearnCopy {
   solarTry: string;
   solarTryNote: string;
   timingHeading: string;
+  /** why a wholesale price can fall below zero, and the link that opens the prices on the map */
+  priceHeading: string;
+  price: string[];
+  priceTry: [string, string];
   timing: string[];
   termsHeading: string;
   /** term, explanation */
@@ -68,6 +72,17 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
     ],
     solarTry: "Sunčani potencijal na karti",
     solarTryNote: "kliknite na svoje mjesto i pročitajte očekivanu godišnju proizvodnju",
+    priceHeading: "Zašto struja ponekad ima negativnu cijenu",
+    price: [
+      "Struja se na burzi prodaje dan unaprijed, za svaki sat posebno. Proizvođači nude koliko mogu dati i po kojoj cijeni, kupci koliko trebaju, i za svaki sat nastane jedna cijena na kojoj se ponuda i potražnja susretnu.",
+      "Kad jako sja sunce ili puše vjetar, a troši se malo (sunčana nedjelja u proljeće), struje se nudi više nego što itko treba. Dio elektrana se ne može ili ne isplati ugasiti na nekoliko sati: nuklearka, toplana koja usput grije grad, protočna hidroelektrana kojoj voda ionako teče. One radije plate da ih netko riješi struje nego da stanu, i cijena padne na nulu ili ispod nje.",
+      "Negativna cijena znači da prodavač plaća kupcu. To je veleprodajna cijena među tvrtkama: kućanstvo s običnom tarifom plaća isto u svakom satu i njegov račun ne postaje negativan. Korist imaju oni koji mogu birati kada troše ili spremati struju: reverzibilne hidroelektrane, baterije, punionice, industrija.",
+      "Takvi sati su znak da sustavu treba više fleksibilnosti: spremnika, potrošnje koja se može pomaknuti i vodova prema susjedima koji u tom trenutku trebaju struju.",
+    ],
+    priceTry: [
+      "Cijene po satu na karti",
+      "boja zemlje je cijena; sati s cijenom nula ili nižom posebno su označeni",
+    ],
     timingHeading: "Zašto je važno kada trošiš",
     timing: [
       "Struja se proizvodi u istom trenutku u kojem se troši. Kad usred sunčanog ili vjetrovitog dana uključite perilicu, veći dio te struje dolazi iz sunca i vjetra; u zimsku večer, kad svi kuhaju i griju se, više rade elektrane na plin i ugljen.",
@@ -187,6 +202,17 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
     ],
     solarTry: "Solar potential on the map",
     solarTryNote: "click your own place and read the expected yearly output",
+    priceHeading: "Why electricity sometimes has a negative price",
+    price: [
+      "Electricity is sold on the exchange a day ahead, hour by hour. Generators offer what they can deliver and at what price, buyers what they need, and each hour gets one price at which supply and demand meet.",
+      "When the sun shines hard or the wind blows while little is used (a sunny Sunday in spring), more electricity is on offer than anyone needs. Some plants cannot be switched off for a few hours, or it does not pay to: a nuclear plant, a plant that heats a town as it generates, a run-of-river hydro plant whose water flows anyway. They would rather pay to be rid of their electricity than stop, and the price falls to zero or below.",
+      "A negative price means the seller pays the buyer. It is a wholesale price between companies: a household on an ordinary tariff pays the same in every hour and its bill does not turn negative. Those who can choose when to use electricity, or store it, gain: pumped-storage plants, batteries, charging stations, industry.",
+      "Such hours are a sign that the system needs more flexibility: storage, demand that can be moved, and lines to neighbours who need electricity at that moment.",
+    ],
+    priceTry: [
+      "Hourly prices on the map",
+      "a country's colour is its price; hours with a price of zero or below are marked",
+    ],
     timingHeading: "Why it matters when you use it",
     timing: [
       "Electricity is generated at the very moment it is used. When you start the washing machine in the middle of a sunny or windy day, more of that electricity comes from sun and wind; on a winter evening, when everyone is cooking and heating, gas and coal plants work harder.",
@@ -315,6 +341,12 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
         html: `${list(copy.solar.map(e))}${doors([{ href: mapLink(lang, { l: "lines,solar" }), title: copy.solarTry, text: copy.solarTryNote }])}`,
       },
       { heading: copy.timingHeading, html: copy.timing.map((p) => `<p>${e(p)}</p>`).join("") },
+      {
+        heading: copy.priceHeading,
+        html: `${copy.price.map((p) => `<p>${e(p)}</p>`).join("")}${doors([
+          { href: mapLink(lang, { live: "1" }), title: copy.priceTry[0], text: copy.priceTry[1] },
+        ])}`,
+      },
       { heading: copy.termsHeading, html: definitions(copy.terms.map(([term, text]) => [term, e(text)])) },
       { heading: copy.tryHeading, html: `<p>${e(copy.tryIntro)}</p>${doors(tries)}` },
     ],

@@ -1259,6 +1259,16 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
   2026-11-17 su tri od šest gradnji pale na „Network is unreachable”.
 - Nije napravljeno: zbroj skladišta po zemlji.
 
+### 35-12 Cijena nula ili negativna (prijedlog vlasnika 2026-11-17, „burza uživo”) — KOD GOTOV 2026-11-17
+- Podaci već postoje (cijene dan unaprijed u `live/current.json`); ništa novo se ne preuzima.
+- Traka „Tokovi i cijene”: kad dan koji se gleda ima sate s cijenom ≤ 0, obavijest s najnižom cijenom i
+  satima kao gumbima koji skaču na taj sat (`freeHours`, `freeDay` u `data/live.ts`; Hrvatska ako ih ima,
+  inače zemlja s najviše takvih sati). Kartica semafora: cijena istog sata uz udio obnovljivih, s napomenom
+  kad je ≤ 0. Svugdje piše da je to veleprodajna cijena koju račun kućanstva ne prati.
+- Edukacija: odjeljak „Zašto struja ponekad ima negativnu cijenu” s karticom koja otvara cijene na karti.
+- Odgođeno iz istog prijedloga: „prevoditelj megavata” (samo na razini zemlje, uz izvor za usporednu
+  veličinu) i „povijesni ekstremi” (dani birani iz podataka; satne podatke treba posebno preuzeti).
+
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda
   od 400 kV, prag spajanja krajeva 0,3 km (`pipeline/src/energymap/routes.py`). Karta: `stories/travel.ts`,

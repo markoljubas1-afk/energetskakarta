@@ -231,3 +231,54 @@ export function overlay(live: Live, index: number): LiveOverlay {
   }
   return { features: { type: "FeatureCollection", features }, labels, prices };
 }
+
+/** First and last index of the calendar day (in the document's local time) that `index` falls on. */
+export function dayRange(live: Live, index: number): [number, number] {
+  const day = live.hours[index]?.slice(0, 10);
+  let first = index;
+  let last = index;
+  while (first > 0 && live.hours[first - 1]?.slice(0, 10) === day) first--;
+  while (last < live.hours.length - 1 && live.hours[last + 1]?.slice(0, 10) === day) last++;
+  return [first, last];
+}
+
+export interface FreeHour {
+  index: number;
+  /** the hour as the live data writes it */
+  hour: string;
+  eur: number;
+}
+
+/**
+ * The hours of the day `index` falls on in which a country's day-ahead price is zero or below: the market
+ * had more electricity on offer than anyone wanted, and sellers paid to deliver it. A wholesale price; a
+ * household's tariff does not follow it.
+ */
+export function freeHours(live: Live, country: CountryCode, index: number): FreeHour[] {
+  const series = live.prices[COUNTRY_PRICE_ZONE[country]]?.eurPerMwh;
+  if (!series) return [];
+  const [first, last] = dayRange(live, index);
+  const hours: FreeHour[] = [];
+  for (let at = first; at <= last; at += 1) {
+    const eur = series[at];
+    const hour = live.hours[at];
+    if (eur != null && eur <= 0 && hour !== undefined) hours.push({ index: at, hour, eur });
+  }
+  return hours;
+}
+
+/** The country whose free hours a day's notice lists: `home` when it has any, else the one with the most. */
+export function freeDay(
+  live: Live,
+  index: number,
+  home: CountryCode = "HR",
+): { country: CountryCode; hours: FreeHour[] } | null {
+  const days = SCOPE_COUNTRIES.map((country) => ({ country, hours: freeHours(live, country, index) })).filter(
+    (day) => day.hours.length > 0,
+  );
+  return (
+    days.find((day) => day.country === home) ??
+    days.sort((a, b) => b.hours.length - a.hours.length)[0] ??
+    null
+  );
+}
