@@ -245,8 +245,14 @@ describe("DetailsPanel", () => {
       />,
     );
     expect(screen.getByText(/Hidro 46 %, Vjetar 23 %, Plin 20 %, ostalo 11 %/)).toBeInTheDocument();
+    // the hour is shown in the reader's own time zone, so the test asks for it the same way
+    const hour = new Intl.DateTimeFormat("hr", { hour: "2-digit", minute: "2-digit" }).format(
+      new Date(green.hour),
+    );
     expect(
-      screen.getByText(/Proizvodnja u zemlji \(Hrvatska\) u satu od 09:00: 69 % iz obnovljivih/),
+      screen.getByText(`Proizvodnja u zemlji (Hrvatska) u satu od ${hour}: 69 % iz obnovljivih izvora.`, {
+        exact: false,
+      }),
     ).toBeInTheDocument();
     expect(screen.getByText(/Bez uvoza; nije podatak o ovoj punionici/)).toBeInTheDocument();
   });

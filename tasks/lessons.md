@@ -411,3 +411,13 @@
   i šalju tek kad objava završi. „Objavljeno” se javlja tek nakon provjere na živoj stranici (sadržaj paketa ili
   stranice), a do tada se kaže „poslano, objava traje”.
 
+
+### L-073 — Test koji prolazi samo u mojoj vremenskoj zoni (2026-11-17)
+- What happened: test kartice punionice očekivao je „u satu od 09:00”. Lokalno (Europe/Zagreb) je prošao, na
+  GitHubu (UTC) pao jer komponenta ispisuje „08:00”; objava `fe28577` nije prošla i stranica je ostala na
+  prethodnoj verziji dok to nisam primijetio.
+- Root cause: komponenta ispravno prikazuje sat u zoni čitatelja, a test je imao upisan sat moje zone. Prije
+  slanja pokrenuo sam testove samo u svojoj zoni.
+- Rule going forward: test koji provjerava ispisano vrijeme očekivanu vrijednost računa istim formatiranjem
+  (ili zadaje zonu), nikad je ne upisuje ručno. Novi test s datumom ili satom prije slanja pokrenuti i s
+  `TZ=UTC`, jer tako radi CI.
