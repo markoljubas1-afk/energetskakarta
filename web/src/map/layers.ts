@@ -990,7 +990,9 @@ export function dataLayers({
         ],
         "text-font": labels,
         "text-size": ["interpolate", ["linear"], ["zoom"], 7, 10.5, 12, 12.5],
-        "text-offset": [0, 1.1],
+        // an expansion sits on the very spot of the plant it extends: its label goes under that plant's own
+        // (two lines of it), or the two would collide and only one would ever be drawn
+        "text-offset": ["case", ["has", "expansionOf"], ["literal", [0, 3.6]], ["literal", [0, 1.1]]],
         "text-anchor": "top",
         "text-optional": true,
         "symbol-sort-key": ["-", ["coalesce", ["get", "capacityMw"], 0]],
