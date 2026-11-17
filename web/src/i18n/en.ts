@@ -440,6 +440,16 @@ export const en: Dictionary = {
   solarUnit: "kWh per kWp a year",
   solarMeaning: "A 1 kW system here would generate about {value} kWh in an average year.",
   solarLegend: "kWh/kWp a year",
+  solarStation: "Nearest HEP ODS substation",
+  solarStationAway: "{km} km as the crow flies",
+  solarStationShow: "Show on the map",
+  solarStationNone:
+    "No HEP ODS substation with a known position within {km} km. Only HEP ODS publishes available capacity, for Croatia.",
+  solarStationNote:
+    "The distance is a straight line; whether and where a plant can connect is for HEP ODS to decide (data as of {date}).",
+  solarPvgis:
+    "An exact calculation for a roof or a plot (tilt, orientation, shading) comes from the free European",
+  solarPvgisPlace: "This place: {lat}, {lng}.",
   solarCaveat:
     "A first orientation, not a feasibility study: it says nothing of shading, land use, protected areas or the grid connection.",
   solarFailed: "Solar potential did not load.",

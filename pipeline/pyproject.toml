@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "energymap"
 version = "0.1.0"
-description = "Data pipeline for the regional energy map (Croatia and the wider region)"
+description = "Data pipeline for GridAtlas, the regional energy map (Croatia and the wider region)"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.12"

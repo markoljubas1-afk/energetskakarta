@@ -437,6 +437,16 @@ export const hr = {
   solarUnit: "kWh po kWp godišnje",
   solarMeaning: "Sustav snage 1 kW ovdje bi u prosječnoj godini proizveo oko {value} kWh.",
   solarLegend: "kWh/kWp godišnje",
+  solarStation: "Najbliža trafostanica HEP ODS-a",
+  solarStationAway: "{km} km zračne linije",
+  solarStationShow: "Pokaži na karti",
+  solarStationNone:
+    "U krugu od {km} km nema trafostanice HEP ODS-a s poznatim položajem. Podatke o slobodnom kapacitetu objavljuje samo HEP ODS, za Hrvatsku.",
+  solarStationNote:
+    "Udaljenost je zračna; može li se elektrana priključiti i gdje, određuje HEP ODS (podaci od {date}).",
+  solarPvgis:
+    "Točan proračun za krov ili zemljište (nagib, orijentacija, zasjenjenje) daje besplatni europski",
+  solarPvgisPlace: "Ovo mjesto: {lat}, {lng}.",
   solarCaveat:
     "Prva orijentacija, ne studija izvedivosti: ne govori o zasjenjenju, namjeni zemljišta, zaštićenim područjima ni o priključku na mrežu.",
   solarFailed: "Sunčani potencijal se nije učitao.",

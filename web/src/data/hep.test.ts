@@ -13,6 +13,7 @@ import {
   levelOf,
   loadHep,
   matchOsm,
+  nearestStation,
   stationSlug,
   trend,
   upgradeGains,
@@ -196,5 +197,15 @@ describe("matchOsm", () => {
     expect(distanceM(45.5, 15.5, 45.5, 15.5)).toBe(0);
     // one degree of latitude is about 111 km
     expect(Math.round(distanceM(45, 15, 46, 15) / 1000)).toBe(111);
+  });
+
+  it("finds the nearest substation with a position, within a limit", () => {
+    // 2 km south of TE-TO; Bjelovar 1 is some 60 km away
+    const near = nearestStation(RELEASE, 16.017275, 45.7644);
+    expect(near?.station.name).toBe("TE-TO");
+    expect(near?.km).toBeCloseTo(2.0, 1);
+    // the middle of the Adriatic: nothing within the limit, and stations without a position never match
+    expect(nearestStation(RELEASE, 15.0, 43.0)).toBeNull();
+    expect(nearestStation(RELEASE, 16.017275, 45.7644, 1)).toBeNull();
   });
 });

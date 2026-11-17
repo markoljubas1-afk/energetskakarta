@@ -1185,6 +1185,22 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 - Dijeljenje: gumb „Pošalji” otvara izbornik uređaja (Web Share API) gdje ga preglednik ima. OG oznake,
   slika 1200 × 630 i sitemap već postoje; Search Console je na vlasniku.
 
+### 35-7 Sunčana kartica za planere, Krško, naziv u README-u — GOTOVO 2026-11-17
+- Cilj: klik na kartu uz sunčani sloj kaže i ono drugo što lokaciji treba, a to je mreža.
+- Pristup: `SolarBar` uz očekivanu proizvodnju pokazuje najbližu trafostanicu HEP ODS-a (`nearestStation` u
+  `data/hep.ts`, zračna udaljenost, granica 30 km), njezin pojas prihvata i slobodnu snagu, gumb koji je
+  pokaže na sloju kapaciteta i poveznicu na njezinu stranicu; ispod toga poveznica na PVGIS s koordinatama
+  mjesta. HEP-ovo izdanje učitava se i kad je uključen samo sunčani sloj. Izvan 30 km (druge zemlje) kartica
+  kaže da kapacitet objavljuje samo HEP ODS, za Hrvatsku.
+- Razmotreno i odbijeno: „najbliža trafostanica” iz OSM-a za druge zemlje (nema podatka o kapacitetu, pa bi
+  sugerirala nešto što ne znamo); duboka poveznica na PVGIS s koordinatama (nije dokumentirana, ne nagađamo).
+- Provjera: jedinični testovi (`hep.test.ts`, `SolarBar.test.tsx`), ručni prolaz sa stvarnim podacima na
+  računalu i mobitelu.
+- Krško: nije duplikat. Drugi zapis je GEM-ov planirani blok (1100 MW, 2035.) na lokaciji postojeće
+  elektrane; odvajanje po statusu je namjerno (`gem/normalize.py`). Takvih je lokacija 33. Otvoreno: zapisi
+  nose isto ime kao postojeća elektrana, pa na karti izgledaju kao duplikat; vidi „Za kasnije”.
+- README i opis pipelinea nose naziv GridAtlas. `CLAUDE.md` nije diran (mijenja se samo uz izričit dogovor).
+
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda
   od 400 kV, prag spajanja krajeva 0,3 km (`pipeline/src/energymap/routes.py`). Karta: `stories/travel.ts`,

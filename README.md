@@ -1,7 +1,7 @@
-# Regionalna energetska karta
+# GridAtlas
 
-Moderna interaktivna karta elektroenergetske infrastrukture za Hrvatsku i širu regiju:
-**HR, SI, HU, RS, BA, ME, IT, AT**.
+Regionalna energetska karta: moderna interaktivna karta elektroenergetske infrastrukture za Hrvatsku i širu
+regiju (**HR, SI, HU, RS, BA, ME, IT, AT**). Javno na <https://gridatlas.eu>.
 
 > **Pokretanje:** popis računa, tajni i redoslijeda koraka je u [`PRIPREMA.md`](PRIPREMA.md).
 
@@ -410,7 +410,7 @@ lokaciji koja u OSM-u postoji kao cjelina može se kratko računati dvaput.
   karte (odabir, prikaz, slojevi, filtri, „uživo”, ugradnja…; parametri poput `utm_*` se ne broje), ni u
   automatiziranom pregledniku (`navigator.webdriver`: e2e i testovi vide običnu kartu). Uz smanjeno kretanje
   samo natpis koji ustupi mjesto karti.
-- **Što:** samo natpis „Energetska karta Hrvatske i regije” preko kojeg jednom prijeđe svjetlo
+- **Što:** samo natpis „GridAtlas” s crtom svjetla ispod, oko 2 sekunde
   (`app/Intro.tsx`) pokriva učitavanje; zatim karta dolijeće s globusa (na širokom zaslonu), nagnuta nad
   Jadranom, i spušta se točno na uobičajeni prvi prikaz, a to je cijela regija (`map/introFlight.ts`). Usput
   (`map/introStyle.ts`): granice regije zasvijetle prve, pojavi se „Hrvatska” pa imena susjeda, mreža se pali

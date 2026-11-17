@@ -425,7 +425,8 @@ function Explorer({
     retry: retryCap,
     features: capFeatures,
   } = useOverlay(
-    capOn ? HEP_KEYS.current : null,
+    // the solar bar reads the nearest substation off the same release
+    capOn || solarOn ? HEP_KEYS.current : null,
     (signal) => loadHep(config.dataBaseUrl, signal, { history: false }),
     capFeaturesOf,
   );
@@ -616,6 +617,14 @@ function Explorer({
     setState((s) => ({ ...s, layers: new Set([...s.layers].filter((layer) => layer !== "capacity")) }));
   }, [setState, setCapStation]);
 
+  const showStation = useCallback(
+    (id: string) => {
+      setCapStation(id);
+      setState((s) => ({ ...s, layers: new Set([...s.layers, "capacity"]) }));
+    },
+    [setState, setCapStation],
+  );
+
   const closeSolar = useCallback(() => {
     setSolarPoint(null);
     setState((s) => ({ ...s, layers: new Set([...s.layers].filter((layer) => layer !== "solar")) }));
@@ -660,7 +669,7 @@ function Explorer({
             gas={gasFeatures}
             timeline={timelineFeatures}
             geothermal={geoFeatures}
-            capacity={capFeatures}
+            capacity={capOn ? capFeatures : null}
             onCapacityStation={setCapStation}
             onGeothermalSite={setGeoSite}
             attribution={i18n.attribution(sources)}
@@ -820,7 +829,14 @@ function Explorer({
             {solarOn && (
               <div className={styles.liveSlot}>
                 <ErrorBoundary area="solar" fallback={panelFallback}>
-                  <SolarBar data={solarData} point={solarPoint} onRetry={retrySolar} onClose={closeSolar} />
+                  <SolarBar
+                    data={solarData}
+                    point={solarPoint}
+                    onRetry={retrySolar}
+                    onClose={closeSolar}
+                    capacity={capData}
+                    onStation={showStation}
+                  />
                 </ErrorBoundary>
               </div>
             )}

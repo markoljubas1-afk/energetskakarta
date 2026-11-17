@@ -101,3 +101,48 @@
   font-size: 11.5px;
   line-height: 1.4;
 }
+
+.station {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.station h3 {
+  margin: 0 0 2px;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.station p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.station .note {
+  margin-top: 6px;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 4px;
+}
+
+.links a,
+.next a {
+  color: var(--accent);
+}
+
+.links .retry {
+  padding: 0;
+}
+
+.next {
+  margin: 10px 0 0;
+  line-height: 1.45;
+}

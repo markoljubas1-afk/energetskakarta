@@ -225,6 +225,31 @@ export function childrenOf(release: HepRelease, id: string): HepStation[] {
     .sort((a, b) => a.name.localeCompare(b.name, "hr"));
 }
 
+/** Farther than this, a substation says nothing about a place: it is most likely across a border. */
+export const NEAR_STATION_KM = 30;
+
+export interface NearStation {
+  station: HepStation;
+  /** as the crow flies; a connection's real route is HEP ODS's to decide */
+  km: number;
+}
+
+/** The closest substation with a known position within `withinKm` of a place, or null. */
+export function nearestStation(
+  release: HepRelease,
+  lng: number,
+  lat: number,
+  withinKm: number = NEAR_STATION_KM,
+): NearStation | null {
+  let best: NearStation | null = null;
+  for (const station of release.stations) {
+    if (station.lon === null || station.lat === null) continue;
+    const km = distanceM(lat, lng, station.lat, station.lon) / 1000;
+    if (km <= withinKm && (best === null || km < best.km)) best = { station, km };
+  }
+  return best;
+}
+
 /** The substations with a position, as points for the map; the category drives the colour. */
 export function capacityOverlay(release: HepRelease): FeatureCollection<Point> {
   const features = release.stations.flatMap<Feature<Point>>((station) =>
