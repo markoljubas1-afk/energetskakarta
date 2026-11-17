@@ -452,7 +452,7 @@ export const hr = {
   substance_other: "Druga sirovina",
   substance_unknown: "Sirovina nepoznata",
   detailsSubstance: "Sirovina",
-  layer_gas: "Proizvodnja plina (dnevno)",
+  layer_gas: "Plin: proizvodnja i skladišta (dnevno)",
   layer_solar: "Sunčani potencijal",
   layer_solar_note:
     "Očekivana godišnja proizvodnja sunčane elektrane po instaliranom kilovatu, prema Global Solar Atlasu. Dugogodišnji prosjek modela, ne mjerenje. Kliknite na kartu za vrijednost na tom mjestu.",
@@ -533,7 +533,7 @@ export const hr = {
   geoNone: "Geotermalni podaci još nisu objavljeni.",
   geoFailed: "Geotermalni podaci se nisu učitali.",
   layer_gas_note:
-    "Koliko plina iz domaćih polja svaki plinski dan uđe u transportni sustav, prema ENTSOG-u. Zbroj po zemlji (operator sustava objavljuje jednu ulaznu točku za svu proizvodnju), ne po polju; nema koordinata, pa krug stoji na sidrištu zemlje. Za naftu i ugljen takvog izvora nema.",
+    "Koliko plina iz domaćih polja svaki plinski dan uđe u transportni sustav, prema ENTSOG-u. Zbroj po zemlji (operator sustava objavljuje jednu ulaznu točku za svu proizvodnju), ne po polju; nema koordinata, pa krug stoji na sidrištu zemlje. Za naftu i ugljen takvog izvora nema. Uz sloj se otvara i traka sa skladištima plina: koliko su puna i utiskuje li se plin ili povlači (GIE AGSI).",
   legendGas: "Proizvodnja plina po zemlji (veličina: zadnji plinski dan)",
   kind_gas: "Proizvodnja plina",
   detailsGasLatest: "Zadnji plinski dan",

@@ -26,7 +26,7 @@ test("the document is fetched only once the layer is switched on", async ({ page
 
   const toggle = page.getByRole("button", { name: "Filtri i pregled" });
   if (await toggle.isVisible()) await toggle.click();
-  await page.getByRole("checkbox", { name: "Proizvodnja plina (dnevno)" }).check();
+  await page.getByRole("checkbox", { name: "Plin: proizvodnja i skladišta (dnevno)" }).check();
   await expect(page).toHaveURL(/l=[^&]*gas/);
   await expect.poll(() => requests.length, { timeout: 15_000 }).toBeGreaterThan(0);
 });

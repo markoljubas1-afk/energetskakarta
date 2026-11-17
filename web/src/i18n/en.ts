@@ -456,7 +456,7 @@ export const en: Dictionary = {
   substance_other: "Other substance",
   substance_unknown: "Substance unknown",
   detailsSubstance: "Substance",
-  layer_gas: "Gas production (daily)",
+  layer_gas: "Gas: production and storage (daily)",
   layer_solar: "Solar potential",
   layer_solar_note:
     "The expected yearly output of a solar plant per installed kilowatt, from the Global Solar Atlas. A model's long-term average, not a measurement. Click the map for the value at that place.",
@@ -536,7 +536,7 @@ export const en: Dictionary = {
   geoNone: "Geothermal data has not been published yet.",
   geoFailed: "The geothermal data could not be loaded.",
   layer_gas_note:
-    "How much gas from domestic fields entered the transmission system on each gas day, from ENTSOG. A sum per country (the system operator publishes one entry point for all production), not per field; it has no coordinates, so the disc sits at the country's anchor. No such source exists for oil or coal.",
+    "How much gas from domestic fields entered the transmission system on each gas day, from ENTSOG. A sum per country (the system operator publishes one entry point for all production), not per field; it has no coordinates, so the disc sits at the country's anchor. No such source exists for oil or coal. The layer also opens a bar with gas storage: how full it is and whether gas is going in or coming out (GIE AGSI).",
   legendGas: "Gas production per country (size: latest gas day)",
   kind_gas: "Gas production",
   detailsGasLatest: "Latest gas day",
