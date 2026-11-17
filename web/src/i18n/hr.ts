@@ -262,7 +262,7 @@ export const hr = {
   record_load_high: "najveća potrošnja",
   record_load_low: "najmanja potrošnja",
   record_renewable_share: "najveći udio obnovljivih",
-  recordShown: "Gledate prošli dan, {date}. Rekord za zemlju {country} u podacima od 2015.: {what}.",
+  recordShown: "Gledate prošli dan, {date} Rekord za zemlju {country} u podacima od 2015.: {what}.",
   recordBack: "Natrag na danas",
   goalTitle: "Cilj 2030.",
   goalNow: "Službeni udio {year}.: {value} %",

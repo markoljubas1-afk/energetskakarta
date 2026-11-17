@@ -249,7 +249,7 @@ describe("dayRange", () => {
           onDay={onDay}
         />,
       );
-      expect(screen.getByText(/^Gledate prošli dan, 19\. srpnja 2024\./)).toHaveTextContent(
+      expect(screen.getByText(/^Gledate prošli dan, 19\. srpnja 2024\. Rekord/)).toHaveTextContent(
         "Rekord za zemlju Hrvatska u podacima od 2015.: najveća potrošnja (68 GWh).",
       );
       // not "Danas 12:00": the hour carries its date
