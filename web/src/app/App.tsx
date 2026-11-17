@@ -632,6 +632,19 @@ function Explorer({
     }));
     setSpotlight({ kind: "technology", value: technology });
   };
+  // What is on its way towards the 2030 target: the country's wind and solar plants under construction
+  // and planned. A filter the reader can see and undo ("Poništi filtre"), not a hidden state.
+  const showComing = (country: CountryCode): void => {
+    setSpotlight(null);
+    setState((s) => ({
+      ...s,
+      page: "map",
+      layers: new Set([...s.layers, "plants"]),
+      countries: new Set([country]),
+      statuses: new Set(["construction", "planned"]),
+      technologies: new Set(["wind", "solar"]),
+    }));
+  };
   const leaveStory = (): void => {
     setState((s) => leave(s, beforeStory));
     const view = beforeStory.view;
@@ -1036,6 +1049,7 @@ function Explorer({
                     households={households?.status === "ready" ? households.value : null}
                     transitionHref={PATHS[i18n.lang].transition}
                     onOpen={askForGoal}
+                    onShowComing={showComing}
                   />
                 </ErrorBoundary>
               )}

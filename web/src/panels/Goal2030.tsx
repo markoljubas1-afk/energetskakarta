@@ -8,6 +8,8 @@ interface Props {
   renewables: Renewables;
   /** the page that says more (Croatia's transition page); absent for countries without one */
   moreHref?: string;
+  /** shows on the map what is being built and planned towards the target: wind and solar plants */
+  onShowComing?: () => void;
   /** Injected in tests; defaults to the verified targets (data/targets.ts). */
   targets?: Partial<Record<string, Target2030[]>>;
 }
@@ -21,7 +23,7 @@ const LENGTH = 2 * Math.PI * RADIUS;
  * official figure on purpose: the hourly number above it measures something else (electricity generated in
  * one hour), and the two must not be read as one. A country without a verified target shows nothing.
  */
-export function Goal2030({ country, renewables, moreHref, targets = TARGETS_2030 }: Props) {
+export function Goal2030({ country, renewables, moreHref, onShowComing, targets = TARGETS_2030 }: Props) {
   const i18n = useI18n();
   const { t } = i18n;
   const target = target2030(country, "REN", targets);
@@ -56,6 +58,11 @@ export function Goal2030({ country, renewables, moreHref, targets = TARGETS_2030
           </strong>
         </p>
       </div>
+      {onShowComing && (
+        <button type="button" className={styles.show} onClick={onShowComing}>
+          {t("goalShowComing")}
+        </button>
+      )}
       <p className={styles.note}>
         {t("goalNote")}{" "}
         <a href={renewables.sourceUrl} target="_blank" rel="noopener noreferrer">

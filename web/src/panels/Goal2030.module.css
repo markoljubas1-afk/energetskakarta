@@ -61,3 +61,21 @@
 .note a {
   color: var(--accent);
 }
+
+.show {
+  width: 100%;
+  min-height: 32px;
+  margin-top: 8px;
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.show:hover {
+  border-color: var(--accent);
+}

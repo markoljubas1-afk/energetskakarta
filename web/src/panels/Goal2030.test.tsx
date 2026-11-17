@@ -1,5 +1,5 @@
-import { screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
 import { SAMPLE_RENEWABLES } from "../data/eurostat.fixture";
 import { progress, target2030, TARGETS_2030, type Target2030 } from "../data/targets";
@@ -78,5 +78,17 @@ describe("the 2030 target", () => {
       <Goal2030 country="SI" renewables={SAMPLE_RENEWABLES} targets={TARGETS} />,
     );
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it("offers to show on the map what is being built and planned, when the map can", () => {
+    const onShowComing = vi.fn();
+    const view = renderWithI18n(<Goal2030 country="HR" renewables={SAMPLE_RENEWABLES} targets={TARGETS} />);
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    view.unmount();
+    renderWithI18n(
+      <Goal2030 country="HR" renewables={SAMPLE_RENEWABLES} targets={TARGETS} onShowComing={onShowComing} />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Pokaži što se gradi i planira: vjetar i sunce" }));
+    expect(onShowComing).toHaveBeenCalledOnce();
   });
 });

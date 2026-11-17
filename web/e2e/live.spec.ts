@@ -163,4 +163,14 @@ test("the green card shows where the country stands against its 2030 target, ask
   if (!box || !viewport) throw new Error("no box");
   expect(box.y).toBeGreaterThanOrEqual(0);
   expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
+
+  // what is on its way towards the target: the country's wind and solar plants being built and planned
+  await goal.getByRole("button", { name: "Pokaži što se gradi i planira: vjetar i sunce" }).click();
+  await expect(page).toHaveURL(/[?&]s=[^&]*planned/);
+  await expect(page).toHaveURL(/[?&]s=[^&]*construction/);
+  await expect(page).not.toHaveURL(/[?&]s=[^&]*operating/);
+  await expect(page).toHaveURL(/[?&]t=[^&]*wind/);
+  await expect(page).toHaveURL(/[?&]t=[^&]*solar/);
+  await expect(page).toHaveURL(/[?&]c=HR(&|$)/);
+  await expect(page).toHaveURL(/[?&]l=[^&]*plants/);
 });

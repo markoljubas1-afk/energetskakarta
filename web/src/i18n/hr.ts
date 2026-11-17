@@ -263,6 +263,7 @@ export const hr = {
   goalNote:
     "Udio obnovljivih izvora u svoj potrošenoj energiji (struja, grijanje, promet), za cijelu godinu. Nije ista mjera kao brojka iznad. Izvori:",
   goalMore: "Više o tranziciji",
+  goalShowComing: "Pokaži što se gradi i planira: vjetar i sunce",
   storyPause: "Pauza",
   storyPlay: "Pusti",
   storyReplay: "Ispočetka",

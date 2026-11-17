@@ -266,6 +266,7 @@ export const en: Dictionary = {
   goalNote:
     "The share of renewable sources in all energy used (electricity, heating, transport), over a whole year. Not the same measure as the figure above. Sources:",
   goalMore: "More on the transition",
+  goalShowComing: "Show what is being built and planned: wind and solar",
   storyPause: "Pause",
   storyPlay: "Play",
   storyReplay: "Replay",

@@ -31,6 +31,8 @@ interface Props {
   households?: Households | null;
   /** Croatia's transition page, which says more about the target */
   transitionHref?: string;
+  /** show on the map the wind and solar plants being built and planned in the chosen country */
+  onShowComing?: (country: CountryCode) => void;
   /** the card has been opened: the moment to ask for the yearly shares */
   onOpen?: () => void;
 }
@@ -50,6 +52,7 @@ export function GreenLight({
   renewables = null,
   households = null,
   transitionHref,
+  onShowComing,
   onOpen,
 }: Props) {
   const i18n = useI18n();
@@ -163,6 +166,13 @@ export function GreenLight({
             country={country}
             renewables={renewables}
             {...(country === "HR" && transitionHref ? { moreHref: transitionHref } : {})}
+            {...(onShowComing
+              ? {
+                  onShowComing: () => {
+                    onShowComing(country);
+                  },
+                }
+              : {})}
           />
         )}
       </div>
