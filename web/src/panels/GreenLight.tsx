@@ -9,10 +9,12 @@ import {
   latestGreen,
   STALE_AFTER_HOURS,
 } from "../data/greenShare";
+import type { Renewables } from "../data/eurostat";
 import type { Live } from "../data/live";
 import { isOneOf, SCOPE_COUNTRIES, type CountryCode, type Technology } from "../domain";
 import { useI18n } from "../i18n";
 import { PopoverMenu } from "../share/PopoverMenu";
+import { Goal2030 } from "./Goal2030";
 import styles from "./GreenLight.module.css";
 
 interface Props {
@@ -22,6 +24,10 @@ interface Props {
   onShow: (country: CountryCode, technology: Technology) => void;
   /** the learning page, which explains why the hour matters */
   learnHref: string;
+  /** Eurostat's official yearly shares, for the 2030 target under the hour's figure; null: not loaded */
+  renewables?: Renewables | null;
+  /** Croatia's transition page, which says more about the target */
+  transitionHref?: string;
 }
 
 const percent = (share: number): number => Math.round(share * 100);
@@ -31,7 +37,7 @@ const percent = (share: number): number => Math.round(share * 100);
  * behind it what the number is, what it is not, and how it compares with the same hour yesterday. Figures
  * older than a few hours are shown without a colour: a traffic light must not show the afternoon at night.
  */
-export function GreenLight({ live, now, onShow, learnHref }: Props) {
+export function GreenLight({ live, now, onShow, learnHref, renewables = null, transitionHref }: Props) {
   const i18n = useI18n();
   const { t } = i18n;
   const countries = greenCountries(live).filter((code): code is CountryCode =>
@@ -121,6 +127,13 @@ export function GreenLight({ live, now, onShow, learnHref }: Props) {
           {t("greenNote", { mid: percent(BAND_LIMITS.mid), high: percent(BAND_LIMITS.high) })}{" "}
           <a href={learnHref}>{t("greenWhy")}</a>
         </p>
+        {renewables && (
+          <Goal2030
+            country={country}
+            renewables={renewables}
+            {...(country === "HR" && transitionHref ? { moreHref: transitionHref } : {})}
+          />
+        )}
       </div>
     </PopoverMenu>
   );

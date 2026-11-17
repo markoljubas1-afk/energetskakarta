@@ -36,7 +36,7 @@ from energymap.entsoe.parse import EntsoeParseError
 from energymap.entsoe.store import EnergyDataError
 from energymap.eurostat import renewables as eurostat_renewables
 from energymap.files import read_json, write_json_atomic
-from energymap.gas import entsog
+from energymap.gas import agsi, entsog
 from energymap.gas import points as gas_points
 from energymap.gem.read import GemFormatError
 from energymap.geo.countries import CountryDataError
@@ -233,6 +233,12 @@ def parser() -> argparse.ArgumentParser:
     )
     _data_dir(gas_survey)
     gas_survey.add_argument("--days", type=_bounded_int(1, 14), default=gas_points.DEFAULT_DAYS)
+    _data_dir(
+        gas.add_parser(
+            "storage-survey",
+            help="list the region's gas storage on GIE AGSI with one day's figures",
+        )
+    )
 
     hep = groups.add_parser(
         "hep", help="capacity for new connections in the distribution grid (HEP ODS)"
@@ -415,6 +421,11 @@ def run(args: argparse.Namespace) -> None:
                 publish.R2Store.from_env() if args.step == "publish-r2" else publish.DirectoryStore(args.out)
             )
             energy_live.publish_live(live_store, read_json(target_file))
+    elif args.group == "gas" and args.step == "storage-survey":
+        with make_client() as client:
+            storage = agsi.survey(client, datetime.now(UTC), config.SCOPE_CODES)
+        write_json_atomic(paths.root / "gas" / "storage-survey.json", storage)
+        print(agsi.markdown(storage), end="")
     elif args.group == "gas" and args.step == "points":
         with make_client() as client:
             survey = gas_points.survey(client, datetime.now(UTC), config.SCOPE_CODES, days=args.days)
@@ -653,6 +664,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         energy_release.EnergyReleaseError,
         energy_live.LiveDataError,
         entsog.EntsogError,
+        agsi.AgsiError,
         entsog.GasDataError,
         GeothermalDataError,
         hep_capacity.HepSourceError,

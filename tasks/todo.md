@@ -1276,6 +1276,48 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
   stvarnim podacima prije objave; put kroz krivu trafostanicu → ručni pregled na karti.
 - Provjera: jedinični testovi grafa i funkcije položaja, e2e za pauzu i nastavak, snimke.
 
+## Faza 38 — pratitelj ciljeva 2030 (prijedlog vlasnika 2026-11-17) — PRVA VERZIJA GOTOVA 2026-11-17
+
+- Cilj: na karti pokazati gdje zemlja stoji prema vlastitom cilju za 2030.
+- Pristup (odstupanje od prijedloga, uz pristanak vlasnika): ne prosjek zadnjih 30 dana iz ENTSO-E-a prema
+  cilju, nego ista mjera kao cilj: službeni godišnji udio obnovljivih u bruto konačnoj potrošnji energije
+  (Eurostat `nrg_ind_ren`, `REN`, već se objavljuje) prema cilju iz plana. Satni semafor mjeri nešto drugo
+  (proizvodnju struje u jednom satu) i kartica to izričito kaže.
+- Izvedba: `data/targets.ts` (ciljevi s izvorom, `progress`), `panels/Goal2030.tsx` (prsten, udio, cilj,
+  razlika, poveznice na Eurostat i dokument cilja) u kartici semafora za odabranu zemlju; udjeli se u
+  aplikaciji učitavaju iz `eurostat/renewables.json`. Zemlja bez provjerenog cilja ne prikazuje ništa.
+- Ciljevi, pročitani u primarnim dokumentima 2026-11-17 (navodi provjereni u tekstu dokumenata):
+  HR 42,5 · SI 33 („najmanje”) · HU 30 · AT 57 („najmanje”) · IT 39,4 (konačni ažurirani NECP-ovi 2024./2025.,
+  potvrđeno u ocjeni Komisije SWD(2025) 140); RS 40,7 · BA 43,6 · ME 50 (obvezujući ciljevi Energetske
+  zajednice, odluka 2022/02/MC-EnC). Srbijin vlastiti plan cilja niže (33,6 %); BiH nema usvojen plan.
+- Namjerno izostavljeno: ciljevi za struju. Planovi ih zovu indikativnima, sektorskima ili projekcijama;
+  austrijski je „nacionalna bilanca”, ne Eurostatov udio. Hrvatski iznosi 76,7 % (konačni plan), ne 73,6 %
+  (nacrt iz 2023.) kako je stajalo u prijedlogu.
+- Nije napravljeno: gumb koji na karti istakne planirane vjetroelektrane i sunčane elektrane; Worker nije
+  potreban (podatke već objavljuje `eurostat-update`).
+
+## Faza 37 — skladišta plina (GIE AGSI) (prijedlog vlasnika 2026-11-17) — U TIJEKU
+
+- Cilj: uz sloj plina pokazati koliko je plina u skladištima (popunjenost, utiskivanje, povlačenje), najprije
+  za Hrvatsku (PSP Okoli), a gdje AGSI ima podatke i za ostale zemlje karte.
+- Izvor i licenca: GIE AGSI, API uz osobni ključ (tajna `AGSI_API_KEY` u GitHub Secrets, dodao vlasnik
+  2026-11-17). Priručnik v007: podaci se smiju koristiti i prerađivati uz obvezno navođenje GIE-a kao
+  izvora; bez ograničenja na nekomercijalnu upotrebu. Objava dnevno u 19:30 i 23:00 CET za prethodni plinski dan.
+- Koraci:
+  1. [x] Izviđanje (`gas/agsi.py`, `energymap gas storage-survey`, workflow `gas-storage-survey`): koja
+     postrojenja AGSI ima za naše zemlje, polja i jedan dan podataka. Ne objavljuje ništa. Razlog: priručnik
+     opisuje polja i popis, ali ne i upit za pojedinu zemlju ili postrojenje; adresu daje sam popis.
+  2. [ ] Pokrenuti izviđanje na GitHubu i pročitati stvarni odgovor.
+  3. [ ] Dnevno preuzimanje zadnjih dana po postrojenju i zemlji → `live/gasstorage.json` (validacija,
+     provenance, atribucija GIE), u `gas-daily` ili vlastiti workflow nakon 19:30 CET; okidač u Workeru.
+  4. [ ] Prikaz: popunjenost i smjer (utiskivanje/povlačenje) u traci sloja plina i na kartici; atribucija GIE
+     vidljiva uz podatak. Položaj skladišta samo ako ga imamo iz izvora (OSM/ENTSOG), inače bez točke.
+- Razmotreno i odbijeno: animirane čestice po plinovodima (ne znamo kojim cijevima plin ide); Cloudflare
+  Worker koji sam zove AGSI (dnevna obrada to već radi, ključ ostaje na jednom mjestu).
+- Rizici: oblik popisa nije dokumentiran do kraja (zato korak 1); operator može kasniti s podatkom (status
+  E/C/N se prikazuje); promjena EIC kodova (AGSI ih najavljuje).
+- Provjera: jedinični testovi protiv lažnog poslužitelja, zatim stvarni odgovor iz koraka 2.
+
 ## Faza 36 — „Koliko je struja sada zelena” (prijedlog vlasnika 2026-11-16: „semafor”) — PRVA VERZIJA GOTOVA 2026-11-16
 
 - Izvedeno (jednostavnije od plana ispod, uz pristanak vlasnika): točka u boji i postotak u traci stanja karte

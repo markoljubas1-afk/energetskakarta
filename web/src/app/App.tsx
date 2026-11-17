@@ -29,6 +29,7 @@ import { GreenLight } from "../panels/GreenLight";
 import { SolarBar } from "../panels/SolarBar";
 import { loadSolar, SOLAR_KEY, solarImage, type SolarLoad } from "../data/solar";
 import { loadRoutes } from "../data/routes";
+import { loadRenewables, RENEWABLES_KEY } from "../data/eurostat";
 import { freshBands, mixNow } from "../data/greenShare";
 import { aroundOf, loadNearby } from "../data/nearby";
 import { measure } from "../stories/travel";
@@ -386,6 +387,10 @@ function Explorer({
   const liveDoc =
     liveData?.status === "ready" && liveData.value.kind === "ready" ? liveData.value.live : null;
   const livePublished = liveDoc !== null;
+  // the official yearly shares for the 2030 target in the green card; a failure only means no target
+  const [renewables] = useAsync(liveDoc && !state.embed ? RENEWABLES_KEY : null, (signal) =>
+    loadRenewables(config.dataBaseUrl, signal),
+  );
   // Charging stations take the colour of how green their country's electricity is right now; without
   // fresh figures (or in an embed, which does not load them) they keep their own colour.
   const chargersOn = state.layers.has("chargers");
@@ -979,6 +984,8 @@ function Explorer({
                     now={liveNow}
                     onShow={showGenerating}
                     learnHref={PATHS[i18n.lang].learn}
+                    renewables={renewables?.status === "ready" ? renewables.value : null}
+                    transitionHref={PATHS[i18n.lang].transition}
                   />
                 </ErrorBoundary>
               )}

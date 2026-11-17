@@ -1,0 +1,63 @@
+/* Sits inside the green card (GreenLight.module.css), under the hour's own figures. */
+.goal {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.goal h3 {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.row p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.ring {
+  flex: none;
+}
+
+.track,
+.done {
+  fill: none;
+  stroke-width: 7;
+}
+
+.track {
+  stroke: var(--line);
+}
+
+.done {
+  stroke: #3fa86b;
+  stroke-linecap: round;
+}
+
+.ring text {
+  fill: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.note {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+.note a {
+  color: var(--accent);
+}

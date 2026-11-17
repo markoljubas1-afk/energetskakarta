@@ -244,6 +244,14 @@ export const en: Dictionary = {
   greenNote:
     "Share of domestic generation according to ENTSO-E; imports and exports are not counted. Green from {high} %, amber from {mid} %, red below that.",
   greenWhy: "Why does it matter?",
+  goalTitle: "The 2030 target",
+  goalNow: "Official share in {year}: {value}%",
+  goalTarget: "Target for 2030: {value}%",
+  goalGap: "{points} percentage points to go",
+  goalReached: "The target has been reached.",
+  goalNote:
+    "The share of renewable sources in all energy used (electricity, heating, transport), over a whole year. Not the same measure as the figure above. Sources:",
+  goalMore: "More on the transition",
   storyPause: "Pause",
   storyPlay: "Play",
   storyReplay: "Replay",

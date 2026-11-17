@@ -6,7 +6,7 @@
  */
 import { z } from "zod";
 
-import { DataError } from "./current";
+import { assetUrl, DataError } from "./current";
 
 export const RENEWABLES_KEY = "eurostat/renewables.json";
 export const RES_INDICATORS = ["REN", "REN_ELC", "REN_HEAT_CL", "REN_TRA"] as const;
@@ -86,4 +86,12 @@ export function latestShare(
     if (share) return share;
   }
   return null;
+}
+
+/** The published shares for the app; null when the bucket has none yet. */
+export async function loadRenewables(base: URL, signal: AbortSignal): Promise<Renewables | null> {
+  const response = await fetch(assetUrl(base, RENEWABLES_KEY), { signal });
+  if (response.status === 404) return null;
+  if (!response.ok) throw new DataError(`renewable shares returned HTTP ${response.status}`);
+  return checkedRenewables(RenewablesSchema.parse(await response.json()));
 }

@@ -1,0 +1,45 @@
+# A survey of the region's gas storage on GIE's AGSI platform (Faza 37, step 1): which operators and
+# facilities it lists for the countries of the map, the fields it returns, and one day's figures of each.
+# The storage layer is matched against this real answer before it is built. Publishes nothing: the table goes
+# to the job summary and the JSON to the run's artifacts. Started by hand only.
+# Needs the AGSI_API_KEY secret (a personal key from agsi.gie.eu/account); it is never printed.
+name: gas-storage-survey
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  survey:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check configuration
+        env:
+          HAS_KEY: ${{ secrets.AGSI_API_KEY != '' }}
+        run: |
+          if [ "$HAS_KEY" != "true" ]; then
+            echo "::error::Not configured: the AGSI_API_KEY secret is required"
+            exit 1
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/pyproject.toml
+      - run: python -m pip install -e .
+      - name: Survey the gas storage
+        env:
+          AGSI_API_KEY: ${{ secrets.AGSI_API_KEY }}
+        run: energymap gas storage-survey --data-dir data >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gas-storage-survey
+          path: pipeline/data/gas/storage-survey.json
+          retention-days: 30

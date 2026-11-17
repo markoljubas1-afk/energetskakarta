@@ -241,6 +241,14 @@ export const hr = {
   greenNote:
     "Udio u domaćoj proizvodnji prema ENTSO-E-u; uvoz i izvoz nisu uračunati. Zeleno je od {high} %, žuto od {mid} %, ispod toga crveno.",
   greenWhy: "Zašto je to važno?",
+  goalTitle: "Cilj 2030.",
+  goalNow: "Službeni udio {year}.: {value} %",
+  goalTarget: "Cilj za 2030.: {value} %",
+  goalGap: "Do cilja još {points} post. bodova",
+  goalReached: "Cilj je dostignut.",
+  goalNote:
+    "Udio obnovljivih izvora u svoj potrošenoj energiji (struja, grijanje, promet), za cijelu godinu. Nije ista mjera kao brojka iznad. Izvori:",
+  goalMore: "Više o tranziciji",
   storyPause: "Pauza",
   storyPlay: "Pusti",
   storyReplay: "Ispočetka",
