@@ -487,6 +487,11 @@ export const hr = {
   solarUnit: "kWh po kWp godišnje",
   solarMeaning: "Sustav snage 1 kW ovdje bi u prosječnoj godini proizveo oko {value} kWh.",
   solarLegend: "kWh/kWp godišnje",
+  roofTitle: "Koliko panela treba?",
+  roofConsumption: "Vaša godišnja potrošnja struje (piše na računu)",
+  roofResult: "Ovdje za to treba oko {kwp} kWp, otprilike {panels} panela od {watts} W.",
+  roofNote:
+    "Godišnja bilanca: toliko panela u prosječnoj godini proizvede koliko trošite. Ljeti ostaje viška, zimi nedostaje, pa to nije neovisnost o mreži. Krov s lošom orijentacijom ili sjenom treba više.",
   solarStation: "Najbliža trafostanica HEP ODS-a",
   solarStationAway: "{km} km zračne linije",
   solarStationShow: "Pokaži na karti",

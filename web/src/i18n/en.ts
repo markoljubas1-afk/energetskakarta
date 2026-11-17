@@ -492,6 +492,11 @@ export const en: Dictionary = {
   solarUnit: "kWh per kWp a year",
   solarMeaning: "A 1 kW system here would generate about {value} kWh in an average year.",
   solarLegend: "kWh/kWp a year",
+  roofTitle: "How many panels would it take?",
+  roofConsumption: "Your yearly electricity consumption (it is on the bill)",
+  roofResult: "Here that takes about {kwp} kWp, roughly {panels} panels of {watts} W.",
+  roofNote:
+    "A yearly balance: that many panels generate in an average year what you use. Summer leaves a surplus and winter a shortfall, so it is not independence from the grid. A roof facing the wrong way or in shade needs more.",
   solarStation: "Nearest HEP ODS substation",
   solarStationAway: "{km} km as the crow flies",
   solarStationShow: "Show on the map",

@@ -57,6 +57,11 @@ test("a click on the map reads the expected yearly output there, with the caveat
   if (!box) throw new Error("the map has no box");
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 3);
   await expect(bar.getByText("1.250", { exact: true })).toBeVisible();
+  // how many panels a year's consumption would take at this very place: 4,000 kWh at 1,250 kWh/kWp
+  await expect(bar.getByRole("slider", { name: /Vaša godišnja potrošnja struje/ })).toHaveValue("4000");
+  await expect(bar).toContainText("Ovdje za to treba oko 3,2 kWp, otprilike 8 panela od 430 W.");
+  await bar.getByRole("slider", { name: /Vaša godišnja potrošnja struje/ }).fill("10000");
+  await expect(bar).toContainText("Ovdje za to treba oko 8 kWp, otprilike 19 panela od 430 W.");
   await expect(bar.getByRole("link", { name: "PVGIS" })).toHaveAttribute(
     "href",
     "https://re.jrc.ec.europa.eu/pvg_tools/en/",

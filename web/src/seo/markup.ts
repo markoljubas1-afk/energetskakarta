@@ -104,8 +104,13 @@ export function glossary(rows: [string, string][]): string {
 }
 
 /** One thing to do, set apart from the text around it: a sentence and a link that looks like a button. */
-export function callout(text: string, link: { href: string; label: string }, icon = ""): string {
-  return `<p class="callout">${icon}<span>${e(text)}</span> <a href="${e(link.href)}" target="_blank" rel="noopener noreferrer">${e(link.label)}</a></p>`;
+export function callout(
+  text: string,
+  link: { href: string; label: string; external?: boolean },
+  icon = "",
+): string {
+  const target = link.external === true ? ' target="_blank" rel="noopener noreferrer"' : "";
+  return `<p class="callout">${icon}<span>${e(text)}</span> <a href="${e(link.href)}"${target}>${e(link.label)}</a></p>`;
 }
 
 export function definitions(rows: [string, string][]): string {

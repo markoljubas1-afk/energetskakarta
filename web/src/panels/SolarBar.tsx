@@ -1,8 +1,9 @@
 import { X } from "lucide-react";
+import { useState } from "react";
 
 import type { AsyncState } from "../app/useAsync";
 import { levelOf, NEAR_STATION_KM, nearestStation, stationSlugs, type HepLoad } from "../data/hep";
-import { valueAt, type SolarLoad } from "../data/solar";
+import { PANEL_W, roofSystem, valueAt, type SolarLoad } from "../data/solar";
 import { useI18n } from "../i18n";
 import { CAPACITY_COPY } from "../seo/capacityCopy";
 import { PATHS } from "../seo/pages";
@@ -102,6 +103,7 @@ export function SolarBar({ data, point, onRetry, onClose, capacity = null, onSta
       </div>
       {point !== null && value !== null && (
         <>
+          <Roof yieldKwh={value} />
           <Station capacity={capacity} point={point} {...(onStation ? { onStation } : {})} />
           <p className={styles.next}>
             {t("solarPvgis")}{" "}
@@ -182,6 +184,48 @@ function Station({
         {slug && <a href={PATHS[lang].capacityStation(slug)}>{t("capStationPage")}</a>}
       </p>
       <p className={styles.note}>{t("solarStationNote", { date: i18n.date(release.dataDate) })}</p>
+    </div>
+  );
+}
+
+/** The slider's range: from a small flat to a large house with a heat pump, in steps a bill can be read to. */
+const CONSUMPTION = { min: 1000, max: 15000, step: 250, start: 4000 } as const;
+
+/**
+ * "How many panels would I need?" (prijedlog vlasnika 2026-11-17): the reader gives the yearly consumption
+ * their bill states, the place gives its yield, and the answer is installed power and a number of panels.
+ * Kilowatt-hours rather than euros, because turning a bill into consumption would need a tariff we would
+ * have to assume. What the answer is not is said under it: a yearly balance, not independence from the grid.
+ */
+function Roof({ yieldKwh }: { yieldKwh: number }) {
+  const i18n = useI18n();
+  const { t } = i18n;
+  const [yearly, setYearly] = useState<number>(CONSUMPTION.start);
+  const system = roofSystem(yearly, yieldKwh);
+  return (
+    <div className={styles.roof}>
+      <h3>{t("roofTitle")}</h3>
+      <label>
+        <span>{t("roofConsumption")}</span>
+        <input
+          type="range"
+          min={CONSUMPTION.min}
+          max={CONSUMPTION.max}
+          step={CONSUMPTION.step}
+          value={yearly}
+          aria-valuetext={`${i18n.number(yearly, 0)} kWh`}
+          onChange={(event) => {
+            setYearly(Number(event.target.value));
+          }}
+        />
+        <output>{i18n.number(yearly, 0)} kWh</output>
+      </label>
+      {system && (
+        <p className={styles.roofResult} aria-live="polite">
+          {t("roofResult", { kwp: i18n.number(system.kwp, 1), panels: system.panels, watts: PANEL_W })}
+        </p>
+      )}
+      <p className={styles.note}>{t("roofNote")}</p>
     </div>
   );
 }

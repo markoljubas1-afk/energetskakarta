@@ -1304,6 +1304,13 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
   `data/households.ts`; samo za klijentsku gradnju (SSR gradnje zadaju vlastiti ulaz). Bez skripte ili bez
   podataka okvir ostaje skriven. Prva i jedina skripta na statičnim stranicama; CSP je već dopuštao `'self'`.
 - „Pokreni priču” je gumb koji mijenja boju kad je pokazivač na kartici (zahtjev vlasnika).
+- Kalkulator „Koliko panela treba?” (prijedlog vlasnika 2026-11-17, uz dvije izmjene koje je prihvatio): u traci
+  sunčanog sloja, nakon klika na mjesto. Klizač je godišnja potrošnja u kWh (1000–15 000), ne račun u eurima
+  (pretvorba bi tražila pretpostavljenu tarifu); prinos je s kliknutog mjesta iz atlasa, ne prosjek zemlje.
+  Rezultat: kWp i broj panela od 430 W (`roofSystem`, `PANEL_W` u `data/solar.ts`; jedina pretpostavka, ispisana
+  uz rezultat). Ispod piše da je to godišnja bilanca, a ne neovisnost o mreži. PVGIS-ov API se ne zove: ne
+  dopušta pozive iz preglednika s druge stranice (provjereno, odgovor bez CORS zaglavlja), a istu vrstu
+  podatka već imamo. Okvir na Edukaciji vodi na kalkulator na karti; PVGIS ostaje poveznica u traci.
 - Korak 3 (nije počet): kartice i okviri na `/tko-stoji-iza/`, `/gradovi/`, `/kapaciteti/`, `/api/`.
 
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)

@@ -23,8 +23,6 @@ interface LearnCopy {
   units: string[];
   solarHeading: string;
   solar: string[];
-  solarTry: string;
-  solarTryNote: string;
   /** the call-out that sends a reader with a roof of their own to the exact calculation */
   roof: string;
   roofAction: string;
@@ -91,10 +89,8 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
       "Sunce daje najviše ljeti i oko podneva, a troši se najviše zimi i navečer. Zato sunčana energija treba mrežu, hidroelektrane i baterije koje premošćuju razliku.",
       "Brojke na karti su dugogodišnji prosjek modela Global Solar Atlasa. Za konkretan krov ili zemljište treba proračun koji uzima u obzir nagib, orijentaciju i zasjenjenje; besplatan je, na primjer, europski PVGIS.",
     ],
-    solarTry: "Sunčani potencijal na karti",
-    solarTryNote: "kliknite na svoje mjesto i pročitajte očekivanu godišnju proizvodnju",
-    roof: "Imate krov? Besplatni europski kalkulator PVGIS računa koliko bi baš on dao, uz nagib, orijentaciju i zasjenjenje.",
-    roofAction: "Izračunaj za moj krov",
+    roof: "Imate krov? Otvorite sunčani sloj, kliknite na svoje mjesto i pomaknite klizač na svoju godišnju potrošnju: karta kaže koliko panela treba.",
+    roofAction: "Izračunaj na karti",
     storyStart: "Pokreni priču",
     now: {
       title: "Upravo sada u Hrvatskoj",
@@ -236,10 +232,8 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
       "The sun gives the most in summer and around noon, while the most is used in winter and in the evening. That is why solar energy needs the grid, hydro plants and batteries to bridge the difference.",
       "The figures on the map are the long-term average of the Global Solar Atlas's model. A particular roof or plot needs a calculation that takes tilt, orientation and shading into account; the European PVGIS, for one, is free.",
     ],
-    solarTry: "Solar potential on the map",
-    solarTryNote: "click your own place and read the expected yearly output",
-    roof: "Have a roof? The free European calculator PVGIS works out what that very roof would give, with its tilt, orientation and shading.",
-    roofAction: "Calculate for my roof",
+    roof: "Have a roof? Open the solar layer, click your own place and move the slider to your yearly consumption: the map says how many panels it takes.",
+    roofAction: "Calculate on the map",
     storyStart: "Start the story",
     now: {
       title: "Right now in Croatia",
@@ -364,8 +358,6 @@ const STORY_ICONS: Record<StoryKey, string> = {
 };
 const MAP_ICON = icon(MapIcon);
 const SUN_ICON = icon(Sun, 22);
-/** The European Commission's free calculator for a particular roof (the same link the map's solar bar gives). */
-const PVGIS_URL = "https://re.jrc.ec.europa.eu/pvg_tools/en/";
 
 /** The words of a sentence with each `{slot}` turned into an element the script writes a figure into. */
 const slots = (text: string): string => e(text).replace(/\{(\w+)\}/g, '<b data-v="$1"></b>');
@@ -427,7 +419,7 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
       { heading: copy.unitsHeading, html: list(copy.units.map(e)) },
       {
         heading: copy.solarHeading,
-        html: `${list(copy.solar.map(e))}${doors([{ href: mapLink(lang, { l: "lines,solar" }), title: copy.solarTry, text: copy.solarTryNote, icon: MAP_ICON }])}${callout(copy.roof, { href: PVGIS_URL, label: copy.roofAction }, SUN_ICON)}`,
+        html: `${list(copy.solar.map(e))}${callout(copy.roof, { href: mapLink(lang, { l: "lines,solar" }), label: copy.roofAction }, SUN_ICON)}`,
       },
       {
         heading: copy.timingHeading,

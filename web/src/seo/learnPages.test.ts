@@ -50,7 +50,7 @@ describe("the learning corner", () => {
       // the section on negative prices opens the hourly prices; it comes before the "try it" list
       // links out of the site (the roof calculator) are not views of the map
       const external = links.filter((link) => link.startsWith("https://"));
-      expect(external).toEqual(["https://re.jrc.ec.europa.eu/pvg_tools/en/"]);
+      expect(external).toEqual([]);
       const [price, ...views] = links.filter(
         (link) => !link.includes("story=") && !link.includes("solar") && !link.startsWith("https://"),
       );
@@ -111,6 +111,6 @@ describe("the learning corner", () => {
       /<li><svg[^>]*aria-hidden="true"[\s\S]*?<\/svg><a href="\/\?story=put-struje">[^<]+<\/a> <span>[^<]+<\/span> <em>Pokreni priču<\/em><\/li>/,
     );
     expect(html).toContain('class="callout"');
-    expect(html).toContain(">Izračunaj za moj krov</a>");
+    expect(html).toContain('<a href="/?l=lines%2Csolar">Izračunaj na karti</a>');
   });
 });

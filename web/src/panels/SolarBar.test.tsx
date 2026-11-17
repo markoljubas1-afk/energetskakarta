@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { HepRelease } from "../data/hep";
 import { RELEASE } from "../data/hep.fixture";
+import { roofSystem } from "../data/solar";
 import { SOLAR } from "../data/solar.fixture";
 import { renderWithI18n } from "../test/render";
 import { SolarBar } from "./SolarBar";
@@ -105,6 +106,39 @@ describe("SolarBar", () => {
       expect(
         screen.queryByRole("heading", { name: "Najbliža trafostanica HEP ODS-a" }),
       ).not.toBeInTheDocument();
+    });
+  });
+
+  describe("how many panels", () => {
+    it("divides a year's consumption by the place's yield and rounds the panels up", () => {
+      // 4,000 kWh at 1,400 kWh/kWp: 2.857 kWp, shown as 2.9; 2.9 kWp of 430 W panels is 6.7, so seven
+      expect(roofSystem(4000, 1400)).toEqual({ kwp: 2.9, panels: 7 });
+      expect(roofSystem(4000, 1000)).toEqual({ kwp: 4, panels: 10 });
+      expect(roofSystem(0, 1400)).toBeNull();
+      expect(roofSystem(4000, 0)).toBeNull();
+    });
+
+    it("answers for the clicked place and follows the slider, and says what the answer is not", () => {
+      bar({ lng: 16.02, lat: 44.93 }); // 1,400 kWh/kWp in the fixture
+      const slider = screen.getByRole("slider", { name: /Vaša godišnja potrošnja struje/ });
+      expect(slider).toHaveValue("4000");
+      expect(
+        screen.getByText("Ovdje za to treba oko 2,9 kWp, otprilike 7 panela od 430 W."),
+      ).toBeInTheDocument();
+      fireEvent.change(slider, { target: { value: "8000" } });
+      expect(slider).toHaveAttribute("aria-valuetext", "8.000 kWh");
+      expect(
+        screen.getByText("Ovdje za to treba oko 5,7 kWp, otprilike 14 panela od 430 W."),
+      ).toBeInTheDocument();
+      expect(screen.getByText(/nije neovisnost o mreži/)).toBeInTheDocument();
+    });
+
+    it("is not offered before a place is clicked, or where the atlas has no value", () => {
+      const first = bar(null);
+      expect(screen.queryByRole("slider")).not.toBeInTheDocument();
+      first.unmount();
+      bar({ lng: 16.07, lat: 44.92 });
+      expect(screen.queryByRole("slider")).not.toBeInTheDocument();
     });
   });
 });

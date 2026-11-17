@@ -74,3 +74,27 @@ export function valueAt(solar: Solar, lng: number, lat: number): number | null {
   const value = values[row * cols + col];
   return value === undefined || value === 0 ? null : value;
 }
+
+/**
+ * The rated power of one panel the calculator counts with, in watts: an ordinary rooftop panel of the day.
+ * It is the calculator's one assumption and is printed next to the result.
+ */
+export const PANEL_W = 430;
+
+export interface RoofSystem {
+  /** installed power that would generate the yearly consumption at this place, in kWp (one decimal) */
+  kwp: number;
+  /** how many panels of `PANEL_W` that is, rounded up */
+  panels: number;
+}
+
+/**
+ * The system that generates as much in an average year as a household uses in a year: consumption divided by
+ * the place's yield (kWh per installed kWp a year, from the atlas). A yearly balance and nothing more: it says
+ * nothing of when the electricity is made (most in summer, at noon) or how much of it the house uses itself.
+ */
+export function roofSystem(yearlyKwh: number, yieldKwhPerKwp: number): RoofSystem | null {
+  if (!(yearlyKwh > 0) || !(yieldKwhPerKwp > 0)) return null;
+  const kwp = Math.round((yearlyKwh / yieldKwhPerKwp) * 10) / 10;
+  return { kwp, panels: Math.ceil((kwp * 1000) / PANEL_W) };
+}
