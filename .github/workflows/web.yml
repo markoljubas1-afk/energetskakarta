@@ -76,7 +76,7 @@ jobs:
         run: npm run e2e:data
       # The fixture needs tippecanoe, which has no Windows build: a developer on Windows unpacks this into
       # web/e2e/.data and runs the same tests locally. Invented test data, never published.
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: e2e-data
           path: web/e2e/.data
@@ -89,7 +89,7 @@ jobs:
         run: npx playwright test
       # also when the job is cancelled by its time limit: that is when the report is needed most
       - if: failure() || cancelled()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: |
