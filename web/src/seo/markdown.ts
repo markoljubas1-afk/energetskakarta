@@ -57,7 +57,7 @@ function table(html: string, base: string | null): string {
 export function blocks(html: string, base: string | null): string {
   const parts: string[] = [];
   const pattern =
-    /<table>[\s\S]*?<\/table>|<ul>[\s\S]*?<\/ul>|<dl>[\s\S]*?<\/dl>|<pre><code>[\s\S]*?<\/code><\/pre>|<h3>[\s\S]*?<\/h3>|<p[^>]*>[\s\S]*?<\/p>/g;
+    /<table>[\s\S]*?<\/table>|<ul[^>]*>[\s\S]*?<\/ul>|<dl>[\s\S]*?<\/dl>|<pre><code>[\s\S]*?<\/code><\/pre>|<h3>[\s\S]*?<\/h3>|<p[^>]*>[\s\S]*?<\/p>/g;
   for (const [block] of html.matchAll(pattern)) {
     if (block.startsWith("<table")) parts.push(table(block, base));
     else if (block.startsWith("<ul"))

@@ -423,10 +423,10 @@ export const en: Dictionary = {
   legendDatacenter: "Data centre",
   layer_chargers: "Charging stations (EV)",
   layer_chargers_note:
-    "Electric vehicle charging stations from OpenStreetMap. On a wide view a disc shows how many there are in that area; single stations appear from closer zoom levels.",
+    "Electric vehicle charging stations from OpenStreetMap. On a wide view a disc shows how many there are in that area: click a disc and the map moves in to the single stations, which can then be clicked for their details.",
   legendCharger: "Charging station",
   legendChargerNoData: "Charging station, no fresh figures for its electricity",
-  legendCharger_high: "Electricity in the country now: {high}% or more renewable",
+  legendCharger_high: "{high}% or more renewable",
   legendCharger_mid: "Between {mid} and {high}% renewable",
   legendCharger_low: "Less than {mid}% renewable",
   legendChargerNote:

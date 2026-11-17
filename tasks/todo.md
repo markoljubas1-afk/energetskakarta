@@ -1236,6 +1236,23 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 - Otvoreno, čeka odluku/plan: pratitelj ciljeva 2030 (službeni udio iz Eurostata prema cilju iz NECP-a,
   ciljeve provjeriti u izvornim dokumentima); skladište plina (GIE AGSI traži vlastiti API ključ).
 
+### 35-11 Dorade nakon pregleda na živoj stranici — KOD GOTOV 2026-11-17
+- Natpis „(planirano proširenje)” na karti: vlastiti sloj `plant-expansion-labels` s filtrom za elektrane koje
+  nisu u pogonu (obični natpisi su samo za elektrane u pogonu), ispod natpisa postojeće elektrane. Kartica
+  planiranog bloka kod Krškog provjerena na živoj stranici.
+- Punionice: krug pregleda je klikabilan i približi kartu do pojedinačnih punionica (prijava vlasnika: „ne
+  radi mi klik”; krugovi stoje za područje, pojedinačne točke su tek od zuma 11). Legenda u jednom stupcu.
+  Vlasnik: uz `operator` i `network` čita se i `brand`; bez ikojeg ostaje „Nepoznato” (u OSM-u ga ima 71 %
+  punionica u regiji, 61 % u Hrvatskoj). Vidljivo nakon iduće gradnje.
+- Skladišta plina: točke na karti s imenom i popunjenošću (koordinate iz AGSI-ja); klik otvara skladište u
+  traci. Sloj se zove „Plin: proizvodnja i skladišta (dnevno)”; u traci su hrvatska skladišta otvorena, ostala
+  sklopljena.
+- Bušotine su u pločicama od početnog prikaza (zum 3), okna i potkopi od 5.
+- Statične stranice (zahtjev vlasnika, „dosadno sive”): pozadina u bojama karte, crta loga na vrhu kartice i
+  uz naslove odjeljaka; poveznice koje vode na kartu su kartice (`doors` u `seo/markup.ts`).
+- Nije napravljeno: e2e za traku i točke skladišta (samo jedinični testovi); povijest zadnjih 30 dana po
+  skladištu; zbroj po zemlji.
+
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda
   od 400 kV, prag spajanja krajeva 0,3 km (`pipeline/src/energymap/routes.py`). Karta: `stories/travel.ts`,

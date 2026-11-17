@@ -258,7 +258,9 @@ def _add_charger(
     result.chargers[key] = ChargingStation(
         id=key,
         status=status,
-        operator=t.text(tags, "operator", "network"),
+        # who runs it: the operator, else the charging network, else the brand on the pillar (the same
+        # company more often than not); a station that names none stays without one
+        operator=t.text(tags, "operator", "network", "brand"),
         provenance=_provenance(ctx, osm_type, osm_id),
         name=t.text(tags, "name", "name:en"),
         points=t.parse_points(tags.get("capacity")),

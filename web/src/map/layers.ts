@@ -52,6 +52,9 @@ import { priceFill } from "./priceScale";
 import {
   BOUNDARY_SOURCE,
   CAPACITY_LAYER,
+  GAS_STORAGE_LAYER,
+  GAS_STORAGE_SOURCE,
+  CHARGER_OVERVIEW_LAYER,
   CAPACITY_SOURCE,
   CHARGER_OVERVIEW_SOURCE,
   CHARGER_SOURCE,
@@ -79,7 +82,10 @@ export {
   BOUNDARY_SOURCE,
   CAPACITY_LAYER,
   CAPACITY_SOURCE,
+  CHARGER_OVERVIEW_LAYER,
   CHARGER_OVERVIEW_SOURCE,
+  GAS_STORAGE_LAYER,
+  GAS_STORAGE_SOURCE,
   CHARGER_SOURCE,
   dataSources,
   DISTRIBUTION_SOURCE,
@@ -320,7 +326,7 @@ export function dataLayers({
       26,
     ];
     layers.push({
-      id: `${LAYER_PREFIX}chargers-overview`,
+      id: CHARGER_OVERVIEW_LAYER,
       type: "circle",
       source: CHARGER_OVERVIEW_SOURCE,
       maxzoom: chargerOverviewBelow,
@@ -840,6 +846,42 @@ export function dataLayers({
     },
   });
 
+  // Gas storage (GIE AGSI): a ringed disc where the operator's platform places the facility, with the
+  // gas layer. How full it is stands next to it as a number, never as a size: sizes here mean flows.
+  layers.push({
+    id: GAS_STORAGE_LAYER,
+    type: "circle",
+    source: GAS_STORAGE_SOURCE,
+    layout: { visibility: show("gas") },
+    paint: {
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 4, 5, 10, 9],
+      "circle-color": palette.casing,
+      "circle-stroke-color": palette.gas,
+      "circle-stroke-width": 3,
+    },
+  });
+  if (labels) {
+    layers.push({
+      id: `${LAYER_PREFIX}gas-storage-labels`,
+      type: "symbol",
+      source: GAS_STORAGE_SOURCE,
+      layout: {
+        visibility: show("gas"),
+        "text-field": ["concat", ["get", "name"], "\n", ["to-string", ["get", "full"]], " %"],
+        "text-font": labels,
+        "text-size": 11.5,
+        "text-offset": [0, 1.2],
+        "text-anchor": "top",
+        "text-max-width": 12,
+      },
+      paint: {
+        "text-color": palette.labelText,
+        "text-halo-color": palette.labelHalo,
+        "text-halo-width": 1.4,
+      },
+    });
+  }
+
   // Geothermal sites: solid for what runs, lighter for what is coming; size grows with electric capacity.
   layers.push({
     id: GEOTHERMAL_SITES_LAYER,
@@ -988,12 +1030,13 @@ export function dataLayers({
       },
     });
     // A new part of a running plant carries the plant's own name in the source and sits on its very spot.
-    // Its label says which it is and goes under the plant's own. It is a layer of its own that is always
-    // drawn: placed with the others it collided with the plant's label and was never shown (2026-11-17).
+    // Its label says which it is and goes under the plant's own. A layer of its own, for two reasons found
+    // on the live map (2026-11-17): the labels above are for plants in operation only, which an expansion
+    // never is; and placed with the others it would collide with the label of the plant it sits on.
     layers.push({
       ...plantLabel,
       id: `${LAYER_PREFIX}plant-expansion-labels`,
-      filter: ["all", ["has", "name"], ["has", "expansionOf"], plantFilter(state, true)],
+      filter: ["all", ["has", "name"], ["has", "expansionOf"], plantFilter(state, false)],
       layout: {
         visibility: show("plants"),
         "text-field": [

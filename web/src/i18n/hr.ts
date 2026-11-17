@@ -419,10 +419,10 @@ export const hr = {
   legendDatacenter: "Podatkovni centar",
   layer_chargers: "Punionice (EV)",
   layer_chargers_note:
-    "Punionice za električna vozila prema OpenStreetMapu. Na širem pogledu krug pokazuje koliko ih je na tom području; pojedinačne punionice vide se od bližeg zumiranja.",
+    "Punionice za električna vozila prema OpenStreetMapu. Na širem pogledu krug pokazuje koliko ih je na tom području: kliknite krug i karta se približi do pojedinačnih punionica, koje se onda mogu kliknuti za pojedinosti.",
   legendCharger: "Punionica",
   legendChargerNoData: "Punionica, bez svježih podataka o struji",
-  legendCharger_high: "Struja u zemlji sada: {high} % ili više obnovljivo",
+  legendCharger_high: "{high} % ili više obnovljivo",
   legendCharger_mid: "Između {mid} i {high} % obnovljivo",
   legendCharger_low: "Manje od {mid} % obnovljivo",
   legendChargerNote:

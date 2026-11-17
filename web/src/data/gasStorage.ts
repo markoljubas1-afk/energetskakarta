@@ -7,6 +7,7 @@
  * after; `status` says whether a day is confirmed (C) or estimated (E). What they are not: a measurement of
  * ours, or a statement about where the gas goes.
  */
+import type { Feature, FeatureCollection, Point } from "geojson";
 import { z } from "zod";
 
 import { assetUrl, DataError } from "./current";
@@ -127,4 +128,27 @@ export function readings(storage: GasStorage, first: string | null = null): Read
         a.facility.name.localeCompare(b.facility.name)
       );
     });
+}
+
+export interface StorageProperties {
+  id: string;
+  name: string;
+  /** percent of the working volume on the last reported day, rounded as shown */
+  full: number;
+}
+
+/** The facilities AGSI gives a position for and that reported a fill, as points for the map. */
+export function storageOverlay(storage: GasStorage): FeatureCollection<Point, StorageProperties> {
+  const features = readings(storage).flatMap<Feature<Point, StorageProperties>>((reading) => {
+    const { id, name, lon, lat } = reading.facility;
+    if (lon === null || lat === null) return [];
+    return [
+      {
+        type: "Feature",
+        geometry: { type: "Point", coordinates: [lon, lat] },
+        properties: { id, name, full: Math.round(reading.full) },
+      },
+    ];
+  });
+  return { type: "FeatureCollection", features };
 }

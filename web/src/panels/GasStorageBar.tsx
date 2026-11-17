@@ -12,6 +12,8 @@ interface Props {
   data: AsyncState<GasStorageLoad> | null;
   /** switches the gas layer off */
   onClose: () => void;
+  /** the facility clicked on the map: shown open and first, whichever country it is in */
+  picked?: string | null;
 }
 
 /**
@@ -20,7 +22,7 @@ interface Props {
  * AGSI platform, which asks to be named wherever its data is shown; the bar never appears without that line.
  * Nothing is shown while there is nothing to show: the gas layer stands on its own without storage.
  */
-export function GasStorageBar({ data, onClose }: Props) {
+export function GasStorageBar({ data, onClose, picked = null }: Props) {
   const i18n = useI18n();
   const { t } = i18n;
   if (data?.status !== "ready" || data.value.kind !== "ready") return null;
@@ -30,8 +32,11 @@ export function GasStorageBar({ data, onClose }: Props) {
   // The reader's own country stays open; ten facilities at once would cover the map the bar belongs to.
   // Where the home country has none, the first country's stand in.
   const lead = rows.some((row) => row.facility.country === HOME) ? HOME : (rows[0]?.facility.country ?? HOME);
-  const shown = rows.filter((row) => row.facility.country === lead);
-  const others = rows.filter((row) => row.facility.country !== lead);
+  const open = (row: Reading): boolean => row.facility.country === lead || row.facility.id === picked;
+  const shown = rows
+    .filter(open)
+    .sort((a, b) => Number(b.facility.id === picked) - Number(a.facility.id === picked));
+  const others = rows.filter((row) => !open(row));
   return (
     <section className={styles.bar} aria-label={t("storageTitle")}>
       <div className={styles.head}>
@@ -42,7 +47,7 @@ export function GasStorageBar({ data, onClose }: Props) {
       </div>
       <ul className={styles.list}>
         {shown.map((row) => (
-          <Row key={row.facility.id} row={row} />
+          <Row key={row.facility.id} row={row} picked={row.facility.id === picked} />
         ))}
       </ul>
       {others.length > 0 && (
@@ -66,7 +71,7 @@ export function GasStorageBar({ data, onClose }: Props) {
   );
 }
 
-function Row({ row }: { row: Reading }) {
+function Row({ row, picked = false }: { row: Reading; picked?: boolean }) {
   const i18n = useI18n();
   const { t } = i18n;
   const { facility } = row;
@@ -77,7 +82,7 @@ function Row({ row }: { row: Reading }) {
         ? t("storageWithdrawing", { value: i18n.number(row.withdrawal ?? 0, 1) })
         : t("storageSteady");
   return (
-    <li>
+    <li {...(picked ? { "data-picked": "" } : {})}>
       <div className={styles.name}>
         <strong>{facility.name}</strong>
         <span>

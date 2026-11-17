@@ -3,7 +3,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 
 import type { AppConfig } from "../config";
 import { gasOverlay, loadGas, type GasLoad } from "../data/gas";
-import { GAS_STORAGE_KEY, loadGasStorage } from "../data/gasStorage";
+import { GAS_STORAGE_KEY, loadGasStorage, storageOverlay } from "../data/gasStorage";
 import { loadLive, overlay, pickHour } from "../data/live";
 import { GEOTHERMAL_KEY, geothermalFeatures, loadGeothermal, type GeothermalLoad } from "../data/geothermal";
 import { capacityOverlay, HEP_KEYS, loadHep, type HepLoad } from "../data/hep";
@@ -429,6 +429,15 @@ function Explorer({
     loadGasStorage(config.dataBaseUrl, signal),
   );
   const storageShown = storageData?.status === "ready" && storageData.value.kind === "ready";
+  const storagePoints = useMemo(
+    () =>
+      storageData?.status === "ready" && storageData.value.kind === "ready"
+        ? storageOverlay(storageData.value.storage)
+        : null,
+    [storageData],
+  );
+  // a storage facility clicked on the map; a moment, not a view: not in the URL
+  const [storagePick, setStoragePick] = useState<string | null>(null);
   const geoOn = state.layers.has("geothermal");
   const {
     data: geoData,
@@ -493,6 +502,13 @@ function Explorer({
       setFoldedBars(null);
     },
     [setCapStation, setFoldedBars],
+  );
+  const pickStorage = useCallback(
+    (id: string) => {
+      setStoragePick(id);
+      setFoldedBars(null);
+    },
+    [setStoragePick, setFoldedBars],
   );
   const pickGeoSite = useCallback(
     (id: string | null) => {
@@ -752,6 +768,8 @@ function Explorer({
             geothermal={geoFeatures}
             capacity={capOn ? capFeatures : null}
             onCapacityStation={pickCapStation}
+            gasStorage={gasOn ? storagePoints : null}
+            onGasStorage={pickStorage}
             onGeothermalSite={pickGeoSite}
             attribution={i18n.attribution(sources)}
             theme={theme}
@@ -947,7 +965,7 @@ function Explorer({
             {storageShown && (
               <div className={styles.liveSlot}>
                 <ErrorBoundary area="gas storage" fallback={panelFallback}>
-                  <GasStorageBar data={storageData} onClose={closeGas} />
+                  <GasStorageBar data={storageData} onClose={closeGas} picked={storagePick} />
                 </ErrorBoundary>
               </div>
             )}

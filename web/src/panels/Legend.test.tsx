@@ -158,7 +158,7 @@ describe("Legend", () => {
         <Legend {...props} chargersBanded />
       </I18nProvider>,
     );
-    expect(screen.getByText("Struja u zemlji sada: 65 % ili više obnovljivo")).toBeInTheDocument();
+    expect(screen.getByText("65 % ili više obnovljivo")).toBeInTheDocument();
     expect(screen.getByText("Između 35 i 65 % obnovljivo")).toBeInTheDocument();
     expect(screen.getByText("Manje od 35 % obnovljivo")).toBeInTheDocument();
     expect(screen.getByText("Punionica, bez svježih podataka o struji")).toBeInTheDocument();

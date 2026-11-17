@@ -440,3 +440,14 @@
 - Root cause: pretpostavio sam da se `params` dodaju postojećem upitu; httpx ga zamjenjuje.
 - Rule going forward: adresi koja već ima upit parametri se dodaju s `httpx.URL(url).copy_merge_params(...)`.
   Lažni poslužitelj u testu odbija zahtjev kojem nedostaje parametar koji stvarni poslužitelj treba.
+
+### L-076 — Dva ispravka naslijepo umjesto čitanja filtra (2026-11-17)
+- What happened: natpis „(planirano proširenje)” kod Krškog nije se vidio na karti. Dvaput sam ga „ispravio”
+  pretpostavljajući sudar natpisa (pomak, pa vlastiti sloj koji se uvijek crta) i oba puta objavio bez
+  učinka. Pravi uzrok: sloj natpisa koristi `plantFilter(state, true)`, to jest samo elektrane u pogonu, a
+  proširenje to nikad nije.
+- Root cause: nisam pročitao filtar sloja koji sam mijenjao, a lokalno natpise nisam mogao vidjeti (bez
+  MapTiler ključa nema fontova), pa sam teoriju provjeravao tek na živoj stranici.
+- Rule going forward: kad se nešto na karti ne crta, prvo pročitati filtar i `minzoom` tog sloja i potvrditi
+  da objekt uopće ulazi u sloj; tek onda tražiti uzrok u prikazu. Ono što se lokalno ne može vidjeti pokriti
+  testom stila koji provjerava filtar, prije slanja.

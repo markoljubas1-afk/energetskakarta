@@ -67,6 +67,24 @@ export function list(items: string[]): string {
   return `<ul>${items.map((item) => `<li>${item}</li>`).join("")}</ul>`;
 }
 
+export interface Door {
+  href: string;
+  title: string;
+  /** what the reader will see there */
+  text: string;
+}
+
+/**
+ * Links that open the map, as cards (`.doors` in style.ts): the title is the link and the whole card is
+ * its target; the line under it says what will be shown. Still a list of links for a reader and a crawler.
+ */
+export function doors(items: Door[]): string {
+  const cards = items.map(
+    (item) => `<li><a href="${e(item.href)}">${e(item.title)}</a> <span>${e(item.text)}</span></li>`,
+  );
+  return `<ul class="doors">${cards.join("")}</ul>`;
+}
+
 export function definitions(rows: [string, string][]): string {
   return `<dl>${rows.map(([term, value]) => `<dt>${e(term)}</dt><dd>${value}</dd>`).join("")}</dl>`;
 }

@@ -32,6 +32,8 @@ import {
   dataSources,
   FLOW_DASH_LAYER,
   CAPACITY_LAYER,
+  CHARGER_OVERVIEW_LAYER,
+  GAS_STORAGE_LAYER,
   GEOTHERMAL_SITES_LAYER,
   GRID_SOURCE,
   INTERACTIVE_LAYERS,
@@ -145,6 +147,10 @@ interface Props {
   capacity?: FeatureCollection | null;
   /** a HEP ODS substation was clicked on the map */
   onCapacityStation?: (id: string) => void;
+  /** gas storage facilities as points, while the gas layer is on (data/gasStorage.ts) */
+  gasStorage?: FeatureCollection | null;
+  /** a storage facility was clicked: the gas layer's bar opens it */
+  onGasStorage?: (id: string) => void;
   theme: Theme;
   state: AppState;
   /** one technology or voltage lit from the legend or the overview (spotlight.ts) */
@@ -195,6 +201,8 @@ export function MapView(props: Props) {
   const chargerBands = props.chargerBands ?? null;
   const geothermal = props.geothermal ?? null;
   const capacity = props.capacity ?? null;
+  const gasStorage = props.gasStorage ?? null;
+  const { onGasStorage } = props;
   const solar = props.solar ?? null;
   const { onViewChange, onSelect, onBasemap, onReady, onInView, onGeothermalSite, onCapacityStation } = props;
   const { onPoint } = props;
@@ -222,6 +230,7 @@ export function MapView(props: Props) {
     onInView,
     onGeothermalSite,
     onCapacityStation,
+    onGasStorage,
     onPoint,
     onIntroReady,
     onIntroDone,
@@ -237,6 +246,7 @@ export function MapView(props: Props) {
       onInView,
       onGeothermalSite,
       onCapacityStation,
+      onGasStorage,
       onPoint,
       onIntroReady,
       onIntroDone,
@@ -339,24 +349,43 @@ export function MapView(props: Props) {
     // geothermal sites and HEP ODS substations open their card instead of the asset details (they are not
     // in the tiles); the first layer listed that has something under the pointer wins
     const overlayHit = (point: Point): { layer: string; id: string } | null => {
-      for (const layer of [CAPACITY_LAYER, GEOTHERMAL_SITES_LAYER]) {
+      for (const layer of [CAPACITY_LAYER, GEOTHERMAL_SITES_LAYER, GAS_STORAGE_LAYER]) {
         if (!map.getLayer(layer)) continue;
         const id: unknown = map.queryRenderedFeatures(point, { layers: [layer] })[0]?.properties.id;
         if (typeof id === "string") return { layer, id };
       }
       return null;
     };
+    // A disc of the charger overview stands for the stations of an area, which are in the tiles only from
+    // a closer zoom. A click on it goes there, to where they can be seen and clicked one by one.
+    const chargerCell = (point: Point): { center: [number, number]; zoom: number } | null => {
+      const layer = map.getLayer(CHARGER_OVERVIEW_LAYER);
+      if (!layer) return null;
+      const cell = map.queryRenderedFeatures(point, { layers: [CHARGER_OVERVIEW_LAYER] })[0];
+      if (cell?.geometry.type !== "Point") return null;
+      const [lng, lat] = cell.geometry.coordinates;
+      if (lng === undefined || lat === undefined) return null;
+      // the overview ends where the single stations begin: half a level past that
+      return { center: [lng, lat], zoom: layer.maxzoom + 0.5 };
+    };
     map.on("click", (event) => {
       const overlay = overlayHit(event.point);
       const open =
         overlay?.layer === CAPACITY_LAYER
           ? callbacks.current.onCapacityStation
-          : callbacks.current.onGeothermalSite;
+          : overlay?.layer === GAS_STORAGE_LAYER
+            ? callbacks.current.onGasStorage
+            : callbacks.current.onGeothermalSite;
       if (overlay && open) {
         open(overlay.id);
         return;
       }
       const feature = hit(event.point);
+      const cell = feature ? null : chargerCell(event.point);
+      if (cell) {
+        map.flyTo({ center: cell.center, zoom: cell.zoom, essential: true });
+        return;
+      }
       const selection = feature ? toSelection(feature) : null;
       resolvedRef.current = selection?.id ?? null;
       callbacks.current.onSelect(selection);
@@ -409,7 +438,8 @@ export function MapView(props: Props) {
     };
     map.on("mousemove", (event) => {
       const feature = hit(event.point);
-      map.getCanvas().style.cursor = feature || overlayHit(event.point) ? "pointer" : "";
+      map.getCanvas().style.cursor =
+        feature || overlayHit(event.point) || chargerCell(event.point) ? "pointer" : "";
       const id: unknown = feature?.properties.id;
       if (!feature || typeof id !== "string") {
         clearHover();
@@ -627,7 +657,11 @@ export function MapView(props: Props) {
     });
     const composed = composeStyle(
       value.style,
-      dataSources(tiles, { live: live?.features ?? null, gas, timeline, geothermal, capacity, solar }, optIn),
+      dataSources(
+        tiles,
+        { live: live?.features ?? null, gas, timeline, geothermal, capacity, gasStorage, solar },
+        optIn,
+      ),
       stage === null ? layers : introLayers(layers, stage, palette),
       reducedMotion,
     );
@@ -654,6 +688,7 @@ export function MapView(props: Props) {
     timeline,
     geothermal,
     capacity,
+    gasStorage,
     solar,
     reducedMotion,
     stage,

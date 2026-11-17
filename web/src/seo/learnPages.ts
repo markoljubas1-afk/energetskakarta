@@ -5,7 +5,7 @@
  */
 import { TIME_MACHINE_START, type Lang } from "../state/url";
 import { STORIES, STORY_KEYS } from "../stories/stories";
-import { definitions, e, list } from "./markup";
+import { definitions, doors, e, list, type Door } from "./markup";
 import { home, mapLink, other, PATHS, type SiteData, type StaticPage } from "./site";
 
 interface LearnCopy {
@@ -19,6 +19,7 @@ interface LearnCopy {
   solarHeading: string;
   solar: string[];
   solarTry: string;
+  solarTryNote: string;
   timingHeading: string;
   timing: string[];
   termsHeading: string;
@@ -65,7 +66,8 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
       "Sunce daje najviše ljeti i oko podneva, a troši se najviše zimi i navečer. Zato sunčana energija treba mrežu, hidroelektrane i baterije koje premošćuju razliku.",
       "Brojke na karti su dugogodišnji prosjek modela Global Solar Atlasa. Za konkretan krov ili zemljište treba proračun koji uzima u obzir nagib, orijentaciju i zasjenjenje; besplatan je, na primjer, europski PVGIS.",
     ],
-    solarTry: "Otvori sloj „Sunčani potencijal” i klikni na svoje mjesto",
+    solarTry: "Sunčani potencijal na karti",
+    solarTryNote: "kliknite na svoje mjesto i pročitajte očekivanu godišnju proizvodnju",
     timingHeading: "Zašto je važno kada trošiš",
     timing: [
       "Struja se proizvodi u istom trenutku u kojem se troši. Kad usred sunčanog ili vjetrovitog dana uključite perilicu, veći dio te struje dolazi iz sunca i vjetra; u zimsku večer, kad svi kuhaju i griju se, više rade elektrane na plin i ugljen.",
@@ -183,7 +185,8 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
       "The sun gives the most in summer and around noon, while the most is used in winter and in the evening. That is why solar energy needs the grid, hydro plants and batteries to bridge the difference.",
       "The figures on the map are the long-term average of the Global Solar Atlas's model. A particular roof or plot needs a calculation that takes tilt, orientation and shading into account; the European PVGIS, for one, is free.",
     ],
-    solarTry: "Open the “Solar potential” layer and click your own place",
+    solarTry: "Solar potential on the map",
+    solarTryNote: "click your own place and read the expected yearly output",
     timingHeading: "Why it matters when you use it",
     timing: [
       "Electricity is generated at the very moment it is used. When you start the washing machine in the middle of a sunny or windy day, more of that electricity comes from sun and wind; on a winter evening, when everyone is cooking and heating, gas and coal plants work harder.",
@@ -276,10 +279,11 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
   const copy = LEARN_COPY[lang];
   const stories = STORY_KEYS.filter(
     (key) => STORIES[key].route === undefined || site.current.routes !== undefined,
-  ).map(
-    (key) =>
-      `<a href="${e(mapLink(lang, { story: key }))}">${e(STORIES[key].title[lang])}</a>: ${e(STORIES[key].summary[lang])}`,
-  );
+  ).map((key): Door => ({
+    href: mapLink(lang, { story: key }),
+    title: STORIES[key].title[lang],
+    text: STORIES[key].summary[lang],
+  }));
   const tries = [
     ...copy.tries,
     ...(site.current.timeline !== undefined
@@ -290,7 +294,7 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
           ] as LearnCopy["tries"][number],
         ]
       : []),
-  ].map(([text, what, params]) => `<a href="${e(mapLink(lang, params))}">${e(text)}</a>: ${e(what)}`);
+  ].map(([title, text, params]): Door => ({ href: mapLink(lang, params), title, text }));
   return {
     path: PATHS[lang].learn,
     lang,
@@ -300,7 +304,7 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
     heading: copy.title,
     lead: copy.lead.map((p) => `<p>${e(p)}</p>`).join(""),
     sections: [
-      { heading: copy.storiesHeading, html: `<p>${e(copy.storiesIntro)}</p>${list(stories)}` },
+      { heading: copy.storiesHeading, html: `<p>${e(copy.storiesIntro)}</p>${doors(stories)}` },
       {
         heading: copy.journeyHeading,
         html: `<ol>${copy.journey.map((step) => `<li>${e(step)}</li>`).join("")}</ol>`,
@@ -308,11 +312,11 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
       { heading: copy.unitsHeading, html: list(copy.units.map(e)) },
       {
         heading: copy.solarHeading,
-        html: `${list(copy.solar.map(e))}<p><a href="${e(mapLink(lang, { l: "lines,solar" }))}">${e(copy.solarTry)}</a></p>`,
+        html: `${list(copy.solar.map(e))}${doors([{ href: mapLink(lang, { l: "lines,solar" }), title: copy.solarTry, text: copy.solarTryNote }])}`,
       },
       { heading: copy.timingHeading, html: copy.timing.map((p) => `<p>${e(p)}</p>`).join("") },
       { heading: copy.termsHeading, html: definitions(copy.terms.map(([term, text]) => [term, e(text)])) },
-      { heading: copy.tryHeading, html: `<p>${e(copy.tryIntro)}</p>${list(tries)}` },
+      { heading: copy.tryHeading, html: `<p>${e(copy.tryIntro)}</p>${doors(tries)}` },
     ],
     jsonLd: [
       {

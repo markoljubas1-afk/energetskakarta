@@ -97,6 +97,12 @@ describe("generated map style", () => {
     );
     expect(expansion?.layout).toMatchObject({ "text-allow-overlap": true, "text-offset": [0, 4] });
     expect(JSON.stringify(expansion?.layout)).toContain("planirano proširenje");
+    // an expansion is never in operation: its layer must take the planned and under-construction records,
+    // which the ordinary label layer leaves out
+    const statuses = (layer: typeof expansion): string =>
+      JSON.stringify(layer && "filter" in layer ? layer.filter : null);
+    expect(statuses(expansion)).toContain("planned");
+    expect(statuses(expansion)).not.toContain('"operating"');
     // the gas figure is a label too, so it exists only with glyphs and is hidden while the layer is off
     expect(ids(style(defaultState("hr"), "light", null, false))).not.toContain("energymap-gas-labels");
     expect(withGlyphs).toContain("energymap-gas-labels");

@@ -125,3 +125,11 @@
 .note a {
   color: var(--accent);
 }
+
+/* the facility clicked on the map */
+.list li[data-picked] {
+  margin: -4px -6px;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+}

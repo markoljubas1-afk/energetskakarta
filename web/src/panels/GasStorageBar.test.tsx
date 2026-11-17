@@ -1,7 +1,7 @@
 import { fireEvent, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { latestReading, readings, type GasStorage } from "../data/gasStorage";
+import { latestReading, readings, storageOverlay, type GasStorage } from "../data/gasStorage";
 import { renderWithI18n } from "../test/render";
 import { GasStorageBar } from "./GasStorageBar";
 
@@ -117,5 +117,24 @@ describe("gas storage", () => {
       expect(container).toBeEmptyDOMElement();
       unmount();
     }
+  });
+
+  it("puts the facilities with a position on the map, and opens the one clicked there", () => {
+    // only the Croatian fixture facility has coordinates
+    expect(storageOverlay(STORAGE).features).toEqual([
+      {
+        type: "Feature",
+        geometry: { type: "Point", coordinates: [16.6, 45.6] },
+        properties: { id: "31W-PRIMJER-UGSB", name: "UGS Primjer", full: 77 },
+      },
+    ]);
+    renderWithI18n(<GasStorageBar data={ready} onClose={vi.fn()} picked="21W-PELDA-UGS--D" />);
+    const bar = screen.getByRole("region", { name: "Skladišta plina: koliko su puna" });
+    const [first] = bar.querySelectorAll("li");
+    // the Hungarian facility, otherwise folded away, is now first and open
+    expect(first).toHaveTextContent("UGS Pelda");
+    expect(first).toHaveAttribute("data-picked");
+    expect(first?.closest("details")).toBeNull();
+    expect(within(bar).queryByText(/Skladišta u drugim zemljama/)).not.toBeInTheDocument();
   });
 });
