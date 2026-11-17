@@ -2,7 +2,20 @@ import { ChevronLeft, ChevronRight, Pause, Play, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import type { AsyncState } from "../app/useAsync";
-import { dayOf, dayRange, flowsAt, freeDay, hourKey, pricesAt, type Live, type LiveLoad } from "../data/live";
+import {
+  dayOf,
+  dayRange,
+  flowsAt,
+  freeDay,
+  hourKey,
+  pricesAt,
+  RECORD_KINDS,
+  type Live,
+  type LiveDay,
+  type LiveDays,
+  type LiveLoad,
+} from "../data/live";
+import { isOneOf } from "../domain";
 import { useI18n } from "../i18n";
 import { PALETTES, type Theme } from "../map/palette";
 import { PRICE_LEGEND_TICKS, priceGradient, priceTickAt } from "../map/priceScale";
@@ -21,6 +34,11 @@ interface Props {
   onClose?: () => void;
   /** the learning page, which explains why a price can fall below zero */
   learnHref?: string;
+  /** record days the reader can look at instead of today; null: none published */
+  days?: LiveDays | null;
+  /** the record day being shown; null: today */
+  day?: LiveDay | null;
+  onDay?: (date: string | null) => void;
 }
 
 const DAY_KEYS = { [-1]: "liveYesterday", 0: "liveToday", 1: "liveTomorrow" } as const;
@@ -38,6 +56,9 @@ export function LiveBar({
   onRetry,
   onClose,
   learnHref,
+  days = null,
+  day = null,
+  onDay,
 }: Props) {
   const i18n = useI18n();
   const { t } = i18n;
@@ -85,7 +106,8 @@ export function LiveBar({
     const live = data.value.live;
     const last = live.hours.length - 1;
     const hour = live.hours[index] ?? "";
-    const label = `${t(DAY_KEYS[dayOf(live, index)])} ${hour.slice(11, 16)}`;
+    // a past day is named by its date: "yesterday" and "tomorrow" only mean something around today
+    const label = `${day ? i18n.date(hour.slice(0, 10)) : t(DAY_KEYS[dayOf(live, index)])} ${hour.slice(11, 16)}`;
     const go = (to: number): void => {
       setPlaying(false);
       const target = live.hours[Math.max(0, Math.min(last, to))];
@@ -272,6 +294,7 @@ export function LiveBar({
           </button>
         )}
       </div>
+      {days && days.days.length > 0 && onDay && <RecordDays days={days} day={day} onDay={onDay} />}
       {body}
     </section>
   );
@@ -321,6 +344,73 @@ function FreeNotice({
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+/**
+ * "Povijesni dani" (Faza 39): days on which the country set a record in our own daily data. Choosing one shows
+ * that day's hours in place of today's; the bar then says plainly that it is a past day, what the record
+ * was, and how to get back.
+ */
+function RecordDays({
+  days,
+  day,
+  onDay,
+}: {
+  days: LiveDays;
+  day: LiveDay | null;
+  onDay: (date: string | null) => void;
+}) {
+  const i18n = useI18n();
+  const { t } = i18n;
+  const describe = (entry: LiveDay): string =>
+    entry.records
+      .map((record) => {
+        const what = isOneOf(RECORD_KINDS, record.kind) ? t(`record_${record.kind}`) : record.kind;
+        const value =
+          record.unit === "share"
+            ? `${String(Math.round(record.value * 100))} %`
+            : `${i18n.number(record.value / 1000, 1)} GWh`;
+        return `${what} (${value})`;
+      })
+      .join(", ");
+  return (
+    <div className={styles.days}>
+      <label>
+        <span>{t("recordDays")}</span>
+        <select
+          value={day?.date ?? ""}
+          onChange={(event) => {
+            onDay(event.target.value === "" ? null : event.target.value);
+          }}
+        >
+          <option value="">{t("recordToday")}</option>
+          {days.days.map((entry) => (
+            <option key={entry.date} value={entry.date}>
+              {i18n.date(entry.date)}: {describe(entry)}
+            </option>
+          ))}
+        </select>
+      </label>
+      {day && (
+        <p role="status">
+          {t("recordShown", {
+            date: i18n.date(day.date),
+            what: describe(day),
+            country: i18n.country(days.country),
+          })}{" "}
+          <button
+            type="button"
+            className={styles.link}
+            onClick={() => {
+              onDay(null);
+            }}
+          >
+            {t("recordBack")}
+          </button>
+        </p>
+      )}
     </div>
   );
 }

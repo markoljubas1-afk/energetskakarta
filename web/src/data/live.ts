@@ -29,12 +29,9 @@ export type Live = z.infer<typeof LiveSchema>;
 
 export type LiveLoad = { kind: "none" } | { kind: "ready"; live: Live };
 
-export async function loadLive(base: URL, signal: AbortSignal): Promise<LiveLoad> {
-  const url = `${assetUrl(base, "live/current.json")}?t=${Math.floor(Date.now() / 300_000)}`;
-  const response = await fetch(url, { signal });
-  if (response.status === 404) return { kind: "none" };
-  if (!response.ok) throw new DataError(`live data returned HTTP ${response.status}`);
-  const live = LiveSchema.parse(await response.json());
+/** A live document, checked: every column has one value per hour. */
+function checkedLive(raw: unknown): LiveLoad {
+  const live = LiveSchema.parse(raw);
   const n = live.hours.length;
   const bad =
     live.flows.some((f) => f.mw.length !== n) ||
@@ -42,6 +39,63 @@ export async function loadLive(base: URL, signal: AbortSignal): Promise<LiveLoad
     Object.values(live.generation ?? {}).some((techs) => Object.values(techs).some((v) => v.length !== n));
   if (bad) throw new DataError("live data columns do not match its hours");
   return { kind: "ready", live };
+}
+
+export async function loadLive(base: URL, signal: AbortSignal): Promise<LiveLoad> {
+  const url = `${assetUrl(base, "live/current.json")}?t=${Math.floor(Date.now() / 300_000)}`;
+  const response = await fetch(url, { signal });
+  if (response.status === 404) return { kind: "none" };
+  if (!response.ok) throw new DataError(`live data returned HTTP ${response.status}`);
+  return checkedLive(await response.json());
+}
+
+/**
+ * Record days (pipeline entsoe/records.py): days on which Croatia set a record in our own daily data, each
+ * with the hours around it in the live document's shape, so the map shows a past day as it shows today.
+ */
+export const RECORD_KINDS = ["wind", "solar", "load_high", "load_low", "renewable_share"] as const;
+export type RecordKind = (typeof RECORD_KINDS)[number];
+
+export const LiveDaysSchema = z.object({
+  version: z.literal(1),
+  generatedAt: z.string(),
+  source: z.string(),
+  country: z.string(),
+  days: z.array(
+    z.object({
+      date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      key: z.string().regex(/^live\/days\/\d{4}-\d{2}-\d{2}\.json$/),
+      records: z
+        .array(z.object({ kind: z.string(), value: z.number(), unit: z.enum(["MWh", "share"]) }))
+        .min(1),
+    }),
+  ),
+  missing: z.array(z.string()),
+});
+export type LiveDays = z.infer<typeof LiveDaysSchema>;
+export type LiveDay = LiveDays["days"][number];
+
+export const LIVE_DAYS_KEY = "live/days/index.json";
+
+/** The list of record days; null when the bucket has none (the layer then simply offers today). */
+export async function loadLiveDays(base: URL, signal: AbortSignal): Promise<LiveDays | null> {
+  const response = await fetch(assetUrl(base, LIVE_DAYS_KEY), { signal });
+  if (response.status === 404) return null;
+  if (!response.ok) throw new DataError(`record days returned HTTP ${response.status}`);
+  return LiveDaysSchema.parse(await response.json());
+}
+
+export async function loadLiveDay(base: URL, key: string, signal: AbortSignal): Promise<LiveLoad> {
+  const response = await fetch(assetUrl(base, key), { signal });
+  if (response.status === 404) return { kind: "none" };
+  if (!response.ok) throw new DataError(`record day returned HTTP ${response.status}`);
+  return checkedLive(await response.json());
+}
+
+/** Noon of a record day in the document's own clock: the hour the map opens that day at. */
+export function noonOf(live: Live, day: string): Date | null {
+  const hour = live.hours.find((each) => each.startsWith(`${day}T12`));
+  return hour === undefined ? null : new Date(Date.parse(hour) + 60_000);
 }
 
 /** Points inside each country that arrows start and end at (as in the approved prototype). */

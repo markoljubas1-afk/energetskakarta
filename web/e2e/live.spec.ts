@@ -174,3 +174,47 @@ test("the green card shows where the country stands against its 2030 target, ask
   await expect(page).toHaveURL(/[?&]c=HR(&|$)/);
   await expect(page).toHaveURL(/[?&]l=[^&]*plants/);
 });
+
+test("a record day is shown in place of today, says so, and gives today back", async ({ page }) => {
+  // the test data has no record days; offer one, served by the synthetic document's own middle day
+  const all = await hours(page);
+  const date = (all[Math.floor(all.length / 2)] ?? "").slice(0, 10);
+  await page.route("**/local-data/live/days/index.json", (route) =>
+    route.fulfill({
+      json: {
+        version: 1,
+        generatedAt: "2026-11-17T16:00:00+00:00",
+        source: "ENTSO-E Transparency Platform",
+        country: "HR",
+        days: [
+          {
+            date,
+            key: `live/days/${date}.json`,
+            records: [{ kind: "wind", value: 25064, unit: "MWh" }],
+          },
+        ],
+        missing: [],
+      },
+    }),
+  );
+  await page.route(`**/local-data/live/days/${date}.json`, async (route) => {
+    const response = await page.request.get("/local-data/live/current.json");
+    await route.fulfill({ contentType: "application/json", body: await response.text() });
+  });
+  await openLive(page);
+  const bar = page.getByRole("region", { name: "Tokovi preko granica i cijene po satu" });
+  const picker = bar.getByRole("combobox", { name: "Povijesni dani" });
+  await expect(picker).toHaveValue("");
+  await picker.selectOption(date);
+  await expect(page).toHaveURL(new RegExp(`[?&]ld=${date}`));
+  await expect(bar.getByText(/^Gledate prošli dan/)).toContainText("najviše struje iz vjetra (25,1 GWh)");
+  // a past day opens at its noon, named by its date, not as "today"
+  await expect(bar.locator("output")).toContainText("12:00");
+  await expect(bar.locator("output")).not.toContainText("Danas");
+  await expect(page.locator('[data-live-label^="flow-"]').first()).toBeVisible();
+
+  await bar.getByRole("button", { name: "Natrag na danas" }).click();
+  await expect(page).not.toHaveURL(/[?&]ld=/);
+  await expect(bar.getByText(/^Gledate prošli dan/)).toHaveCount(0);
+  await expect(picker).toHaveValue("");
+});

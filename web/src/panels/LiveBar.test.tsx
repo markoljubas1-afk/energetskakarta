@@ -178,4 +178,92 @@ describe("dayRange", () => {
       expect(screen.queryByRole("note")).not.toBeInTheDocument();
     });
   });
+
+  describe("record days", () => {
+    const days = {
+      version: 1 as const,
+      generatedAt: "2026-11-17T16:00:00+00:00",
+      source: "ENTSO-E Transparency Platform",
+      country: "HR",
+      days: [
+        {
+          date: "2024-07-19",
+          key: "live/days/2024-07-19.json",
+          records: [{ kind: "load_high", value: 68009.2, unit: "MWh" as const }],
+        },
+        {
+          date: "2026-03-31",
+          key: "live/days/2026-03-31.json",
+          records: [
+            { kind: "wind", value: 25064, unit: "MWh" as const },
+            { kind: "renewable_share", value: 0.957, unit: "share" as const },
+          ],
+        },
+      ],
+      missing: [],
+    };
+    const past = {
+      ...SAMPLE_LIVE,
+      hours: ["2024-07-18T23:00:00+02:00", "2024-07-19T12:00:00+02:00", "2024-07-20T00:00:00+02:00"],
+    };
+
+    it("offers the days with their records, and switches to one", async () => {
+      const onDay = vi.fn();
+      renderWithI18n(
+        <LiveBar
+          theme="light"
+          data={ready()}
+          index={0}
+          onHour={vi.fn()}
+          onRetry={vi.fn()}
+          days={days}
+          onDay={onDay}
+        />,
+      );
+      const picker = screen.getByRole("combobox", { name: "Povijesni dani" });
+      expect(
+        within(picker)
+          .getAllByRole("option")
+          .map((option) => option.textContent),
+      ).toEqual([
+        "Danas (uživo)",
+        "19. srpnja 2024.: najveća potrošnja (68 GWh)",
+        "31. ožujka 2026.: najviše struje iz vjetra (25,1 GWh), najveći udio obnovljivih (96 %)",
+      ]);
+      expect(screen.queryByRole("button", { name: "Natrag na danas" })).not.toBeInTheDocument();
+      await userEvent.selectOptions(picker, "2024-07-19");
+      expect(onDay).toHaveBeenCalledWith("2024-07-19");
+    });
+
+    it("says plainly that a past day is shown, names its hours by date, and goes back to today", async () => {
+      const onDay = vi.fn();
+      renderWithI18n(
+        <LiveBar
+          theme="light"
+          data={{ status: "ready", value: { kind: "ready", live: past } }}
+          index={1}
+          onHour={vi.fn()}
+          onRetry={vi.fn()}
+          days={days}
+          day={days.days[0] ?? null}
+          onDay={onDay}
+        />,
+      );
+      expect(screen.getByText(/^Gledate prošli dan, 19\. srpnja 2024\./)).toHaveTextContent(
+        "Rekord za zemlju Hrvatska u podacima od 2015.: najveća potrošnja (68 GWh).",
+      );
+      // not "Danas 12:00": the hour carries its date
+      expect(screen.getByRole("slider", { name: "Sat" })).toHaveAttribute(
+        "aria-valuetext",
+        "19. srpnja 2024. 12:00",
+      );
+      await userEvent.click(screen.getByRole("button", { name: "Natrag na danas" }));
+      expect(onDay).toHaveBeenCalledWith(null);
+    });
+
+    it("has no picker when no record day is published", () => {
+      renderWithI18n(<LiveBar theme="light" data={ready()} index={0} onHour={vi.fn()} onRetry={vi.fn()} />);
+      expect(screen.queryByRole("combobox", { name: "Povijesni dani" })).not.toBeInTheDocument();
+    });
+  });
 });

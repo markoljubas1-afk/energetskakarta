@@ -1329,7 +1329,7 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
   stvarnim podacima prije objave; put kroz krivu trafostanicu → ručni pregled na karti.
 - Provjera: jedinični testovi grafa i funkcije položaja, e2e za pauzu i nastavak, snimke.
 
-## Faza 39 — povijesni ekstremi u sloju „uživo” (prijedlog vlasnika 2026-11-17) — PLAN, čeka potvrdu
+## Faza 39 — povijesni ekstremi u sloju „uživo” (prijedlog vlasnika 2026-11-17) — KOD GOTOV 2026-11-17 (plan potvrđen)
 
 - Cilj: tko otvori kartu u običan dan može pogledati dan kad se nešto dogodilo: tokovi, cijene i miks po satu
   za nekoliko povijesnih dana, na istoj karti i u istoj traci kao „uživo”.
@@ -1351,6 +1351,20 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
   dan bez podataka se ne objavljuje. Rekord „po danu” ne znači da je i svaki sat tog dana ekstreman, pa traka
   kaže što je bio rekord. Ograničenje broja zahtjeva prema ENTSO-E-u (jedan dan ≈ kao jedno satno osvježenje).
 - Provjera: jedinični testovi za izbor rekorda i objavu; e2e za izbornik i povratak na danas; ručni prolaz.
+- Izvedeno:
+  - `entsoe/records.py`: `records` (samo dani s pokrivenošću ≥ 99 %, zadnja dva dana se ne gledaju),
+    `collect_day` (isti `live.collect`, podne tog dana), `has_day`, `index_document`, `publish_days`
+    (`live/days/<datum>.json`, `live/days/index.json`). Naredbe `live days-fetch|days-publish-*`, ručni
+    workflow `live-days`.
+  - Rekordi iz stvarnih podataka (Hrvatska, 2026-11-17): vjetar 31. 3. 2026. (25 064 MWh), sunce 1. 8. 2026.
+    (4 271 MWh), najveća potrošnja 19. 7. 2024. (68 009 MWh), najmanja 12. 4. 2020. (32 381 MWh), udio
+    obnovljivih 30. 5. 2021. (95,7 %).
+  - Web: `LIVE_DAYS_KEY`, `loadLiveDays`, `loadLiveDay`, `noonOf`; adresa `ld=<datum>`; u traci izbornik
+    „Povijesni dani”, obavijest da se gleda prošli dan s rekordom i „Natrag na danas”; sat se imenuje
+    datumom. Pločica semafora i boja punionica ostaju na stvarnoj sadašnjosti.
+- Preostaje: pokrenuti `live-days` na GitHubu i provjeriti na živoj stranici. Još nije pokrenuto.
+- AGSI: zahtjev bez odgovora (pad prvog zakazanog `gas-daily`, „Server disconnected”) se ponavlja nakon 2 i
+  10 s; trajno nedostupno postrojenje se preskače kao i svaka druga greška.
 
 ## Faza 38 — pratitelj ciljeva 2030 (prijedlog vlasnika 2026-11-17) — PRVA VERZIJA GOTOVA 2026-11-17
 

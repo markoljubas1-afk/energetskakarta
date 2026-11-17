@@ -136,3 +136,27 @@ def test_a_scope_without_any_facility_is_an_error(monkeypatch: pytest.MonkeyPatc
     monkeypatch.setenv(agsi.KEY_ENV, KEY)
     with pytest.raises(agsi.AgsiError, match="no storage facility"):
         agsi.collect(httpx.Client(transport=httpx.MockTransport(platform)), NOW, frozenset({"SI"}))
+
+
+def test_a_dropped_connection_is_tried_again_and_a_dead_platform_is_an_agsi_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(agsi.KEY_ENV, KEY)
+    monkeypatch.setattr("time.sleep", lambda _seconds: None)
+    calls = 0
+
+    def flaky(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise httpx.RemoteProtocolError("Server disconnected without sending a response.")
+        return platform(request)
+
+    document = agsi.collect(httpx.Client(transport=httpx.MockTransport(flaky)), NOW, SCOPE)
+    assert [f["name"] for f in document["facilities"]] == ["UGS Primjer", "UGS Pelda"]
+
+    def dead(request: httpx.Request) -> httpx.Response:
+        raise httpx.RemoteProtocolError("Server disconnected without sending a response.")
+
+    with pytest.raises(agsi.AgsiError, match="no answer"):
+        agsi.collect(httpx.Client(transport=httpx.MockTransport(dead)), NOW, SCOPE)

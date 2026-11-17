@@ -73,6 +73,8 @@ export interface AppState {
   live: boolean;
   /** "2026-09-16T13+02" (older links: without the offset); null = the current hour */
   liveHour: string | null;
+  /** a record day shown in the live layer instead of today (data/live.ts); null: today */
+  liveDay: string | null;
   /** inside someone else's page: only the map, with a link back to the full site */
   embed: boolean;
   /** time machine: plants in operation in this year (Faza 18-3); null = off, the map shows today */
@@ -99,6 +101,7 @@ export function defaultState(lang: Lang): AppState {
     energy: { area: "ALL", unit: "month", tech: "solar", range: null, show: "chart", chart: null },
     live: false,
     liveHour: null,
+    liveDay: null,
     embed: false,
     year: null,
     story: null,
@@ -159,6 +162,7 @@ export function parseState(search: string, fallbackLang: Lang): AppState {
     page: pick(PAGES, params.get("p"), defaults.page),
     live: params.get("live") === "1",
     liveHour: /^\d{4}-\d{2}-\d{2}T\d{2}([+-]\d{2})?$/.test(params.get("lt") ?? "") ? params.get("lt") : null,
+    liveDay: /^\d{4}-\d{2}-\d{2}$/.test(params.get("ld") ?? "") ? params.get("ld") : null,
     embed: params.get("embed") === "1",
     year: parseYear(params.get("y")),
     story: STORY_KEYS.find((key) => key === params.get("story")) ?? null,
@@ -219,6 +223,7 @@ export function serializeState(state: AppState, fallbackLang: Lang): string {
   if (state.page !== defaults.page) params.set("p", state.page);
   if (state.live) params.set("live", "1");
   if (state.live && state.liveHour) params.set("lt", state.liveHour);
+  if (state.live && state.liveDay) params.set("ld", state.liveDay);
   if (state.embed) params.set("embed", "1");
   if (state.year !== null) params.set("y", String(state.year));
   if (state.story) params.set("story", state.story);

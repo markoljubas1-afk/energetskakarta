@@ -19,6 +19,8 @@ import json
 import logging
 import math
 import os
+import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Any
@@ -83,9 +85,33 @@ def api_key() -> str:
     return key
 
 
-def _get(client: httpx.Client, url: str, key: str, params: dict[str, str | int] | None = None) -> Any:
+#: AGSI now and then drops a connection without an answer (the first scheduled run, 2026-11-17, died on
+#: "Server disconnected without sending a response"): waits before the request is tried again, in seconds
+RETRY_WAITS_S: tuple[float, ...] = (2.0, 10.0)
+
+
+def _get(
+    client: httpx.Client,
+    url: str,
+    key: str,
+    params: dict[str, str | int] | None = None,
+    *,
+    sleep: Callable[[float], None] = time.sleep,
+) -> Any:
     # the listing's addresses carry their own query, which httpx would replace with `params`: merge the two
-    response = client.get(httpx.URL(url).copy_merge_params(params or {}), headers={"x-key": key})
+    target = httpx.URL(url).copy_merge_params(params or {})
+    for wait in (*RETRY_WAITS_S, None):
+        try:
+            response = client.get(target, headers={"x-key": key})
+            break
+        except httpx.TransportError as exc:
+            if wait is None:
+                # an AgsiError, so one facility that cannot be reached is skipped like any other failure
+                raise AgsiError(f"{url}: no answer ({exc})") from exc
+            log.warning(
+                "AGSI did not answer, trying again", extra={"url": url, "wait_s": wait, "error": str(exc)}
+            )
+            sleep(wait)
     if response.status_code != 200:
         raise AgsiError(f"{url}: HTTP {response.status_code}")
     try:

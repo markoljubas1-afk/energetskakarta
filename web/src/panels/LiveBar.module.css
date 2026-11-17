@@ -263,3 +263,48 @@
     padding: 4px 12px;
   }
 }
+
+/* record days: a past day in place of today */
+.days {
+  margin-top: 8px;
+  font-size: 12.5px;
+}
+
+.days label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.days label span {
+  color: var(--muted);
+}
+
+.days select {
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font: inherit;
+}
+
+.days p {
+  margin: 6px 0 0;
+  padding: 6px 9px;
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  line-height: 1.4;
+}
+
+@media (pointer: coarse) {
+  .days select {
+    min-height: 40px;
+  }
+}

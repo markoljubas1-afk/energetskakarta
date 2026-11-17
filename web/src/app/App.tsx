@@ -4,7 +4,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import type { AppConfig } from "../config";
 import { gasOverlay, loadGas, type GasLoad } from "../data/gas";
 import { GAS_STORAGE_KEY, loadGasStorage, storageOverlay } from "../data/gasStorage";
-import { loadLive, overlay, pickHour } from "../data/live";
+import { loadLive, overlay, pickHour, LIVE_DAYS_KEY, loadLiveDay, loadLiveDays, noonOf } from "../data/live";
 import { GEOTHERMAL_KEY, geothermalFeatures, loadGeothermal, type GeothermalLoad } from "../data/geothermal";
 import { capacityOverlay, HEP_KEYS, loadHep, type HepLoad } from "../data/hep";
 import { loadTimeline, retiredFeatures } from "../data/timeline";
@@ -411,10 +411,27 @@ function Explorer({
     const bands = freshBands(liveDoc, liveNow);
     return Object.keys(bands).length > 0 ? bands : null;
   }, [chargersOn, liveDoc, liveNow]);
-  const liveIndex = liveDoc ? pickHour(liveDoc, state.liveHour, liveNow) : 0;
+  // A record day (data/live.ts): offered while the layer is on, and shown in place of today when the
+  // link names one the list knows. The status bar's pill and the chargers keep to the real present.
+  const [liveDays] = useAsync(state.live ? LIVE_DAYS_KEY : null, (signal) =>
+    loadLiveDays(config.dataBaseUrl, signal),
+  );
+  const recordDays = liveDays?.status === "ready" ? liveDays.value : null;
+  const recordDay = recordDays?.days.find((day) => day.date === state.liveDay) ?? null;
+  const [dayData, retryDay] = useAsync(recordDay?.key ?? null, (signal) =>
+    loadLiveDay(config.dataBaseUrl, recordDay?.key ?? "", signal),
+  );
+  const shownLiveData = recordDay ? dayData : liveData;
+  const shownLive =
+    shownLiveData?.status === "ready" && shownLiveData.value.kind === "ready"
+      ? shownLiveData.value.live
+      : null;
+  // a past day opens at its noon; today opens at the present hour
+  const shownNow = (recordDay && shownLive ? noonOf(shownLive, recordDay.date) : null) ?? liveNow;
+  const liveIndex = shownLive ? pickHour(shownLive, state.liveHour, shownNow) : 0;
   const liveOverlay = useMemo(
-    () => ((state.live || introFlows) && liveDoc ? overlay(liveDoc, liveIndex) : null),
-    [state.live, introFlows, liveDoc, liveIndex],
+    () => ((state.live || introFlows) && shownLive ? overlay(shownLive, liveIndex) : null),
+    [state.live, introFlows, shownLive, liveIndex],
   );
   // what the map draws: during the intro, the flows as if the layer were on (the link and panels are untouched)
   const mapState = useMemo(
@@ -548,6 +565,13 @@ function Explorer({
   const onLiveHour = useCallback(
     (key: string) => {
       setState((s) => ({ ...s, liveHour: key }));
+    },
+    [setState],
+  );
+  const onLiveDay = useCallback(
+    (day: string | null) => {
+      // another day has other hours: the hour in the link belongs to the day it was chosen on
+      setState((s) => ({ ...s, liveDay: day, liveHour: null }));
     },
     [setState],
   );
@@ -1019,12 +1043,15 @@ function Explorer({
               <div className={styles.liveSlot}>
                 <ErrorBoundary area="live" fallback={panelFallback}>
                   <LiveBar
-                    data={liveData}
+                    data={shownLiveData}
                     index={liveIndex}
+                    days={recordDays}
+                    day={recordDay}
+                    onDay={onLiveDay}
                     theme={theme}
                     mapCenter={state.view}
                     onHour={onLiveHour}
-                    onRetry={retryLive}
+                    onRetry={recordDay ? retryDay : retryLive}
                     onClose={closeLive}
                     learnHref={PATHS[i18n.lang].learn}
                   />
