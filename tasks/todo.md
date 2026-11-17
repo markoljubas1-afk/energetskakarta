@@ -1323,6 +1323,18 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
   status (`"nuclear|1100|planned"`, `products.search_index`); rezultat pretrage i statična stranica elektrane
   pišu „planirano proširenje” / „proširenje u izgradnji” (`SearchHit.expansion`). Vidljivo nakon iduće gradnje.
 
+### 35-16 Semafor: uobičajeno za zemlju; naslov i uvod naslovnice — KOD GOTOV 2026-11-17
+- Odluka (korisnik, 2026-11-17): boja semafora OSTAJE apsolutna (35 % / 65 %), ista za sve zemlje. Pragovi
+  iz vlastite povijesti bojili bi zemlju zeleno samo zato što je bolja od svog lošeg prosjeka. Umjesto toga
+  rečenica: „Uobičajeno za zemlju X: u polovici dana zadnjih godinu dana dnevni udio bio je između A i B %.
+  Ovaj sat je iznad/unutar/ispod toga.”
+- Obrada: `entsoe/usual.py` → `live/usual.json` (kvartili dnevnog udjela obnovljivih, zadnjih 365 potpunih
+  dana, najmanje 180 dana, inače zemlja u `missing`); objavljuje se uz `energy publish-r2` (posao
+  `energy-daily`). Web: `data/usual.ts`, učitava se tek kad se kartica otvori (L-074).
+- Ograda: raspon je iz DNEVNIH udjela, brojka u kartici je za SAT; rečenica to kaže riječima „dnevni udio”.
+- Naslov naslovnice: „GridAtlas – interaktivna energetska karta Hrvatske i regije: elektrane, dalekovodi i
+  trafostanice” (ključne riječi naprijed); uvod spominje stanje skladišta plina (zimske zalihe), hr i en.
+
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda
   od 400 kV, prag spajanja krajeva 0,3 km (`pipeline/src/energymap/routes.py`). Karta: `stories/travel.ts`,

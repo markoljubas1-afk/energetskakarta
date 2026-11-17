@@ -31,6 +31,7 @@ from energymap.entsoe import fetch as energy_fetch
 from energymap.entsoe import live as energy_live
 from energymap.entsoe import records as live_records
 from energymap.entsoe import release as energy_release
+from energymap.entsoe import usual as energy_usual
 from energymap.entsoe.client import EntsoeClient, EntsoeError
 from energymap.entsoe.energy import TIMEZONE as ENERGY_TZ
 from energymap.entsoe.parse import EntsoeParseError
@@ -449,7 +450,7 @@ def run(args: argparse.Namespace) -> None:
             fetched_days: list[date] = []
             with EntsoeClient.from_env() as client:
                 for day in sorted({record.day for record in day_records}):
-                    # one day that ENTSO-E no longer has is left out; the others are still fetched_days
+                    # one day that ENTSO-E no longer has is left out; the others are still published
                     try:
                         day_document = live_records.collect_day(client, day)
                     except (EntsoeError, EntsoeParseError, energy_live.LiveDataError) as exc:
@@ -696,6 +697,13 @@ def run(args: argparse.Namespace) -> None:
             target_store, paths.root / "energy", datetime.now(UTC), allow_drop=args.allow_drop
         )
         print(pointer["updatedAt"])
+        # what is usual for each country, from the same daily files; too little data leaves the published one
+        try:
+            energy_usual.publish_usual(
+                target_store, energy_release.local_years(paths.root / "energy"), datetime.now(UTC)
+            )
+        except energy_usual.UsualDataError as exc:
+            logger.warning("usual renewable share not published", extra={"error": str(exc)})
     elif args.group == "energy":
         now = datetime.now(UTC)
         if args.step == "fetch":

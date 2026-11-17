@@ -195,3 +195,15 @@
 .megawatts a {
   color: var(--accent);
 }
+
+/* the country's own usual range, next to the fixed scale */
+.usual {
+  margin: -4px 0 10px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.usual strong {
+  color: var(--ink);
+  font-weight: 600;
+}

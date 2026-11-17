@@ -12,6 +12,7 @@ import {
 import type { Renewables } from "../data/eurostat";
 import { compare, type Households } from "../data/households";
 import { pricesAt, type Live } from "../data/live";
+import { usualFor, type Usual } from "../data/usual";
 import { isOneOf, SCOPE_COUNTRIES, type CountryCode, type Technology } from "../domain";
 import { useI18n } from "../i18n";
 import { PopoverMenu } from "../share/PopoverMenu";
@@ -29,6 +30,8 @@ interface Props {
   renewables?: Renewables | null;
   /** households' yearly electricity use (Eurostat), the yardstick for the megawatts; null: not loaded */
   households?: Households | null;
+  /** what is usual for each country over the last year (data/usual.ts); null: not loaded */
+  usual?: Usual | null;
   /** Croatia's transition page, which says more about the target */
   transitionHref?: string;
   /** show on the map the wind and solar plants being built and planned in the chosen country */
@@ -51,6 +54,7 @@ export function GreenLight({
   learnHref,
   renewables = null,
   households = null,
+  usual = null,
   transitionHref,
   onShowComing,
   onOpen,
@@ -73,6 +77,8 @@ export function GreenLight({
     new Date(green.hour),
   );
   const share = percent(green.share);
+  // the country's own yardstick, in words: the colour above stays the same fixed scale for every country
+  const range = usual && !stale ? usualFor(usual, country, green.share) : null;
   // the day-ahead price of the same hour, where the country has a market: a green hour is often a cheap one
   const price = pricesAt(live, green.index).find((row) => row.country === country)?.eur ?? null;
   return (
@@ -116,6 +122,16 @@ export function GreenLight({
           <span>{t("greenOf")}</span>
         </p>
         <p className={styles.meaning}>{t(`green_${state}`)}</p>
+        {range && (
+          <p className={styles.usual}>
+            {t("usualRange", {
+              country: i18n.country(country),
+              low: percent(range.low),
+              high: percent(range.high),
+            })}{" "}
+            <strong>{t(`usual_${range.against}`)}</strong>
+          </p>
+        )}
         <dl className={styles.facts}>
           <div>
             <dt>{t("greenTop")}</dt>

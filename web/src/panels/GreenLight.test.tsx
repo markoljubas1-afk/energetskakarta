@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { GREEN_LIVE } from "../data/greenShare.fixture";
 import { compare, householdPower, type Households } from "../data/households";
+import { usualFor, type Usual } from "../data/usual";
 import { renderWithI18n } from "../test/render";
 import { GreenLight } from "./GreenLight";
 
@@ -164,6 +165,75 @@ describe("GreenLight", () => {
       );
       await userEvent.click(screen.getByRole("button", { name: /Hrvatska: 69 %/ }));
       expect(document.querySelector("[data-green]")).not.toHaveTextContent(/kućanstva u zemlji/);
+    });
+  });
+
+  describe("what is usual for the country", () => {
+    /** Invented quartiles: Croatia's days mostly between 61 and 80 %, Slovenia's between 28 and 43 %. */
+    const USUAL: Usual = {
+      version: 1,
+      generatedAt: "2026-11-17T06:00:00+00:00",
+      source: "ENTSO-E Transparency Platform",
+      from: "2025-11-15",
+      to: "2026-11-14",
+      windowDays: 365,
+      countries: {
+        HR: { low: 0.6054, median: 0.6758, high: 0.8011, days: 365 },
+        SI: { low: 0.2762, median: 0.349, high: 0.4334, days: 365 },
+      },
+      missing: [],
+    };
+
+    it("places a share against the range as both are shown, in whole percents", () => {
+      expect(usualFor(USUAL, "HR", 0.69)).toEqual({ low: 0.6054, high: 0.8011, against: "within" });
+      expect(usualFor(USUAL, "HR", 0.806)?.against).toBe("above");
+      // 80.4 % is shown as 80 %, like the upper end: not "above"
+      expect(usualFor(USUAL, "HR", 0.804)?.against).toBe("within");
+      expect(usualFor(USUAL, "HR", 0.4)?.against).toBe("below");
+      expect(usualFor(USUAL, "IT", 0.5)).toBeNull();
+    });
+
+    it("says the country's own range next to the fixed colour, and where the hour stands", async () => {
+      renderWithI18n(
+        <GreenLight
+          live={GREEN_LIVE}
+          now={SOON_AFTER}
+          onShow={vi.fn()}
+          learnHref="/edukacija/"
+          usual={USUAL}
+        />,
+      );
+      await userEvent.click(screen.getByRole("button", { name: /Hrvatska: 69 %/ }));
+      const card = (): Element | null => document.querySelector("[data-green]");
+      expect(card()).toHaveTextContent(
+        "Uobičajeno za zemlju Hrvatska: u polovici dana zadnjih godinu dana dnevni udio bio je između 61 i 80 %. Ovaj sat je unutar toga.",
+      );
+      // the colour is still the fixed scale: 69 % is green in every country
+      expect(card()).toHaveAttribute("data-green", "high");
+      // Slovenia's 13 % is red on the fixed scale, and below what is usual for Slovenia too
+      await userEvent.selectOptions(screen.getByRole("combobox", { name: "Zemlja" }), "SI");
+      expect(card()).toHaveAttribute("data-green", "low");
+      expect(card()).toHaveTextContent(/između 28 i 43 %\. Ovaj sat je ispod toga\./);
+    });
+
+    it("says nothing about usual for an old figure or without the yardstick", async () => {
+      const view = renderWithI18n(
+        <GreenLight
+          live={GREEN_LIVE}
+          now={new Date("2026-11-16T20:30:00+01:00")}
+          onShow={vi.fn()}
+          learnHref="/edukacija/"
+          usual={USUAL}
+        />,
+      );
+      await userEvent.click(screen.getByRole("button", { name: /Hrvatska: 69 %/ }));
+      expect(document.querySelector("[data-green]")).not.toHaveTextContent(/Uobičajeno za zemlju/);
+      view.unmount();
+      renderWithI18n(
+        <GreenLight live={GREEN_LIVE} now={SOON_AFTER} onShow={vi.fn()} learnHref="/edukacija/" />,
+      );
+      await userEvent.click(screen.getByRole("button", { name: /Hrvatska: 69 %/ }));
+      expect(document.querySelector("[data-green]")).not.toHaveTextContent(/Uobičajeno za zemlju/);
     });
   });
 });

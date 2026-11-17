@@ -4,7 +4,7 @@ export const en: Dictionary = {
   appName: "GridAtlas",
   appTagline: "Regional energy map",
   documentTitle:
-    "GridAtlas – regional energy map: power plants, transmission lines and substations of Croatia and the region",
+    "GridAtlas – interactive energy map of Croatia and the region: power plants, transmission lines and substations",
   skipToMap: "Skip to map",
   searchPlaceholder: "Search for a plant, city, mine…",
   searchLabel: "Search",
@@ -247,6 +247,11 @@ export const en: Dictionary = {
     "Share of domestic generation according to ENTSO-E; imports and exports are not counted. Green from {high} %, amber from {mid} %, red below that.",
   greenWhy: "Why does it matter?",
   greenPrice: "Exchange price (day-ahead)",
+  usualRange:
+    "Usual for {country}: on half of the days of the last year the daily share was between {low} and {high}%.",
+  usual_above: "This hour is above that.",
+  usual_within: "This hour is within that.",
+  usual_below: "This hour is below that.",
   megawattsTimes:
     "Renewable sources now give {mw} MW: {times} times what all the country's households use on average ({average} MW, {year}). Source:",
   megawattsShare:

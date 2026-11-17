@@ -488,7 +488,7 @@ const hr: Copy = {
     columns: { country: "Zemlja", operating: "Snaga u pogonu", plants: "Elektrane u pogonu" },
     more: "Više",
     intro:
-      "Otvorena karta elektrana, dalekovoda, trafostanica, podmorskih cjevovoda, podatkovnih centara, punionica, crpilišta i rudnika Hrvatske, Slovenije, Mađarske, Srbije, Bosne i Hercegovine, Crne Gore, Italije i Austrije, sa satnim tokovima struje preko granica, cijenama i dnevnom proizvodnjom plina. Karta traži JavaScript; podaci su dostupni i bez njega:",
+      "Otvorena karta elektrana, dalekovoda, trafostanica, podmorskih cjevovoda, podatkovnih centara, punionica, crpilišta i rudnika Hrvatske, Slovenije, Mađarske, Srbije, Bosne i Hercegovine, Crne Gore, Italije i Austrije, sa satnim tokovima struje preko granica, cijenama, dnevnom proizvodnjom plina i stanjem skladišta plina (zimske zalihe). Karta traži JavaScript; podaci su dostupni i bez njega:",
     shareDescription:
       "Otvorena karta elektrana, dalekovoda i trafostanica Hrvatske i regije, s tokovima struje i cijenama uživo.",
   },
@@ -550,7 +550,7 @@ const en: Copy = {
     title: "About the map: sources, licences and how it works",
     intro: [
       "GridAtlas is a regional energy map: an open, free picture of the electricity infrastructure of Croatia and the wider region (Slovenia, Hungary, Serbia, Bosnia and Herzegovina, Montenegro, Italy and Austria).",
-      "It shows power plants by technology and capacity, transmission lines and cables by voltage, substations, offshore pipelines and wind farms in the Adriatic, data centres, charging stations for electric vehicles, oil and gas wells, platforms and mines, daily gas production per country, and hourly cross-border electricity flows and day-ahead prices.",
+      "It shows power plants by technology and capacity, transmission lines and cables by voltage, substations, offshore pipelines and wind farms in the Adriatic, data centres, charging stations for electric vehicles, oil and gas wells, platforms and mines, daily gas production per country, how full the gas storage facilities are, and hourly cross-border electricity flows and day-ahead prices.",
     ],
     whatHeading: "What the map contains",
     what: [
@@ -811,7 +811,7 @@ const en: Copy = {
     columns: { country: "Country", operating: "Operating capacity", plants: "Operating plants" },
     more: "More",
     intro:
-      "An open map of power plants, transmission lines, substations, subsea pipelines, data centres, charging stations, oil and gas sites and mines in Croatia, Slovenia, Hungary, Serbia, Bosnia and Herzegovina, Montenegro, Italy and Austria, with hourly cross-border flows, prices and daily gas production. The map needs JavaScript; the data is available without it:",
+      "An open map of power plants, transmission lines, substations, subsea pipelines, data centres, charging stations, oil and gas sites and mines in Croatia, Slovenia, Hungary, Serbia, Bosnia and Herzegovina, Montenegro, Italy and Austria, with hourly cross-border flows, prices, daily gas production and how full the gas storage is (the winter reserve). The map needs JavaScript; the data is available without it:",
     shareDescription:
       "An open map of power plants, transmission lines and substations in Croatia and the region, with live power flows and prices.",
   },

@@ -4,7 +4,7 @@ export const hr = {
   appTagline: "Regionalna energetska karta",
   /** the browser tab and what search engines show for the home page; matches <title> in index.html */
   documentTitle:
-    "GridAtlas – regionalna energetska karta: elektrane, dalekovodi i trafostanice Hrvatske i regije",
+    "GridAtlas – interaktivna energetska karta Hrvatske i regije: elektrane, dalekovodi i trafostanice",
   skipToMap: "Preskoči na kartu",
   searchPlaceholder: "Traži elektranu, grad, rudnik…",
   searchLabel: "Pretraga",
@@ -244,6 +244,11 @@ export const hr = {
     "Udio u domaćoj proizvodnji prema ENTSO-E-u; uvoz i izvoz nisu uračunati. Zeleno je od {high} %, žuto od {mid} %, ispod toga crveno.",
   greenWhy: "Zašto je to važno?",
   greenPrice: "Cijena na burzi (dan unaprijed)",
+  usualRange:
+    "Uobičajeno za zemlju {country}: u polovici dana zadnjih godinu dana dnevni udio bio je između {low} i {high} %.",
+  usual_above: "Ovaj sat je iznad toga.",
+  usual_within: "Ovaj sat je unutar toga.",
+  usual_below: "Ovaj sat je ispod toga.",
   megawattsTimes:
     "Obnovljivi izvori sada daju {mw} MW: {times} puta više nego što sva kućanstva u zemlji troše u prosjeku ({average} MW, {year}.). Izvor:",
   megawattsShare:

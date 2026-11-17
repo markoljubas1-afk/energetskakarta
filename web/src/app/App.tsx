@@ -34,6 +34,7 @@ import { loadRoutes } from "../data/routes";
 import { loadRenewables, RENEWABLES_KEY } from "../data/eurostat";
 import { freshBands, mixNow } from "../data/greenShare";
 import { HOUSEHOLDS_KEY, loadHouseholds } from "../data/households";
+import { loadUsual, USUAL_KEY } from "../data/usual";
 import { aroundOf, loadNearby } from "../data/nearby";
 import { measure } from "../stories/travel";
 import { useTravel } from "../stories/useTravel";
@@ -403,6 +404,7 @@ function Explorer({
   const [households] = useAsync(wantGoal ? HOUSEHOLDS_KEY : null, (signal) =>
     loadHouseholds(config.dataBaseUrl, signal),
   );
+  const [usual] = useAsync(wantGoal ? USUAL_KEY : null, (signal) => loadUsual(config.dataBaseUrl, signal));
   // Charging stations take the colour of how green their country's electricity is right now; without
   // fresh figures (or in an embed, which does not load them) they keep their own colour.
   const chargersOn = state.layers.has("chargers");
@@ -1074,6 +1076,7 @@ function Explorer({
                     learnHref={PATHS[i18n.lang].learn}
                     renewables={renewables?.status === "ready" ? renewables.value : null}
                     households={households?.status === "ready" ? households.value : null}
+                    usual={usual?.status === "ready" ? usual.value : null}
                     transitionHref={PATHS[i18n.lang].transition}
                     onOpen={askForGoal}
                     onShowComing={showComing}
