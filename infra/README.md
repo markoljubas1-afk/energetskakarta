@@ -230,6 +230,17 @@ Workflow `web` pokreće provjere i e2e testove, a tek kad oboje prođe objavljuj
 MapTiler logo. Stilove `dataviz` i `dataviz-dark` te adresu loga nisam mogao provjeriti iz razvojnog
 okruženja jer MapTiler tamo nije dostupan.
 
+# D2. Ključ za GIE AGSI (skladišta plina)
+
+1. Registracija na <https://agsi.gie.eu/account>; nakon prijave ključ je na stranici računa („API key”).
+2. GitHub → Settings → Secrets → **`AGSI_API_KEY`**. Ključ se nikad ne ispisuje i ne ide u kod.
+3. **Actions → gas-storage-survey → Run workflow** ispiše što AGSI ima za zemlje karte (ne objavljuje ništa).
+4. Posao `storage` u **gas-daily** svaki dan preuzima zadnjih 30 dana i objavljuje `live/gasstorage.json`
+   (uz `SCHEDULE_GAS=true`, kao i ostatak tog workflowa).
+
+Uvjet korištenja (priručnik API-ja v007): podaci se smiju koristiti i prerađivati, uz obvezno navođenje GIE-a
+(AGSI) kao izvora svugdje gdje se prikazuju. Bez navođenja izvora GIE može isključiti ključ.
+
 # D. ENTSO-E token (proizvodnja i potrošnja kroz vrijeme)
 
 1. Registracija na <https://transparency.entsoe.eu> (gore desno *Login → Register*).

@@ -550,7 +550,18 @@ export const en: Dictionary = {
     "A gas day runs from 06:00 to 06:00 (CET). Physical flow at the transmission operators' production entry points as published by the ENTSOG Transparency Platform; a day without a figure is a gap, not a zero.",
   detailsGasGenerated: "Fetched: {time}",
   source_entsog: "ENTSOG",
+  source_gie: "GIE AGSI",
   attr_entsog: "Gas production: ENTSOG Transparency Platform",
+  attr_gie: "Gas storage: GIE (Gas Infrastructure Europe), AGSI platform",
+  storageTitle: "Gas storage: how full it is",
+  storageClose: "Close the gas layer",
+  storageInjecting: "injecting {value} GWh/day",
+  storageWithdrawing: "withdrawing {value} GWh/day",
+  storageSteady: "no net change",
+  storageVolume: "{stored} of {capacity} TWh",
+  storageEstimated: "operator's estimate",
+  storageNote:
+    "The level at the end of the gas day as the storage operator reported it; published in the evening for the day before. Source:",
   detailsExtractionNote:
     "Location from OpenStreetMap. There are no production figures: the status only says the site is not tagged as closed.",
   layer_distribution: "Distribution network",

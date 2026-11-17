@@ -547,7 +547,18 @@ export const hr = {
     "Plinski dan traje od 06:00 do 06:00 (CET). Fizički tok na proizvodnim ulaznim točkama operatora transportnog sustava, kako ga objavljuje ENTSOG Transparency Platform; dan bez podatka je praznina, ne nula.",
   detailsGasGenerated: "Preuzeto: {time}",
   source_entsog: "ENTSOG",
+  source_gie: "GIE AGSI",
   attr_entsog: "Proizvodnja plina: ENTSOG Transparency Platform",
+  attr_gie: "Skladišta plina: GIE (Gas Infrastructure Europe), platforma AGSI",
+  storageTitle: "Skladišta plina: koliko su puna",
+  storageClose: "Zatvori sloj plina",
+  storageInjecting: "utiskuje se {value} GWh/dan",
+  storageWithdrawing: "povlači se {value} GWh/dan",
+  storageSteady: "bez neto promjene",
+  storageVolume: "{stored} od {capacity} TWh",
+  storageEstimated: "procjena operatora",
+  storageNote:
+    "Stanje na kraju plinskog dana kako ga je prijavio operator skladišta; objavljuje se navečer za prethodni dan. Izvor:",
   detailsExtractionNote:
     "Lokacija iz OpenStreetMapa. Podataka o proizvodnji nema: status kaže samo da objekt nije označen kao zatvoren.",
   layer_distribution: "Distribucijska mreža",

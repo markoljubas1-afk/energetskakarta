@@ -3,6 +3,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 
 import type { AppConfig } from "../config";
 import { gasOverlay, loadGas, type GasLoad } from "../data/gas";
+import { GAS_STORAGE_KEY, loadGasStorage } from "../data/gasStorage";
 import { loadLive, overlay, pickHour } from "../data/live";
 import { GEOTHERMAL_KEY, geothermalFeatures, loadGeothermal, type GeothermalLoad } from "../data/geothermal";
 import { capacityOverlay, HEP_KEYS, loadHep, type HepLoad } from "../data/hep";
@@ -26,6 +27,7 @@ import { NOTHING_IN_VIEW } from "../map/inView";
 import type { Spotlight } from "../map/spotlight";
 import { StoryCard } from "../panels/StoryCard";
 import { GreenLight } from "../panels/GreenLight";
+import { GasStorageBar } from "../panels/GasStorageBar";
 import { SolarBar } from "../panels/SolarBar";
 import { loadSolar, SOLAR_KEY, solarImage, type SolarLoad } from "../data/solar";
 import { loadRoutes } from "../data/routes";
@@ -302,7 +304,7 @@ function Explorer({
       (source): source is DataSource => isOneOf(DATA_SOURCES, source),
     ),
     // the gas layer's data is not part of the build: credited only while it is shown
-    ...(state.layers.has("gas") ? (["entsog"] as const) : []),
+    ...(state.layers.has("gas") ? (["entsog", "gie"] as const) : []),
   ];
   const [details, setDetails] = useState<Selection | null>(null);
   const [basemap, setBasemap] = useState<Basemap["kind"] | null>(null);
@@ -422,6 +424,11 @@ function Explorer({
     (signal) => loadGas(config.dataBaseUrl, signal),
     gasFeaturesOf,
   );
+  // gas in storage rides on the gas layer; a failure only means the storage bar is not shown
+  const [storageData] = useAsync(gasOn ? GAS_STORAGE_KEY : null, (signal) =>
+    loadGasStorage(config.dataBaseUrl, signal),
+  );
+  const storageShown = storageData?.status === "ready" && storageData.value.kind === "ready";
   const geoOn = state.layers.has("geothermal");
   const {
     data: geoData,
@@ -464,6 +471,7 @@ function Explorer({
     capOn && "capacity",
     solarOn && "solar",
     geoOn && "geothermal",
+    storageShown && "gas",
     state.year !== null && "time",
     state.live && "live",
   ]
@@ -698,6 +706,10 @@ function Explorer({
     setState((s) => ({ ...s, layers: new Set([...s.layers].filter((layer) => layer !== "solar")) }));
   }, [setState]);
 
+  const closeGas = useCallback(() => {
+    setState((s) => ({ ...s, layers: new Set([...s.layers].filter((layer) => layer !== "gas")) }));
+  }, [setState]);
+
   const closeGeothermal = useCallback(() => {
     setGeoSite(null);
     setState((s) => ({ ...s, layers: new Set([...s.layers].filter((layer) => layer !== "geothermal")) }));
@@ -929,6 +941,13 @@ function Explorer({
                     capacity={capData}
                     onStation={showStation}
                   />
+                </ErrorBoundary>
+              </div>
+            )}
+            {storageShown && (
+              <div className={styles.liveSlot}>
+                <ErrorBoundary area="gas storage" fallback={panelFallback}>
+                  <GasStorageBar data={storageData} onClose={closeGas} />
                 </ErrorBoundary>
               </div>
             )}

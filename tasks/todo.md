@@ -1296,7 +1296,7 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 - Nije napravljeno: gumb koji na karti istakne planirane vjetroelektrane i sunčane elektrane; Worker nije
   potreban (podatke već objavljuje `eurostat-update`).
 
-## Faza 37 — skladišta plina (GIE AGSI) (prijedlog vlasnika 2026-11-17) — U TIJEKU
+## Faza 37 — skladišta plina (GIE AGSI) (prijedlog vlasnika 2026-11-17) — PRVA VERZIJA GOTOVA 2026-11-17
 
 - Cilj: uz sloj plina pokazati koliko je plina u skladištima (popunjenost, utiskivanje, povlačenje), najprije
   za Hrvatsku (PSP Okoli), a gdje AGSI ima podatke i za ostale zemlje karte.
@@ -1307,11 +1307,19 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
   1. [x] Izviđanje (`gas/agsi.py`, `energymap gas storage-survey`, workflow `gas-storage-survey`): koja
      postrojenja AGSI ima za naše zemlje, polja i jedan dan podataka. Ne objavljuje ništa. Razlog: priručnik
      opisuje polja i popis, ali ne i upit za pojedinu zemlju ili postrojenje; adresu daje sam popis.
-  2. [ ] Pokrenuti izviđanje na GitHubu i pročitati stvarni odgovor.
-  3. [ ] Dnevno preuzimanje zadnjih dana po postrojenju i zemlji → `live/gasstorage.json` (validacija,
-     provenance, atribucija GIE), u `gas-daily` ili vlastiti workflow nakon 19:30 CET; okidač u Workeru.
-  4. [ ] Prikaz: popunjenost i smjer (utiskivanje/povlačenje) u traci sloja plina i na kartici; atribucija GIE
-     vidljiva uz podatak. Položaj skladišta samo ako ga imamo iz izvora (OSM/ENTSOG), inače bez točke.
+  2. [x] Izviđanje pokrenuto 2026-11-17: 24 skupa podataka u AT, HR, HU, IT (HR: PSP, UGS Okoli); SI, RS,
+     BA, ME nemaju ništa; Grubišno Polje se ne pojavljuje. Okoli 15. 11.: 76,63 % (3,66 od 4,77 TWh),
+     povlačenje 21,1 GWh/d, status C. Upit je `?country=..&company=..&facility=..`, brojke su tekst
+     („-” = nema), redak nosi i koordinate postrojenja.
+  3. [x] Dnevno preuzimanje zadnjih 30 dana po postrojenju → `live/gasstorage.json` (`agsi.collect`,
+     `validate`, `publish_storage`; naredbe `gas storage-fetch` / `storage-publish-r2`), posao `storage` u
+     `gas-daily`. Ne objavljuje se bez navođenja GIE-a, uz nevjerojatne vrijednosti ili ako je zadnji dan
+     stariji od 7 dana.
+  4. [x] Prikaz, prvi dio: traka „Skladišta plina: koliko su puna” uz sloj plina (`GasStorageBar`): popunjenost,
+     smjer i količina (utiskivanje/povlačenje), TWh, dan, oznaka procjene; GIE naveden u traci i u atribuciji
+     karte dok je sloj uključen.
+  5. [ ] Prikaz, drugi dio: točke skladišta na karti (koordinate iz AGSI-ja) s karticom i poviješću zadnjih 30
+     dana; zbroj po zemlji. Nije napravljeno.
 - Razmotreno i odbijeno: animirane čestice po plinovodima (ne znamo kojim cijevima plin ide); Cloudflare
   Worker koji sam zove AGSI (dnevna obrada to već radi, ključ ostaje na jednom mjestu).
 - Rizici: oblik popisa nije dokumentiran do kraja (zato korak 1); operator može kasniti s podatkom (status

@@ -233,6 +233,19 @@ def parser() -> argparse.ArgumentParser:
     )
     _data_dir(gas_survey)
     gas_survey.add_argument("--days", type=_bounded_int(1, 14), default=gas_points.DEFAULT_DAYS)
+    for name, text in (
+        ("storage-fetch", "fetch the last days of gas storage from GIE AGSI into data/live/gasstorage.json"),
+        ("storage-publish-r2", "publish data/live/gasstorage.json to Cloudflare R2"),
+        ("storage-publish-dir", "publish data/live/gasstorage.json to a local mirror"),
+    ):
+        step = gas.add_parser(name, help=text)
+        _data_dir(step)
+        if name == "storage-fetch":
+            step.add_argument(
+                "--days", type=_bounded_int(1, agsi.MAX_DAYS), default=agsi.DEFAULT_DAYS, help="days to fetch"
+            )
+        if name == "storage-publish-dir":
+            step.add_argument("--out", type=Path, required=True)
     _data_dir(
         gas.add_parser(
             "storage-survey",
@@ -421,6 +434,25 @@ def run(args: argparse.Namespace) -> None:
                 publish.R2Store.from_env() if args.step == "publish-r2" else publish.DirectoryStore(args.out)
             )
             energy_live.publish_live(live_store, read_json(target_file))
+    elif args.group == "gas" and args.step in ("storage-fetch", "storage-publish-r2", "storage-publish-dir"):
+        storage_file = paths.root / "live" / "gasstorage.json"
+        if args.step == "storage-fetch":
+            with make_client() as client:
+                stored = agsi.collect(client, datetime.now(UTC), config.SCOPE_CODES, days=args.days)
+            agsi.validate(stored, datetime.now(UTC).date())
+            write_json_atomic(storage_file, stored)
+            print(json.dumps(stored["missing"], sort_keys=True))
+        else:
+            if not storage_file.exists():
+                raise BuildValidationError(
+                    [f"{storage_file} not found; run `energymap gas storage-fetch` first"]
+                )
+            storage_store: publish.ObjectStore = (
+                publish.R2Store.from_env()
+                if args.step == "storage-publish-r2"
+                else publish.DirectoryStore(args.out)
+            )
+            agsi.publish_storage(storage_store, read_json(storage_file), datetime.now(UTC).date())
     elif args.group == "gas" and args.step == "storage-survey":
         with make_client() as client:
             storage = agsi.survey(client, datetime.now(UTC), config.SCOPE_CODES)
@@ -665,6 +697,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         energy_live.LiveDataError,
         entsog.EntsogError,
         agsi.AgsiError,
+        agsi.StorageDataError,
         entsog.GasDataError,
         GeothermalDataError,
         hep_capacity.HepSourceError,

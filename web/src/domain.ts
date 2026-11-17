@@ -128,6 +128,7 @@ export const DATA_SOURCES = [
   "manual",
   "com",
   "entsog",
+  "gie",
 ] as const;
 export type DataSource = (typeof DATA_SOURCES)[number];
 
