@@ -244,9 +244,11 @@ class DataCenter(_Asset):
 class ChargingStation(_Asset):
     """A place where electric vehicles charge.
 
-    Only what OSM states consistently: ``points`` is the ``capacity`` tag (how many vehicles can charge
-    at once). Charging power is deliberately absent: in OSM it is spread over ``socket:*`` keys in too
-    many shapes to turn into one honest number.
+    Only what OSM states: ``points`` is the ``capacity`` tag (how many vehicles can charge at once) and
+    ``max_kw`` the highest charging power written with its unit on the station or one of its sockets
+    (``osm/tags.parse_output_kw``). Power used to be left out altogether; since 2026-11-17 it is kept
+    where it is stated unambiguously, and is ``None`` for the majority that state none. It is a
+    station's best socket, never a size for the map: too few stations have it.
     """
 
     LAYER: ClassVar[str] = "chargers"
@@ -255,6 +257,7 @@ class ChargingStation(_Asset):
     points: Annotated[int, Field(ge=1)] | None
     country: CountryCode
     location: Coordinate
+    max_kw: Annotated[float, Field(gt=0, le=1000)] | None = None
 
     def to_feature(self) -> dict[str, Any]:
         return {

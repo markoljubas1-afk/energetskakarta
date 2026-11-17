@@ -99,6 +99,8 @@ export const hr = {
   detailsPower: "Snaga",
   detailsPowerUnpublished: "Nije javno objavljena",
   detailsPoints: "Mjesta za punjenje",
+  detailsMaxKw: "Najveća snaga",
+  detailsMaxKwValue: "do {kw} kW",
   detailsPublishedSource: "Izvor podatka",
   detailsVoltage: "Napon",
   detailsCircuits: "Strujni krugovi",

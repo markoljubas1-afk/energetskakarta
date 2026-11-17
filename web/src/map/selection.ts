@@ -102,6 +102,8 @@ export type Selection =
       kind: "charger";
       name: string | null;
       points: number | null;
+      /** the highest charging power the station states with its unit, in kW; most state none */
+      maxKw: number | null;
       country: string;
     })
   | (Base & {
@@ -303,6 +305,7 @@ export function fromProperties(sourceLayer: string, props: Props): Selection | n
       kind: "charger",
       name: str(props, "name"),
       points: num(props, "points"),
+      maxKw: num(props, "maxKw"),
       country: str(props, "country") ?? "",
     };
   }

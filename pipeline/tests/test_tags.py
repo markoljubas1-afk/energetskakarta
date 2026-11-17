@@ -253,3 +253,23 @@ def test_every_technology_has_a_plausible_maximum() -> None:
 )
 def test_implausible_capacity_is_recognised(capacity: float, technology: Technology, expected: bool) -> None:
     assert t.is_plausible_mw(capacity, technology) is expected
+
+
+@pytest.mark.parametrize(
+    ("tags", "expected"),
+    [
+        ({"socket:type2:output": "22 kW"}, 22.0),
+        ({"socket:type2:output": "22kW", "socket:type2_combo:output": "150 kW"}, 150.0),
+        ({"socket:chademo:output": "62.5 kW;50 kW"}, 62.5),
+        ({"charging_station:output": "18,86 kW"}, 18.9),
+        ({"socket:type2:output": "11000 W"}, 11.0),
+        # no unit, a voltage, an absurd figure, an unrelated key: not a power we can state
+        ({"socket:type2:output": "50"}, None),
+        ({"socket:type2:output": "220V"}, None),
+        ({"socket:type2:output": "22000 kW"}, None),
+        ({"socket:type2": "2", "capacity": "4"}, None),
+        ({}, None),
+    ],
+)
+def test_parse_output_kw(tags: dict[str, str], expected: float | None) -> None:
+    assert t.parse_output_kw(tags) == expected

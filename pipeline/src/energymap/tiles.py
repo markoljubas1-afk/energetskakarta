@@ -313,6 +313,8 @@ def _charger(props: Mapping[str, Any]) -> dict[str, Any]:
         "name": props["name"],
         "status": props["status"],
         "points": props["points"],
+        # absent from builds made before the field existed
+        "maxKw": props.get("maxKw"),
         "country": props["country"],
         "operator": props["operator"],
         MINZOOM_ATTRIBUTE: CHARGER_MINZOOM,

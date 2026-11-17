@@ -224,6 +224,35 @@ def parse_points(raw: str | None) -> int | None:
     return points if 1 <= points <= 1000 else None
 
 
+_OUTPUT = re.compile(r"^(\d+(?:[.,]\d+)?)\s*(kw|w)$", re.IGNORECASE)
+#: a charging point below this is a socket for a bicycle; above it, a typing mistake
+_OUTPUT_RANGE_KW = (1.0, 1000.0)
+
+
+def parse_output_kw(tags: Tags) -> float | None:
+    """The highest charging power a station states, in kW: ``charging_station:output`` and every
+    ``socket:*:output``.
+
+    Only values written with their unit count (``"50 kW"``, ``"22kW"``, ``"11000 W"``; a tag may list
+    several, ``"161 kW;50 kW"``). A bare ``"50"`` could be kilowatts or amperes and ``"220V"`` is not a
+    power at all: such values are left out rather than read as kilowatts. In Croatia a third of the
+    stations state a power this way (2026-11-17), so most stations have none.
+    """
+    best: float | None = None
+    for key, raw in tags.items():
+        if key != "charging_station:output" and not (key.startswith("socket:") and key.endswith(":output")):
+            continue
+        for part in raw.split(";"):
+            match = _OUTPUT.match(part.strip())
+            if match is None:
+                continue
+            value = float(match.group(1).replace(",", "."))
+            kw = value / 1000 if match.group(2).lower() == "w" else value
+            if _OUTPUT_RANGE_KW[0] <= kw <= _OUTPUT_RANGE_KW[1] and (best is None or kw > best):
+                best = kw
+    return None if best is None else round(best, 1)
+
+
 def parse_number(text: str) -> float | None:
     """Parse a decimal number written with either decimal separator. Ambiguous input returns ``None``.
 

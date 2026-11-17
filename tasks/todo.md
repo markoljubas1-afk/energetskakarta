@@ -1281,6 +1281,10 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
   kućanstva u zemlji troše u prosjeku (Y MW, godina)”, s poveznicom na Eurostat. Učitava se kad se kartica
   otvori. „U prosjeku” je dio rečenice: kućanstva navečer i zimi troše više.
 - Vlasnici punionica nakon gradnje `20261117T141847Z`: 76 % (bilo 71 %), Hrvatska 64 % (bilo 61 %).
+- Snaga punionica: u Hrvatskoj je u OSM-u ima 193 od 596 punionica (32 %; Overpass, 2026-11-17), premalo za
+  veličinu točke po snazi. Umjesto toga kartica pokazuje „Najveća snaga: do X kW” gdje je upisana s jedinicom
+  (`parse_output_kw`: `charging_station:output` i `socket:*:output`; gola brojka ili „220V” se ne čita). Time
+  je promijenjena ranija odluka da se snaga uopće ne vodi. Vidljivo nakon iduće gradnje.
 
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda

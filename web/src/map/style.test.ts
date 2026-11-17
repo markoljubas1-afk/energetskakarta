@@ -534,7 +534,8 @@ describe("charging stations", () => {
 
   it("reads its features with the shared selection code", () => {
     const props = { id: "osm:node/72", status: "operating", country: "HR", points: 4 };
-    expect(fromProperties("chargers", props)).toMatchObject({ kind: "charger", points: 4 });
+    expect(fromProperties("chargers", props)).toMatchObject({ kind: "charger", points: 4, maxKw: null });
+    expect(fromProperties("chargers", { ...props, maxKw: 62.5 })).toMatchObject({ maxKw: 62.5 });
   });
 });
 

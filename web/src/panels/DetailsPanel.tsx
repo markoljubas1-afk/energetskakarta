@@ -353,6 +353,11 @@ export function DetailsPanel({ id, selection, onClose, photo = null, around = nu
         <dl className={styles.rows}>
           <Row label={t("detailsStatus")}>{status}</Row>
           {selection.points !== null && <Row label={t("detailsPoints")}>{selection.points}</Row>}
+          {selection.maxKw !== null && (
+            <Row label={t("detailsMaxKw")}>
+              {t("detailsMaxKwValue", { kw: i18n.number(selection.maxKw, 1) })}
+            </Row>
+          )}
           <Row label={t("detailsOperator")}>{selection.operator ?? t("unknown")}</Row>
           <Row label={t("detailsCountry")}>{i18n.country(selection.country)}</Row>
           {mix && mix.parts.length > 0 && (

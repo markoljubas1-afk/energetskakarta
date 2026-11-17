@@ -101,6 +101,8 @@ export const en: Dictionary = {
   detailsPower: "Power",
   detailsPowerUnpublished: "Not published",
   detailsPoints: "Charging points",
+  detailsMaxKw: "Highest power",
+  detailsMaxKwValue: "up to {kw} kW",
   detailsPublishedSource: "Where this came from",
   detailsVoltage: "Voltage",
   detailsCircuits: "Circuits",

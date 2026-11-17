@@ -264,6 +264,7 @@ def _add_charger(
         provenance=_provenance(ctx, osm_type, osm_id),
         name=t.text(tags, "name", "name:en"),
         points=t.parse_points(tags.get("capacity")),
+        max_kw=t.parse_output_kw(tags),
         country=country,
         location=(round(lon, 6), round(lat, 6)),
     )

@@ -230,6 +230,7 @@ describe("DetailsPanel", () => {
           operator: null,
           name: "Punionica Primjer",
           points: 2,
+          maxKw: 150,
           country: "HR",
         }}
         mix={{
@@ -245,6 +246,8 @@ describe("DetailsPanel", () => {
       />,
     );
     expect(screen.getByText(/Hidro 46 %, Vjetar 23 %, Plin 20 %, ostalo 11 %/)).toBeInTheDocument();
+    // the station's best socket, as OpenStreetMap states it
+    expect(screen.getByText("do 150 kW")).toBeInTheDocument();
     // the hour is shown in the reader's own time zone, so the test asks for it the same way
     const hour = new Intl.DateTimeFormat("hr", { hour: "2-digit", minute: "2-digit" }).format(
       new Date(green.hour),
