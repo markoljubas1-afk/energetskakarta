@@ -28,6 +28,8 @@ interface Props {
   renewables?: Renewables | null;
   /** Croatia's transition page, which says more about the target */
   transitionHref?: string;
+  /** the card has been opened: the moment to ask for the yearly shares */
+  onOpen?: () => void;
 }
 
 const percent = (share: number): number => Math.round(share * 100);
@@ -37,7 +39,15 @@ const percent = (share: number): number => Math.round(share * 100);
  * behind it what the number is, what it is not, and how it compares with the same hour yesterday. Figures
  * older than a few hours are shown without a colour: a traffic light must not show the afternoon at night.
  */
-export function GreenLight({ live, now, onShow, learnHref, renewables = null, transitionHref }: Props) {
+export function GreenLight({
+  live,
+  now,
+  onShow,
+  learnHref,
+  renewables = null,
+  transitionHref,
+  onOpen,
+}: Props) {
   const i18n = useI18n();
   const { t } = i18n;
   const countries = greenCountries(live).filter((code): code is CountryCode =>
@@ -62,6 +72,7 @@ export function GreenLight({ live, now, onShow, learnHref, renewables = null, tr
       triggerClassName={styles.trigger}
       menuClassName={styles.menu}
       placement="above"
+      {...(onOpen ? { onOpen } : {})}
       trigger={
         <>
           <span className={styles.dot} data-state={state} aria-hidden="true" />

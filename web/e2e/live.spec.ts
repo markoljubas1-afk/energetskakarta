@@ -118,3 +118,49 @@ test("the status bar says how green the electricity is, and explains the number"
   await expect(page.getByRole("link", { name: "Zašto je to važno?" })).toHaveAttribute("href", "/edukacija/");
   await expect(page.getByRole("button", { name: /^Pokaži na karti: / })).toBeVisible();
 });
+
+test("the green card shows where the country stands against its 2030 target, asked for only when opened", async ({
+  page,
+}) => {
+  // the test data has no Eurostat shares; hand the page a small document in the published shape
+  let asked = 0;
+  await page.route("**/local-data/eurostat/renewables.json", (route) => {
+    asked += 1;
+    return route.fulfill({
+      json: {
+        version: 1,
+        dataset: "nrg_ind_ren",
+        source: "Eurostat",
+        sourceUrl: "https://ec.europa.eu/eurostat/databrowser/view/nrg_ind_ren/default/table",
+        license: "CC-BY-4.0",
+        updated: null,
+        retrievedAt: "2026-11-16T00:00:00+00:00",
+        indicators: ["REN"],
+        years: [2023, 2024],
+        series: { HR: { REN: [28.1, 34.0] } },
+        flags: {},
+        flagLabels: {},
+        missing: [],
+        contentHash: "test",
+      },
+    });
+  });
+  await page.route("https://api.maptiler.com/**", (route) => route.abort());
+  await page.goto("/");
+  await expect(page.locator('[data-map-status="ready"]')).toBeVisible();
+  const pill = page.getByRole("button", { name: /^Udio obnovljivih u proizvodnji struje, Hrvatska/ });
+  await expect(pill).toBeVisible();
+  expect(asked).toBe(0);
+  await pill.click();
+  const goal = page.getByRole("region", { name: "Cilj 2030." });
+  await expect(goal).toContainText("Službeni udio 2024.: 34 %");
+  await expect(goal).toContainText("Cilj za 2030.: 42,5 %");
+  await expect(goal).toContainText("Do cilja još 8,5 post. bodova");
+  await expect(goal).toContainText("Nije ista mjera kao brojka iznad");
+  // the card grew after it opened: it is still wholly on screen
+  const box = await goal.boundingBox();
+  const viewport = page.viewportSize();
+  if (!box || !viewport) throw new Error("no box");
+  expect(box.y).toBeGreaterThanOrEqual(0);
+  expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
+});

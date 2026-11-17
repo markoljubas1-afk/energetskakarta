@@ -5,7 +5,7 @@
  * focus to the button. The menu is placed next to its button from script, on the preferred side when it fits
  * and on the other side when it does not, always inside the screen.
  */
-import { useId, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 
 import styles from "./PopoverMenu.module.css";
 
@@ -53,6 +53,8 @@ interface Props {
   triggerClassName: string | undefined;
   menuClassName: string | undefined;
   placement?: Placement;
+  /** the menu has just opened: the moment to ask for what only the menu needs */
+  onOpen?: () => void;
   children: ReactNode;
 }
 
@@ -62,21 +64,19 @@ export function PopoverMenu({
   triggerClassName,
   menuClassName,
   placement = "below",
+  onOpen,
   children,
 }: Props) {
   const id = useId();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // the browser has just opened or closed the menu: place it while it is still invisible (CSS), then show it
-  const onToggle = (): void => {
+  // Puts the open menu beside its button. Called when it opens and whenever its size changes while open
+  // (content that arrives later, a longer text): a menu placed for its first height must not grow off screen.
+  const place = (): void => {
     const button = buttonRef.current;
     const menu = menuRef.current;
-    if (!button || !menu) return;
-    if (!menu.matches(":popover-open")) {
-      delete menu.dataset.placed;
-      return;
-    }
+    if (!button || !menu?.matches(":popover-open")) return;
     const size = menu.getBoundingClientRect();
     const { top, left } = placeMenu(
       button.getBoundingClientRect(),
@@ -88,6 +88,34 @@ export function PopoverMenu({
     menu.style.left = `${String(left)}px`;
     menu.dataset.placed = "";
   };
+
+  // the browser has just opened or closed the menu: place it while it is still invisible (CSS), then show it
+  const onToggle = (): void => {
+    const menu = menuRef.current;
+    if (!menu) return;
+    if (!menu.matches(":popover-open")) {
+      delete menu.dataset.placed;
+      return;
+    }
+    place();
+    onOpen?.();
+  };
+
+  const placeRef = useRef(place);
+  useEffect(() => {
+    placeRef.current = place;
+  });
+  useEffect(() => {
+    const menu = menuRef.current;
+    if (!menu || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => {
+      placeRef.current();
+    });
+    observer.observe(menu);
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   return (
     <>

@@ -56,7 +56,8 @@ def api_key() -> str:
 
 
 def _get(client: httpx.Client, url: str, key: str, params: dict[str, str | int] | None = None) -> Any:
-    response = client.get(url, params=params, headers={"x-key": key})
+    # the listing's addresses carry their own query, which httpx would replace with `params`: merge the two
+    response = client.get(httpx.URL(url).copy_merge_params(params or {}), headers={"x-key": key})
     if response.status_code != 200:
         raise AgsiError(f"{url}: HTTP {response.status_code}")
     try:
@@ -131,7 +132,8 @@ def latest_row(client: httpx.Client, key: str, url: str) -> tuple[dict[str, Any]
     answer = _get(client, urljoin(BASE_URL, url), key, {"size": 1})
     rows = answer.get("data") if isinstance(answer, dict) else None
     if not isinstance(rows, list) or not rows or not isinstance(rows[0], dict):
-        raise AgsiError(f"{url}: no 'data' rows in the answer")
+        shape = sorted(answer) if isinstance(answer, dict) else type(answer).__name__
+        raise AgsiError(f"{url}: no 'data' rows in the answer ({shape})")
     return rows[0], sorted(answer)
 
 

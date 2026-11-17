@@ -421,3 +421,22 @@
 - Rule going forward: test koji provjerava ispisano vrijeme očekivanu vrijednost računa istim formatiranjem
   (ili zadaje zonu), nikad je ne upisuje ručno. Novi test s datumom ili satom prije slanja pokrenuti i s
   `TZ=UTC`, jer tako radi CI.
+
+### L-074 — Novi zahtjev pri učitavanju stranice poslan bez e2e testa „bez grešaka u konzoli” (2026-11-17)
+- What happened: pratitelj ciljeva 2030 je pri svakom otvaranju karte tražio `eurostat/renewables.json`. U
+  testnim podacima te datoteke nema, preglednik je 404 upisao u konzolu i `map.spec.ts` („loads real tiles …
+  without errors”) je pao na GitHubu; objava `c91182a` nije prošla. Lokalno sam prije slanja pokrenuo samo
+  jedinične testove i e2e za dijelove koje sam smatrao pogođenima.
+- Root cause: novi mrežni zahtjev pri učitavanju dira svaki e2e test koji gleda konzolu, a ne samo testove
+  te značajke. Uz to je zahtjev bio nepotreban: podatak treba tek onome tko otvori karticu.
+- Rule going forward: što god se učitava pri otvaranju stranice (novi `useAsync` bez uvjeta na sloj ili
+  radnju) prije slanja prolazi i `e2e/map.spec.ts`. Podatak koji treba samo otvorenoj kartici ili izborniku
+  traži se pri otvaranju, ne pri učitavanju.
+
+### L-075 — httpx zamjenjuje upit iz adrese kad dobije `params` (2026-11-17)
+- What happened: izviđanje AGSI-ja je za svaki skup podataka dobilo prazan odgovor. Adresa iz AGSI-jeva popisa
+  već nosi upit (`?country=HR&company=…`), a `client.get(url, params={"size": 1})` ga je zamijenio, pa je
+  otišao zahtjev samo sa `size=1`. Lažni poslužitelj u testu nije provjeravao da je upit stigao.
+- Root cause: pretpostavio sam da se `params` dodaju postojećem upitu; httpx ga zamjenjuje.
+- Rule going forward: adresi koja već ima upit parametri se dodaju s `httpx.URL(url).copy_merge_params(...)`.
+  Lažni poslužitelj u testu odbija zahtjev kojem nedostaje parametar koji stvarni poslužitelj treba.

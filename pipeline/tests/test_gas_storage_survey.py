@@ -68,6 +68,9 @@ def platform(request: httpx.Request) -> httpx.Response:
         assert request.url.params["show"] == "listing"
         return httpx.Response(200, json=LISTING)
     assert request.url.params["size"] == "1"
+    # the dataset's own query must survive the added parameter (the first live run lost it)
+    if "country" not in request.url.params or "company" not in request.url.params:
+        return httpx.Response(200, json={"last_page": 0, "total": 0, "data": []})
     return httpx.Response(200, json={"last_page": 300, "total": 1, "gas_day": "2026-11-16", "data": [ROW]})
 
 
