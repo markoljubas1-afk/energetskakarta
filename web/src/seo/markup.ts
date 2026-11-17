@@ -72,6 +72,10 @@ export interface Door {
   title: string;
   /** what the reader will see there */
   text: string;
+  /** an inline SVG shown before the title (decoration: hidden from assistive technology) */
+  icon?: string;
+  /** what the card does, as words at its foot ("Pokreni priču"); the whole card is the link */
+  action?: string;
 }
 
 /**
@@ -80,9 +84,28 @@ export interface Door {
  */
 export function doors(items: Door[]): string {
   const cards = items.map(
-    (item) => `<li><a href="${e(item.href)}">${e(item.title)}</a> <span>${e(item.text)}</span></li>`,
+    (item) =>
+      `<li>${item.icon ?? ""}<a href="${e(item.href)}">${e(item.title)}</a> <span>${e(item.text)}</span>${
+        item.action === undefined ? "" : ` <em>${e(item.action)}</em>`
+      }</li>`,
   );
   return `<ul class="doors">${cards.join("")}</ul>`;
+}
+
+/**
+ * Terms that open one at a time (`.glossary` in style.ts): the reader sees the list of words and opens the
+ * one they came for. Plain `<details>`, so it works without script and a crawler reads every definition.
+ */
+export function glossary(rows: [string, string][]): string {
+  const terms = rows.map(
+    ([term, text]) => `<details><summary>${e(term)}</summary><p>${e(text)}</p></details>`,
+  );
+  return `<div class="glossary">${terms.join("")}</div>`;
+}
+
+/** One thing to do, set apart from the text around it: a sentence and a link that looks like a button. */
+export function callout(text: string, link: { href: string; label: string }, icon = ""): string {
+  return `<p class="callout">${icon}<span>${e(text)}</span> <a href="${e(link.href)}" target="_blank" rel="noopener noreferrer">${e(link.label)}</a></p>`;
 }
 
 export function definitions(rows: [string, string][]): string {

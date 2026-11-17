@@ -48,7 +48,12 @@ describe("the learning corner", () => {
         solar.map((link) => [...parseState(new URL(link, "https://karta.test").search, lang).layers]),
       ).toEqual([["lines", "solar"]]);
       // the section on negative prices opens the hourly prices; it comes before the "try it" list
-      const [price, ...views] = links.filter((link) => !link.includes("story=") && !link.includes("solar"));
+      // links out of the site (the roof calculator) are not views of the map
+      const external = links.filter((link) => link.startsWith("https://"));
+      expect(external).toEqual(["https://re.jrc.ec.europa.eu/pvg_tools/en/"]);
+      const [price, ...views] = links.filter(
+        (link) => !link.includes("story=") && !link.includes("solar") && !link.startsWith("https://"),
+      );
       expect(parseState(new URL(price ?? "", "https://karta.test").search, lang).live).toBe(true);
       expect(views).toHaveLength(LEARN_COPY[lang].tries.length);
       for (const [index, link] of views.entries()) {
@@ -92,5 +97,20 @@ describe("the learning corner", () => {
     const state = parseState(new URL(link.replaceAll("&amp;", "&"), "https://karta.test").search, "hr");
     expect(state.year).toBe(1960);
     expect([...state.layers]).toContain("plants");
+  });
+
+  it("folds its glossary term by term, starts stories from cards, and sends a roof to the calculator", () => {
+    const html = learnPage(bareSite(), "hr")
+      .sections.map((section) => section.html)
+      .join("");
+    expect(html.match(/<details><summary>/g)).toHaveLength(LEARN_COPY.hr.terms.length);
+    expect(html).toContain("<summary>Instalirana snaga</summary>");
+    expect(html).not.toContain("<dl>");
+    // a story card: an icon, the title as the link, what it is about, and what the card does
+    expect(html).toMatch(
+      /<li><svg[^>]*aria-hidden="true"[\s\S]*?<\/svg><a href="\/\?story=put-struje">[^<]+<\/a> <span>[^<]+<\/span> <em>Pokreni priču<\/em><\/li>/,
+    );
+    expect(html).toContain('class="callout"');
+    expect(html).toContain(">Izračunaj za moj krov</a>");
   });
 });

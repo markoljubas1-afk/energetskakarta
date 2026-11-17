@@ -1289,6 +1289,18 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 - Pratitelj ciljeva: gumb „Pokaži što se gradi i planira: vjetar i sunce” u odjeljku cilja postavlja filtre
   (zemlja, statusi u izgradnji i planirano, tehnologije vjetar i sunce); poništava se s „Poništi filtre”.
 
+### 35-14 Stranica Edukacija: kartice, pojmovnik, krov (zahtjev vlasnika 2026-11-17) — KORAK 1 GOTOV
+- Odluka vlasnika 2026-11-17: sponzorskog mjesta nema, projekt ostaje nekomercijalan („preskoči sponzore,
+  ostaje kako je”). Odbijeno uz obrazloženje: brojka neovisnosti kućanstva bez modela s izvorom i izmišljeni
+  scenarij „raspad sustava”.
+- Korak 1: kartice priča nose ikonu i „Pokreni priču”; poveznice na kartu ikonu karte; pojmovnik je sklopiv
+  (`glossary`, `<details>`, bez skripte, čitljiv tražilicama; JSON-LD isti); okvir „Izračunaj za moj krov”
+  vodi na PVGIS (`callout`). Markdown inačica stranice čita i `<details>`.
+- Korak 2 (nije počet, treba plan): živa cijena, udio obnovljivih i prevoditelj megavata na samoj stranici.
+  To bi bila prva skripta na statičnim stranicama (CSP dopušta samo vlastite datoteke), pa je arhitekturna
+  odluka: mala zasebna skripta građena iz istih modula kao karta, ne druga implementacija računa.
+- Korak 3 (nije počet): kartice i okviri na `/tko-stoji-iza/`, `/gradovi/`, `/kapaciteti/`, `/api/`.
+
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda
   od 400 kV, prag spajanja krajeva 0,3 km (`pipeline/src/energymap/routes.py`). Karta: `stories/travel.ts`,

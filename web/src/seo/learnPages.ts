@@ -3,9 +3,14 @@
  * and links that open the map on what each paragraph describes. Written for someone who has never looked
  * at a grid map; nothing here depends on a data release except the date in the footer.
  */
+import { ArrowLeftRight, Factory, Map as MapIcon, Route, Sun, Zap, type LucideIcon } from "lucide-react";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+
 import { TIME_MACHINE_START, type Lang } from "../state/url";
+import type { StoryKey } from "../stories/keys";
 import { STORIES, STORY_KEYS } from "../stories/stories";
-import { definitions, doors, e, list, type Door } from "./markup";
+import { callout, doors, e, glossary, list, type Door } from "./markup";
 import { home, mapLink, other, PATHS, type SiteData, type StaticPage } from "./site";
 
 interface LearnCopy {
@@ -20,6 +25,11 @@ interface LearnCopy {
   solar: string[];
   solarTry: string;
   solarTryNote: string;
+  /** the call-out that sends a reader with a roof of their own to the exact calculation */
+  roof: string;
+  roofAction: string;
+  /** what a story card does */
+  storyStart: string;
   timingHeading: string;
   /** why a wholesale price can fall below zero, and the link that opens the prices on the map */
   priceHeading: string;
@@ -72,6 +82,9 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
     ],
     solarTry: "Sunčani potencijal na karti",
     solarTryNote: "kliknite na svoje mjesto i pročitajte očekivanu godišnju proizvodnju",
+    roof: "Imate krov? Besplatni europski kalkulator PVGIS računa koliko bi baš on dao, uz nagib, orijentaciju i zasjenjenje.",
+    roofAction: "Izračunaj za moj krov",
+    storyStart: "Pokreni priču",
     priceHeading: "Zašto struja ponekad ima negativnu cijenu",
     price: [
       "Struja se na burzi prodaje dan unaprijed, za svaki sat posebno. Proizvođači nude koliko mogu dati i po kojoj cijeni, kupci koliko trebaju, i za svaki sat nastane jedna cijena na kojoj se ponuda i potražnja susretnu.",
@@ -202,6 +215,9 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
     ],
     solarTry: "Solar potential on the map",
     solarTryNote: "click your own place and read the expected yearly output",
+    roof: "Have a roof? The free European calculator PVGIS works out what that very roof would give, with its tilt, orientation and shading.",
+    roofAction: "Calculate for my roof",
+    storyStart: "Start the story",
     priceHeading: "Why electricity sometimes has a negative price",
     price: [
       "Electricity is sold on the exchange a day ahead, hour by hour. Generators offer what they can deliver and at what price, buyers what they need, and each hour gets one price at which supply and demand meet.",
@@ -301,6 +317,21 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
   },
 };
 
+/** Decoration before a card's title: the same icon family as the map's header, inline. */
+const icon = (Icon: LucideIcon, size = 18): string =>
+  renderToStaticMarkup(createElement(Icon, { size, strokeWidth: 1.75, "aria-hidden": true }));
+const STORY_ICONS: Record<StoryKey, string> = {
+  "put-struje": icon(Route),
+  kilovatsat: icon(Zap),
+  sunce: icon(Sun),
+  "odakle-struja": icon(Factory),
+  granice: icon(ArrowLeftRight),
+};
+const MAP_ICON = icon(MapIcon);
+const SUN_ICON = icon(Sun, 22);
+/** The European Commission's free calculator for a particular roof (the same link the map's solar bar gives). */
+const PVGIS_URL = "https://re.jrc.ec.europa.eu/pvg_tools/en/";
+
 export function learnPage(site: SiteData, lang: Lang): StaticPage {
   const copy = LEARN_COPY[lang];
   const stories = STORY_KEYS.filter(
@@ -309,6 +340,8 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
     href: mapLink(lang, { story: key }),
     title: STORIES[key].title[lang],
     text: STORIES[key].summary[lang],
+    icon: STORY_ICONS[key],
+    action: copy.storyStart,
   }));
   const tries = [
     ...copy.tries,
@@ -320,7 +353,7 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
           ] as LearnCopy["tries"][number],
         ]
       : []),
-  ].map(([title, text, params]): Door => ({ href: mapLink(lang, params), title, text }));
+  ].map(([title, text, params]): Door => ({ href: mapLink(lang, params), title, text, icon: MAP_ICON }));
   return {
     path: PATHS[lang].learn,
     lang,
@@ -338,16 +371,21 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
       { heading: copy.unitsHeading, html: list(copy.units.map(e)) },
       {
         heading: copy.solarHeading,
-        html: `${list(copy.solar.map(e))}${doors([{ href: mapLink(lang, { l: "lines,solar" }), title: copy.solarTry, text: copy.solarTryNote }])}`,
+        html: `${list(copy.solar.map(e))}${doors([{ href: mapLink(lang, { l: "lines,solar" }), title: copy.solarTry, text: copy.solarTryNote, icon: MAP_ICON }])}${callout(copy.roof, { href: PVGIS_URL, label: copy.roofAction }, SUN_ICON)}`,
       },
       { heading: copy.timingHeading, html: copy.timing.map((p) => `<p>${e(p)}</p>`).join("") },
       {
         heading: copy.priceHeading,
         html: `${copy.price.map((p) => `<p>${e(p)}</p>`).join("")}${doors([
-          { href: mapLink(lang, { live: "1" }), title: copy.priceTry[0], text: copy.priceTry[1] },
+          {
+            href: mapLink(lang, { live: "1" }),
+            title: copy.priceTry[0],
+            text: copy.priceTry[1],
+            icon: MAP_ICON,
+          },
         ])}`,
       },
-      { heading: copy.termsHeading, html: definitions(copy.terms.map(([term, text]) => [term, e(text)])) },
+      { heading: copy.termsHeading, html: glossary(copy.terms) },
       { heading: copy.tryHeading, html: `<p>${e(copy.tryIntro)}</p>${doors(tries)}` },
     ],
     jsonLd: [

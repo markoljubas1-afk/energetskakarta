@@ -57,7 +57,7 @@ function table(html: string, base: string | null): string {
 export function blocks(html: string, base: string | null): string {
   const parts: string[] = [];
   const pattern =
-    /<table>[\s\S]*?<\/table>|<ul[^>]*>[\s\S]*?<\/ul>|<dl>[\s\S]*?<\/dl>|<pre><code>[\s\S]*?<\/code><\/pre>|<h3>[\s\S]*?<\/h3>|<p[^>]*>[\s\S]*?<\/p>/g;
+    /<table>[\s\S]*?<\/table>|<ul[^>]*>[\s\S]*?<\/ul>|<dl>[\s\S]*?<\/dl>|<details>[\s\S]*?<\/details>|<pre><code>[\s\S]*?<\/code><\/pre>|<h3>[\s\S]*?<\/h3>|<p[^>]*>[\s\S]*?<\/p>/g;
   for (const [block] of html.matchAll(pattern)) {
     if (block.startsWith("<table")) parts.push(table(block, base));
     else if (block.startsWith("<ul"))
@@ -72,7 +72,11 @@ export function blocks(html: string, base: string | null): string {
           .map(([, term = "", value = ""]) => `- **${inline(term, base)}**: ${inline(value, base)}`)
           .join("\n"),
       );
-    else if (block.startsWith("<pre"))
+    else if (block.startsWith("<details")) {
+      const [, term = "", text = ""] =
+        /<summary>([\s\S]*?)<\/summary>([\s\S]*?)<\/details>/.exec(block) ?? [];
+      parts.push(`- **${inline(term, base)}**: ${inline(text, base)}`);
+    } else if (block.startsWith("<pre"))
       parts.push(`\`\`\`\n${decode(block.replace(/^<pre><code>|<\/code><\/pre>$/g, ""))}\n\`\`\``);
     else if (block.startsWith("<h3")) parts.push(`### ${inline(block, base)}`);
     else parts.push(inline(block, base));

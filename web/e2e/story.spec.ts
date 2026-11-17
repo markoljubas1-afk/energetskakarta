@@ -44,7 +44,7 @@ test("the learning page links to the stories", async ({ page }) => {
     "href",
     "/?story=granice",
   );
-  await expect(page.locator("dl dt")).toHaveCount(13);
+  await expect(page.locator(".glossary details")).toHaveCount(13);
 });
 
 test("the kilowatt-hour story sends a point along a real route, which can be paused and replayed", async ({
