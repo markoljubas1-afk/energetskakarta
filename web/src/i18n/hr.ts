@@ -535,6 +535,7 @@ export const hr = {
   layer_gas_note:
     "Koliko plina iz domaćih polja svaki plinski dan uđe u transportni sustav, prema ENTSOG-u. Zbroj po zemlji (operator sustava objavljuje jednu ulaznu točku za svu proizvodnju), ne po polju; nema koordinata, pa krug stoji na sidrištu zemlje. Za naftu i ugljen takvog izvora nema. Uz sloj se otvara i traka sa skladištima plina: koliko su puna i utiskuje li se plin ili povlači (GIE AGSI).",
   legendGas: "Proizvodnja plina po zemlji (veličina: zadnji plinski dan)",
+  legendGasStorage: "Skladište plina (broj: koliko je puno)",
   kind_gas: "Proizvodnja plina",
   detailsGasLatest: "Zadnji plinski dan",
   detailsGasDays: "Prijavljeno",

@@ -538,6 +538,7 @@ export const en: Dictionary = {
   layer_gas_note:
     "How much gas from domestic fields entered the transmission system on each gas day, from ENTSOG. A sum per country (the system operator publishes one entry point for all production), not per field; it has no coordinates, so the disc sits at the country's anchor. No such source exists for oil or coal. The layer also opens a bar with gas storage: how full it is and whether gas is going in or coming out (GIE AGSI).",
   legendGas: "Gas production per country (size: latest gas day)",
+  legendGasStorage: "Gas storage (figure: how full it is)",
   kind_gas: "Gas production",
   detailsGasLatest: "Latest gas day",
   detailsGasDays: "Reported",

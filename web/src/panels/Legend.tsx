@@ -161,7 +161,8 @@ export function Legend({
       {gas && (
         <>
           <h3>{t("layer_gas")}</h3>
-          <ul className={styles.technologies}>
+          {/* sentences, not names: one column (two cut the second off at the legend's edge) */}
+          <ul className={styles.voltages}>
             <li>
               <span
                 className={styles.dot}
@@ -169,6 +170,14 @@ export function Legend({
                 aria-hidden="true"
               />
               {t("legendGas")}
+            </li>
+            <li>
+              <span
+                className={styles.dot}
+                style={{ background: palette.casing, boxShadow: `inset 0 0 0 3px ${palette.gas}` }}
+                aria-hidden="true"
+              />
+              {t("legendGasStorage")}
             </li>
           </ul>
         </>

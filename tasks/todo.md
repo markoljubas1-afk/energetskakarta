@@ -1250,8 +1250,10 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 - Bušotine su u pločicama od početnog prikaza (zum 3), okna i potkopi od 5.
 - Statične stranice (zahtjev vlasnika, „dosadno sive”): pozadina u bojama karte, crta loga na vrhu kartice i
   uz naslove odjeljaka; poveznice koje vode na kartu su kartice (`doors` u `seo/markup.ts`).
-- Nije napravljeno: e2e za traku i točke skladišta (samo jedinični testovi); povijest zadnjih 30 dana po
-  skladištu; zbroj po zemlji.
+- Provjereno na živoj stranici 2026-11-17 (računalo i mobitel): natpis kod Krškog, klik na krug i na
+  pojedinačnu punionicu (kartica s operatorom i miksom), točka i natpis Okolija, klik na nju otvara skladište
+  u traci. Dodan e2e za skladišta (`gas.spec.ts`) i stavka skladišta u legendi.
+- Nije napravljeno: povijest zadnjih 30 dana po skladištu; zbroj po zemlji.
 
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda

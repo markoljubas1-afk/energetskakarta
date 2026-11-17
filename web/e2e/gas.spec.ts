@@ -76,3 +76,82 @@ test("gas production snapshot", async ({ page }, testInfo) => {
   await page.waitForTimeout(1200);
   await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-gas.png`) });
 });
+
+/** Two invented storage facilities in the shape the pipeline publishes (pipeline/tests/test_gas_storage.py). */
+const STORAGE = {
+  version: 1,
+  generatedAt: "2026-11-17T08:00:00+00:00",
+  source: "GIE AGSI",
+  sourceUrl: "https://agsi.gie.eu/",
+  attribution: "GIE (Gas Infrastructure Europe), AGSI platform",
+  license: "GIE-AGSI-attribution",
+  days: ["2026-11-14", "2026-11-15"],
+  facilities: [
+    {
+      id: "21W-PELDA-UGS--D",
+      name: "UGS Pelda",
+      operator: "Pelda",
+      operatorId: "21X-PELDA------C",
+      country: "HU",
+      lon: 20.1,
+      lat: 46.3,
+      workingGasTwh: 20.48,
+      status: ["C", "C"],
+      fullPercent: [97.6, 97.7],
+      inStorageTwh: [19.99, 20.0],
+      injectionGwhPerDay: [9.3, 9.1],
+      withdrawalGwhPerDay: [0, 0],
+    },
+    {
+      id: "31W-PRIMJER-UGSB",
+      name: "UGS Primjer",
+      operator: "Primjer",
+      operatorId: "31X-PRIMJER----A",
+      country: "HR",
+      lon: 16.5,
+      lat: 45.6,
+      workingGasTwh: 4.7725,
+      status: ["C", "C"],
+      fullPercent: [77.07, 76.63],
+      inStorageTwh: [3.6781, 3.6572],
+      injectionGwhPerDay: [0, 0.84],
+      withdrawalGwhPerDay: [18.4, 21.1],
+    },
+  ],
+  missing: { facilities: [], countries: ["SI"] },
+};
+
+test("gas storage rides on the gas layer: a bar with how full it is, its source, and a point on the map", async ({
+  page,
+}) => {
+  // the test data has no storage document (it needs a personal key); hand the page one
+  await page.route(/\/local-data\/live\/gasstorage\.json/, (route) => route.fulfill({ json: STORAGE }));
+  // centred on the Hungarian facility, so a click in the middle of the map is a click on its point
+  await open(page, "l=gas&v=46.3,20.1,9");
+  const bar = page.getByRole("region", { name: "Skladišta plina: koliko su puna" });
+  // Croatia's own facility is open; the other country waits behind one line
+  await expect(bar.getByText("UGS Primjer")).toBeVisible();
+  await expect(bar).toContainText("76,6 %");
+  await expect(bar).toContainText("povlači se 21,1 GWh/dan");
+  await expect(bar.getByText("Skladišta u drugim zemljama (1)")).toBeVisible();
+  await expect(bar.getByText("UGS Pelda")).toBeHidden();
+  // GIE asks to be named wherever its data is shown: in the bar and in the map's credits
+  await expect(
+    bar.getByRole("link", { name: "GIE (Gas Infrastructure Europe), AGSI platform" }),
+  ).toHaveAttribute("href", "https://agsi.gie.eu/");
+  await expect(page.locator(".maplibregl-ctrl-attrib")).toContainText("GIE");
+
+  // folded away, the bar leaves the map free; a click on the facility's point brings it back, opened
+  await page.getByRole("button", { name: "Sakrij kartice" }).click();
+  await expect(bar).toBeHidden();
+  const box = await page.locator(".maplibregl-canvas").boundingBox();
+  if (!box) throw new Error("the map has no box");
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await expect(bar.locator("li[data-picked]")).toContainText("UGS Pelda");
+  await expect(bar.locator("li[data-picked]")).toContainText("utiskuje se 9,1 GWh/dan");
+
+  // closing the bar switches the gas layer off
+  await bar.getByRole("button", { name: "Zatvori sloj plina" }).click();
+  await expect(bar).toHaveCount(0);
+  await expect(page).not.toHaveURL(/l=[^&]*gas/);
+});
