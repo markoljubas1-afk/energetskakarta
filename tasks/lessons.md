@@ -451,3 +451,13 @@
 - Rule going forward: kad se nešto na karti ne crta, prvo pročitati filtar i `minzoom` tog sloja i potvrditi
   da objekt uopće ulazi u sloj; tek onda tražiti uzrok u prikazu. Ono što se lokalno ne može vidjeti pokriti
   testom stila koji provjerava filtar, prije slanja.
+
+### L-077 — Lokalno `mypy src`, a CI vrti `mypy src tests`; pad provjere pipelinea nisam ni pogledao (2026-11-17)
+- What happened: novi test `test_eurostat_households.py` imao je tipske greške. Lokalno sam vrtio
+  `mypy --strict src`, pa ih nisam vidio; CI vrti `mypy src tests` i provjera `pipeline` je pala na dva
+  uzastopna slanja (`9475be6`, `f1a1fea`). Nakon slanja sam pratio samo workflow `web`, pa sam pad primijetio
+  tek slučajno u popisu pokretanja. Objava weba je prošla jer ne ovisi o toj provjeri.
+- Root cause: lokalna naredba nije ista kao u CI-ju, a „objava je prošla” sam izjednačio s „sve je prošlo”.
+- Rule going forward: u pipelineu lokalno vrtjeti točno ono što vrti `.github/workflows/pipeline.yml`
+  (`ruff check`, `ruff format --check`, `mypy src tests`, `pytest`). Nakon slanja koje dira `pipeline/`
+  pogledati i rezultat workflowa `pipeline`, ne samo `web`.

@@ -55,7 +55,7 @@ def answer(series: dict[str, list[float | None]], *, unit: str = "GWH") -> dict[
 SERIES: dict[str, list[float | None]] = {
     "HR": [6000.0 + 30 * i for i in range(len(YEARS))],
     # did not report the first five years: Eurostat writes zeros there
-    "HU": [0.0] * 5 + [12000.0 + 50 * i for i in range(len(YEARS) - 5)],
+    "HU": [*([0.0] * 5), *(12000.0 + 50 * i for i in range(len(YEARS) - 5))],
     # a year behind
     "BA": [4000.0 + 80 * i for i in range(len(YEARS) - 1)] + [None],
 }
@@ -105,7 +105,7 @@ def test_publishes_only_a_plausible_document_that_does_not_go_back_in_time(tmp_p
     truncated = households.collect(client(answer({**SERIES, "HR": [*SERIES["HR"][:-1], None]})), NOW)
     with pytest.raises(EurostatDataError, match="went back from 2024 to 2023"):
         households.publish_households(store, truncated)
-    short = households.collect(client(answer({"HR": [None] * 9 + SERIES["HR"][9:]})), NOW)
+    short = households.collect(client(answer({"HR": [*([None] * 9), *SERIES["HR"][9:]]})), NOW)
     with pytest.raises(EurostatDataError, match="6 years of data"):
         households.publish_households(store, short)
     absurd = json.loads(json.dumps(document))
