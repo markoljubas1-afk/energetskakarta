@@ -1311,7 +1311,10 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
   uz rezultat). Ispod piše da je to godišnja bilanca, a ne neovisnost o mreži. PVGIS-ov API se ne zove: ne
   dopušta pozive iz preglednika s druge stranice (provjereno, odgovor bez CORS zaglavlja), a istu vrstu
   podatka već imamo. Okvir na Edukaciji vodi na kalkulator na karti; PVGIS ostaje poveznica u traci.
-- Korak 3 (nije počet): kartice i okviri na `/tko-stoji-iza/`, `/gradovi/`, `/kapaciteti/`, `/api/`.
+- Korak 3 GOTOV: stranice dobivaju kartice ispod uvoda (`StaticPage.doors`, `seo/pageDoors.ts`; u HTML-u i u
+  Markdown inačici): „Tko stoji iza” → karta i Edukacija, uz KEKS Pay i kontakt u okviru `.support`;
+  `/gradovi/` → gradovi na karti; `/kapaciteti/` → slobodni kapacitet na karti i sunce s najbližom
+  trafostanicom; `/api/` → Hrvatska kao JSON i karta. Nijedna od tih stranica dosad nije vodila na kartu.
 
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda

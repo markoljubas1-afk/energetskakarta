@@ -9,6 +9,7 @@
 import { createI18n } from "../i18n";
 import { pageCitation } from "./citation";
 import { COPY } from "./copy";
+import { doors } from "./markup";
 import type { SiteData, StaticPage } from "./site";
 
 const ENTITIES: Record<string, string> = {
@@ -101,6 +102,7 @@ export function pageMarkdown(page: StaticPage, site: SiteData): string {
     `# ${page.heading}`,
     page.description,
     blocks(page.lead, base),
+    page.doors && page.doors.length > 0 ? blocks(doors(page.doors), base) : "",
     ...[...page.sections, ...(page.nav ? [page.nav] : [])].map(
       (section) => `## ${section.heading}\n\n${blocks(section.html, base)}`,
     ),

@@ -7,6 +7,7 @@ import { DOWNLOAD_LABELS } from "../i18n/labels";
 import type { Lang } from "../state/url";
 import { AUTHOR, COPY } from "./copy";
 import { definitions, e, list } from "./markup";
+import { countryJsonDoor, learnDoor, mapDoor } from "./pageDoors";
 import { API_PATHS } from "./paths";
 import {
   absolute,
@@ -104,10 +105,11 @@ export function authorPage(site: SiteData, lang: Lang): StaticPage {
     description: first,
     heading: about.authorHeading,
     lead: `<p>${e(first)}</p>`,
+    doors: [mapDoor(lang), learnDoor(lang)],
     sections: [
       {
         heading: about.authorSupportHeading,
-        html: `${rest.map((p) => `<p>${e(p)}</p>`).join("")}<p><img src="/keks-pay.png" alt="${e(about.authorQrAlt)}" width="200" height="200" loading="lazy"><br>${e(about.authorKeksTag)}: <strong>${e(AUTHOR.keksTag)}</strong></p><p>${e(about.authorContact)}: <a href="mailto:${e(AUTHOR.email)}">${e(AUTHOR.email)}</a></p>`,
+        html: `${rest.map((p) => `<p>${e(p)}</p>`).join("")}<div class="support"><img src="/keks-pay.png" alt="${e(about.authorQrAlt)}" width="200" height="200" loading="lazy"><div><p>${e(about.authorKeksTag)}: <strong>${e(AUTHOR.keksTag)}</strong></p><p>${e(about.authorContact)}: <a href="mailto:${e(AUTHOR.email)}">${e(AUTHOR.email)}</a></p></div></div>`,
       },
     ],
     jsonLd: [],
@@ -145,6 +147,7 @@ export function apiPage(site: SiteData, lang: Lang): StaticPage {
     description: api.description,
     heading: api.heading,
     lead: api.intro.map((p) => `<p>${e(p)}</p>`).join(""),
+    doors: [countryJsonDoor(lang), mapDoor(lang)],
     sections: [
       {
         heading: api.endpointsHeading,

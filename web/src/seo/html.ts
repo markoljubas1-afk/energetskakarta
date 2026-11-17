@@ -26,7 +26,7 @@ import { pageCitation } from "./citation";
 import { supportLinks } from "./support";
 import { markdownPath } from "./markdown";
 import { mapLink, PATHS, type SiteData, type StaticPage } from "./site";
-import { escapeHtml as e } from "./markup";
+import { doors, escapeHtml as e } from "./markup";
 import { STATIC_STYLE } from "./style";
 
 function head(page: StaticPage, site: SiteData): string {
@@ -169,6 +169,7 @@ ${site.capacity ? `<a href="${PATHS[page.lang].capacity}">${ICONS.capacity}${e(p
 ${breadcrumbNav(page)}
 <h1>${e(page.heading)}</h1>
 <div class="lead">${page.lead}</div>
+${page.doors && page.doors.length > 0 ? doors(page.doors) : ""}
 ${sections}
 ${page.citable === false ? "" : citeSection(page, site)}
 </main>

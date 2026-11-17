@@ -3,14 +3,13 @@
  * and links that open the map on what each paragraph describes. Written for someone who has never looked
  * at a grid map; nothing here depends on a data release except the date in the footer.
  */
-import { ArrowLeftRight, Factory, Map as MapIcon, Route, Sun, Zap, type LucideIcon } from "lucide-react";
-import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
+import { ArrowLeftRight, Factory, Map as MapIcon, Route, Sun, Zap } from "lucide-react";
 
 import { TIME_MACHINE_START, type Lang } from "../state/url";
 import type { StoryKey } from "../stories/keys";
 import { STORIES, STORY_KEYS } from "../stories/stories";
 import { callout, doors, e, glossary, list, type Door } from "./markup";
+import { icon } from "./pageDoors";
 import { home, mapLink, other, PATHS, type SiteData, type StaticPage } from "./site";
 
 interface LearnCopy {
@@ -346,9 +345,6 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
   },
 };
 
-/** Decoration before a card's title: the same icon family as the map's header, inline. */
-const icon = (Icon: LucideIcon, size = 18): string =>
-  renderToStaticMarkup(createElement(Icon, { size, strokeWidth: 1.75, "aria-hidden": true }));
 const STORY_ICONS: Record<StoryKey, string> = {
   "put-struje": icon(Route),
   kilovatsat: icon(Zap),

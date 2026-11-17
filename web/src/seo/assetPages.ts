@@ -11,6 +11,7 @@ import { type AssetContext, assetExtras } from "./assetFacts";
 import { assetCapacitySection, type CapacityIndex } from "./capacity";
 import { COPY, type HubKey } from "./copy";
 import { definitions, e, list, scrollable, table } from "./markup";
+import { citiesDoor } from "./pageDoors";
 import { API_PATHS } from "./paths";
 import {
   absolute,
@@ -103,6 +104,7 @@ export function citiesPage(site: SiteData, lang: Lang, register: CityRegister): 
     description: c.description,
     heading: c.heading,
     lead: c.intro.map((p) => `<p>${e(p)}</p>`).join(""),
+    doors: [citiesDoor(lang)],
     sections: [...byCountry, { heading: copy.about.sourcesHeading, html: `<p>${e(c.note)}</p>` }],
     jsonLd: [
       {

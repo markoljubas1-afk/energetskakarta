@@ -2,6 +2,7 @@
  * What a static page is and where it lives (Faza 26 split from pages.ts): the site data, the page model, the
  * addresses of every kind of page, and the JSON-LD the pages share.
  */
+import type { Door } from "./markup";
 import type { CityRegister } from "../data/cities";
 import type { Current } from "../data/current";
 import type { Diff } from "../data/diff";
@@ -91,6 +92,8 @@ export interface StaticPage {
   description: string;
   heading: string;
   lead: string;
+  /** where the page leads, as cards under the lead (pageDoors.ts): mostly views of the map */
+  doors?: Door[];
   sections: Section[];
   jsonLd: Record<string, unknown>[];
   /** ISO instant of the data release the page was made from */

@@ -36,6 +36,7 @@ import {
   type StaticPage,
 } from "./site";
 import { definitions, escapeHtml as e, linkedTable, list, stationsOf } from "./markup";
+import { capacityDoor, solarDoor } from "./pageDoors";
 import { pageWorthy } from "./assetPages";
 
 export const HEP_SOURCE_URL = "https://kapaciteti.hep.hr/";
@@ -187,6 +188,7 @@ function overviewPage(
     title: copy.title,
     description: copy.description,
     heading: copy.heading,
+    doors: [capacityDoor(lang), solarDoor(lang)],
     lead: `<p>${e(
       copy.lead(
         i18n.number(existing.none),
