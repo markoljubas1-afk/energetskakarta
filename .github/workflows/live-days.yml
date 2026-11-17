@@ -17,7 +17,9 @@ concurrency:
 jobs:
   days:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    # one day is as much work as one hourly refresh (7 to 11 minutes at ENTSO-E's request rate); five record
+    # days did not fit in half an hour (the first run, 2026-11-17, was cancelled by the limit)
+    timeout-minutes: 120
     defaults:
       run:
         working-directory: pipeline

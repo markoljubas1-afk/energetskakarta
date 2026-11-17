@@ -461,6 +461,7 @@ def run(args: argparse.Namespace) -> None:
                         logger.warning("record day has no data", extra={"day": day.isoformat()})
                         continue
                     write_json_atomic(days_dir / f"{day.isoformat()}.json", day_document, compact=True)
+                    logger.info("record day fetched", extra={"day": day.isoformat()})
                     fetched_days.append(day)
             days_index = live_records.index_document(day_records, fetched_days, now)
             write_json_atomic(index_file, days_index)
