@@ -33,6 +33,7 @@ import { loadSolar, SOLAR_KEY, solarImage, type SolarLoad } from "../data/solar"
 import { loadRoutes } from "../data/routes";
 import { loadRenewables, RENEWABLES_KEY } from "../data/eurostat";
 import { freshBands, mixNow } from "../data/greenShare";
+import { HOUSEHOLDS_KEY, loadHouseholds } from "../data/households";
 import { aroundOf, loadNearby } from "../data/nearby";
 import { measure } from "../stories/travel";
 import { useTravel } from "../stories/useTravel";
@@ -397,6 +398,10 @@ function Explorer({
   }, [setWantGoal]);
   const [renewables] = useAsync(wantGoal ? RENEWABLES_KEY : null, (signal) =>
     loadRenewables(config.dataBaseUrl, signal),
+  );
+  // the yardstick for the card's megawatts, asked for at the same moment; a failure only leaves it out
+  const [households] = useAsync(wantGoal ? HOUSEHOLDS_KEY : null, (signal) =>
+    loadHouseholds(config.dataBaseUrl, signal),
   );
   // Charging stations take the colour of how green their country's electricity is right now; without
   // fresh figures (or in an embed, which does not load them) they keep their own colour.
@@ -1028,6 +1033,7 @@ function Explorer({
                     onShow={showGenerating}
                     learnHref={PATHS[i18n.lang].learn}
                     renewables={renewables?.status === "ready" ? renewables.value : null}
+                    households={households?.status === "ready" ? households.value : null}
                     transitionHref={PATHS[i18n.lang].transition}
                     onOpen={askForGoal}
                   />

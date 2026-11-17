@@ -184,3 +184,14 @@
 .free a {
   color: var(--accent);
 }
+
+/* what the megawatts mean, against the households' average draw */
+.megawatts {
+  margin: 0 0 10px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.megawatts a {
+  color: var(--accent);
+}

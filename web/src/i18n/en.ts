@@ -245,6 +245,10 @@ export const en: Dictionary = {
     "Share of domestic generation according to ENTSO-E; imports and exports are not counted. Green from {high} %, amber from {mid} %, red below that.",
   greenWhy: "Why does it matter?",
   greenPrice: "Exchange price (day-ahead)",
+  megawattsTimes:
+    "Renewable sources now give {mw} MW: {times} times what all the country's households use on average ({average} MW, {year}). Source:",
+  megawattsShare:
+    "Renewable sources now give {mw} MW: {share}% of what all the country's households use on average ({average} MW, {year}). Source:",
   greenFree:
     "In this hour electricity on the exchange costs nothing, or whoever takes it is paid to. It is a wholesale price; a household bill does not follow it.",
   freeTitle: "{country}: that day the price falls to zero or below.",

@@ -10,6 +10,7 @@ import {
   STALE_AFTER_HOURS,
 } from "../data/greenShare";
 import type { Renewables } from "../data/eurostat";
+import { compare, type Households } from "../data/households";
 import { pricesAt, type Live } from "../data/live";
 import { isOneOf, SCOPE_COUNTRIES, type CountryCode, type Technology } from "../domain";
 import { useI18n } from "../i18n";
@@ -26,6 +27,8 @@ interface Props {
   learnHref: string;
   /** Eurostat's official yearly shares, for the 2030 target under the hour's figure; null: not loaded */
   renewables?: Renewables | null;
+  /** households' yearly electricity use (Eurostat), the yardstick for the megawatts; null: not loaded */
+  households?: Households | null;
   /** Croatia's transition page, which says more about the target */
   transitionHref?: string;
   /** the card has been opened: the moment to ask for the yearly shares */
@@ -45,6 +48,7 @@ export function GreenLight({
   onShow,
   learnHref,
   renewables = null,
+  households = null,
   transitionHref,
   onOpen,
 }: Props) {
@@ -135,6 +139,7 @@ export function GreenLight({
             <dd>{stale ? t("greenStale", { hour, hours: age }) : t("greenFresh", { hour })}</dd>
           </div>
         </dl>
+        {households && <Megawatts households={households} country={country} mw={green.renewableMw} />}
         {price !== null && price <= 0 && (
           <p className={styles.free} role="note">
             {t("greenFree")} <a href={learnHref}>{t("freeWhy")}</a>
@@ -162,5 +167,37 @@ export function GreenLight({
         )}
       </div>
     </PopoverMenu>
+  );
+}
+
+/** From this multiple on, "so many times" reads better than a percentage. */
+const TIMES_FROM = 1.05;
+
+/**
+ * "What do these megawatts mean" (prijedlog vlasnika 2026-11-17): what the country's renewable plants generate
+ * in the hour, held against the average power all its households draw (their yearly use from Eurostat,
+ * divided by the hours of the year). An official yardstick, not an invented appliance; "on average" is part
+ * of the sentence, because households use more in the evening and in winter.
+ */
+function Megawatts({ households, country, mw }: { households: Households; country: string; mw: number }) {
+  const i18n = useI18n();
+  const { t } = i18n;
+  const found = mw > 0 ? compare(households, country, mw) : null;
+  if (!found) return null;
+  const values = {
+    mw: i18n.number(mw, 0),
+    average: i18n.number(found.power.mw, 0),
+    year: found.power.year,
+  };
+  return (
+    <p className={styles.megawatts}>
+      {found.ratio >= TIMES_FROM
+        ? t("megawattsTimes", { ...values, times: i18n.number(found.ratio, 1) })
+        : t("megawattsShare", { ...values, share: Math.round(found.ratio * 100) })}{" "}
+      <a href={households.sourceUrl} target="_blank" rel="noopener noreferrer">
+        Eurostat
+      </a>
+      .
+    </p>
   );
 }

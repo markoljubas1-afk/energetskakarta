@@ -34,6 +34,7 @@ from energymap.entsoe.client import EntsoeClient, EntsoeError
 from energymap.entsoe.energy import TIMEZONE as ENERGY_TZ
 from energymap.entsoe.parse import EntsoeParseError
 from energymap.entsoe.store import EnergyDataError
+from energymap.eurostat import households as eurostat_households
 from energymap.eurostat import renewables as eurostat_renewables
 from energymap.files import read_json, write_json_atomic
 from energymap.gas import agsi, entsog
@@ -312,6 +313,15 @@ def parser() -> argparse.ArgumentParser:
         "eurostat", help="official share of energy from renewable sources (Eurostat nrg_ind_ren)"
     ).add_subparsers(dest="step", required=True)
     for name, text in (
+        ("households-fetch", "fetch households' electricity use into data/eurostat/households.json"),
+        ("households-publish-r2", "publish data/eurostat/households.json to Cloudflare R2"),
+        ("households-publish-dir", "publish data/eurostat/households.json to a local mirror"),
+    ):
+        step = eurostat.add_parser(name, help=text)
+        _data_dir(step)
+        if name == "households-publish-dir":
+            step.add_argument("--out", type=Path, required=True)
+    for name, text in (
         ("fetch", "fetch the shares into data/eurostat/renewables.json"),
         ("publish-r2", "publish data/eurostat/renewables.json to Cloudflare R2"),
         ("publish-dir", "publish data/eurostat/renewables.json to a local mirror"),
@@ -574,6 +584,32 @@ def run(args: argparse.Namespace) -> None:
                     }
                 )
             )
+    elif args.group == "eurostat" and args.step.startswith("households-"):
+        households_file = paths.root / "eurostat" / "households.json"
+        if args.step == "households-fetch":
+            with make_client() as client:
+                households = eurostat_households.collect(client, datetime.now(UTC))
+            eurostat_households.validate(households)
+            write_json_atomic(households_file, households, compact=True)
+            print(
+                json.dumps(
+                    {
+                        "lastYear": eurostat_households.last_year(households),
+                        "missing": households["missing"],
+                    }
+                )
+            )
+        else:
+            if not households_file.exists():
+                raise BuildValidationError(
+                    [f"{households_file} not found; run `energymap eurostat households-fetch` first"]
+                )
+            households_store: publish.ObjectStore = (
+                publish.R2Store.from_env()
+                if args.step == "households-publish-r2"
+                else publish.DirectoryStore(args.out)
+            )
+            eurostat_households.publish_households(households_store, read_json(households_file))
     elif args.group == "eurostat":
         shares_file = paths.root / "eurostat" / "renewables.json"
         if args.step == "fetch":

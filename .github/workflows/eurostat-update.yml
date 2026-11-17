@@ -52,3 +52,13 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: energymap eurostat publish-r2 --data-dir data
+      # Households' yearly electricity use (nrg_d_hhq), the yardstick of the map's megawatt comparison.
+      - name: Fetch households' electricity use
+        run: energymap eurostat households-fetch --data-dir data >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish households' electricity use
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: energymap eurostat households-publish-r2 --data-dir data

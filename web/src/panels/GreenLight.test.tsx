@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import { GREEN_LIVE } from "../data/greenShare.fixture";
+import { compare, householdPower, type Households } from "../data/households";
 import { renderWithI18n } from "../test/render";
 import { GreenLight } from "./GreenLight";
 
@@ -106,5 +107,63 @@ describe("GreenLight", () => {
       "href",
       "/edukacija/",
     );
+  });
+
+  describe("what the megawatts mean", () => {
+    /** Invented: Croatia's households used 6,570 GWh in 2023 (750 MW on average) and nothing is known for 2024. */
+    const HOUSEHOLDS: Households = {
+      version: 1,
+      dataset: "nrg_d_hhq",
+      source: "Eurostat",
+      sourceUrl: "https://ec.europa.eu/eurostat/databrowser/view/nrg_d_hhq/default/table",
+      license: "CC-BY-4.0",
+      unit: "GWh",
+      updated: null,
+      retrievedAt: "2026-11-17T14:00:00+00:00",
+      years: [2022, 2023, 2024],
+      series: { HR: [6400, 6570, null], SI: [3000, 3100, 8784] },
+      missing: [],
+    };
+
+    it("turns a year's use into the average power, with the hours of that very year", () => {
+      expect(householdPower(HOUSEHOLDS, "HR")).toEqual({ year: 2023, mw: 750 });
+      // 2024 is a leap year: 8,784 GWh over 8,784 hours is 1,000 MW
+      expect(householdPower(HOUSEHOLDS, "SI")).toEqual({ year: 2024, mw: 1000 });
+      expect(householdPower(HOUSEHOLDS, "IT")).toBeNull();
+      expect(compare(HOUSEHOLDS, "HR", 900)?.ratio).toBeCloseTo(1.2, 6);
+    });
+
+    it("holds the renewable megawatts against what households use on average, and names the source", async () => {
+      // Croatia's hour: 900 MW from renewables, 1.2 times the households' 750 MW
+      renderWithI18n(
+        <GreenLight
+          live={GREEN_LIVE}
+          now={SOON_AFTER}
+          onShow={vi.fn()}
+          learnHref="/edukacija/"
+          households={HOUSEHOLDS}
+        />,
+      );
+      await userEvent.click(screen.getByRole("button", { name: /Hrvatska: 69 %/ }));
+      const card = document.querySelector("[data-green]");
+      expect(card).toHaveTextContent(
+        "Obnovljivi izvori sada daju 900 MW: 1,2 puta više nego što sva kućanstva u zemlji troše u prosjeku (750 MW, 2023.).",
+      );
+      expect(screen.getByRole("link", { name: "Eurostat" })).toHaveAttribute("href", HOUSEHOLDS.sourceUrl);
+
+      // Slovenia's 100 MW of renewables are a tenth of its households' 1,000 MW: a share, not "times"
+      await userEvent.selectOptions(screen.getByRole("combobox", { name: "Zemlja" }), "SI");
+      expect(document.querySelector("[data-green]")).toHaveTextContent(
+        /Obnovljivi izvori sada daju \d+ MW: \d+ % onoga što sva kućanstva u zemlji troše u prosjeku \(1\.000 MW, 2024\.\)/,
+      );
+    });
+
+    it("says nothing without the yardstick", async () => {
+      renderWithI18n(
+        <GreenLight live={GREEN_LIVE} now={SOON_AFTER} onShow={vi.fn()} learnHref="/edukacija/" />,
+      );
+      await userEvent.click(screen.getByRole("button", { name: /Hrvatska: 69 %/ }));
+      expect(document.querySelector("[data-green]")).not.toHaveTextContent(/kućanstva u zemlji/);
+    });
   });
 });

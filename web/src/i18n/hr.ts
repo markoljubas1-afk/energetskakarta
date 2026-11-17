@@ -242,6 +242,10 @@ export const hr = {
     "Udio u domaćoj proizvodnji prema ENTSO-E-u; uvoz i izvoz nisu uračunati. Zeleno je od {high} %, žuto od {mid} %, ispod toga crveno.",
   greenWhy: "Zašto je to važno?",
   greenPrice: "Cijena na burzi (dan unaprijed)",
+  megawattsTimes:
+    "Obnovljivi izvori sada daju {mw} MW: {times} puta više nego što sva kućanstva u zemlji troše u prosjeku ({average} MW, {year}.). Izvor:",
+  megawattsShare:
+    "Obnovljivi izvori sada daju {mw} MW: {share} % onoga što sva kućanstva u zemlji troše u prosjeku ({average} MW, {year}.). Izvor:",
   greenFree:
     "U ovom satu struja na burzi ne stoji ništa ili se onome tko je uzme još i plaća. To je veleprodajna cijena; račun kućanstva je ne prati.",
   freeTitle: "{country}: taj dan cijena pada na nulu ili ispod nje.",

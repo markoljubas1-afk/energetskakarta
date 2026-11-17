@@ -1269,6 +1269,19 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 - Odgođeno iz istog prijedloga: „prevoditelj megavata” (samo na razini zemlje, uz izvor za usporednu
   veličinu) i „povijesni ekstremi” (dani birani iz podataka; satne podatke treba posebno preuzeti).
 
+### 35-13 „Što ti megavati znače” (prijedlog vlasnika 2026-11-17, „prevoditelj megavata”) — KOD GOTOV 2026-11-17
+- Odstupanje od prijedloga: bez „klima = 2 kW” i bez brojke po elektrani (proizvodnju pojedine elektrane u
+  satu ne znamo). Mjerilo je službeno: godišnja potrošnja struje svih kućanstava zemlje (Eurostat `nrg_d_hhq`,
+  E7000, FC_OTH_HH_E, GWh) podijeljena satima te godine = prosječna snaga koju kućanstva troše.
+- Pipeline: `eurostat/households.py` (preuzimanje, provjera, objava `eurostat/households.json`), naredbe
+  `eurostat households-fetch|publish-*`, koraci u `eurostat-update`. Nula u odgovoru znači da zemlja nije
+  prijavila godinu (Mađarska i Italija 2010.–2014.), pa se čita kao praznina. Stvarni podaci: 2010.–2024.,
+  svih osam zemalja; Hrvatska 2024. 6409 GWh.
+- Web: u kartici semafora rečenica „Obnovljivi izvori sada daju X MW: N puta više nego / P % onoga što sva
+  kućanstva u zemlji troše u prosjeku (Y MW, godina)”, s poveznicom na Eurostat. Učitava se kad se kartica
+  otvori. „U prosjeku” je dio rečenice: kućanstva navečer i zimi troše više.
+- Vlasnici punionica nakon gradnje `20261117T141847Z`: 76 % (bilo 71 %), Hrvatska 64 % (bilo 61 %).
+
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda
   od 400 kV, prag spajanja krajeva 0,3 km (`pipeline/src/energymap/routes.py`). Karta: `stories/travel.ts`,
