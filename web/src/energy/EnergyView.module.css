@@ -235,3 +235,42 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* the ring of sources: one canvas, as wide as the card */
+.ring {
+  width: 100%;
+  overflow: hidden;
+}
+
+.ring canvas {
+  display: block;
+  max-width: 100%;
+}
+
+/* a card's own choice, beside its share menu */
+.inlineSelect {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.inlineSelect select {
+  padding: 4px 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+@media (max-width: 480px) {
+  .inlineSelect span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}

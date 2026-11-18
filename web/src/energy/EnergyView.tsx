@@ -18,14 +18,16 @@ import {
   type EnergySeries,
   type Periods,
 } from "../data/energy";
+import { RENEWABLE } from "../data/greenShare";
 import { isOneOf, type Technology } from "../domain";
 import { useI18n } from "../i18n";
 import { PALETTES, type Theme } from "../map/palette";
 import { ChartShare, chartLink } from "../share/ChartShare";
 import type { Table } from "../share/csv";
 import { ENERGY_AREAS, ENERGY_CHARTS, type AppState, type EnergyChart, type EnergyState } from "../state/url";
-import { compareTable, mixTable, rangeTable, type CsvLabels } from "./csv";
+import { compareTable, mixTable, rangeTable, ringTable, type CsvLabels } from "./csv";
 import styles from "./EnergyView.module.css";
+import { RingChart } from "./RingChart";
 
 // One shared import for both charts: a single request, and a single module instance.
 let chartsModule: Promise<typeof import("./charts")> | null = null;
@@ -352,6 +354,18 @@ function Content({ dataBaseUrl, pointer, periods, energy, update, theme, embedde
         </Card>
       )}
 
+      {shows("ring") && (
+        <SourceRing
+          data={data}
+          techs={techs}
+          areaName={areaName}
+          energy={energy}
+          palette={palette}
+          theme={theme}
+          kit={kit}
+        />
+      )}
+
       {shows("compare") && (
         <YearComparison
           monthly={monthly}
@@ -378,6 +392,169 @@ function Content({ dataBaseUrl, pointer, periods, energy, update, theme, embedde
         />
       )}
     </>
+  );
+}
+
+/** A period counts as reported in full from here (the pipeline writes 1.0 for a complete one). */
+const COMPLETE = 0.999;
+
+export interface RingPeriod {
+  period: string;
+  coverage: number;
+  /** what was generated, largest first; sources that generated nothing are left out */
+  parts: { tech: Technology; mwh: number; share: number }[];
+  total: number;
+  renewableShare: number;
+  load: number | null;
+}
+
+/** The sources of one period of a series; null when nothing was generated in it. */
+export function ringPeriod(
+  data: EnergySeries,
+  techs: readonly Technology[],
+  index: number,
+): RingPeriod | null {
+  const period = data.periods[index];
+  if (period === undefined) return null;
+  const amounts = techs.flatMap((tech) => {
+    const mwh = data.generation[tech]?.[index];
+    return mwh !== null && mwh !== undefined && mwh > 0 ? [{ tech, mwh }] : [];
+  });
+  const total = amounts.reduce((sum, part) => sum + part.mwh, 0);
+  if (!(total > 0)) return null;
+  const renewable = amounts
+    .filter((part) => RENEWABLE.includes(part.tech))
+    .reduce((sum, part) => sum + part.mwh, 0);
+  const loadKnown = (data.loadCoverage[index] ?? 0) >= COMPLETE;
+  return {
+    period,
+    coverage: data.coverage[index] ?? 0,
+    parts: amounts.map((part) => ({ ...part, share: part.mwh / total })).sort((a, b) => b.mwh - a.mwh),
+    total,
+    renewableShare: renewable / total,
+    load: loadKnown ? (data.load[index] ?? null) : null,
+  };
+}
+
+/**
+ * The share of each source in one month or year, as a ring (Faza 41-2). It opens on the latest period that
+ * was reported in full; an incomplete one can be chosen and says that it is incomplete.
+ */
+function SourceRing(props: {
+  data: EnergySeries;
+  techs: Technology[];
+  areaName: string;
+  energy: EnergyState;
+  palette: (typeof PALETTES)[Theme];
+  theme: Theme;
+  kit: ShareKit;
+}) {
+  const { data, techs, areaName, energy, palette, theme, kit } = props;
+  const i18n = useI18n();
+  const { t } = i18n;
+  const [chosen, setChosen] = useState<string | null>(null);
+  const available = data.periods
+    .map((_, index) => ringPeriod(data, techs, index))
+    .filter((each): each is RingPeriod => each !== null)
+    .reverse();
+  const shown =
+    available.find((each) => each.period === chosen) ??
+    available.find((each) => each.coverage >= COMPLETE) ??
+    available[0];
+  const title = t("energyRingTitle");
+  if (!shown) {
+    return (
+      <Card
+        id="ring"
+        title={title}
+        share={{ kit, subtitle: areaName, table: () => ({ header: [], rows: [] }) }}
+      >
+        <p className={styles.muted}>{t("energyNoData")}</p>
+      </Card>
+    );
+  }
+  const rows = shown.parts.map((part) => ({
+    label: i18n.technology(part.tech),
+    colour: palette.technology[part.tech],
+    share: part.share,
+    percent: i18n.percent(part.share),
+    amount: i18n.energy(part.mwh),
+  }));
+  const periodName = i18n.period(shown.period);
+  return (
+    <Card
+      id="ring"
+      title={title}
+      actions={
+        <label className={styles.inlineSelect}>
+          <span>{t("energyPeriod")}</span>
+          <select
+            value={shown.period}
+            onChange={(event) => {
+              setChosen(event.target.value);
+            }}
+          >
+            {available.map((each) => (
+              <option key={each.period} value={each.period}>
+                {i18n.period(each.period)}
+              </option>
+            ))}
+          </select>
+        </label>
+      }
+      share={{
+        kit,
+        subtitle: `${areaName} · ${periodName}`,
+        table: () => ringTable(shown, kit.labels),
+      }}
+    >
+      {energy.show === "chart" ? (
+        <RingChart
+          rows={rows}
+          centre={{ value: i18n.percent(shown.renewableShare), label: t("sourcesRenewable") }}
+          description={t("energyRingDescription", {
+            area: areaName,
+            period: periodName,
+            list: rows.map((row) => `${row.label} ${row.percent}`).join(", "),
+          })}
+          theme={theme}
+        />
+      ) : (
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th scope="col">{t("energyCompareSource")}</th>
+                <th scope="col">MWh</th>
+                <th scope="col">{t("energyShareOfGeneration")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {shown.parts.map((part) => (
+                <tr key={part.tech}>
+                  <th scope="row">
+                    <span
+                      className={styles.dot}
+                      style={{ background: palette.technology[part.tech] }}
+                      aria-hidden="true"
+                    />
+                    {i18n.technology(part.tech)}
+                  </th>
+                  <td>{i18n.energy(part.mwh)}</td>
+                  <td>{i18n.percent(part.share)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <p className={styles.muted}>
+        {t("energyRingTotals", { total: i18n.energy(shown.total) })}
+        {shown.load !== null && ` ${t("energyRingLoad", { load: i18n.energy(shown.load) })}`}
+        {shown.coverage < COMPLETE &&
+          ` ${t("energyIncomplete", { share: i18n.number(shown.coverage * 100) })}.`}
+      </p>
+    </Card>
   );
 }
 

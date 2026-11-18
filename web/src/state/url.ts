@@ -33,7 +33,7 @@ export const ENERGY_SHOWS = ["chart", "table"] as const;
 export type EnergyShow = (typeof ENERGY_SHOWS)[number];
 export const ENERGY_AREAS = ["ALL", ...SCOPE_COUNTRIES] as const;
 /** The energy page's cards, by the id their links open at; with `embed` one of them is shown alone (Faza 23-5). */
-export const ENERGY_CHARTS = ["mix", "compare", "range"] as const;
+export const ENERGY_CHARTS = ["mix", "ring", "compare", "range"] as const;
 export type EnergyChart = (typeof ENERGY_CHARTS)[number];
 export type EnergyArea = (typeof ENERGY_AREAS)[number];
 

@@ -1185,6 +1185,7 @@ function Explorer({
                       : null
                   }
                   now={liveNow}
+                  dataBaseUrl={config.dataBaseUrl}
                 />
               </ErrorBoundary>
             )}

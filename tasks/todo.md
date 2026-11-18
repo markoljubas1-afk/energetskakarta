@@ -1394,6 +1394,48 @@ Redoslijed koji je korisnik potvrdio: 40-1 slika dana → 40-2 detektor ekstrema
   obavijest zauzmu oslobođeni prostor, izbor se pamti u pregledniku. Na mobitelu ručke nema (ondje je list).
 - Usput ispravljeno: obavijest iznad karte je na širinama 721–1200 px ležala preko lijeve ploče.
 
+## Faza 41 — Izvori struje kao slika, dnevni CO₂, top 10 (dogovoreno 2026-11-18)
+Redoslijed koji je korisnik potvrdio („može, radi tim redoslijedom”). Uz to 2026-11-18: natpisi oblika slike
+bez zagrada, kraći natpis pretrage, kartica izvještaja maknuta s Edukacije (ostaje gumb „Izvještaji”).
+
+### 41-1 Večernje povlačenje skladišta i sat na kartici izvora — KOD GOTOV 2026-11-18
+- Cilj: popunjenost skladišta kasni jedan dan umjesto dva. AGSI objavljuje plinski dan navečer (19:30 i
+  23:00 CET), a `gas-daily` je išao samo ujutro. Dodaje se večernji raspored samo za posao `storage`.
+- Sat na kartici „Od čega je struja u mreži”: NIJE dodano, traka uživo iznad kartice već ispisuje isti sat
+  (dvostruki ispis je srušio test `live.spec.ts`).
+
+### 41-2 Slika „Izvori struje” (dan i mjesec) i prsten u „Proizvodnja kroz vrijeme” — KOD GOTOV 2026-11-18
+- Jedan crtež prstenastog grafikona (`share/ring.ts`) za tri mjesta: slika zadnjeg potpunog dana, slika
+  zadnjeg potpunog mjeseca (obje u prozoru slike za dijeljenje, vodoravno i okomito) i nova kartica
+  „Udio izvora” na stranici „Proizvodnja kroz vrijeme” (s vlastitim dijeljenjem kao ostale kartice).
+- Podaci: dnevni i mjesečni zbrojevi ENTSO-E-a koje već objavljujemo (`energy/…`), ne satni sloj uživo.
+  „Potpun” = pokrivenost proizvodnje 100 %; nepotpuni dan/mjesec se preskače i slika nosi svoj datum.
+- Alternativa odbačena: slika današnjeg dana iz sloja uživo (dan nije gotov, zbroj bi bio djelomičan).
+- Rizik: ENTSO-E jučerašnji dan ponekad dopuni kasnije → uzima se zadnji dan koji je potpun.
+
+### 41-3 Rečenica o uvozu i dnevni CO₂ (na istoj slici) — KOD GOTOV 2026-11-18
+- Uvoz/izvoz: usporedba dviju izmjerenih brojki istog dana: potrošnja > proizvodnja → „razliku je pokrio
+  uvoz”; obrnuto → „višak je izvezen ili pohranjen”. Samo kad je potrošnja prijavljena za cijeli dan.
+- CO₂: `data/co2.ts` (`intensity`) nad dnevnom/mjesečnom proizvodnjom, označeno kao izračun (IPCC AR5).
+
+### 41-4 Potrošnja — GOTOVO 2026-11-18 (prikaz na slici i kartici)
+- Već je u dnevnim i mjesečnim podacima (`load`, ukupno opterećenje sustava): nije potrebno novo
+  povlačenje, samo prikaz na slici. Satne potrošnje u sloju uživo i dalje nema (izvan opsega).
+
+### 41-5 Deset najvećih elektrana u Hrvatskoj (Edukacija) — KOD GOTOV 2026-11-18
+- Odjeljak na Edukaciji: deset najvećih elektrana u pogonu po instaliranoj snazi (naziv s poveznicom,
+  vrsta, MW), uz najveću sunčanu i najveću vjetroelektranu i omjer prema najvećoj. Proizvodnju po
+  pojedinoj elektrani nemamo → ne prikazuje se i ne procjenjuje.
+
+Izvedba: `share/ring.ts`, `share/sourcesCard.ts`, `share/sourcesText.ts`, izbor „Što je na slici” u
+`DayCardDialog`; kartica `ring` u `energy/EnergyView.tsx` (`RingChart.tsx`, i u `ENERGY_CHARTS`, pa se
+može ugraditi i podijeliti kao ostale); `seo/topPlants.ts`; `gas-daily` u 19:20 UTC.
+Nije napravljeno (izvan opsega, moguće poslije): poveznica s mjesečnog izvještaja ravno na sliku mjeseca;
+dnevni CO₂ u semaforu (ondje ostaje satni).
+
+Provjera: jedinični testovi za podatke i raspored slike, test u pregledniku za prozor i novu karticu,
+pregled preuzetih slika, zatim provjera uživo.
+
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda
   od 400 kV, prag spajanja krajeva 0,3 km (`pipeline/src/energymap/routes.py`). Karta: `stories/travel.ts`,

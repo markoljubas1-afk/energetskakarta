@@ -27,6 +27,39 @@ test("switching views keeps the map alive and puts the view in the link", async 
   await expect(page.locator('[data-map-status="ready"]')).toBeVisible();
 });
 
+test("the ring of sources is drawn, fits its card and is saved as a picture", async ({ page }, testInfo) => {
+  await openEnergy(page, "&ea=HR");
+  const card = page.getByRole("region", { name: "Udio izvora u proizvodnji" });
+  const ring = card.getByRole("img", { name: /Prstenasti grafikon/ });
+  await ring.scrollIntoViewIfNeeded();
+  await expect(ring).toHaveAccessibleName(/za Hrvatska, pro 2025\.: Hidro \d+(,\d)?\s%/);
+  await expect(card).toContainText(/Proizvedeno: [\d,]+ GWh\. Potrošnja: [\d,]+ GWh\./);
+  // something was drawn (the ring's top is not the card's background), inside the card
+  const drawn = await ring.evaluate((element) => {
+    const canvas = element as HTMLCanvasElement;
+    const context = canvas.getContext("2d");
+    if (!context) return false;
+    const corner = context.getImageData(1, 1, 1, 1).data;
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+    for (let at = 0; at < pixels.length; at += 4) {
+      if (pixels[at] !== corner[0] || pixels[at + 1] !== corner[1] || pixels[at + 2] !== corner[2])
+        return true;
+    }
+    return false;
+  });
+  expect(drawn).toBe(true);
+  const box = await ring.boundingBox();
+  const around = await card.boundingBox();
+  if (!box || !around) throw new Error("no box");
+  expect(box.x).toBeGreaterThanOrEqual(around.x);
+  expect(box.x + box.width).toBeLessThanOrEqual(around.x + around.width + 0.5);
+  await card.screenshot({ path: testInfo.outputPath("ring.png") });
+
+  // another month, and the card's link opens at it
+  await card.getByLabel("Razdoblje").selectOption("2025-06");
+  await expect(ring).toHaveAccessibleName(/lip 2025\./);
+});
+
 test("the table marks incomplete months instead of showing low values", async ({ page }) => {
   await openEnergy(page, "&es=table");
   const table = page.getByRole("table").first();

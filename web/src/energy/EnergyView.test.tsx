@@ -119,6 +119,28 @@ describe("EnergyView", () => {
     expect(compare.dataset.lines).toBe("2025");
   });
 
+  it("shows the sources of the latest complete month as a ring, and of a chosen month", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(routeFetch({ "energy/current.json": POINTER, "periods-bbbbbbbbbbbb.json": PERIODS })),
+    );
+    renderWithI18n(<Harness />);
+    // March is 61 % reported: the card opens on February
+    const ring = await screen.findByRole("img", { name: /Prstenasti grafikon/ });
+    expect(ring).toHaveAccessibleName(
+      /^Prstenasti grafikon udjela izvora u proizvodnji za Sve zemlje s podacima, velj 2025\.: Hidro 92,4\s%, Sunčana 7,6\s%\.$/,
+    );
+    const card = screen.getByRole("region", { name: "Udio izvora u proizvodnji" });
+    expect(card).toHaveTextContent(/Proizvedeno: 11,9 GWh\. Potrošnja: 19 GWh\./);
+    // an incomplete month can be looked at, and says that it is incomplete; its load is not shown
+    await userEvent.selectOptions(within(card).getByLabelText("Razdoblje"), "2025-03");
+    expect(screen.getByRole("img", { name: /Prstenasti grafikon/ })).toHaveAccessibleName(
+      /ožu 2025\.: Hidro 100\s%\.$/,
+    );
+    expect(card).toHaveTextContent(/Proizvedeno: 9 GWh\. Nepotpuno: podaci za 61 % razdoblja\./);
+    expect(within(card).queryByText(/Potrošnja:/)).toBeNull();
+  });
+
   it("shows the same numbers as a table, with incomplete months marked", async () => {
     vi.stubGlobal(
       "fetch",

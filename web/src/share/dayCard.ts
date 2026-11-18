@@ -97,7 +97,8 @@ export const CARD_SIZES: Record<CardFormat, { width: number; height: number }> =
 };
 
 const MARGIN = 64;
-const COLOURS = {
+/** The colours of every picture for sharing: one dark card, whatever the page's theme. */
+export const CARD_COLOURS = {
   top: "#0e1820",
   bottom: "#14323e",
   ink: "#f2f5f7",
@@ -105,6 +106,21 @@ const COLOURS = {
   accent: "#5cc8d7",
   warm: "#f0b45a",
 } as const;
+const COLOURS = CARD_COLOURS;
+
+/** The card's background and the coloured bar along its top. */
+export function paintCard(ctx: CanvasRenderingContext2D, width: number, height: number, bar: number): void {
+  const background = ctx.createLinearGradient(0, 0, 0, height);
+  background.addColorStop(0, COLOURS.top);
+  background.addColorStop(1, COLOURS.bottom);
+  ctx.fillStyle = background;
+  ctx.fillRect(0, 0, width, height);
+  const stripe = ctx.createLinearGradient(0, 0, width, 0);
+  stripe.addColorStop(0, COLOURS.warm);
+  stripe.addColorStop(1, COLOURS.accent);
+  ctx.fillStyle = stripe;
+  ctx.fillRect(0, 0, width, bar);
+}
 
 /** Break a text into lines no wider than `width`, at spaces. */
 export function wrap(measure: (text: string) => number, text: string, width: number): string[] {
@@ -171,16 +187,7 @@ function drawStory(ctx: CanvasRenderingContext2D, text: CardText, font: string):
   const margin = 96;
   const room = width - 2 * margin;
   const measure = (each: string): number => ctx.measureText(each).width;
-  const background = ctx.createLinearGradient(0, 0, 0, height);
-  background.addColorStop(0, COLOURS.top);
-  background.addColorStop(1, COLOURS.bottom);
-  ctx.fillStyle = background;
-  ctx.fillRect(0, 0, width, height);
-  const bar = ctx.createLinearGradient(0, 0, width, 0);
-  bar.addColorStop(0, COLOURS.warm);
-  bar.addColorStop(1, COLOURS.accent);
-  ctx.fillStyle = bar;
-  ctx.fillRect(0, 0, width, 16);
+  paintCard(ctx, width, height, 16);
   ctx.textBaseline = "alphabetic";
   ctx.textAlign = "left";
 
@@ -250,16 +257,7 @@ export function drawDayCard(
     return;
   }
   const { width, height } = CARD_SIZES.wide;
-  const background = ctx.createLinearGradient(0, 0, 0, height);
-  background.addColorStop(0, COLOURS.top);
-  background.addColorStop(1, COLOURS.bottom);
-  ctx.fillStyle = background;
-  ctx.fillRect(0, 0, width, height);
-  const bar = ctx.createLinearGradient(0, 0, width, 0);
-  bar.addColorStop(0, COLOURS.warm);
-  bar.addColorStop(1, COLOURS.accent);
-  ctx.fillStyle = bar;
-  ctx.fillRect(0, 0, width, 10);
+  paintCard(ctx, width, height, 10);
 
   ctx.textBaseline = "alphabetic";
   ctx.textAlign = "left";

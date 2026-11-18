@@ -11,6 +11,7 @@ import { STORIES, STORY_KEYS } from "../stories/stories";
 import { callout, doors, e, glossary, list, type Door } from "./markup";
 import { icon } from "./pageDoors";
 import { home, mapLink, other, PATHS, type SiteData, type StaticPage } from "./site";
+import { topPlantsSection } from "./topPlants";
 
 interface LearnCopy {
   title: string;
@@ -406,6 +407,7 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
         ]
       : []),
   ].map(([title, text, params]): Door => ({ href: mapLink(lang, params), title, text, icon: MAP_ICON }));
+  const top = topPlantsSection(site, lang);
   return {
     path: PATHS[lang].learn,
     lang,
@@ -440,6 +442,8 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
           },
         ])}`,
       },
+      // the ten largest plants of Croatia, when the release knows which plants are in operation
+      ...(top ? [top] : []),
       { heading: copy.termsHeading, html: glossary(copy.terms) },
       { heading: copy.tryHeading, html: `<p>${e(copy.tryIntro)}</p>${doors(tries)}` },
     ],

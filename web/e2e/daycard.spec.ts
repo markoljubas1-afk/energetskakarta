@@ -25,9 +25,9 @@ test("the share menu opens the day card, which is drawn and saved as a PNG", asy
   await page.goto("/");
   await expect(page.locator('[data-map-status="ready"]')).toBeVisible();
   await page.getByRole("button", { name: "Podijeli", exact: true }).click();
-  await page.getByRole("button", { name: "Slika dana: tri brojke za dijeljenje" }).click();
+  await page.getByRole("button", { name: "Slika za dijeljenje: brojke dana, izvori struje" }).click();
 
-  const dialog = page.getByRole("dialog", { name: "GridAtlas: energetska slika dana" });
+  const dialog = page.getByRole("dialog", { name: "Slika za dijeljenje" });
   await expect(dialog).toBeVisible();
   const picture = dialog.getByRole("img");
   await expect(picture).toHaveAccessibleName(
@@ -72,6 +72,34 @@ test("the share menu opens the day card, which is drawn and saved as a PNG", asy
   const upright = await story;
   expect(upright.suggestedFilename()).toMatch(/^gridatlas-dan-[a-z]{2}-story-\d{4}-\d{2}-\d{2}\.png$/);
   await upright.saveAs(testInfo.outputPath("day-card-story.png"));
+
+  // what the electricity of the latest complete day was made of: a ring of sources, from the daily totals
+  const kind = dialog.getByLabel("Što je na slici");
+  await kind.selectOption({ label: "Izvori struje: zadnji potpuni dan" });
+  await expect(picture).toHaveAccessibleName(
+    /^GridAtlas: od čega je bila struja\. Hrvatska · \d+\. \S+ \d{4}\. · cijeli dan: \d+ % obnovljivo; /,
+  );
+  await expect(picture).toHaveAccessibleName(/proizvedeno; .* potrošeno \(opterećenje sustava\)/);
+  const still = await dialog.boundingBox();
+  if (!still) throw new Error("no box");
+  expect(still.y + still.height).toBeLessThanOrEqual(viewport.height);
+  const sources = page.waitForEvent("download");
+  await dialog.getByRole("button", { name: "Preuzmi sliku (PNG)" }).click();
+  const ring = await sources;
+  expect(ring.suggestedFilename()).toMatch(
+    /^gridatlas-izvori-hr-\d{4}-\d{2}-\d{2}-story-\d{4}-\d{2}-\d{2}\.png$/,
+  );
+  await ring.saveAs(testInfo.outputPath("sources-day-story.png"));
+
+  // and of the latest complete month, on the wide picture
+  await kind.selectOption({ label: "Izvori struje: zadnji potpuni mjesec" });
+  await dialog.getByRole("radio", { name: "Vodoravna" }).check();
+  await expect(picture).toHaveAccessibleName(/^GridAtlas: od čega je bila struja\. Hrvatska · \S+ \d{4}\.: /);
+  const monthly = page.waitForEvent("download");
+  await dialog.getByRole("button", { name: "Preuzmi sliku (PNG)" }).click();
+  const month = await monthly;
+  expect(month.suggestedFilename()).toMatch(/^gridatlas-izvori-hr-\d{4}-\d{2}-\d{4}-\d{2}-\d{2}\.png$/);
+  await month.saveAs(testInfo.outputPath("sources-month.png"));
 
   await dialog.getByRole("button", { name: "Zatvori" }).click();
   await expect(dialog).toBeHidden();

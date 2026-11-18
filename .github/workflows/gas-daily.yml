@@ -6,6 +6,10 @@ name: gas-daily
 on:
   schedule:
     - cron: "40 7 * * *"
+    # the evening run is for the storage job: AGSI publishes yesterday's gas day at 19:30 CET, and
+    # waiting for the morning made the map a day later than the source (owner's question 2026-11-18).
+    # The production job runs too and finds the same day again, which changes nothing.
+    - cron: "20 19 * * *"
   workflow_dispatch:
     inputs:
       history_days:
@@ -57,7 +61,8 @@ jobs:
         run: energymap gas publish-r2 --data-dir data
 
   # Gas in storage (GIE AGSI, Faza 37): its own job, so neither source's failure holds back the other.
-  # AGSI publishes a gas day at 19:30 and 23:00 CET, so the morning run has the previous day complete.
+  # AGSI publishes a gas day at 19:30 and 23:00 CET: the evening run (19:20 UTC) picks up the first
+  # publication, the morning run the corrections of the second.
   # Needs the AGSI_API_KEY secret; without it the job says so and publishes nothing.
   storage:
     if: github.event_name != 'schedule' || vars.SCHEDULE_GAS == 'true'

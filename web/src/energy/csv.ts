@@ -3,6 +3,7 @@
  * Values stay as published (MWh, unrounded); periods stay machine-readable ("2026-03", "2026").
  */
 import type { EnergySeries, RangeTotals, YearLine } from "../data/energy";
+import type { RingPeriod } from "./EnergyView";
 import type { Technology } from "../domain";
 import type { Table } from "../share/csv";
 
@@ -21,6 +22,21 @@ export interface CsvLabels {
 }
 
 const percent = (share: number): number => Math.round(share * 10_000) / 100;
+
+/** The sources of one period and their shares of its generation. */
+export function ringTable(period: RingPeriod, labels: CsvLabels): Table {
+  return {
+    header: [labels.source, "MWh", `${labels.shareOfGeneration} (%)`],
+    rows: [
+      ...period.parts.map((part): (string | number)[] => [
+        labels.technology(part.tech),
+        part.mwh,
+        percent(part.share),
+      ]),
+      [labels.total, period.total, 100],
+    ],
+  };
+}
 
 /** Generation by source and load, one row per month or year. */
 export function mixTable(data: EnergySeries, techs: readonly Technology[], labels: CsvLabels): Table {

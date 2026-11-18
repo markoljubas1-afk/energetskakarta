@@ -134,7 +134,16 @@ describe("the day in three figures", () => {
 
     it("draws the three figures with their sources and saves them as a PNG", async () => {
       const clicked = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
-      renderWithI18n(<DayCardDialog open onClose={vi.fn()} live={PRICED} storage={STORAGE} now={NOW} />);
+      renderWithI18n(
+        <DayCardDialog
+          open
+          onClose={vi.fn()}
+          live={PRICED}
+          storage={STORAGE}
+          now={NOW}
+          dataBaseUrl={new URL("https://data.test/")}
+        />,
+      );
 
       const picture = screen.getByRole("img");
       // the hour is written in the reader's own time zone (L-073): match it, do not spell it
@@ -159,7 +168,16 @@ describe("the day in three figures", () => {
       ) {
         names.push(this.download);
       });
-      renderWithI18n(<DayCardDialog open onClose={vi.fn()} live={PRICED} storage={STORAGE} now={NOW} />);
+      renderWithI18n(
+        <DayCardDialog
+          open
+          onClose={vi.fn()}
+          live={PRICED}
+          storage={STORAGE}
+          now={NOW}
+          dataBaseUrl={new URL("https://data.test/")}
+        />,
+      );
       const picture = screen.getByRole("img");
       expect(picture).toHaveAttribute("width", "1200");
       expect(screen.getByRole("radio", { name: "Vodoravna" })).toBeChecked();
@@ -177,7 +195,16 @@ describe("the day in three figures", () => {
     });
 
     it("shows another country with the figures it has, and says so when it has none", async () => {
-      renderWithI18n(<DayCardDialog open onClose={vi.fn()} live={PRICED} storage={null} now={NOW} />);
+      renderWithI18n(
+        <DayCardDialog
+          open
+          onClose={vi.fn()}
+          live={PRICED}
+          storage={null}
+          now={NOW}
+          dataBaseUrl={new URL("https://data.test/")}
+        />,
+      );
       // Croatia was drawn first, with its price: only what is drawn from here on counts
       drawn.length = 0;
       await userEvent.selectOptions(screen.getByRole("combobox", { name: "Zemlja" }), "SI");
@@ -199,6 +226,7 @@ describe("the day in three figures", () => {
           live={PRICED}
           storage={STORAGE}
           now={new Date("2026-11-16T20:30:00+01:00")}
+          dataBaseUrl={new URL("https://data.test/")}
         />,
       );
       expect(screen.queryByRole("img")).toBeNull();
