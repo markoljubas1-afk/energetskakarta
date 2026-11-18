@@ -1439,6 +1439,46 @@ Nije napravljeno (moguće poslije): dnevni CO₂ u semaforu (ondje ostaje satni)
 Provjera: jedinični testovi za podatke i raspored slike, test u pregledniku za prozor i novu karticu,
 pregled preuzetih slika, zatim provjera uživo.
 
+## Faza 42 — Kuća s tokom energije u sunčanom kalkulatoru (PLAN, čeka potvrdu; provjera izvora 2026-11-18)
+Zahtjev korisnika 2026-11-18: uz izračun za krov prikazati kuću s animiranim tokom (sunce → kuća → mreža →
+baterija), klizač doba dana, prekidač „Želim i kućnu bateriju” s udjelom vlastite potrošnje.
+
+### Izvori (provjereno 2026-11-18)
+- Potrošnja kućanstva: HEP ODS, „NKO_KSK2026.xlsx” (Podaci za izračun 2026, oznaka povjerljivosti NE, objava
+  na webu, godišnje). Listovi po mjesecima; za svaki dan 96 vrijednosti po 15 min: „NKO za kućanstva K0
+  pomnožen s faktorom dinamiziranja”, normirano na 1000 kWh godišnje (prosjek ≈ 114 W). Množenjem s upisanom
+  godišnjom potrošnjom dobije se standardna snaga kućanstva u svakoj četvrtini sata.
+  OTVORENO: dopuštenje HEP ODS-a iz 2026-11-08 odnosi se na slobodne kapacitete, ne na NKO → korisnik odlučuje
+  (pitati HEP ODS ili ne).
+- Sunce: PVGIS 5.3 (EU JRC), `seriescalc` s `pvcalculation=1`: satna snaga sustava od 1 kWp za zadano mjesto
+  (PVGIS-SARAH3, vrijeme u UTC). Provjera: Zagreb 2023. = 1255 kWh/kWp, što odgovara brojci na karti.
+  Preglednik ga ne smije zvati (JRC ne dopušta AJAX/CORS) → povlači cjevovod. OTVORENO: potvrditi uvjete
+  ponovne upotrebe (stranica JRC-a kaže da je PVGIS besplatan i bez ograničenja upotrebe rezultata).
+
+### Pristup
+- Cjevovod (`energymap solar-profile`): mreža točaka preko područja karte; za svaku točku prosječna snaga po
+  mjesecu i satu (12 × 24, lokalno vrijeme) iz više godina PVGIS-a, kao OBLIK (udio godišnje proizvodnje).
+  Godišnja količina ostaje ona iz kalkulatora (Global Solar Atlas), da se dvije brojke ne razilaze.
+  `solar/profile.json` + `solar/household.json` (NKO K0: prosjek po mjesecu i četvrtini sata) na R2.
+- Web: `data/homeFlow.ts` (čisti izračun: za mjesec i sat → proizvodnja, potrošnja, u kuću, u mrežu, iz mreže,
+  u/iz baterije; dnevni i godišnji udio vlastite potrošnje), `HomeFlow.tsx` (vlastiti SVG: sunce, krov, kuća,
+  stup mreže, baterija; točkice po putanjama, brzina i gustoća po snazi; `prefers-reduced-motion` → strelice
+  bez gibanja), klizač sata, izbor mjeseca, prekidač baterije s kapacitetom koji korisnik sam bira.
+- Alternativa odbačena: zadani oblici dana bez podataka (procjena prikazana kao izračun); poziv PVGIS-a iz
+  preglednika (zabranjen); Worker kao posrednik (poslužitelj bez potrebe, protivno „static-first”).
+
+### Pretpostavke koje se ispisuju uz prikaz
+- Krov: nagib 35°, jug, gubici 14 % (PVGIS-ove zadane vrijednosti); kućanstvo: standardna krivulja K0, ne
+  vaše stvarno ponašanje; baterija: kapacitet po izboru, bez gubitaka punjenja ILI s navedenim gubitkom
+  (odlučiti), puni se samo viškom sunca.
+- Udio vlastite potrošnje je IZRAČUN iz te dvije krivulje i tako se označava; ne tvrdi se „60 %/80 %”.
+
+### Rizici i provjera
+- NKO je standardna krivulja skupine, ne jednog kućanstva → natpis uz prikaz. Mreža točaka je gruba (oblik se
+  malo mijenja na kratkim udaljenostima; količina dolazi iz atlasa).
+- Testovi: bilanca u svakom satu (proizvodnja + iz mreže + iz baterije = potrošnja + u mrežu + u bateriju),
+  baterija nikad ispod 0 ni iznad kapaciteta, noć bez sunca, test u pregledniku za klizač i prekidač.
+
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda
   od 400 kV, prag spajanja krajeva 0,3 km (`pipeline/src/energymap/routes.py`). Karta: `stories/travel.ts`,
