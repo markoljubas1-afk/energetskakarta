@@ -2736,3 +2736,17 @@ Serija 3 napravljeno (2026-11-15):
   stara verzija ostaje, dobijemo obavijest.
 - Isti objekt u OSM-u i GEM-u → konflacija ga spoji u jedan zapis s oba izvora u `provenance`;
   ako je dvojbeno → ide na ručni pregled umjesto krivog spajanja.
+
+## Faza 43 — Kuća: poveznice s Edukacije i gradova, moderniji crtež — KOD GOTOV 2026-11-18
+Zahtjev korisnika 2026-11-18: „dodaj poveznicu na kuću u edukaciju i dodaj na karticu u registrima gradova”;
+„nisi mogao malo ljepšu, moderniju napraviti?”.
+- [x] 43-1 Adresa koja otvara kuću: `?l=lines,solar&v=…&sun=lat,lng` (`askedSunPoint` u `state/url.ts`). Čita se
+  jednom pri otvaranju, kao `?pic=`; točka na karti je trenutak, ne pogled, pa se ne upisuje natrag u adresu.
+- [x] 43-2 Vrata `homeDoor` (primjer: Zagreb) na Edukaciji ispod sunčanih rečenica i na `/gradovi/`; na stranici
+  pojedinog grada poveznica koja otvara kuću na koordinatama tog grada.
+- [x] 43-3 Crtež: čvorovi u krugovima (paneli, kuća, baterija, mreža) spojeni vodovima koji se uvijek vide;
+  prsten kuće pokazuje iz čega je struja u tom satu, prsten baterije napunjenost, prsten panela snagu prema
+  vrhuncu dana; pozadina se s danom i noći mijenja (sunčev sjaj, mjesec i zvijezde). Brojke i `aria-label` isti.
+  Razmotreno i odbačeno: fotorealistična kuća (teško čitljiva na 300 px, ne prati teme).
+- Provjera: jedinični testovi (url, vrata, HomeFlow), e2e `solar.spec.ts` (i otvaranje preko `?sun=`),
+  `story.spec.ts`, snimka zaslona danju i noću, pa uživo.

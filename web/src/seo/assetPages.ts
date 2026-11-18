@@ -11,7 +11,7 @@ import { type AssetContext, assetExtras } from "./assetFacts";
 import { assetCapacitySection, type CapacityIndex } from "./capacity";
 import { COPY, type HubKey } from "./copy";
 import { definitions, e, list, scrollable, table } from "./markup";
-import { citiesDoor } from "./pageDoors";
+import { citiesDoor, homeDoor, homeLink } from "./pageDoors";
 import { API_PATHS } from "./paths";
 import {
   absolute,
@@ -104,7 +104,7 @@ export function citiesPage(site: SiteData, lang: Lang, register: CityRegister): 
     description: c.description,
     heading: c.heading,
     lead: c.intro.map((p) => `<p>${e(p)}</p>`).join(""),
-    doors: [citiesDoor(lang)],
+    doors: [citiesDoor(lang), homeDoor(lang)],
     sections: [...byCountry, { heading: copy.about.sourcesHeading, html: `<p>${e(c.note)}</p>` }],
     jsonLd: [
       {
@@ -223,6 +223,10 @@ export function assetPage(
   const links = [
     `<a href="${e(mapLink(lang, { sel: hit.id, v: view }))}">${e(copy.asset.openMap)}</a>`,
     ...(osm ? [`<a href="${e(osm)}" rel="noopener">${e(copy.asset.onOsm)}</a>`] : []),
+    // a city's reader lives there: the house with panels, with this place's sun
+    ...(hit.kind === "city"
+      ? [`<a href="${e(homeLink(lang, { lat: hit.lat, lng: hit.lon }))}">${e(copy.asset.homeHere)}</a>`]
+      : []),
     ...extras.links,
     ...(hub && hit.country
       ? [`<a href="${hub.path}">${e(copy.hub.plural[hub.key])} ${e(copy.hub.inCountry[hit.country])}</a>`]

@@ -60,11 +60,15 @@ describe("the learning corner", () => {
       expect(
         stories.map((link) => parseState(new URL(link, "https://karta.test").search, lang).story),
       ).toEqual(playable);
-      // the solar section's own link opens the solar layer; the rest are the "try it" list, in order
+      // the solar section's own links open the solar layer: the calculator, and the house on a place
       const solar = links.filter((link) => link.includes("solar"));
       expect(
         solar.map((link) => [...parseState(new URL(link, "https://karta.test").search, lang).layers]),
-      ).toEqual([["lines", "solar"]]);
+      ).toEqual([
+        ["lines", "solar"],
+        ["lines", "solar"],
+      ]);
+      expect(solar.map((link) => link.includes("sun="))).toEqual([false, true]);
       // the section on negative prices opens the hourly prices; it comes before the "try it" list
       // links out of the site (the roof calculator) are not views of the map
       const external = links.filter((link) => link.startsWith("https://"));
@@ -132,5 +136,9 @@ describe("the learning corner", () => {
     );
     expect(html).toContain('class="callout"');
     expect(html).toContain('<a href="/?l=lines%2Csolar">Izračunaj na karti</a>');
+    // and to the house with panels, opened on an example place
+    expect(html).toMatch(
+      /<a href="\/\?l=lines%2Csolar&amp;v=[^"]+&amp;sun=[^"]+">Kuća s panelima: kamo ide struja<\/a>/,
+    );
   });
 });

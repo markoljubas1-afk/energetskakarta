@@ -78,6 +78,7 @@ import { StatusBar } from "../panels/StatusBar";
 import { TimeBar } from "../panels/TimeBar";
 import { useWelcome, Welcome, type WelcomeEntries } from "../panels/Welcome";
 import {
+  askedSunPoint,
   pathForLang,
   TIME_MACHINE_START,
   serializeState,
@@ -560,7 +561,10 @@ function Explorer({
     () => (solarDoc ? solarImage(solarDoc, config.dataBaseUrl) : null),
     [solarDoc, config.dataBaseUrl],
   );
-  const [solarPoint, setSolarPoint] = useState<{ lng: number; lat: number } | null>(null);
+  // a door on a static page opens the reading, and the house under it, on a place: "?sun=45.81,15.98", once
+  const [solarPoint, setSolarPoint] = useState<{ lng: number; lat: number } | null>(() =>
+    askedSunPoint(window.location.search),
+  );
   // the map needs the release only; the history is the capacity pages'
   const capOn = state.layers.has("capacity");
   const {

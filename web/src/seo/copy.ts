@@ -103,6 +103,8 @@ export interface Copy {
       share: (percent: string, inCountry: string) => string;
     };
     openMap: string;
+    /** on a city's page: the house with panels, opened on that city */
+    homeHere: string;
     onOsm: string;
     coordinates: string;
     sources: string;
@@ -377,6 +379,7 @@ const hr: Copy = {
       share: (percent, inCountry) => `To je ${percent} snage u pogonu zabilježene ${inCountry}.`,
     },
     openMap: "Prikaži na karti",
+    homeHere: "Kuća s panelima na ovom mjestu: kamo ide struja",
     onOsm: "Pogledaj ili ispravi u OpenStreetMapu",
     coordinates: "Položaj",
     sources: "Izvori",
@@ -701,6 +704,7 @@ const en: Copy = {
       share: (percent, inCountry) => `That is ${percent} of the operating capacity recorded ${inCountry}.`,
     },
     openMap: "Show on the map",
+    homeHere: "A house with panels at this place: where the electricity goes",
     onOsm: "View or fix in OpenStreetMap",
     coordinates: "Location",
     sources: "Sources",

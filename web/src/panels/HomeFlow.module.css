@@ -20,9 +20,61 @@
 .drawing {
   display: block;
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   height: auto;
   margin: 0 auto;
+}
+
+.backdrop {
+  fill: var(--surface-2);
+}
+
+/* day and night cross over as the hour moves */
+.sky {
+  transition: opacity 0.4s ease;
+}
+
+.moon {
+  fill: #e9ecf7;
+}
+
+.star {
+  fill: #e9ecf7;
+}
+
+/* a place on the drawing: a disc with a pale ring, and over it the coloured part of the ring */
+.disc {
+  fill: var(--surface);
+  stroke: var(--line);
+  stroke-width: 4;
+  filter: drop-shadow(0 1px 3px rgb(0 0 0 / 0.16));
+}
+
+.arc {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+  transition:
+    stroke-dasharray 0.3s ease,
+    stroke-dashoffset 0.3s ease;
+}
+
+.arc[data-tone="sun"],
+.live[data-tone="sun"],
+.dots[data-tone="sun"] {
+  stroke: var(--flow-sun);
+}
+
+.arc[data-tone="grid"],
+.live[data-tone="grid"],
+.dots[data-tone="grid"] {
+  stroke: var(--flow-grid);
+}
+
+.arc[data-tone="battery"],
+.live[data-tone="battery"],
+.dots[data-tone="battery"] {
+  stroke: var(--flow-battery);
 }
 
 .sun circle {
@@ -31,54 +83,26 @@
 
 .sun line {
   stroke: var(--flow-sun);
-  stroke-width: 2;
+  stroke-width: 1.8;
   stroke-linecap: round;
 }
 
-/* at night the sun is still on the drawing, pale: the place it will come from */
+/* at night the sun stays in its disc, pale: the place the electricity will come from */
 .sun[data-on="false"] {
-  opacity: 0.25;
+  opacity: 0.3;
 }
 
-.house path,
-.house rect {
-  fill: var(--surface-2);
-  stroke: var(--ink);
-  stroke-width: 1.5;
-  stroke-linejoin: round;
-}
-
-.house .door {
-  fill: var(--surface);
-}
-
-.house .panels {
-  fill: var(--flow-grid);
-  stroke: var(--ink);
-  stroke-width: 1;
-}
-
-.pylon path {
+.icon {
   fill: none;
   stroke: var(--ink);
-  stroke-width: 1.5;
+  stroke-width: 1.6;
   stroke-linecap: round;
-}
-
-.battery rect {
-  fill: var(--surface-2);
-  stroke: var(--ink);
-  stroke-width: 1.5;
-}
-
-.battery .charge {
-  fill: var(--flow-battery);
-  stroke: none;
+  stroke-linejoin: round;
 }
 
 .figure {
   fill: var(--ink);
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -94,39 +118,36 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   paint-order: stroke;
-  stroke: var(--surface);
+  stroke: var(--surface-2);
   stroke-width: 3px;
 }
 
 .track {
   fill: none;
   stroke: var(--line);
-  stroke-width: 1.5;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+/* the wire that carries electricity now, tinted under its dots */
+.live {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.4;
 }
 
 /* round dots along the path, moving from its start to its end */
 .dots {
   fill: none;
   stroke-linecap: round;
-  stroke-dasharray: 0.1 11;
+  stroke-dasharray: 0.1 12;
   animation: travel 1.6s linear infinite;
-}
-
-.dots[data-tone="sun"] {
-  stroke: var(--flow-sun);
-}
-
-.dots[data-tone="grid"] {
-  stroke: var(--flow-grid);
-}
-
-.dots[data-tone="battery"] {
-  stroke: var(--flow-battery);
 }
 
 @keyframes travel {
   from {
-    stroke-dashoffset: 11.1;
+    stroke-dashoffset: 12.1;
   }
 
   to {
@@ -138,6 +159,11 @@
 @media (prefers-reduced-motion: reduce) {
   .dots {
     animation: none;
+  }
+
+  .sky,
+  .arc {
+    transition: none;
   }
 }
 

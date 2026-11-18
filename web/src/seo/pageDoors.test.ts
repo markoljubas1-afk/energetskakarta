@@ -1,10 +1,19 @@
 import { describe, expect, it } from "vitest";
 
-import { LANGS, parseState } from "../state/url";
+import { askedSunPoint, LANGS, parseState } from "../state/url";
 import { apiPage, authorPage } from "./aboutPages";
 import { renderPage } from "./html";
 import { pageMarkdown } from "./markdown";
-import { capacityDoor, citiesDoor, countryJsonDoor, learnDoor, mapDoor, solarDoor } from "./pageDoors";
+import {
+  capacityDoor,
+  citiesDoor,
+  countryJsonDoor,
+  homeDoor,
+  homeLink,
+  learnDoor,
+  mapDoor,
+  solarDoor,
+} from "./pageDoors";
 import { PATHS } from "./site";
 import { bareSite } from "./site.fixture";
 
@@ -18,6 +27,14 @@ describe("where the static pages lead", () => {
       expect(layersOf(capacityDoor(lang).href)).toContain("capacity");
       expect(layersOf(solarDoor(lang).href)).toContain("solar");
       expect(learnDoor(lang).href).toBe(PATHS[lang].learn);
+      // the house: the solar layer, the view on the place and the place the reading is taken at
+      const house = new URL(homeDoor(lang).href, "https://karta.test");
+      expect(layersOf(homeDoor(lang).href)).toContain("solar");
+      expect(askedSunPoint(house.search)).toEqual({ lat: 45.815, lng: 15.9819 });
+      expect(parseState(house.search, lang).view).toEqual({ lat: 45.815, lng: 15.9819, zoom: 10 });
+      expect(
+        askedSunPoint(new URL(homeLink(lang, { lat: 43.5081, lng: 16.4402 }), "https://karta.test").search),
+      ).toEqual({ lat: 43.5081, lng: 16.4402 });
       expect(countryJsonDoor(lang).href).toBe("/api/zemlja/hr.json");
       for (const door of [
         mapDoor(lang),
@@ -25,6 +42,7 @@ describe("where the static pages lead", () => {
         citiesDoor(lang),
         capacityDoor(lang),
         solarDoor(lang),
+        homeDoor(lang),
       ]) {
         expect(door.title).not.toBe("");
         expect(door.text).not.toBe("");

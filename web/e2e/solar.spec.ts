@@ -112,6 +112,19 @@ test("the bar folds away and a click on the map brings it back with the reading"
   await expect(bar.getByText("1.250", { exact: true })).toBeVisible();
 });
 
+test("a link with a place opens the reading and the house there, without a click", async ({ page }) => {
+  await page.route("**/local-data/solar/home.json", (route) => route.fulfill({ json: HOME }));
+  await page.route("**/local-data/solar/index.json", (route) => route.fulfill({ json: SOLAR }));
+  await page.route("**/local-data/solar/pvout-*.png", (route) =>
+    route.fulfill({ contentType: "image/png", body: PIXEL }),
+  );
+  await page.goto("/?l=lines,solar&v=45.8150,15.9819,10&sun=45.8150,15.9819");
+  await expect(page.locator('[data-map-status="ready"]')).toBeVisible();
+  const bar = page.getByRole("region", { name: "Sunčani potencijal" });
+  await expect(bar.getByText("1.250", { exact: true })).toBeVisible();
+  await expect(bar.getByRole("img", { name: /paneli daju/ })).toBeVisible();
+});
+
 test("the house under the calculator shows where the electricity goes, hour by hour, with a battery", async ({
   page,
 }, testInfo) => {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  askedSunPoint,
   browserLang,
   canonicalUrl,
   defaultState,
@@ -88,6 +89,21 @@ describe("URL state", () => {
     expect(browserLang(["sl"])).toBe("hr");
     expect(browserLang(["en-US", "hr"])).toBe("en");
     expect(browserLang([])).toBe("hr");
+  });
+});
+
+describe("the place a link asks the solar layer to read", () => {
+  it("reads latitude and longitude, and nothing else", () => {
+    expect(askedSunPoint("?l=lines,solar&sun=45.8150,15.9819")).toEqual({ lat: 45.815, lng: 15.9819 });
+    expect(askedSunPoint("?l=lines,solar")).toBeNull();
+    for (const bad of ["", "45.8", "45.8,15.9,10", "x,15.9", "95,15.9", "45.8,181", "NaN,NaN"]) {
+      expect(askedSunPoint(`?sun=${bad}`)).toBeNull();
+    }
+  });
+
+  it("is a moment, not a view: the address the map writes back does not carry it", () => {
+    const state = parseState("?l=lines,solar&sun=45.8150,15.9819", "hr");
+    expect(serializeState(state, "hr")).not.toContain("sun");
   });
 });
 

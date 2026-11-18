@@ -141,6 +141,21 @@ function parseView(raw: string | null): View | null {
   return { lat, lng, zoom };
 }
 
+/**
+ * The place a link asks the solar layer to read ("?sun=45.8150,15.9819"), as a static page's door to the
+ * house under the roof calculator writes it. A clicked place is a moment, not a view: it is read once when
+ * the page opens and never written back to the address.
+ */
+export function askedSunPoint(search: string): { lng: number; lat: number } | null {
+  const raw = new URLSearchParams(search).get("sun");
+  if (!raw) return null;
+  const parts = raw.split(",").map(Number);
+  const [lat, lng] = parts;
+  if (parts.length !== 2 || lat === undefined || lng === undefined) return null;
+  if (!parts.every(Number.isFinite) || Math.abs(lat) > 85 || Math.abs(lng) > 180) return null;
+  return { lng, lat };
+}
+
 export function parseState(search: string, fallbackLang: Lang): AppState {
   const params = new URLSearchParams(search);
   const defaults = defaultState(fallbackLang);

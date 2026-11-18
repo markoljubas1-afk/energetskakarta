@@ -159,5 +159,13 @@ describe("open JSON", () => {
     // the API page describes the data it serves as a dataset as well
     expect(files.get("api/index.html")).toContain('"@type":"Dataset"');
     expect(files.get("o-karti/index.html")).toContain('type="application/atom+xml"');
+    // the house with panels: a card on the city register, and on a city's page a link that opens it there
+    expect(files.get("gradovi/index.html")).toContain(
+      '<a href="/?l=lines%2Csolar&amp;v=45.8150%2C15.9819%2C10&amp;sun=45.8150%2C15.9819">Kuća s panelima: kamo ide struja</a>',
+    );
+    expect(files.get("objekt/com-1001/index.html")).toContain(
+      '<a href="/?l=lines%2Csolar&amp;v=45.5000%2C16.0000%2C10&amp;sun=45.5000%2C16.0000">Kuća s panelima na ovom mjestu: kamo ide struja</a>',
+    );
+    expect(files.get("objekt/osm-way-109/index.html")).not.toContain("sun=");
   });
 });

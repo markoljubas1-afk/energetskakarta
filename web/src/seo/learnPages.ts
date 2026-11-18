@@ -10,7 +10,7 @@ import { TIME_MACHINE_START, type Lang } from "../state/url";
 import type { StoryKey } from "../stories/keys";
 import { STORIES, STORY_KEYS } from "../stories/stories";
 import { callout, doors, e, glossary, list, type Door } from "./markup";
-import { icon } from "./pageDoors";
+import { homeDoor, icon } from "./pageDoors";
 import { home, mapLink, other, PATHS, type SiteData, type StaticPage } from "./site";
 import { topPlantsSection } from "./topPlants";
 
@@ -515,7 +515,7 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
       { heading: copy.unitsHeading, html: list(copy.units.map(e)) },
       {
         heading: copy.solarHeading,
-        html: `${list(copy.solar.map(e))}${callout(copy.roof, { href: mapLink(lang, { l: "lines,solar" }), label: copy.roofAction }, SUN_ICON)}`,
+        html: `${list(copy.solar.map(e))}${callout(copy.roof, { href: mapLink(lang, { l: "lines,solar" }), label: copy.roofAction }, SUN_ICON)}${doors([homeDoor(lang)])}`,
       },
       {
         heading: copy.timingHeading,
