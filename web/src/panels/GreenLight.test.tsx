@@ -255,7 +255,8 @@ describe("GreenLight", () => {
       const card = document.querySelector("[data-green]");
       if (!(card instanceof HTMLElement)) throw new Error("the card is in the document");
       // hydro 600, wind 300, gas 300 MW: 137 g, shown to the nearest ten
-      expect(card).toHaveTextContent("Ugljični otisak proizvodnjeoko 140 g CO₂/kWh");
+      expect(card).toHaveTextContent("Ugljični otisak proizvodnje (izračun)oko 140 g CO₂/kWh");
+      expect(card).toHaveTextContent("Kako je otisak izračunat i što nije uračunato");
       expect(card).toHaveTextContent("Ugljični otisak je izračun, nije mjerenje");
       expect(card).toHaveTextContent("vjerojatno podcijenjen");
       expect(within(card).getByRole("link", { name: /IPCC AR5/ })).toHaveAttribute(

@@ -207,3 +207,23 @@
   color: var(--ink);
   font-weight: 600;
 }
+
+/* how the footprint is calculated and what it leaves out: one tap away, so the card stays short on a phone */
+.how {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.how summary {
+  cursor: pointer;
+}
+
+.how p {
+  margin: 6px 0 0;
+}
+
+.how a {
+  color: inherit;
+}

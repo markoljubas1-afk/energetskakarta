@@ -244,7 +244,8 @@ export const hr = {
     "Udio u domaćoj proizvodnji prema ENTSO-E-u; uvoz i izvoz nisu uračunati. Zeleno je od {high} %, žuto od {mid} %, ispod toga crveno.",
   greenWhy: "Zašto je to važno?",
   greenPrice: "Cijena na burzi (dan unaprijed)",
-  carbonLabel: "Ugljični otisak proizvodnje",
+  carbonLabel: "Ugljični otisak proizvodnje (izračun)",
+  carbonHow: "Kako je otisak izračunat i što nije uračunato",
   carbonValue: "oko {grams} g CO₂/kWh",
   carbonShow: "Pokaži elektrane u pogonu: {fuels}",
   carbonNote:

@@ -247,7 +247,8 @@ export const en: Dictionary = {
     "Share of domestic generation according to ENTSO-E; imports and exports are not counted. Green from {high} %, amber from {mid} %, red below that.",
   greenWhy: "Why does it matter?",
   greenPrice: "Exchange price (day-ahead)",
-  carbonLabel: "Carbon footprint of generation",
+  carbonLabel: "Carbon footprint of generation (calculated)",
+  carbonHow: "How the footprint is calculated and what is left out",
   carbonValue: "about {grams} g CO₂/kWh",
   carbonShow: "Show operating plants: {fuels}",
   carbonNote:

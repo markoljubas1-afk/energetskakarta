@@ -461,3 +461,14 @@
 - Rule going forward: u pipelineu lokalno vrtjeti točno ono što vrti `.github/workflows/pipeline.yml`
   (`ruff check`, `ruff format --check`, `mypy src tests`, `pytest`). Nakon slanja koje dira `pipeline/`
   pogledati i rezultat workflowa `pipeline`, ne samo `web`.
+
+### L-078 — Kartica je narasla preko zaslona mobitela, a lokalni e2e to nije uhvatio (2026-11-18)
+- What happened: redak i napomena o ugljičnom otisku produljili su karticu semafora; u CI-ju je na mobilnom
+  profilu pao test „cilj 2030. je cijeli na zaslonu” (dno na 900 px, zaslon 839 px) i objava je stala. Isti
+  test je lokalno prošao jer lokalni Chrome daje drugu visinu prikaza.
+- Root cause: dodavao sam tekst u karticu koja je već bila na rubu visine telefona, bez mjerenja visine;
+  test je provjeravao jedno područje umjesto samog izbornika.
+- Rule going forward: svaki novi sadržaj u kartici statusne trake ide ili umjesto nečega ili iza
+  `<details>`; nakon dodavanja izmjeri visinu kartice na 412×839. Test provjerava da je izbornik na zaslonu
+  i da se do sadržaja može doći pomicanjem unutar njega.
+

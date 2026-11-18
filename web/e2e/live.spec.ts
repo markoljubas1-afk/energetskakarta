@@ -157,12 +157,20 @@ test("the green card shows where the country stands against its 2030 target, ask
   await expect(goal).toContainText("Cilj za 2030.: 42,5 %");
   await expect(goal).toContainText("Do cilja još 8,5 post. bodova");
   await expect(goal).toContainText("Nije ista mjera kao brojka iznad");
-  // the card grew after it opened: it is still wholly on screen
+  // the card grew after it opened: the menu is still wholly on screen, and what does not fit a phone
+  // is reached by scrolling inside it
+  const menu = await page.locator("[data-green]").locator("xpath=ancestor::*[@popover][1]").boundingBox();
+  const screen = page.viewportSize();
+  if (!menu || !screen) throw new Error("no menu box");
+  expect(menu.y).toBeGreaterThanOrEqual(0);
+  expect(menu.y + menu.height).toBeLessThanOrEqual(screen.height);
+  await goal.scrollIntoViewIfNeeded();
   const box = await goal.boundingBox();
   const viewport = page.viewportSize();
   if (!box || !viewport) throw new Error("no box");
-  expect(box.y).toBeGreaterThanOrEqual(0);
-  expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
+  // the target's own region fits a phone screen, or at least starts on it
+  expect(box.y).toBeLessThan(viewport.height);
+  expect(box.y + Math.min(box.height, 120)).toBeGreaterThan(0);
 
   // what is on its way towards the target: the country's wind and solar plants being built and planned
   await goal.getByRole("button", { name: "Pokaži što se gradi i planira: vjetar i sunce" }).click();

@@ -200,13 +200,16 @@ export function GreenLight({
           </button>
         )}
         {carbon && (
-          <p className={styles.note}>
-            {t("carbonNote")}{" "}
-            <a href={FACTORS_SOURCE.url} target="_blank" rel="noopener noreferrer">
-              {FACTORS_SOURCE.name}
-            </a>
-            .
-          </p>
+          <details className={styles.how}>
+            <summary>{t("carbonHow")}</summary>
+            <p>
+              {t("carbonNote")}{" "}
+              <a href={FACTORS_SOURCE.url} target="_blank" rel="noopener noreferrer">
+                {FACTORS_SOURCE.name}
+              </a>
+              .
+            </p>
+          </details>
         )}
         <p className={styles.note}>
           {t("greenNote", { mid: percent(BAND_LIMITS.mid), high: percent(BAND_LIMITS.high) })}{" "}
