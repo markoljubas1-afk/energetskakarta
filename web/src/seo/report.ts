@@ -143,16 +143,7 @@ function briefSection(site: SiteData, lang: Lang, ctx: Context, month: string): 
   if (row.share !== null) {
     const yearAgo = hr?.get(shiftMonth(month, -12));
     const before = usable(yearAgo) ? yearAgo.share : null;
-    // compared as the two shares are shown, in whole percents
-    const change = before === null ? null : Math.round(row.share * 100) - Math.round(before * 100);
-    points.push(
-      copy.renewable(
-        i18n.percent(row.share),
-        before === null || change === null || change === 0
-          ? null
-          : { points: i18n.number(Math.abs(change)), more: change > 0, yearAgo: i18n.percent(before) },
-      ),
-    );
+    points.push(copy.renewable(i18n.percent(row.share), before === null ? null : i18n.percent(before)));
   }
   const co2 = rowIntensity(row);
   if (co2 !== null) points.push(copy.co2(i18n.number(Math.round(co2))));

@@ -82,8 +82,8 @@ interface ReportCopy {
   brief: {
     heading: string;
     main: (source: string, share: string) => string;
-    /** `change`: percentage points against the same month a year earlier, with that month's share */
-    renewable: (share: string, change: { points: string; more: boolean; yearAgo: string } | null) => string;
+    /** `yearAgo`: the share in the same month a year earlier, when that month is complete */
+    renewable: (share: string, yearAgo: string | null) => string;
     co2: (grams: string) => string;
     /** the country of the region with the highest renewable share that month */
     top: (country: string, share: string) => string;
@@ -145,8 +145,8 @@ export const REPORT_COPY: Record<Lang, ReportCopy> = {
     brief: {
       heading: "Ukratko",
       main: (source, share) => `Glavni izvor struje u Hrvatskoj: ${source} (${share} proizvodnje).`,
-      renewable: (share, change) =>
-        `Obnovljivi izvori dali su ${share} proizvodnje${change ? `, ${change.points} post. bodova ${change.more ? "više" : "manje"} nego isti mjesec godinu ranije (${change.yearAgo})` : ""}.`,
+      renewable: (share, yearAgo) =>
+        `Obnovljivi izvori dali su ${share} proizvodnje${yearAgo ? ` (isti mjesec godinu ranije: ${yearAgo})` : ""}.`,
       co2: (grams) =>
         `CO₂ intenzitet proizvodnje: oko ${grams} g/kWh (izračun iz faktora IPCC-a, ne mjerenje).`,
       top: (country, share) => `Najveći udio obnovljivih u regiji: ${country} (${share}).`,
@@ -224,8 +224,8 @@ export const REPORT_COPY: Record<Lang, ReportCopy> = {
     brief: {
       heading: "In brief",
       main: (source, share) => `Croatia's main source of electricity: ${source} (${share} of generation).`,
-      renewable: (share, change) =>
-        `Renewables gave ${share} of generation${change ? `, ${change.points} percentage points ${change.more ? "more" : "less"} than the same month a year earlier (${change.yearAgo})` : ""}.`,
+      renewable: (share, yearAgo) =>
+        `Renewables gave ${share} of generation${yearAgo ? ` (the same month a year earlier: ${yearAgo})` : ""}.`,
       co2: (grams) =>
         `CO₂ intensity of generation: about ${grams} g/kWh (calculated from IPCC factors, not measured).`,
       top: (country, share) => `Highest renewable share in the region: ${country} (${share}).`,

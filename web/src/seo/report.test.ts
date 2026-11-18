@@ -153,7 +153,7 @@ describe("monthly reports", () => {
     const brief = plain(page.sections[0]?.html ?? "");
     expect(brief).toContain("<li>Glavni izvor struje u Hrvatskoj: Hidro (60 % proizvodnje).</li>");
     expect(brief).toContain(
-      "<li>Obnovljivi izvori dali su 90 % proizvodnje, 35 post. bodova više nego isti mjesec godinu ranije (55 %).</li>",
+      "<li>Obnovljivi izvori dali su 90 % proizvodnje (isti mjesec godinu ranije: 55 %).</li>",
     );
     expect(brief).toContain("oko 70 g/kWh (izračun iz faktora IPCC-a, ne mjerenje)");
     expect(brief).toContain("<p>Slobodno dijeljenje uz navođenje izvora: gridatlas.eu.</p>");
