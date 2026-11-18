@@ -1386,11 +1386,13 @@ Redoslijed koji je korisnik potvrdio: 40-1 slika dana → 40-2 detektor ekstrema
 - Do izvještaja se sada dolazi: gumb „Izvještaji” u zaglavlju karte i u navigaciji statičnih stranica, te
   kartica zadnjeg izvještaja na vrhu Edukacije (zahtjev korisnika 2026-11-18: „ne kužim kako doći do izvještaja”).
 
-### 40-4 Zahtjevi zaprimljeni 2026-11-18, još nisu počeli
-- Slika dana i u okomitom formatu za story (1080×1920), uz postojeći vodoravni: dvije opcije.
-- Lijeva ploča (filtri i pregled) na računalu se mora moći suziti/sklopiti da ne smeta pregledu karte.
-- Ugljični otisak u kartici semafora (35-17) sada koristi isti izračun kao izvještaji (`data/co2.ts`):
-  nafta 650 i „ostalo” 700 g/kWh su pretpostavke i tako pišu u kartici (ranije: izostavljeni). L-079.
+### 40-4 Okomita slika dana i sklapanje lijeve ploče — KOD GOTOV 2026-11-18
+- Slika dana ima dva oblika: vodoravni 1200×630 (objave, poveznice) i okomiti 1080×1920 (story); izbor u
+  prozoru, okomita se sprema kao `…-story-….png`. S tri brojke okomiti raspored je zbijeniji da sve stane
+  iznad retka s izvorima.
+- Lijeva ploča (filtri, pregled) na računalu ima ručku uz gornji desni kut: sklapa ploču, statusna traka i
+  obavijest zauzmu oslobođeni prostor, izbor se pamti u pregledniku. Na mobitelu ručke nema (ondje je list).
+- Usput ispravljeno: obavijest iznad karte je na širinama 721–1200 px ležala preko lijeve ploče.
 
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda

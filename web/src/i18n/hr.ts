@@ -29,6 +29,8 @@ export const hr = {
   changesLocate: "Prikaži na karti",
   changesRemovedHint: "Uklonjeno iz podataka; karta pokazuje gdje je bilo.",
   changesFailed: "Popis promjena nije dostupan.",
+  sideFold: "Sakrij filtre i pregled",
+  sideUnfold: "Prikaži filtre i pregled",
   panelLabel: "Postavke karte",
   layers: "Slojevi",
   layer_lines: "Dalekovodi i kabeli",

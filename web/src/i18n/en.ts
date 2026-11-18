@@ -29,6 +29,8 @@ export const en: Dictionary = {
   changesLocate: "Show on map",
   changesRemovedHint: "Removed from the data; the map shows where it was.",
   changesFailed: "The change report is not available.",
+  sideFold: "Hide the filters and overview",
+  sideUnfold: "Show the filters and overview",
   panelLabel: "Map settings",
   layers: "Layers",
   layer_lines: "Lines and cables",

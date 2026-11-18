@@ -1,4 +1,12 @@
-import { ChevronDown, ChevronUp, ExternalLink, SlidersHorizontal, X } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  SlidersHorizontal,
+  X,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { AppConfig } from "../config";
@@ -133,6 +141,25 @@ const gasFeaturesOf = (loaded: Ready<GasLoad>) => gasOverlay(loaded.gas);
 const geoFeaturesOf = (loaded: Ready<GeothermalLoad>) => geothermalFeatures(loaded.geothermal);
 const solarOf = (loaded: Ready<SolarLoad>) => loaded.solar;
 const capFeaturesOf = (loaded: Ready<HepLoad>) => capacityOverlay(loaded.release);
+
+const SIDE_FOLDED_KEY = "gridatlas-side-folded";
+
+function sideWasFolded(): boolean {
+  try {
+    return window.localStorage.getItem(SIDE_FOLDED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function rememberSideFolded(folded: boolean): void {
+  try {
+    if (folded) window.localStorage.setItem(SIDE_FOLDED_KEY, "1");
+    else window.localStorage.removeItem(SIDE_FOLDED_KEY);
+  } catch {
+    // no storage: the panel is simply open again on the next visit
+  }
+}
 
 export function App({ config }: { config: AppConfig }) {
   const [state, setState] = useUrlState();
@@ -332,6 +359,12 @@ function Explorer({
     [onMapReady],
   );
   const [sheetOpen, setSheetOpen] = useState(false);
+  // On a computer the panel of filters can be folded away to leave the map to itself; the choice is kept.
+  const [sideFolded, setSideFolded] = useState(sideWasFolded);
+  const foldSide = (folded: boolean): void => {
+    setSideFolded(folded);
+    rememberSideFolded(folded);
+  };
   // What a guided story changes is remembered while no story plays, and given back when it ends.
   const [beforeStory, setBeforeStory] = useState<Before>(() => remember(state));
   if (state.story === null && !sameBefore(beforeStory, state)) setBeforeStory(remember(state));
@@ -930,6 +963,7 @@ function Explorer({
               id="settings-panel"
               className={styles.side}
               data-open={sheetOpen}
+              data-folded={sideFolded}
               aria-label={t("panelLabel")}
             >
               <ErrorBoundary area="side-panel" fallback={panelFallback}>
@@ -948,6 +982,27 @@ function Explorer({
                 />
               </ErrorBoundary>
             </aside>
+          )}
+
+          {!state.embed && (
+            <button
+              type="button"
+              className={styles.sideFold}
+              data-folded={sideFolded}
+              aria-expanded={!sideFolded}
+              aria-controls="settings-panel"
+              aria-label={t(sideFolded ? "sideUnfold" : "sideFold")}
+              title={t(sideFolded ? "sideUnfold" : "sideFold")}
+              onClick={() => {
+                foldSide(!sideFolded);
+              }}
+            >
+              {sideFolded ? (
+                <PanelLeftOpen size={18} strokeWidth={1.75} aria-hidden="true" />
+              ) : (
+                <PanelLeftClose size={18} strokeWidth={1.75} aria-hidden="true" />
+              )}
+            </button>
           )}
 
           {story && !state.selected && (
