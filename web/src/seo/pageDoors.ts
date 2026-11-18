@@ -3,16 +3,7 @@
  * the reader on to it). Each door is a card under the page's lead: what it opens and what will be seen there.
  * The words live here, next to the links they describe, in both languages.
  */
-import {
-  Building2,
-  FileText,
-  GraduationCap,
-  Map as MapIcon,
-  Rss,
-  Sun,
-  Zap,
-  type LucideIcon,
-} from "lucide-react";
+import { Building2, GraduationCap, Map as MapIcon, Rss, Sun, Zap, type LucideIcon } from "lucide-react";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -31,7 +22,6 @@ const ICONS = {
   capacity: icon(Zap),
   sun: icon(Sun),
   feed: icon(Rss),
-  report: icon(FileText),
 };
 
 type Words = Record<Lang, [title: string, text: string]>;
@@ -120,15 +110,3 @@ export const countryJsonDoor = (lang: Lang): Door =>
     "/api/zemlja/hr.json",
     ICONS.feed,
   );
-
-/** The latest monthly report (owner's request 2026-11-18: the reports were hard to find). */
-export const reportDoor = (lang: Lang, month: string, name: string): Door => ({
-  href: PATHS[lang].report(month),
-  title: lang === "hr" ? `Mjesečni izvještaj: ${name}` : `Monthly report: ${name}`,
-  text:
-    lang === "hr"
-      ? "mjesec u nekoliko natuknica: glavni izvor struje, udio obnovljivih, cijena na burzi i zalihe plina; slobodno za dijeljenje"
-      : "the month in a few points: the main source of electricity, the renewable share, the exchange price and gas in storage; free to share",
-  icon: ICONS.report,
-  action: lang === "hr" ? "Otvori izvještaj" : "Open the report",
-});

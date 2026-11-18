@@ -59,7 +59,7 @@ test("the share menu opens the day card, which is drawn and saved as a PNG", asy
   await file.saveAs(testInfo.outputPath("day-card.png"));
 
   // the upright shape for a story: the same figures on a 1080 × 1920 picture, under its own file name
-  await dialog.getByRole("radio", { name: "Okomita (story)" }).check();
+  await dialog.getByRole("radio", { name: "Okomita" }).check();
   await expect(picture).toHaveAttribute("height", "1920");
   const shown = await picture.boundingBox();
   const fits = await dialog.boundingBox();

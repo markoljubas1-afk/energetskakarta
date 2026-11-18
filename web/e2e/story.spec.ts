@@ -55,9 +55,7 @@ test("the learning page links to the stories", async ({ page }) => {
   );
   // a story card says what it does
   await expect(page.locator(".doors em", { hasText: "Pokreni priču" }).first()).toBeVisible();
-  // the latest monthly report has a card of its own under the lead, and the navigation leads to the list
-  const report = page.locator(".doors a", { hasText: /^Mjesečni izvještaj: / }).first();
-  await expect(report).toHaveAttribute("href", /^\/izvjestaji\/\d{4}-\d{2}\/$/);
+  // the navigation leads to the list of monthly reports
   await expect(
     page.getByRole("navigation", { name: "Glavna navigacija" }).getByRole("link", { name: "Izvještaji" }),
   ).toHaveAttribute("href", "/izvjestaji/");

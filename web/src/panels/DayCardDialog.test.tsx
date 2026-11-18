@@ -162,10 +162,10 @@ describe("the day in three figures", () => {
       renderWithI18n(<DayCardDialog open onClose={vi.fn()} live={PRICED} storage={STORAGE} now={NOW} />);
       const picture = screen.getByRole("img");
       expect(picture).toHaveAttribute("width", "1200");
-      expect(screen.getByRole("radio", { name: "Vodoravna (objave, poveznice)" })).toBeChecked();
+      expect(screen.getByRole("radio", { name: "Vodoravna" })).toBeChecked();
 
       drawn.length = 0;
-      await userEvent.click(screen.getByRole("radio", { name: "Okomita (story)" }));
+      await userEvent.click(screen.getByRole("radio", { name: "Okomita" }));
       expect(picture).toHaveAttribute("width", "1080");
       expect(picture).toHaveAttribute("height", "1920");
       // the same words, drawn again for the new shape
