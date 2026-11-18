@@ -162,9 +162,11 @@ describe("the ring", () => {
 
 describe("the drawing", () => {
   it.each(CARD_FORMATS)("writes every text inside the %s picture", (format) => {
-    const month = latestMonth(PERIODS, "HR");
-    if (!month) throw new Error("no month");
-    const text = sourcesText({ ...month, loadMwh: 1200000 }, hr);
+    // the fullest picture: six rows of sources, three figures and the sentence
+    const day = latestDay([DAYS], "HR");
+    if (!day) throw new Error("no day");
+    const text = sourcesText({ ...day, loadMwh: 52000 }, hr);
+    expect(text.legend).toHaveLength(6);
     const written: { text: string; x: number; y: number }[] = [];
     let size = 10;
     let align = "left";
@@ -202,13 +204,31 @@ describe("the drawing", () => {
     drawSourcesCard(ctx as unknown as CanvasRenderingContext2D, text, "sans-serif", format);
     const { width, height } = CARD_SIZES[format];
     const all = written.map((each) => each.text).join(" ");
-    for (const part of ["Hidro", "70 %", "obnovljivo", "1,2", "TWh", "≈ 160", "gridatlas.eu", "uvoz."]) {
+    for (const part of [
+      "Hidro",
+      "40 %",
+      "ostali izvori",
+      "obnovljivo",
+      "52",
+      "GWh",
+      "≈ ",
+      "gridatlas.eu",
+      "uvoz.",
+    ]) {
       expect(all).toContain(part);
     }
     for (const each of written) {
       expect(each.y).toBeLessThan(height);
       expect(each.x + each.text.length * 4).toBeLessThan(width);
     }
+    // the sentence ends a clear line above the footer
+    const sentenceEnd = Math.max(
+      ...written.filter((each) => each.text.endsWith("uvoz.")).map((each) => each.y),
+    );
+    const footerStart = Math.min(
+      ...written.filter((each) => each.text.startsWith("Izvor:")).map((each) => each.y),
+    );
+    expect(footerStart - sentenceEnd).toBeGreaterThanOrEqual(format === "story" ? 60 : 30);
     // nothing is written below the footer, and the footer is the last text down the picture
     const lowest = written.reduce((low, each) => (each.y > low.y ? each : low));
     expect(lowest.text).toContain("gridatlas.eu");

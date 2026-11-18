@@ -484,3 +484,8 @@
   korisniku što već postoji. Svaka promjena u `.github/workflows` ili `pipeline/` → cijeli `pytest -q`
   (šest poznatih Windows padova se zanemaruje), ne odabrani moduli.
 
+
+### L-080 — Sliku provjeriti na najpunijem slučaju, ne na testnim podacima (2026-11-18)
+- What happened: okomita slika „Izvori struje” objavljena je s rečenicom o uvozu koja dodiruje redak s izvorom. Lokalno je izgledala dobro jer testni podaci imaju četiri izvora, a stvarni dan šest redaka legende. Uz to je linija „Podaci za sat” na kartici izvora udvostručila sat koji traka uživo već ispisuje i srušila `live.spec.ts`.
+- Root cause: raspored sam gledao samo na slici iz testnih podataka; test crteža provjeravao je da je tekst unutar slike, ne i da se dijelovi ne dodiruju. Liniju sam dodao bez pogleda na to gdje kartica stoji.
+- Rule going forward: test crteža slike radi se na najpunijem mogućem sadržaju (najviše redaka, sve brojke, najduža rečenica) i provjerava razmak među dijelovima. Prije dodavanja teksta u karticu pogledati što već piše oko nje.

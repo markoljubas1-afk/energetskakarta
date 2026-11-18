@@ -279,13 +279,15 @@ function drawStory(ctx: CanvasRenderingContext2D, text: SourcesText, font: strin
   ctx.font = `400 39px ${font}`;
   ctx.fillText(text.subtitle, margin, y + 10);
 
-  const centre = { x: width / 2, y: y + 330 };
-  drawRing(ctx, centre, { outer: 230, inner: 148 }, text.legend, top);
-  drawCentre(ctx, text.centre, font, centre, { value: 88, label: 34 });
-  const legendTop = centre.y + 230 + 90;
-  drawLegend(ctx, text.legend, font, { x: margin, y: legendTop, width: room }, { text: 38, row: 62 });
+  const centre = { x: width / 2, y: y + 290 };
+  drawRing(ctx, centre, { outer: 200, inner: 128 }, text.legend, top);
+  drawCentre(ctx, text.centre, font, centre, { value: 80, label: 32 });
+  // six rows of sources, three figures and a sentence of two lines have to end clear of the footer
+  const legendRow = 58;
+  const legendTop = centre.y + 200 + 76;
+  drawLegend(ctx, text.legend, font, { x: margin, y: legendTop, width: room }, { text: 38, row: legendRow });
 
-  const figuresTop = legendTop + text.legend.length * 62 + 70;
+  const figuresTop = legendTop + text.legend.length * legendRow + 64;
   const column = room / Math.max(text.figures.length, 1);
   text.figures.forEach((figure, at) => {
     drawFigure(
@@ -299,7 +301,7 @@ function drawStory(ctx: CanvasRenderingContext2D, text: SourcesText, font: strin
   if (text.sentence) {
     ctx.fillStyle = ink;
     ctx.font = `500 34px ${font}`;
-    let line = figuresTop + 170;
+    let line = figuresTop + 150;
     for (const each of wrap(measure, text.sentence, room)) {
       ctx.fillText(each, margin, line);
       line += 46;
