@@ -171,13 +171,20 @@ function drawCentre(
   font: string,
   at: { x: number; y: number },
   size: { value: number; label: number },
+  /** the hole's width the two lines have to stay inside */
+  room: number,
 ): void {
+  const fit = (weight: number, px: number, words: string): void => {
+    ctx.font = `${String(weight)} ${String(px)}px ${font}`;
+    const needed = ctx.measureText(words).width;
+    if (needed > room) ctx.font = `${String(weight)} ${String(Math.floor((px * room) / needed))}px ${font}`;
+  };
   ctx.textAlign = "center";
   ctx.fillStyle = ink;
-  ctx.font = `700 ${String(size.value)}px ${font}`;
+  fit(700, size.value, text.value);
   ctx.fillText(text.value, at.x, at.y + size.value * 0.2);
   ctx.fillStyle = muted;
-  ctx.font = `400 ${String(size.label)}px ${font}`;
+  fit(400, size.label, text.label);
   ctx.fillText(text.label, at.x, at.y + size.value * 0.2 + size.label * 1.5);
   ctx.textAlign = "left";
 }
@@ -255,7 +262,7 @@ function drawWide(ctx: CanvasRenderingContext2D, text: SourcesText, font: string
 
   const centre = { x: margin + 150, y: 352 };
   drawRing(ctx, centre, { outer: 150, inner: 96 }, text.legend, top);
-  drawCentre(ctx, text.centre, font, centre, { value: 56, label: 22 });
+  drawCentre(ctx, text.centre, font, centre, { value: 56, label: 22 }, 2 * 96 - 28);
   // the legend is centred on the ring's height, whatever the number of rows
   const row = 46;
   drawLegend(
@@ -305,7 +312,7 @@ function drawStory(ctx: CanvasRenderingContext2D, text: SourcesText, font: strin
 
   const centre = { x: width / 2, y: y + 290 };
   drawRing(ctx, centre, { outer: 200, inner: 128 }, text.legend, top);
-  drawCentre(ctx, text.centre, font, centre, { value: 80, label: 32 });
+  drawCentre(ctx, text.centre, font, centre, { value: 80, label: 32 }, 2 * 128 - 44);
   // six rows of sources, three figures and a sentence of two lines have to end clear of the footer
   const legendRow = 58;
   const legendTop = centre.y + 200 + 64;
