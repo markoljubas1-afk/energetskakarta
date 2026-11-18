@@ -7,6 +7,7 @@
  */
 import { intensity } from "../data/co2";
 import { priceMonth } from "../data/priceMonths";
+import { monthEnd } from "../data/storageMonths";
 import { latestShare, RES_TARGET_2030 } from "../data/eurostat";
 import { trend } from "../data/hep";
 import { SCOPE_COUNTRIES, TECHNOLOGIES, type CountryCode } from "../domain";
@@ -163,6 +164,20 @@ function briefSection(site: SiteData, lang: Lang, ctx: Context, month: string): 
       prices.freeHours > 0
         ? copy.free(countOf(lang, "day", prices.freeDays), countOf(lang, "hour", prices.freeHours), lowest)
         : copy.neverFree(lowest),
+    );
+  }
+  // the storage at the month's end, and at the same month's end a year earlier when that is known
+  const stored = monthEnd(site.storageMonths, "HR", month);
+  if (stored && site.storageMonths) {
+    const before = monthEnd(site.storageMonths, "HR", shiftMonth(month, -12));
+    const percent = (full: number): string => `${i18n.number(full, 1)} %`;
+    points.push(
+      copy.storage(
+        percent(stored.full),
+        i18n.date(stored.day),
+        before ? percent(before.full) : null,
+        site.storageMonths.attribution,
+      ),
     );
   }
   return { heading: copy.heading, html: `${list(points.map((point) => e(point)))}<p>${e(copy.share)}</p>` };

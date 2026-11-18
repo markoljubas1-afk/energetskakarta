@@ -9,7 +9,9 @@ import { TIME_MACHINE_START, type Lang } from "../state/url";
 import type { StoryKey } from "../stories/keys";
 import { STORIES, STORY_KEYS } from "../stories/stories";
 import { callout, doors, e, glossary, list, type Door } from "./markup";
-import { icon } from "./pageDoors";
+import { icon, reportDoor } from "./pageDoors";
+import { reportMonths } from "./report";
+import { monthName } from "./reportCopy";
 import { home, mapLink, other, PATHS, type SiteData, type StaticPage } from "./site";
 
 interface LearnCopy {
@@ -406,6 +408,7 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
         ]
       : []),
   ].map(([title, text, params]): Door => ({ href: mapLink(lang, params), title, text, icon: MAP_ICON }));
+  const newestReport = reportMonths(site).at(-1);
   return {
     path: PATHS[lang].learn,
     lang,
@@ -414,6 +417,8 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
     description: copy.description,
     heading: copy.title,
     lead: copy.lead.map((p) => `<p>${e(p)}</p>`).join(""),
+    // the latest monthly report, as a card of its own under the lead (the reports were hard to find)
+    ...(newestReport ? { doors: [reportDoor(lang, newestReport, monthName(lang, newestReport))] } : {}),
     sections: [
       { heading: copy.storiesHeading, html: `<p>${e(copy.storiesIntro)}</p>${doors(stories)}` },
       {

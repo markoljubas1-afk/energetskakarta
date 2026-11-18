@@ -54,7 +54,13 @@ test("the learning page links to the stories", async ({ page }) => {
     /Cijena na burzi \(dan unaprijed\): [\d.,−-]+ €\/MWh/,
   );
   // a story card says what it does
-  await expect(page.locator(".doors em").first()).toHaveText("Pokreni priču");
+  await expect(page.locator(".doors em", { hasText: "Pokreni priču" }).first()).toBeVisible();
+  // the latest monthly report has a card of its own under the lead, and the navigation leads to the list
+  const report = page.locator(".doors a", { hasText: /^Mjesečni izvještaj: / }).first();
+  await expect(report).toHaveAttribute("href", /^\/izvjestaji\/\d{4}-\d{2}\/$/);
+  await expect(
+    page.getByRole("navigation", { name: "Glavna navigacija" }).getByRole("link", { name: "Izvještaji" }),
+  ).toHaveAttribute("href", "/izvjestaji/");
 });
 
 test("the kilowatt-hour story sends a point along a real route, which can be paused and replayed", async ({

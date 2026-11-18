@@ -40,7 +40,7 @@ from energymap.entsoe.store import EnergyDataError
 from energymap.eurostat import households as eurostat_households
 from energymap.eurostat import renewables as eurostat_renewables
 from energymap.files import read_json, write_json_atomic
-from energymap.gas import agsi, entsog
+from energymap.gas import agsi, entsog, storage_months
 from energymap.gas import points as gas_points
 from energymap.gem.read import GemFormatError
 from energymap.geo.countries import CountryDataError
@@ -267,6 +267,20 @@ def parser() -> argparse.ArgumentParser:
                 "--days", type=_bounded_int(1, agsi.MAX_DAYS), default=agsi.DEFAULT_DAYS, help="days to fetch"
             )
         if name == "storage-publish-dir":
+            step.add_argument("--out", type=Path, required=True)
+    for name, text in (
+        ("storage-months-r2", "fetch month-end gas storage by country and publish it to Cloudflare R2"),
+        ("storage-months-dir", "the same, into a local mirror"),
+    ):
+        step = gas.add_parser(name, help=text)
+        _data_dir(step)
+        step.add_argument(
+            "--days",
+            type=_bounded_int(1, storage_months.MAX_DAYS),
+            default=storage_months.DEFAULT_DAYS,
+            help="how many days back to read; default covers this month and the last",
+        )
+        if name == "storage-months-dir":
             step.add_argument("--out", type=Path, required=True)
     _data_dir(
         gas.add_parser(
@@ -540,6 +554,17 @@ def run(args: argparse.Namespace) -> None:
                 else publish.DirectoryStore(args.out)
             )
             agsi.publish_storage(storage_store, read_json(storage_file), datetime.now(UTC).date())
+    elif args.group == "gas" and args.step.startswith("storage-months"):
+        months_store: publish.ObjectStore = (
+            publish.R2Store.from_env()
+            if args.step == "storage-months-r2"
+            else publish.DirectoryStore(args.out)
+        )
+        with make_client() as client:
+            months_document = storage_months.publish_months(
+                months_store, client, config.SCOPE_CODES, args.days, datetime.now(UTC)
+            )
+        print(json.dumps({c: len(e["months"]) for c, e in months_document["countries"].items()}))
     elif args.group == "gas" and args.step == "storage-survey":
         with make_client() as client:
             storage = agsi.survey(client, datetime.now(UTC), config.SCOPE_CODES)

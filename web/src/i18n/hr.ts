@@ -329,6 +329,7 @@ export const hr = {
   storyDone: "Završi",
   storyProgress: "Korak {step} od {total}",
   learnLink: "Edukacija",
+  reportsLink: "Izvještaji",
   authorLink: "GridAtlas",
   authorTitle: "Tko stoji iza GridAtlasa",
   pageMap: "Karta",

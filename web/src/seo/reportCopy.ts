@@ -91,6 +91,8 @@ interface ReportCopy {
     free: (days: string, hours: string, lowest: string) => string;
     /** a whole month without such an hour */
     neverFree: (lowest: string) => string;
+    /** gas storage at the end of the month, with the same month-end a year earlier when it is known */
+    storage: (full: string, day: string, yearAgo: string | null, source: string) => string;
     share: string;
   };
   comparison: (name: string, share: string) => string;
@@ -154,6 +156,8 @@ export const REPORT_COPY: Record<Lang, ReportCopy> = {
         `Cijena struje na burzi (dan unaprijed) bila je nula ili niža ${days}, ukupno ${hours}; najniža je bila ${lowest} €/MWh. To je veleprodajna cijena; račun kućanstva je ne prati.`,
       neverFree: (lowest) =>
         `Cijena struje na burzi (dan unaprijed) nijedan sat nije pala na nulu; najniža je bila ${lowest} €/MWh.`,
+      storage: (full, day, yearAgo, source) =>
+        `Skladište plina u Hrvatskoj na kraju mjeseca (${day}) bilo je ${full} puno${yearAgo ? `; godinu ranije ${yearAgo}` : ""}. Izvor: ${source}.`,
       share: "Slobodno dijeljenje uz navođenje izvora: gridatlas.eu.",
     },
     comparison: (name, share) => `${name}: ${share}`,
@@ -233,6 +237,8 @@ export const REPORT_COPY: Record<Lang, ReportCopy> = {
         `The day-ahead exchange price was zero or below ${days}, ${hours} in all; the lowest was ${lowest} €/MWh. It is the wholesale price; a household bill does not follow it.`,
       neverFree: (lowest) =>
         `The day-ahead exchange price never fell to zero; the lowest hour was ${lowest} €/MWh.`,
+      storage: (full, day, yearAgo, source) =>
+        `Croatia's gas storage was ${full} full at the end of the month (${day})${yearAgo ? `; a year earlier ${yearAgo}` : ""}. Source: ${source}.`,
       share: "Free to share with the source named: gridatlas.eu.",
     },
     comparison: (name, share) => `${name}: ${share}`,

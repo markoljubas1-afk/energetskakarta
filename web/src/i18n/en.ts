@@ -333,6 +333,7 @@ export const en: Dictionary = {
   storyDone: "Finish",
   storyProgress: "Step {step} of {total}",
   learnLink: "Learn",
+  reportsLink: "Reports",
   authorLink: "GridAtlas",
   authorTitle: "Who is behind GridAtlas",
   pageMap: "Map",

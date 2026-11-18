@@ -1,5 +1,6 @@
 import {
   ChartColumnStacked,
+  FileText,
   GraduationCap,
   UserRound,
   Info,
@@ -63,6 +64,11 @@ export function Header({ theme, page, onPage, onToggleTheme, onToggleLang, child
         <a className={styles.textButton} href={PATHS[lang].learn}>
           <GraduationCap size={16} strokeWidth={1.75} aria-hidden="true" />
           <span className={styles.buttonLabel}>{t("learnLink")}</span>
+        </a>
+        {/* the monthly reports exist wherever generation data is published, as on the live site */}
+        <a className={`${styles.textButton} ${styles.optional}`} href={PATHS[lang].reports}>
+          <FileText size={16} strokeWidth={1.75} aria-hidden="true" />
+          <span className={styles.buttonLabel}>{t("reportsLink")}</span>
         </a>
         <a
           className={`${styles.textButton} ${styles.optional}`}

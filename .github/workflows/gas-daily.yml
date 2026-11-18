@@ -7,6 +7,11 @@ on:
   schedule:
     - cron: "40 7 * * *"
   workflow_dispatch:
+    inputs:
+      history_days:
+        description: "How many days of gas storage history to read for the month-ends (70 daily; more to fill history)"
+        default: "70"
+        required: true
 
 permissions:
   contents: read
@@ -89,3 +94,13 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: energymap gas storage-publish-r2 --data-dir data
+      - name: Month-end storage by country
+        # one figure per country per month, for the monthly reports; published months are kept
+        env:
+          AGSI_API_KEY: ${{ secrets.AGSI_API_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          DAYS: ${{ inputs.history_days || '70' }}
+        run: energymap gas storage-months-r2 --data-dir data --days "$DAYS"

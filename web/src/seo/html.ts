@@ -2,10 +2,12 @@
  * Renders a static page model as a complete HTML document: no script, one small inline stylesheet, and
  * everything a crawler wants in <head>. The look follows the app's tokens so the two feel like one site.
  */
+import { reportMonths } from "./report";
 import {
   Braces,
   Building2,
   Gauge,
+  FileText,
   GraduationCap,
   UserRound,
   Info,
@@ -128,6 +130,7 @@ const ICONS = {
   map: icon(MapIcon),
   about: icon(Info),
   learn: icon(GraduationCap),
+  reports: icon(FileText),
   author: icon(UserRound),
   cities: icon(Building2),
   capacity: icon(Gauge),
@@ -158,6 +161,7 @@ ${head(page, site)}
 <a href="${mapHref}">${ICONS.map}${e(copy.nav.map)}</a>
 <a href="${PATHS[page.lang].about}">${ICONS.about}${e(copy.nav.about)}</a>
 <a href="${PATHS[page.lang].learn}">${ICONS.learn}${e(copy.nav.learn)}</a>
+${reportMonths(site).length > 0 ? `<a href="${PATHS[page.lang].reports}">${ICONS.reports}${e(copy.nav.reports)}</a>` : ""}
 <a href="${PATHS[page.lang].author}" title="${e(copy.about.authorHeading)}" aria-label="${e(copy.about.authorHeading)}">${ICONS.author}${e(copy.nav.author)}</a>
 ${site.cities ? `<a href="${PATHS[page.lang].cities}">${ICONS.cities}${e(copy.nav.cities)}</a>` : ""}
 ${site.capacity ? `<a href="${PATHS[page.lang].capacity}">${ICONS.capacity}${e(page.lang === "hr" ? "Kapaciteti" : "Grid capacity")}</a>` : ""}

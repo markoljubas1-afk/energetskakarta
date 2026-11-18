@@ -180,6 +180,7 @@ export interface Copy {
     map: string;
     about: string;
     learn: string;
+    reports: string;
     author: string;
     countries: string;
     cities: string;
@@ -504,6 +505,7 @@ const hr: Copy = {
     map: "Karta",
     about: "O karti",
     learn: "Edukacija",
+    reports: "Izvještaji",
     author: "GridAtlas",
     countries: "Zemlje",
     cities: "Gradovi",
@@ -827,6 +829,7 @@ const en: Copy = {
     map: "Map",
     about: "About",
     learn: "Learn",
+    reports: "Reports",
     author: "GridAtlas",
     countries: "Countries",
     cities: "Cities",

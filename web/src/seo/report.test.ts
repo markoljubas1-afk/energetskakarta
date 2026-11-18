@@ -18,6 +18,7 @@ import {
   shiftMonth,
 } from "./report";
 import type { PriceMonths } from "../data/priceMonths";
+import { monthEnd, type StorageMonths } from "../data/storageMonths";
 import { countOf, inMonth, monthName } from "./reportCopy";
 import { bareSite } from "./site.fixture";
 import { llmsTxt } from "./sitemap";
@@ -232,6 +233,42 @@ describe("monthly reports", () => {
       "on 6 days",
       "1 hour",
     ]);
+  });
+
+  it("say how full the gas storage was at the month's end, against a year earlier, naming the source", () => {
+    const storage = (
+      months: Record<string, { day: string; full: number; facilities: number }>,
+    ): StorageMonths => ({
+      version: 1,
+      generatedAt: "2026-11-18T08:00:00+00:00",
+      source: "GIE AGSI",
+      sourceUrl: "https://agsi.gie.eu/",
+      attribution: "GIE (Gas Infrastructure Europe), AGSI platform",
+      license: "GIE-AGSI-attribution",
+      countries: { HR: { months } },
+    });
+    const brief = (data: StorageMonths | null): string =>
+      plain(report("/izvjestaji/2026-09/", { ...site, storageMonths: data }).sections[0]?.html ?? "");
+    const end = { day: "2026-09-30", full: 85.04, facilities: 1 };
+    expect(
+      brief(storage({ "2026-09": end, "2025-09": { day: "2025-09-29", full: 78.2, facilities: 1 } })),
+    ).toContain(
+      "<li>Skladište plina u Hrvatskoj na kraju mjeseca (30. rujna 2026.) bilo je 85 % puno; godinu ranije 78,2 %. Izvor: GIE (Gas Infrastructure Europe), AGSI platform.</li>",
+    );
+    // without last year's month-end the sentence stands alone
+    expect(brief(storage({ "2026-09": end }))).toContain("bilo je 85 % puno. Izvor: GIE");
+    // a last day in the middle of the month is not the month's end; last year's is then left out too
+    expect(brief(storage({ "2026-09": { ...end, day: "2026-09-20" } }))).not.toContain("Skladište plina");
+    expect(
+      brief(storage({ "2026-09": end, "2025-09": { day: "2025-09-12", full: 60, facilities: 1 } })),
+    ).not.toContain("; godinu ranije");
+    expect(brief(null)).not.toContain("Skladište plina");
+    expect(
+      monthEnd(storage({ "2024-02": { day: "2024-02-27", full: 50, facilities: 1 } }), "HR", "2024-02")?.full,
+    ).toBe(50);
+    expect(
+      monthEnd(storage({ "2024-02": { day: "2024-02-26", full: 50, facilities: 1 } }), "HR", "2024-02"),
+    ).toBeNull();
   });
 
   it("mention a HEP ODS release in the month it came out, and link the months to each other", () => {

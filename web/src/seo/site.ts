@@ -3,6 +3,7 @@
  * addresses of every kind of page, and the JSON-LD the pages share.
  */
 import type { PriceMonths } from "../data/priceMonths";
+import type { StorageMonths } from "../data/storageMonths";
 import type { Door } from "./markup";
 import type { CityRegister } from "../data/cities";
 import type { Current } from "../data/current";
@@ -72,6 +73,8 @@ export interface SiteData {
   renewables?: Renewables | null;
   /** monthly totals of the day-ahead price (hours and days at or below zero), when the bucket has them */
   priceMonths?: PriceMonths | null;
+  /** gas in storage at the end of each month (GIE AGSI), when the bucket has it */
+  storageMonths?: StorageMonths | null;
   /** when ENTSO-E's monthly and yearly totals were last updated (the energy pointer), when known */
   energyUpdatedAt?: string | null;
   /** when this build of the pages ran: the day a changed page is dated in the sitemap (Faza 31) */

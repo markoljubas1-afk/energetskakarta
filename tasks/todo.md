@@ -1379,8 +1379,16 @@ Redoslijed koji je korisnik potvrdio: 40-1 slika dana → 40-2 detektor ekstrema
   unaprijed za HR (`energy/prices.json`: sati i dani ≤ 0, najniži sat, prosjek; sat = prosjek aukcije za taj
   sat, kao u sloju uživo). Korak u `energy-daily` (zadnja 2 mjeseca dnevno; `price_months` za povijest).
   Izvještaj piše natuknicu samo za mjesec kojem svaki sat ima cijenu.
-- (b) NIJE napravljeno: „zalihe plina veće/manje nego lani” — AGSI povijest imamo od studenoga 2026.; treba
-  jednokratno povući prošlu godinu.
+- (b) „zalihe plina prema lani” — KOD GOTOV 2026-11-18: `gas/storage_months.py` sprema popunjenost skladišta
+  po zemlji na zadnji prijavljeni dan svakog mjeseca (`gas/storage-months.json`, GIE AGSI; više skladišta
+  zbraja se po volumenu). Korak u `gas-daily` (70 dana dnevno; `history_days` za povijest). Izvještaj piše
+  natuknicu samo kad je zadnji dan unutar 2 dana od kraja mjeseca, uz isti kraj mjeseca godinu ranije.
+- Do izvještaja se sada dolazi: gumb „Izvještaji” u zaglavlju karte i u navigaciji statičnih stranica, te
+  kartica zadnjeg izvještaja na vrhu Edukacije (zahtjev korisnika 2026-11-18: „ne kužim kako doći do izvještaja”).
+
+### 40-4 Zahtjevi zaprimljeni 2026-11-18, još nisu počeli
+- Slika dana i u okomitom formatu za story (1080×1920), uz postojeći vodoravni: dvije opcije.
+- Lijeva ploča (filtri i pregled) na računalu se mora moći suziti/sklopiti da ne smeta pregledu karte.
 - Ugljični otisak u kartici semafora (35-17) sada koristi isti izračun kao izvještaji (`data/co2.ts`):
   nafta 650 i „ostalo” 700 g/kWh su pretpostavke i tako pišu u kartici (ranije: izostavljeni). L-079.
 
