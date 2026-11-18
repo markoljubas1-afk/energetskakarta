@@ -269,7 +269,7 @@ export const en: Dictionary = {
   carbonValue: "about {grams} g CO₂/kWh",
   carbonShow: "Show operating plants: {fuels}",
   carbonNote:
-    "The carbon footprint is a calculation, not a measurement: the hour's generation by source times life-cycle factors. All coal counts as 820 g/kWh, so the footprint of countries that burn lignite is probably understated. Imports, oil and “other” are not counted. Factors:",
+    "The carbon footprint is a calculation, not a measurement: the hour's generation by source times life-cycle factors. All coal counts as 820 g/kWh, so the footprint of countries that burn lignite is probably understated. The IPCC has no figure for oil or “other”: they count as an assumed 650 and 700 g/kWh. Imports are not counted. Factors:",
   usualFor_HR: "Usual for Croatia",
   usualFor_SI: "Usual for Slovenia",
   usualFor_HU: "Usual for Hungary",

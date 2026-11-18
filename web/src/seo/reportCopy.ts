@@ -78,6 +78,17 @@ interface ReportCopy {
   /** "U listopadu 2026. obnovljivi izvori dali su …"; `opening` is `inMonth` */
   lead: (opening: string, share: string, comparisons: string[], co2: string | null) => string;
   totals: (total: string, load: string | null) => string;
+  /** the month in a few points, for a reader who wants to pass it on (Faza 40-3) */
+  brief: {
+    heading: string;
+    main: (source: string, share: string) => string;
+    /** `change`: percentage points against the same month a year earlier, with that month's share */
+    renewable: (share: string, change: { points: string; more: boolean; yearAgo: string } | null) => string;
+    co2: (grams: string) => string;
+    /** the country of the region with the highest renewable share that month */
+    top: (country: string, share: string) => string;
+    share: string;
+  };
   comparison: (name: string, share: string) => string;
   sources: {
     heading: string;
@@ -127,6 +138,16 @@ export const REPORT_COPY: Record<Lang, ReportCopy> = {
       `${opening} obnovljivi izvori dali su ${share} proizvodnje struje u Hrvatskoj${comparisons.length > 0 ? ` (${comparisons.join(", ")})` : ""}${co2 ? `, uz CO₂ intenzitet od oko ${co2} g/kWh` : ""}.`,
     totals: (total, load) =>
       `Ukupna proizvodnja: ${total}${load ? `; potrošnja (opterećenje mreže): ${load}` : ""}.`,
+    brief: {
+      heading: "Ukratko",
+      main: (source, share) => `Glavni izvor struje u Hrvatskoj: ${source} (${share} proizvodnje).`,
+      renewable: (share, change) =>
+        `Obnovljivi izvori dali su ${share} proizvodnje${change ? `, ${change.points} post. bodova ${change.more ? "više" : "manje"} nego isti mjesec godinu ranije (${change.yearAgo})` : ""}.`,
+      co2: (grams) =>
+        `CO₂ intenzitet proizvodnje: oko ${grams} g/kWh (izračun iz faktora IPCC-a, ne mjerenje).`,
+      top: (country, share) => `Najveći udio obnovljivih u regiji: ${country} (${share}).`,
+      share: "Slobodno dijeljenje uz navođenje izvora: gridatlas.eu.",
+    },
     comparison: (name, share) => `${name}: ${share}`,
     sources: {
       heading: "Proizvodnja po izvorima",
@@ -192,6 +213,16 @@ export const REPORT_COPY: Record<Lang, ReportCopy> = {
     lead: (opening, share, comparisons, co2) =>
       `${opening} renewable sources provided ${share} of Croatia's electricity${comparisons.length > 0 ? ` (${comparisons.join(", ")})` : ""}${co2 ? `, with a carbon intensity of about ${co2} g/kWh` : ""}.`,
     totals: (total, load) => `Total generation: ${total}${load ? `; consumption (grid load): ${load}` : ""}.`,
+    brief: {
+      heading: "In brief",
+      main: (source, share) => `Croatia's main source of electricity: ${source} (${share} of generation).`,
+      renewable: (share, change) =>
+        `Renewables gave ${share} of generation${change ? `, ${change.points} percentage points ${change.more ? "more" : "less"} than the same month a year earlier (${change.yearAgo})` : ""}.`,
+      co2: (grams) =>
+        `CO₂ intensity of generation: about ${grams} g/kWh (calculated from IPCC factors, not measured).`,
+      top: (country, share) => `Highest renewable share in the region: ${country} (${share}).`,
+      share: "Free to share with the source named: gridatlas.eu.",
+    },
     comparison: (name, share) => `${name}: ${share}`,
     sources: {
       heading: "Generation by source",

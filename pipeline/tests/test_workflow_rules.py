@@ -26,6 +26,7 @@ EXPECTED = {
     "images-update.yml": "SCHEDULE_OSM",
     "energy-daily.yml": "SCHEDULE_ENTSOE",
     "live-hourly.yml": "SCHEDULE_ENTSOE",
+    "live-days.yml": "SCHEDULE_ENTSOE",
     "gas-daily.yml": "SCHEDULE_GAS",
     "hep-daily.yml": "SCHEDULE_HEP",
     "prices-daily.yml": "SCHEDULE_ENTSOE",

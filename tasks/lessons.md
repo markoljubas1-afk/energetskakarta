@@ -472,3 +472,15 @@
   `<details>`; nakon dodavanja izmjeri visinu kartice na 412×839. Test provjerava da je izbornik na zaslonu
   i da se do sadržaja može doći pomicanjem unutar njega.
 
+### L-079 — Napisao sam drugi izračun CO₂ pokraj postojećeg; i opet nisam pokrenuo cijeli pytest (2026-11-18)
+- What happened: (1) za karticu semafora napisao sam `data/carbon.ts` s vlastitim faktorima i rekao korisniku
+  da „dosad nemamo ništa takvo”, a `data/co2.ts` (Faza 20-1) već računa CO₂ intenzitet za karticu mješavine,
+  mjesečne izvještaje i stranicu tranzicije, s drukčijim postupkom za naftu i „ostalo” (650/700 g/kWh
+  umjesto izostavljanja). Isti sat mogao je imati dvije brojke. (2) Dodao sam raspored u `live-days.yml`,
+  pokrenuo samo dva pytest modula, a CI je pao na `test_workflow_rules.py` (svaki raspored mora imati prekidač).
+- Root cause: prije gradnje nisam pretražio kod po pojmu (co2, intensity, emisij); pri promjeni tijeka rada
+  nisam pokrenuo cijeli skup testova, protivno L-077.
+- Rule going forward: prije nove značajke `grep -ri` po pojmu kroz `web/src` i `pipeline/src` i reći
+  korisniku što već postoji. Svaka promjena u `.github/workflows` ili `pipeline/` → cijeli `pytest -q`
+  (šest poznatih Windows padova se zanemaruje), ne odabrani moduli.
+

@@ -129,6 +129,43 @@ function leadSentence(lang: Lang, ctx: Context, month: string): string {
   );
 }
 
+/** The month in a few points, each one a figure from the tables below, and the line that invites sharing. */
+function briefSection(lang: Lang, ctx: Context, month: string): Section | null {
+  const copy = REPORT_COPY[lang].brief;
+  const i18n = createI18n(lang);
+  const hr = ctx.byCountry.get("HR");
+  const row = hr?.get(month);
+  if (!usable(row) || row.total === null) return null;
+  const points: string[] = [];
+  const main = largestSource(row);
+  if (main) points.push(copy.main(i18n.technology(main), i18n.percent((row.byTech[main] ?? 0) / row.total)));
+  if (row.share !== null) {
+    const yearAgo = hr?.get(shiftMonth(month, -12));
+    const before = usable(yearAgo) ? yearAgo.share : null;
+    // compared as the two shares are shown, in whole percents
+    const change = before === null ? null : Math.round(row.share * 100) - Math.round(before * 100);
+    points.push(
+      copy.renewable(
+        i18n.percent(row.share),
+        before === null || change === null || change === 0
+          ? null
+          : { points: i18n.number(Math.abs(change)), more: change > 0, yearAgo: i18n.percent(before) },
+      ),
+    );
+  }
+  const co2 = rowIntensity(row);
+  if (co2 !== null) points.push(copy.co2(i18n.number(Math.round(co2))));
+  let top: { code: CountryCode; share: number } | null = null;
+  for (const [code, rows] of ctx.byCountry) {
+    const theirs = rows.get(month);
+    if (usable(theirs) && theirs.share !== null && (top === null || theirs.share > top.share)) {
+      top = { code, share: theirs.share };
+    }
+  }
+  if (top) points.push(copy.top(i18n.country(top.code), i18n.percent(top.share)));
+  return { heading: copy.heading, html: `${list(points.map((point) => e(point)))}<p>${e(copy.share)}</p>` };
+}
+
 function sourcesSection(lang: Lang, ctx: Context, month: string): Section {
   const copy = REPORT_COPY[lang];
   const i18n = createI18n(lang);
@@ -221,7 +258,12 @@ function reportPage(site: SiteData, lang: Lang, ctx: Context, month: string): St
   const row = ctx.byCountry.get("HR")?.get(month);
   const load =
     row && row.load !== null && row.loadCoverage >= COMPLETE_COVERAGE ? i18n.energy(row.load) : null;
-  const sections: Section[] = [sourcesSection(lang, ctx, month), regionSection(lang, ctx, month)];
+  const brief = briefSection(lang, ctx, month);
+  const sections: Section[] = [
+    ...(brief ? [brief] : []),
+    sourcesSection(lang, ctx, month),
+    regionSection(lang, ctx, month),
+  ];
 
   const hep = hepRelease(site, month);
   if (hep) {

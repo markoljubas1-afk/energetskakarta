@@ -266,7 +266,7 @@ export const hr = {
   carbonValue: "oko {grams} g CO₂/kWh",
   carbonShow: "Pokaži elektrane u pogonu: {fuels}",
   carbonNote:
-    "Ugljični otisak je izračun, nije mjerenje: proizvodnja po izvoru u tom satu puta faktori za cijeli životni vijek elektrane. Sav ugljen računa se s 820 g/kWh, pa je otisak zemalja koje lože lignit vjerojatno podcijenjen. Uvoz, nafta i „ostalo” nisu uračunati. Faktori:",
+    "Ugljični otisak je izračun, nije mjerenje: proizvodnja po izvoru u tom satu puta faktori za cijeli životni vijek elektrane. Sav ugljen računa se s 820 g/kWh, pa je otisak zemalja koje lože lignit vjerojatno podcijenjen. Za naftu i „ostalo” IPCC nema brojku, pa se računaju s pretpostavljenih 650 i 700 g/kWh. Uvoz nije uračunat. Faktori:",
   /** the country in the accusative ("za Hrvatsku"), so each one is spelled out */
   usualFor_HR: "Uobičajeno za Hrvatsku",
   usualFor_SI: "Uobičajeno za Sloveniju",

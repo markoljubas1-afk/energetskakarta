@@ -1370,9 +1370,17 @@ Redoslijed koji je korisnik potvrdio: 40-1 slika dana → 40-2 detektor ekstrema
 - `live-days` sada ide svaki dan (06:40 UTC, uz SCHEDULE_ENTSOE); već objavljene dane ne povlači ponovno
   (`records.kept_day`). Popis rekordnih dana web sada traži pri svakom posjetu → testni podaci ga imaju prazan.
 
-### 40-3 Mjesečnik (nije počet)
-- Dani sa cijenom ≤ 0, glavni izvor u mjesecu. Usporedba zaliha plina s prošlom godinom traži povijest
-  s AGSI-ja (sada imamo samo od studenoga 2026.).
+### 40-3 Mjesečnik — prvi dio GOTOV 2026-11-18, dva podatka čekaju
+- Mjesečni izvještaji već postoje od Faze 29 (`/izvjestaji/`, po jedan za svaki potpuni mjesec od 2024-11).
+  Dodano: odjeljak „Ukratko” na vrhu (glavni izvor, udio obnovljivih uz promjenu prema istom mjesecu lani,
+  CO₂ intenzitet, zemlja s najvećim udjelom obnovljivih u regiji) i redak „Slobodno dijeljenje uz navođenje
+  izvora: gridatlas.eu.”
+- NIJE napravljeno, jer podatka nema: (a) „X dana s cijenom ≤ 0” — povijest cijena se ne sprema (samo
+  trodnevni prozor u `live/current.json`); treba nova obrada koja dnevno sprema satne cijene po zoni.
+  (b) „zalihe plina veće/manje nego lani” — AGSI povijest imamo od studenoga 2026.; treba jednokratno
+  povući prošlu godinu.
+- Ugljični otisak u kartici semafora (35-17) sada koristi isti izračun kao izvještaji (`data/co2.ts`):
+  nafta 650 i „ostalo” 700 g/kWh su pretpostavke i tako pišu u kartici (ranije: izostavljeni). L-079.
 
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda

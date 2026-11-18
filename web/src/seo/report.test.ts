@@ -147,22 +147,31 @@ describe("monthly reports", () => {
 
   it("show the sources against the two earlier months, and the region", () => {
     const page = report("/izvjestaji/2026-09/");
-    const sources = plain(page.sections[0]?.html ?? "");
+    // the month in a few points comes first, each one a figure from the tables under it
+    expect(page.sections[0]?.heading).toBe("Ukratko");
+    const brief = plain(page.sections[0]?.html ?? "");
+    expect(brief).toContain("<li>Glavni izvor struje u Hrvatskoj: Hidro (60 % proizvodnje).</li>");
+    expect(brief).toContain(
+      "<li>Obnovljivi izvori dali su 90 % proizvodnje, 35 post. bodova više nego isti mjesec godinu ranije (55 %).</li>",
+    );
+    expect(brief).toContain("oko 70 g/kWh (izračun iz faktora IPCC-a, ne mjerenje)");
+    expect(brief).toContain("<p>Slobodno dijeljenje uz navođenje izvora: gridatlas.eu.</p>");
+    const sources = plain(page.sections[1]?.html ?? "");
     expect(sources).toContain(
       "<th>Izvor</th><th>rujan 2026.</th><th>Udio</th><th>kolovoz 2026.</th><th>rujan 2025.</th>",
     );
     expect(sources.indexOf("Hidro")).toBeLessThan(sources.indexOf("Plin"));
     expect(sources).toContain(`<td class="num">60 %</td>`);
     expect(sources).toContain("<td>Udio obnovljivih</td>");
-    const region = plain(page.sections[1]?.html ?? "");
-    expect(page.sections[1]?.heading).toBe("Regija: rujan 2026.");
+    const region = plain(page.sections[2]?.html ?? "");
+    expect(page.sections[2]?.heading).toBe("Regija: rujan 2026.");
     expect(region.indexOf("Hrvatska")).toBeLessThan(region.indexOf("Slovenija"));
     expect(region).toContain(`<a href="/zemlja/si/">Slovenija</a></td>`);
     expect(region).toContain(
       "Bez potpunih podataka: Mađarska, Srbija, Bosna i Hercegovina, Crna Gora, Italija, Austrija.",
     );
     // Slovenia has no other complete month: in August only Croatia
-    expect(plain(report("/izvjestaji/2026-08/").sections[1]?.html ?? "")).not.toContain("Slovenija</a>");
+    expect(plain(report("/izvjestaji/2026-08/").sections[2]?.html ?? "")).not.toContain("Slovenija</a>");
   });
 
   it("mention a HEP ODS release in the month it came out, and link the months to each other", () => {
