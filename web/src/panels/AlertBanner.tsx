@@ -1,0 +1,82 @@
+import { TrendingDown, Trophy, X } from "lucide-react";
+
+import type { Alert } from "../data/alerts";
+import { RECORD_KINDS } from "../data/live";
+import { isOneOf } from "../domain";
+import { useI18n, type I18n } from "../i18n";
+import styles from "./AlertBanner.module.css";
+
+interface Props {
+  alert: Alert;
+  /** open the live layer at what the notice is about */
+  onShow: (alert: Alert) => void;
+  onClose: (alert: Alert) => void;
+}
+
+/** The notice in words: what happened, where, when, and the figure. */
+export function alertText(alert: Alert, i18n: I18n): { title: string; text: string } {
+  const { t } = i18n;
+  if (alert.kind === "free") {
+    const hour = new Intl.DateTimeFormat(i18n.locale, { hour: "2-digit", minute: "2-digit" }).format(
+      new Date(alert.lowest.hour),
+    );
+    return {
+      title: t("alertFreeTitle"),
+      text: t(alert.when === "today" ? "alertFreeToday" : "alertFreeTomorrow", {
+        country: i18n.country(alert.country),
+        eur: i18n.number(alert.lowest.eur, 2),
+        hour,
+      }),
+    };
+  }
+  const { record } = alert;
+  const what = isOneOf(RECORD_KINDS, record.kind) ? t(`record_${record.kind}`) : record.kind;
+  const value =
+    record.unit === "share"
+      ? `${String(Math.round(record.value * 100))} %`
+      : `${i18n.number(record.value / 1000, 1)} GWh`;
+  return {
+    title: t("alertRecordTitle"),
+    text: t("alertRecord", {
+      country: i18n.country(alert.country),
+      date: i18n.date(alert.date),
+      what,
+      value,
+    }),
+  };
+}
+
+/** One line above the map for something out of the ordinary, with a way to see it and a way to close it. */
+export function AlertBanner({ alert, onShow, onClose }: Props) {
+  const i18n = useI18n();
+  const { t } = i18n;
+  const { title, text } = alertText(alert, i18n);
+  const Icon = alert.kind === "free" ? TrendingDown : Trophy;
+  return (
+    <div className={styles.banner} role="status" data-alert={alert.kind}>
+      <Icon className={styles.icon} size={18} strokeWidth={1.75} aria-hidden="true" />
+      <p>
+        <strong>{title}</strong> {text}{" "}
+        <button
+          type="button"
+          className={styles.show}
+          onClick={() => {
+            onShow(alert);
+          }}
+        >
+          {t(alert.kind === "free" ? "alertShowHour" : "alertShowDay")}
+        </button>
+      </p>
+      <button
+        type="button"
+        className={styles.close}
+        aria-label={t("alertClose")}
+        onClick={() => {
+          onClose(alert);
+        }}
+      >
+        <X size={16} strokeWidth={1.75} aria-hidden="true" />
+      </button>
+    </div>
+  );
+}

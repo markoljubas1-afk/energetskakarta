@@ -294,6 +294,16 @@ export const en: Dictionary = {
   freeWhat: "It is the wholesale day-ahead price on the exchange; a household bill does not follow it.",
   freeWhy: "Why can a price be negative?",
   freeHours: "Hours with a price of zero or below",
+  alertFreeTitle: "Electricity price at zero or below.",
+  alertFreeToday:
+    "{country}: today the exchange price falls to zero or below, lowest {eur} €/MWh at {hour}. It is the wholesale day-ahead price; a household bill does not follow it.",
+  alertFreeTomorrow:
+    "{country}: tomorrow the exchange price falls to zero or below, lowest {eur} €/MWh at {hour}. It is the wholesale day-ahead price; a household bill does not follow it.",
+  alertRecordTitle: "New record.",
+  alertRecord: "{country}, {date}: {what} in one day in the data since 2015 ({value}).",
+  alertShowHour: "Show that hour on the map",
+  alertShowDay: "Show that day on the map",
+  alertClose: "Close the notice",
   recordDays: "Record days",
   recordToday: "Today (live)",
   record_wind: "most electricity from wind",

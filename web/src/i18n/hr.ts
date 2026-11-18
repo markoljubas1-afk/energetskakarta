@@ -291,6 +291,16 @@ export const hr = {
   freeWhat: "To je veleprodajna cijena na burzi dan unaprijed; račun kućanstva je ne prati.",
   freeWhy: "Zašto cijena može biti negativna?",
   freeHours: "Sati s cijenom nula ili nižom",
+  alertFreeTitle: "Cijena struje nula ili niže.",
+  alertFreeToday:
+    "{country}: danas cijena na burzi pada na nulu ili ispod nje, najniže {eur} €/MWh u {hour}. To je veleprodajna cijena dan unaprijed; račun kućanstva je ne prati.",
+  alertFreeTomorrow:
+    "{country}: sutra cijena na burzi pada na nulu ili ispod nje, najniže {eur} €/MWh u {hour}. To je veleprodajna cijena dan unaprijed; račun kućanstva je ne prati.",
+  alertRecordTitle: "Novi rekord.",
+  alertRecord: "{country}, {date}: {what} u jednom danu u podacima od 2015. ({value}).",
+  alertShowHour: "Pokaži taj sat na karti",
+  alertShowDay: "Pokaži taj dan na karti",
+  alertClose: "Zatvori obavijest",
   recordDays: "Povijesni dani",
   recordToday: "Danas (uživo)",
   record_wind: "najviše struje iz vjetra",

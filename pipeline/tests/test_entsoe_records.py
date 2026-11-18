@@ -133,6 +133,24 @@ def test_a_record_day_is_fetched_in_the_live_layers_own_shape() -> None:
     assert not records.has_day(document, day, "ME")
 
 
+def test_a_day_already_there_is_kept_and_anything_else_is_fetched_afresh(tmp_path: Path) -> None:
+    day = date(2024, 7, 19)
+    document = records.collect_day(FakeSource(), day)
+    good = tmp_path / "2024-07-19.json"
+    good.write_text(json.dumps(document), encoding="utf-8")
+    assert records.kept_day(good, day) == document
+
+    # a file for another day, a broken file, another shape and no file at all are not kept
+    assert records.kept_day(good, date(2020, 4, 12)) is None
+    broken = tmp_path / "broken.json"
+    broken.write_text("{not json", encoding="utf-8")
+    assert records.kept_day(broken, day) is None
+    other = tmp_path / "other.json"
+    other.write_text(json.dumps({"hours": ["2024-07-19T00:00:00+02:00"]}), encoding="utf-8")
+    assert records.kept_day(other, day) is None
+    assert records.kept_day(tmp_path / "missing.json", day) is None
+
+
 def test_only_days_with_data_are_listed_and_published(tmp_path: Path) -> None:
     found = records.records(YEARS)
     silent = date(2025, 4, 12)

@@ -1359,10 +1359,16 @@ Redoslijed koji je korisnik potvrdio: 40-1 slika dana → 40-2 detektor ekstrema
   za zadnji plinski dan (više skladišta: zbroj po volumenu). Čega nema, izostaje; stari podaci → nema slike.
 - Izvori su na slici (ENTSO-E; GIE AGSI kad je skladište na njoj). Skladišta se učitavaju tek pri otvaranju.
 
-### 40-2 Detektor ekstrema (nije počet)
-- Samo ono što možemo dokazati: rekord proizvodnje iz sunca ili vjetra (od 2020., iz `live/days`), i
-  cijena ≤ 0 sutra/danas. NE: „uvozi X % svoje struje” (nemamo satnu potrošnju).
-- Bez teksta „elektrane će plaćati da potrošite struju”.
+### 40-2 Detektor ekstrema — KOD GOTOV 2026-11-18
+- Jedna obavijest iznad karte (`data/alerts.ts`, `AlertBanner`), samo ono što podaci dokazuju:
+  cijena ≤ 0 danas (sati koji tek dolaze) ili sutra u Hrvatskoj; novi rekordni dan (do 10 dana star).
+  NE: „uvozi X % svoje struje” (nemamo satnu potrošnju), ništa predviđeno, bez „elektrane će plaćati”.
+- „Pokaži taj sat/dan na karti” otvara sloj uživo na tom satu ili danu. Zatvorena obavijest se pamti u
+  pregledniku. Dok je sloj uživo otvoren, obavijesti nema (traka uživo kaže isto, opširnije).
+- Rekord se pronalazi tek kad je dan potpuno prijavljen (zadnja 2 dana se preskaču), pa obavijest dolazi
+  nekoliko dana nakon samog dana i nosi njegov datum. Rekordi su DNEVNI zbrojevi, ne satni vrhovi.
+- `live-days` sada ide svaki dan (06:40 UTC, uz SCHEDULE_ENTSOE); već objavljene dane ne povlači ponovno
+  (`records.kept_day`). Popis rekordnih dana web sada traži pri svakom posjetu → testni podaci ga imaju prazan.
 
 ### 40-3 Mjesečnik (nije počet)
 - Dani sa cijenom ≤ 0, glavni izvor u mjesecu. Usporedba zaliha plina s prošlom godinom traži povijest

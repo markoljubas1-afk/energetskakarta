@@ -450,6 +450,11 @@ def run(args: argparse.Namespace) -> None:
             fetched_days: list[date] = []
             with EntsoeClient.from_env() as client:
                 for day in sorted({record.day for record in day_records}):
+                    # a day pulled from the published data is history and is not asked for again
+                    if live_records.kept_day(days_dir / f"{day.isoformat()}.json", day) is not None:
+                        logger.info("record day already published", extra={"day": day.isoformat()})
+                        fetched_days.append(day)
+                        continue
                     # one day that ENTSO-E no longer has is left out; the others are still published
                     try:
                         day_document = live_records.collect_day(client, day)

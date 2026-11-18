@@ -27,6 +27,7 @@ from cities_fixture import write_fixture as write_cities_fixture
 from energymap import build, config, diff, publish, tiles
 from energymap.baseline import iter_local_layer
 from energymap.entsoe import live as energy_live
+from energymap.entsoe import records as live_records
 from energymap.entsoe import release as energy_release
 from energymap.entsoe.client import AREAS, NoData
 from energymap.entsoe.energy import DailyEnergy
@@ -103,6 +104,13 @@ def main() -> int:
         live_doc = energy_live.collect(SyntheticLive(), datetime.now(UTC))
         live_doc["fixture"] = "synthetic values for development and tests"
         energy_live.publish_live(publish.DirectoryStore(args.out), live_doc)
+        # the list of record days, empty: the map asks for it on every visit (the notice above the map),
+        # and a missing file would be a 404 in the console of every test
+        publish.DirectoryStore(args.out).put_bytes(
+            live_records.INDEX_KEY,
+            json.dumps(live_records.index_document([], [], datetime.now(UTC))).encode(),
+            live_records.INDEX_META,
+        )
         gas_doc = synthetic_gas(datetime.now(UTC))
         entsog.publish_gas(publish.DirectoryStore(args.out), gas_doc)
         (args.out / "energy" / "FIXTURE_DATA_NOT_REAL.txt").write_text(

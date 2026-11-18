@@ -17,6 +17,7 @@ import logging
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime, time
+from pathlib import Path
 from typing import Any
 
 from energymap.entsoe import live
@@ -131,6 +132,23 @@ def has_day(document: dict[str, Any], day: date, country: str = HOME) -> bool:
     )
     generation = any(any_value(values) for values in document.get("generation", {}).get(country, {}).values())
     return flows or prices or generation
+
+
+def kept_day(path: Path, day: date) -> dict[str, Any] | None:
+    """A day's document that is already there (pulled from the published data), when it can be read and
+    still says something about the day. A record day's hours are history: fetching them again from
+    ENTSO-E every day would cost ten minutes of requests per day for the same answer."""
+    try:
+        document = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(document, dict) or not isinstance(document.get("hours"), list):
+        return None
+    try:
+        return document if has_day(document, day) else None
+    except (KeyError, TypeError, IndexError):
+        # not the shape this code writes: fetch it afresh
+        return None
 
 
 def index_document(

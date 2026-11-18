@@ -1,10 +1,15 @@
 # Record days for the live layer (Faza 39): which days hold Croatia's records is read off the published daily
 # data (most wind, most solar, highest and lowest demand, highest renewable share), and the hours of those
-# days are fetched from ENTSO-E in the live layer's own shape. Records change rarely, so this is started by
-# hand. A day ENTSO-E no longer has is left out; with no day at all nothing is published.
+# days are fetched from ENTSO-E in the live layer's own shape. A day ENTSO-E no longer has is left out; with
+# no day at all nothing is published.
+# Daily since 2026-11-18: the map announces a new record above the map while it is news (web/src/data/
+# alerts.ts), so the list has to notice one. A day that is already published is not fetched again, so a run
+# without a new record costs only the reading of the daily files.
 name: live-days
 
 on:
+  schedule:
+    - cron: "40 6 * * *" # after energy-daily (05:30 UTC) has published the previous days
   workflow_dispatch:
 
 permissions:
@@ -16,6 +21,8 @@ concurrency:
 
 jobs:
   days:
+    # the schedule is opt-in, like the other ENTSO-E jobs (SCHEDULE_ENTSOE=true); manual runs always run
+    if: github.event_name != 'schedule' || vars.SCHEDULE_ENTSOE == 'true'
     runs-on: ubuntu-24.04
     # one day is as much work as one hourly refresh (7 to 11 minutes at ENTSO-E's request rate); five record
     # days did not fit in half an hour (the first run, 2026-11-17, was cancelled by the limit)
@@ -44,6 +51,16 @@ jobs:
       - run: python -m pip install -e .
       - name: Pull the published daily data
         run: energymap energy pull --data-dir data --baseline-url "$DATA_BASE_URL"
+      - name: Pull the record days already published
+        # their hours are history: only a day that is not there yet is asked of ENTSO-E
+        run: |
+          base="${DATA_BASE_URL%/}"
+          mkdir -p data/live/days
+          if curl -fsS "$base/live/days/index.json" -o /tmp/days-index.json; then
+            for key in $(python -c "import json; print(' '.join(d['key'] for d in json.load(open('/tmp/days-index.json'))['days']))"); do
+              curl -fsS "$base/$key" -o "data/$key" || rm -f "data/$key"
+            done
+          fi
       - name: Fetch the hours of the record days
         env:
           ENTSOE_TOKEN: ${{ secrets.ENTSOE_TOKEN }}

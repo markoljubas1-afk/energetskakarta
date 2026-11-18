@@ -360,3 +360,35 @@
     opacity: 1;
   }
 }
+
+/* one line of news above the map, between the side panel and the details slot */
+.alert {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  left: 376px;
+  right: 392px;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.alert > * {
+  max-width: 560px;
+  pointer-events: auto;
+}
+
+/* narrower screens have no room beside the panels: the notice takes the top of the map, clear of the zoom buttons */
+@media (max-width: 1200px) {
+  .alert {
+    left: 12px;
+    right: 56px;
+  }
+}
+
+/* phones: the status bar lies along the top of the map; the notice goes under it */
+@media (max-width: 720px) {
+  .alert {
+    top: 54px;
+  }
+}

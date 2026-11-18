@@ -4,7 +4,17 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import type { AppConfig } from "../config";
 import { gasOverlay, loadGas, type GasLoad } from "../data/gas";
 import { GAS_STORAGE_KEY, loadGasStorage, storageOverlay } from "../data/gasStorage";
-import { loadLive, overlay, pickHour, LIVE_DAYS_KEY, loadLiveDay, loadLiveDays, noonOf } from "../data/live";
+import { alerts, closedAlerts, rememberClosed, type Alert } from "../data/alerts";
+import {
+  hourKey,
+  loadLive,
+  overlay,
+  pickHour,
+  LIVE_DAYS_KEY,
+  loadLiveDay,
+  loadLiveDays,
+  noonOf,
+} from "../data/live";
 import { GEOTHERMAL_KEY, geothermalFeatures, loadGeothermal, type GeothermalLoad } from "../data/geothermal";
 import { capacityOverlay, HEP_KEYS, loadHep, type HepLoad } from "../data/hep";
 import { loadTimeline, retiredFeatures } from "../data/timeline";
@@ -43,6 +53,7 @@ import type { TileUrls } from "../map/layers";
 import type { MapApi } from "../map/MapView";
 import type { Selection } from "../map/selection";
 import type { Locate } from "../panels/ChangesPanel";
+import { AlertBanner } from "../panels/AlertBanner";
 import { DayCardDialog } from "../panels/DayCardDialog";
 import { DetailsPanel } from "../panels/DetailsPanel";
 import { ShortcutsHelp } from "../panels/ShortcutsHelp";
@@ -416,11 +427,32 @@ function Explorer({
   }, [chargersOn, liveDoc, liveNow]);
   // A record day (data/live.ts): offered while the layer is on, and shown in place of today when the
   // link names one the list knows. The status bar's pill and the chargers keep to the real present.
-  const [liveDays] = useAsync(state.live ? LIVE_DAYS_KEY : null, (signal) =>
+  const [liveDays] = useAsync(state.live || !state.embed ? LIVE_DAYS_KEY : null, (signal) =>
     loadLiveDays(config.dataBaseUrl, signal),
   );
   const recordDays = liveDays?.status === "ready" ? liveDays.value : null;
   const recordDay = recordDays?.days.find((day) => day.date === state.liveDay) ?? null;
+  // Something out of the ordinary gets one line above the map (data/alerts.ts): a price of zero or below
+  // today or tomorrow, or a new record day. Closed notices are remembered and do not come back.
+  const [closed, setClosed] = useState(closedAlerts);
+  const alert =
+    state.embed || state.live
+      ? null
+      : (alerts(liveDoc, recordDays, liveNow).find((each) => !closed.includes(each.id)) ?? null);
+  const closeAlert = (each: Alert): void => {
+    const next = [...closed, each.id];
+    setClosed(next);
+    rememberClosed(next);
+  };
+  const showAlert = (each: Alert): void => {
+    setState((s) => ({
+      ...s,
+      page: "map",
+      live: true,
+      liveDay: each.kind === "record" ? each.date : null,
+      liveHour: each.kind === "free" ? hourKey(each.lowest.hour) : null,
+    }));
+  };
   const [dayData, retryDay] = useAsync(recordDay?.key ?? null, (signal) =>
     loadLiveDay(config.dataBaseUrl, recordDay?.key ?? "", signal),
   );
@@ -930,6 +962,14 @@ function Explorer({
                 />
               </ErrorBoundary>
             </aside>
+          )}
+
+          {alert && !story && (
+            <div className={styles.alert}>
+              <ErrorBoundary area="alert" fallback={() => null}>
+                <AlertBanner alert={alert} onShow={showAlert} onClose={closeAlert} />
+              </ErrorBoundary>
+            </div>
           )}
 
           {welcomeShown && !story && (
