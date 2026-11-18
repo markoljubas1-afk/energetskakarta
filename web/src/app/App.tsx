@@ -658,6 +658,19 @@ function Explorer({
     }));
     setSpotlight({ kind: "technology", value: technology });
   };
+  // The fossil plants behind the hour's carbon footprint: the country's operating plants on those fuels,
+  // as a filter the reader can see and undo. Which of them ran in that hour is not known, and not claimed.
+  const showFossil = (country: CountryCode, technologies: Technology[]): void => {
+    setSpotlight(null);
+    setState((s) => ({
+      ...s,
+      page: "map",
+      layers: new Set([...s.layers, "plants"]),
+      countries: new Set([country]),
+      statuses: new Set(["operating"]),
+      technologies: new Set(technologies),
+    }));
+  };
   // What is on its way towards the 2030 target: the country's wind and solar plants under construction
   // and planned. A filter the reader can see and undo ("Poništi filtre"), not a hidden state.
   const showComing = (country: CountryCode): void => {
@@ -1073,6 +1086,7 @@ function Explorer({
                     live={liveDoc}
                     now={liveNow}
                     onShow={showGenerating}
+                    onShowFossil={showFossil}
                     learnHref={PATHS[i18n.lang].learn}
                     renewables={renewables?.status === "ready" ? renewables.value : null}
                     households={households?.status === "ready" ? households.value : null}

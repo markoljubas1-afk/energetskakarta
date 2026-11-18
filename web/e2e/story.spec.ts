@@ -44,7 +44,7 @@ test("the learning page links to the stories", async ({ page }) => {
     "href",
     "/?story=granice",
   );
-  await expect(page.locator(".glossary details")).toHaveCount(13);
+  await expect(page.locator(".glossary details")).toHaveCount(14);
   // the live box is filled by the page's own small script from the same data the map reads
   const now = page.locator("[data-live-now]");
   await expect(now).toBeVisible();

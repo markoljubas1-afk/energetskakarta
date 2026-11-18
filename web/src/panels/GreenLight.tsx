@@ -9,6 +9,7 @@ import {
   latestGreen,
   STALE_AFTER_HOURS,
 } from "../data/greenShare";
+import { carbonAt, FACTORS_SOURCE, shownGrams } from "../data/carbon";
 import type { Renewables } from "../data/eurostat";
 import { compare, type Households } from "../data/households";
 import { pricesAt, type Live } from "../data/live";
@@ -24,6 +25,8 @@ interface Props {
   now: Date;
   /** show on the map what generates the most in the chosen country right now */
   onShow: (country: CountryCode, technology: Technology) => void;
+  /** show on the map the country's operating plants on the given fossil fuels */
+  onShowFossil?: (country: CountryCode, technologies: Technology[]) => void;
   /** the learning page, which explains why the hour matters */
   learnHref: string;
   /** Eurostat's official yearly shares, for the 2030 target under the hour's figure; null: not loaded */
@@ -51,6 +54,7 @@ export function GreenLight({
   live,
   now,
   onShow,
+  onShowFossil,
   learnHref,
   renewables = null,
   households = null,
@@ -77,6 +81,9 @@ export function GreenLight({
     new Date(green.hour),
   );
   const share = percent(green.share);
+  // a calculation from the same hour's generation and published factors (data/carbon.ts), not a measurement
+  const carbon = carbonAt(live, country, green.index);
+  const fossil = carbon?.fossil ?? [];
   // the country's own yardstick, in words: the colour above stays the same fixed scale for every country
   const range = usual && !stale ? usualFor(usual, country, green.share) : null;
   // the day-ahead price of the same hour, where the country has a market: a green hour is often a cheap one
@@ -153,6 +160,12 @@ export function GreenLight({
               </dd>
             </div>
           )}
+          {carbon && (
+            <div>
+              <dt>{t("carbonLabel")}</dt>
+              <dd>{t("carbonValue", { grams: i18n.number(shownGrams(carbon), 0) })}</dd>
+            </div>
+          )}
           <div>
             <dt>{t("greenHour")}</dt>
             <dd>{stale ? t("greenStale", { hour, hours: age }) : t("greenFresh", { hour })}</dd>
@@ -173,6 +186,28 @@ export function GreenLight({
         >
           {t("greenShow", { technology: t(`tech_${green.top.technology}`).toLowerCase() })}
         </button>
+        {onShowFossil && fossil.length > 0 && (
+          <button
+            type="button"
+            className={styles.show}
+            onClick={() => {
+              onShowFossil(country, fossil);
+            }}
+          >
+            {t("carbonShow", {
+              fuels: fossil.map((technology) => t(`tech_${technology}`).toLowerCase()).join(", "),
+            })}
+          </button>
+        )}
+        {carbon && (
+          <p className={styles.note}>
+            {t("carbonNote")}{" "}
+            <a href={FACTORS_SOURCE.url} target="_blank" rel="noopener noreferrer">
+              {FACTORS_SOURCE.name}
+            </a>
+            .
+          </p>
+        )}
         <p className={styles.note}>
           {t("greenNote", { mid: percent(BAND_LIMITS.mid), high: percent(BAND_LIMITS.high) })}{" "}
           <a href={learnHref}>{t("greenWhy")}</a>

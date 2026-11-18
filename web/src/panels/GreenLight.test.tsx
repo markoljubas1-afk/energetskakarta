@@ -238,4 +238,51 @@ describe("GreenLight", () => {
       expect(document.querySelector("[data-green]")).not.toHaveTextContent(/Uobičajeno za/);
     });
   });
+
+  describe("carbon footprint", () => {
+    it("gives the calculated figure with what it is, and shows the fossil plants behind it", async () => {
+      const onShowFossil = vi.fn();
+      renderWithI18n(
+        <GreenLight
+          live={GREEN_LIVE}
+          now={SOON_AFTER}
+          onShow={vi.fn()}
+          onShowFossil={onShowFossil}
+          learnHref="/edukacija/"
+        />,
+      );
+      await userEvent.click(screen.getByRole("button", { name: /Hrvatska: 69 %/ }));
+      const card = document.querySelector("[data-green]");
+      if (!(card instanceof HTMLElement)) throw new Error("the card is in the document");
+      // hydro 600, wind 300, gas 300 MW: 137 g, shown to the nearest ten
+      expect(card).toHaveTextContent("Ugljični otisak proizvodnjeoko 140 g CO₂/kWh");
+      expect(card).toHaveTextContent("Ugljični otisak je izračun, nije mjerenje");
+      expect(card).toHaveTextContent("vjerojatno podcijenjen");
+      expect(within(card).getByRole("link", { name: /IPCC AR5/ })).toHaveAttribute(
+        "href",
+        expect.stringContaining("ipcc.ch"),
+      );
+      await userEvent.click(within(card).getByRole("button", { name: "Pokaži elektrane u pogonu: plin" }));
+      expect(onShowFossil).toHaveBeenCalledWith("HR", ["gas"]);
+    });
+
+    it("offers no fossil plants where none generated", async () => {
+      renderWithI18n(
+        <GreenLight
+          live={GREEN_LIVE}
+          now={SOON_AFTER}
+          onShow={vi.fn()}
+          onShowFossil={vi.fn()}
+          learnHref="/edukacija/"
+        />,
+      );
+      await userEvent.click(screen.getByRole("button", { name: /Hrvatska: 69 %/ }));
+      await userEvent.selectOptions(screen.getByRole("combobox", { name: "Zemlja" }), "SI");
+      const card = document.querySelector("[data-green]");
+      if (!(card instanceof HTMLElement)) throw new Error("the card is in the document");
+      // nuclear 700 and hydro 100 MW: (700 × 12 + 100 × 24) / 800 = 13.5 g
+      expect(card).toHaveTextContent("oko 10 g CO₂/kWh");
+      expect(within(card).queryByRole("button", { name: /Pokaži elektrane u pogonu/ })).toBeNull();
+    });
+  });
 });

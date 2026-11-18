@@ -123,6 +123,10 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
     termsHeading: "Pojmovnik",
     terms: [
       [
+        "Ugljični otisak struje (g CO₂/kWh)",
+        "Koliko grama CO₂ nastane po proizvedenom kilovatsatu. Na karti je to izračun, nije mjerenje: proizvodnja po izvoru u jednom satu (ENTSO-E) puta faktori IPCC-a za cijeli životni vijek elektrane (ugljen 820, plin 490, biomasa 230, sunce 48, voda 24, nuklearna 12, vjetar 11). IPCC ima jednu brojku za sav ugljen, pa je otisak zemalja koje lože lignit vjerojatno podcijenjen. Uvoz nije uračunat.",
+      ],
+      [
         "Instalirana snaga",
         "Najveća snaga za koju je elektrana izgrađena. Stvarna proizvodnja je gotovo uvijek manja: sunce ne sija noću, vjetar ne puše stalno, a hidroelektrana ovisi o dotoku vode.",
       ],
@@ -265,6 +269,10 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
     ],
     termsHeading: "Glossary",
     terms: [
+      [
+        "Carbon footprint of electricity (g CO₂/kWh)",
+        "How many grams of CO₂ arise per kilowatt-hour generated. On the map it is a calculation, not a measurement: an hour's generation by source (ENTSO-E) times the IPCC's life-cycle factors (coal 820, gas 490, biomass 230, solar 48, hydro 24, nuclear 12, wind 11). The IPCC has one figure for all coal, so the footprint of countries that burn lignite is probably understated. Imports are not counted.",
+      ],
       [
         "Installed capacity",
         "The greatest power a plant is built for. What it actually generates is almost always less: the sun does not shine at night, the wind does not always blow, and a hydro plant depends on how much water arrives.",

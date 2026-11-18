@@ -1335,6 +1335,19 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
 - Naslov naslovnice: „GridAtlas – interaktivna energetska karta Hrvatske i regije: elektrane, dalekovodi i
   trafostanice” (ključne riječi naprijed); uvod spominje stanje skladišta plina (zimske zalihe), hr i en.
 
+### 35-17 Ugljični otisak proizvodnje u kartici semafora — KOD GOTOV 2026-11-18
+- Odluka (korisnik, 2026-11-18): dopušten je JEDAN izračun na karti, jasno označen kao izračun, a ne
+  mjerenje: satna proizvodnja po izvoru (ENTSO-E) × faktori IPCC AR5 (2014), WG III, Annex III, tablica
+  A.III.2, medijani životnog ciklusa (ugljen 820, plin 490, biomasa 230, sunce 48, geotermalna 38, voda 24,
+  nuklearna 12, vjetar 11; provjereno u izvorniku). Iznimka od „ništa procijenjeno”; ne širi se bez nove odluke.
+- Ograde, sve ispisane u kartici: lignit se računa kao ugljen (820) → vjerojatno podcijenjeno; nafta i
+  „ostalo” nemaju faktor i izostavljeni su (ako je bez faktora > 10 % sata, brojke nema); crpne i baterije
+  nisu izvor; uvoz nije uračunat. Brojka se prikazuje zaokružena na 10 g.
+- Nema drugog semafora ni novih pragova: redak u postojećoj kartici (`data/carbon.ts`, `GreenLight`).
+- Gumb „Pokaži elektrane u pogonu: lignit, plin…” postavlja vidljiv filtar (zemlja, u pogonu, ta goriva).
+  Ne tvrdimo koje su elektrane radile u tom satu (taj podatak nemamo), zato bez pulsiranja.
+- Edukacija: pojam „Ugljični otisak struje” u rječniku. Sponzori: preskočeno (odluka od prije).
+
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda
   od 400 kV, prag spajanja krajeva 0,3 km (`pipeline/src/energymap/routes.py`). Karta: `stories/travel.ts`,
