@@ -6,6 +6,7 @@ energymap publish r2               upload a build to Cloudflare R2
 energymap eurostat fetch|publish-* official renewable shares (Eurostat)
 energymap images update            photographs of plants from Wikimedia Commons
 energymap solar fetch|publish-*    solar potential (Global Solar Atlas)
+energymap solar home-*             daily shapes of sun (PVGIS) and of a household (HEP ODS)
 """
 
 from __future__ import annotations
@@ -14,6 +15,7 @@ import argparse
 import json
 import logging
 import sys
+import time
 from collections.abc import Callable, Sequence
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
@@ -51,6 +53,7 @@ from energymap.images import wikimedia
 from energymap.marine import emodnet
 from energymap.osm.download import DownloadError, make_client
 from energymap.solar import download as solar_download
+from energymap.solar import home as solar_home
 from energymap.solar import potential as solar_potential
 from energymap.validate import BuildValidationError
 
@@ -384,6 +387,20 @@ def parser() -> argparse.ArgumentParser:
         _data_dir(step)
         if name == "publish-dir":
             step.add_argument("--out", type=Path, required=True, help="target directory, e.g. ../web/.data")
+    for name, text in (
+        (
+            "home-r2",
+            "read the daily shapes of sun (PVGIS) and of a household (HEP ODS) and publish them to R2",
+        ),
+        ("home-dir", "the same, to a local mirror"),
+    ):
+        step = solar.add_parser(name, help=text)
+        _data_dir(step)
+        step.add_argument(
+            "--year", type=int, default=None, help="the year of HEP ODS's curve (default: this year)"
+        )
+        if name == "home-dir":
+            step.add_argument("--out", type=Path, required=True, help="target directory, e.g. ../web/.data")
 
     src = groups.add_parser("sources", help="source files kept in the data bucket").add_subparsers(
         dest="step", required=True
@@ -656,6 +673,21 @@ def run(args: argparse.Namespace) -> None:
                 images_store, assets, client, datetime.now(UTC), allow_drop=args.allow_drop
             )
         print(json.dumps({"plantsWithWikidata": len(assets), "photographs": len(index["images"])}))
+    elif args.group == "solar" and args.step.startswith("home-"):
+        home_now = datetime.now(UTC)
+        home_year = args.year if args.year is not None else home_now.year
+        with make_client() as client:
+            # PVGIS allows 30 calls a second; a short pause keeps well under it
+            home_sun = solar_home.collect_sun(client, home_year, pause=lambda: time.sleep(0.2))
+            home_household = solar_home.fetch_household(client, home_year)
+        home_store: publish.ObjectStore = (
+            publish.R2Store.from_env() if args.step == "home-r2" else publish.DirectoryStore(args.out)
+        )
+        print(
+            json.dumps(
+                solar_home.publish_home(home_store, solar_home.build(home_sun, home_household, home_now))
+            )
+        )
     elif args.group == "solar":
         solar_dir = paths.root / "solar"
         if args.step == "fetch":
@@ -864,6 +896,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         eurostat_renewables.EurostatDataError,
         wikimedia.ImagesError,
         solar_potential.SolarDataError,
+        solar_home.HomeDataError,
         CountryDataError,
         tiles.TilesError,
         publish.PublishError,

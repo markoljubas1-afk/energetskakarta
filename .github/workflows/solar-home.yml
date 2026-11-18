@@ -1,0 +1,59 @@
+# The daily shapes behind the house in the solar calculator (Faza 42): the average day of sun in each month
+# for a grid of points over the region (PVGIS 5.3, EU JRC, about 270 small requests) and the standard load
+# curve of a household (HEP ODS, one spreadsheet a year), published to the data bucket as solar/home.json.
+# Both change at most once a year, so this runs when a person starts it, not on a schedule. If a source does
+# not say what the pipeline was written against, the run is red and what is published stays as it was.
+# No API key is needed.
+name: solar-home
+
+on:
+  workflow_dispatch:
+    inputs:
+      year:
+        description: "The year of HEP ODS's household curve (empty: this year)"
+        default: ""
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: solar-home
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check configuration
+        env:
+          HAS_R2: ${{ secrets.R2_ACCOUNT_ID != '' && secrets.R2_ACCESS_KEY_ID != '' && secrets.R2_SECRET_ACCESS_KEY != '' && secrets.R2_BUCKET != '' }}
+        run: |
+          if [ "$HAS_R2" != "true" ]; then
+            echo "::error::Not configured: R2_* secrets are required (infra/README.md)"
+            exit 1
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/pyproject.toml
+      - run: python -m pip install -e .
+      - name: Read the shapes and publish them
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          YEAR: ${{ inputs.year }}
+        run: |
+          if [ -n "$YEAR" ]; then
+            energymap solar home-r2 --data-dir data --year "$YEAR" >> "$GITHUB_STEP_SUMMARY"
+          else
+            energymap solar home-r2 --data-dir data >> "$GITHUB_STEP_SUMMARY"
+          fi
