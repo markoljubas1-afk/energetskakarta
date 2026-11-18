@@ -31,6 +31,8 @@ interface Props {
   basemapExpected: boolean;
   /** The map, once it is up: the share menu copies its link and saves its picture. */
   map: MapApi | null;
+  /** open the day in three figures as a picture; absent: the share menu does not offer it */
+  onDayCard?: (() => void) | undefined;
   /** Injected in tests; defaults to the current time. */
   now?: Date;
   /** one more item after the data's date: how green the electricity is right now (GreenLight.tsx) */
@@ -43,6 +45,7 @@ export function StatusBar({
   basemap,
   basemapExpected,
   map,
+  onDayCard,
   now = new Date(),
   children,
 }: Props) {
@@ -100,7 +103,7 @@ export function StatusBar({
           })}
         </ul>
       </PopoverMenu>
-      <ShareMenu map={map} />
+      <ShareMenu map={map} onDayCard={onDayCard} />
       {basemapExpected && basemap === "fallback" && (
         <span className={styles.notice} role="status">
           <TriangleAlert size={14} strokeWidth={1.75} aria-hidden="true" />

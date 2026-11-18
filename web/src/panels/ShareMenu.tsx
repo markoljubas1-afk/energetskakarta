@@ -1,4 +1,4 @@
-import { Code, Image, Link, Send, Share2 } from "lucide-react";
+import { Code, Image, Link, Newspaper, Send, Share2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { useI18n } from "../i18n";
@@ -20,6 +20,8 @@ interface Props {
    * null hides the button. Injected in tests; defaults to navigator.share.
    */
   nativeShare?: ((data: ShareData) => Promise<void>) | null;
+  /** open the day in three figures as a picture (DayCardDialog); absent: not offered */
+  onDayCard?: (() => void) | undefined;
 }
 
 type Copy = { kind: "idle" } | { kind: "done" } | { kind: "failed"; url: string };
@@ -52,6 +54,7 @@ export function ShareMenu({
   writeClipboard = defaultClipboard,
   now = () => new Date(),
   nativeShare = defaultNativeShare(),
+  onDayCard,
 }: Props) {
   const { t } = useI18n();
   const [copy, setCopy] = useState<Copy>({ kind: "idle" });
@@ -118,6 +121,14 @@ export function ShareMenu({
       }
     >
       <ul>
+        {onDayCard && (
+          <li>
+            <button type="button" className={styles.action} onClick={onDayCard}>
+              <Newspaper size={14} strokeWidth={1.75} aria-hidden="true" />
+              {t("dayCardOpen")}
+            </button>
+          </li>
+        )}
         {nativeShare && (
           <li>
             <button type="button" className={styles.action} onClick={onSend}>

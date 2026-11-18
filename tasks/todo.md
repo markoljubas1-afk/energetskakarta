@@ -1348,6 +1348,26 @@ sastava struje, disanje svjetla mreže, zadano samo dalekovodi, crveno za HEP be
   Ne tvrdimo koje su elektrane radile u tom satu (taj podatak nemamo), zato bez pulsiranja.
 - Edukacija: pojam „Ugljični otisak struje” u rječniku. Sponzori: preskočeno (odluka od prije).
 
+## Faza 40 — Dijeljenje: slika dana, detektor ekstrema, mjesečnik (dogovoreno 2026-11-18)
+Redoslijed koji je korisnik potvrdio: 40-1 slika dana → 40-2 detektor ekstrema → 40-3 mjesečnik.
+
+### 40-1 Slika dana: tri brojke za dijeljenje — KOD GOTOV 2026-11-18
+- „Podijeli” → „Slika dana: tri brojke za dijeljenje” otvara prozor (`DayCardDialog`) sa slikom 1200×630
+  nacrtanom u pregledniku (`share/dayCard.ts`, bez poslužitelja) i gumbom „Preuzmi sliku (PNG)”.
+- Brojke i njihovo vrijeme (svaka ima svoje, ispisano ispod): udio obnovljivih u zadnjem prijavljenom satu;
+  prosjek cijene dan unaprijed za sve sate tog dana (dan s rupom nema prosjek); popunjenost skladišta plina
+  za zadnji plinski dan (više skladišta: zbroj po volumenu). Čega nema, izostaje; stari podaci → nema slike.
+- Izvori su na slici (ENTSO-E; GIE AGSI kad je skladište na njoj). Skladišta se učitavaju tek pri otvaranju.
+
+### 40-2 Detektor ekstrema (nije počet)
+- Samo ono što možemo dokazati: rekord proizvodnje iz sunca ili vjetra (od 2020., iz `live/days`), i
+  cijena ≤ 0 sutra/danas. NE: „uvozi X % svoje struje” (nemamo satnu potrošnju).
+- Bez teksta „elektrane će plaćati da potrošite struju”.
+
+### 40-3 Mjesečnik (nije počet)
+- Dani sa cijenom ≤ 0, glavni izvor u mjesecu. Usporedba zaliha plina s prošlom godinom traži povijest
+  s AGSI-ja (sada imamo samo od studenoga 2026.).
+
 ### 35-3 Priča „Put jednog kilovatsata” s točkom koja putuje vodom — GOTOVO 2026-11-16 (vidljivo nakon gradnje s `routes.json`)
 - Izvedeno po planu ispod. Put na podacima od 16. 11.: Konjsko → Velebit → Melina → Tumbri, 407,7 km, tri voda
   od 400 kV, prag spajanja krajeva 0,3 km (`pipeline/src/energymap/routes.py`). Karta: `stories/travel.ts`,

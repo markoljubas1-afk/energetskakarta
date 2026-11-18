@@ -43,6 +43,7 @@ import type { TileUrls } from "../map/layers";
 import type { MapApi } from "../map/MapView";
 import type { Selection } from "../map/selection";
 import type { Locate } from "../panels/ChangesPanel";
+import { DayCardDialog } from "../panels/DayCardDialog";
 import { DetailsPanel } from "../panels/DetailsPanel";
 import { ShortcutsHelp } from "../panels/ShortcutsHelp";
 import { Header } from "../panels/Header";
@@ -449,7 +450,9 @@ function Explorer({
     gasFeaturesOf,
   );
   // gas in storage rides on the gas layer; a failure only means the storage bar is not shown
-  const [storageData] = useAsync(gasOn ? GAS_STORAGE_KEY : null, (signal) =>
+  // the day card wants it too, and asks only once it is opened
+  const [dayCardOpen, setDayCardOpen] = useState(false);
+  const [storageData] = useAsync(gasOn || dayCardOpen ? GAS_STORAGE_KEY : null, (signal) =>
     loadGasStorage(config.dataBaseUrl, signal),
   );
   const storageShown = storageData?.status === "ready" && storageData.value.kind === "ready";
@@ -1073,12 +1076,36 @@ function Explorer({
                 </ErrorBoundary>
               </div>
             )}
+            {dayCardOpen && (
+              <ErrorBoundary area="day-card" fallback={() => null}>
+                <DayCardDialog
+                  open
+                  onClose={() => {
+                    setDayCardOpen(false);
+                  }}
+                  live={liveDoc}
+                  storage={
+                    storageData?.status === "ready" && storageData.value.kind === "ready"
+                      ? storageData.value.storage
+                      : null
+                  }
+                  now={liveNow}
+                />
+              </ErrorBoundary>
+            )}
             <StatusBar
               current={current}
               dataBaseUrl={config.dataBaseUrl}
               basemap={basemap}
               basemapExpected={config.maptilerKey !== null}
               map={mapApi}
+              onDayCard={
+                liveDoc && !state.embed
+                  ? () => {
+                      setDayCardOpen(true);
+                    }
+                  : undefined
+              }
             >
               {liveDoc && !state.embed && (
                 <ErrorBoundary area="green" fallback={() => null}>
