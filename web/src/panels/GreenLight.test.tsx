@@ -206,14 +206,16 @@ describe("GreenLight", () => {
       await userEvent.click(screen.getByRole("button", { name: /Hrvatska: 69 %/ }));
       const card = (): Element | null => document.querySelector("[data-green]");
       expect(card()).toHaveTextContent(
-        "Uobičajeno za zemlju Hrvatska: u polovici dana zadnjih godinu dana dnevni udio bio je između 61 i 80 %. Ovaj sat je unutar toga.",
+        "Uobičajeno za Hrvatsku: u polovici dana zadnjih godinu dana dnevni udio bio je između 61 i 80 %. Ovaj sat je unutar toga.",
       );
       // the colour is still the fixed scale: 69 % is green in every country
       expect(card()).toHaveAttribute("data-green", "high");
       // Slovenia's 13 % is red on the fixed scale, and below what is usual for Slovenia too
       await userEvent.selectOptions(screen.getByRole("combobox", { name: "Zemlja" }), "SI");
       expect(card()).toHaveAttribute("data-green", "low");
-      expect(card()).toHaveTextContent(/između 28 i 43 %\. Ovaj sat je ispod toga\./);
+      expect(card()).toHaveTextContent(
+        /Uobičajeno za Sloveniju: .* između 28 i 43 %\. Ovaj sat je ispod toga\./,
+      );
     });
 
     it("says nothing about usual for an old figure or without the yardstick", async () => {
@@ -227,13 +229,13 @@ describe("GreenLight", () => {
         />,
       );
       await userEvent.click(screen.getByRole("button", { name: /Hrvatska: 69 %/ }));
-      expect(document.querySelector("[data-green]")).not.toHaveTextContent(/Uobičajeno za zemlju/);
+      expect(document.querySelector("[data-green]")).not.toHaveTextContent(/Uobičajeno za/);
       view.unmount();
       renderWithI18n(
         <GreenLight live={GREEN_LIVE} now={SOON_AFTER} onShow={vi.fn()} learnHref="/edukacija/" />,
       );
       await userEvent.click(screen.getByRole("button", { name: /Hrvatska: 69 %/ }));
-      expect(document.querySelector("[data-green]")).not.toHaveTextContent(/Uobičajeno za zemlju/);
+      expect(document.querySelector("[data-green]")).not.toHaveTextContent(/Uobičajeno za/);
     });
   });
 });

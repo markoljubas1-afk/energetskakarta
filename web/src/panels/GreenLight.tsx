@@ -125,7 +125,7 @@ export function GreenLight({
         {range && (
           <p className={styles.usual}>
             {t("usualRange", {
-              country: i18n.country(country),
+              subject: t(`usualFor_${country}`),
               low: percent(range.low),
               high: percent(range.high),
             })}{" "}
