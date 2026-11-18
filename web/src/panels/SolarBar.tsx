@@ -3,10 +3,12 @@ import { useState } from "react";
 
 import type { AsyncState } from "../app/useAsync";
 import { levelOf, NEAR_STATION_KM, nearestStation, stationSlugs, type HepLoad } from "../data/hep";
+import type { HomeShapes } from "../data/homeFlow";
 import { PANEL_W, roofSystem, valueAt, type SolarLoad } from "../data/solar";
 import { useI18n } from "../i18n";
 import { CAPACITY_COPY } from "../seo/capacityCopy";
 import { PATHS } from "../seo/pages";
+import { HomeFlow } from "./HomeFlow";
 import styles from "./SolarBar.module.css";
 
 interface Props {
@@ -20,6 +22,8 @@ interface Props {
   capacity?: AsyncState<HepLoad> | null;
   /** shows a substation on the capacity layer */
   onStation?: (id: string) => void;
+  /** the daily shapes of sun and of a household; null while loading or when there are none: no house */
+  home?: HomeShapes | null;
 }
 
 /** The European Commission's free calculator for a particular roof or plot (tilt, orientation, shading). */
@@ -30,7 +34,8 @@ export const PVGIS_URL = "https://re.jrc.ec.europa.eu/pvg_tools/en/";
  * clicked, and what the number is not. The figures are a model's long-term averages from the Global Solar
  * Atlas; the bar never lets them stand without that.
  */
-export function SolarBar({ data, point, onRetry, onClose, capacity = null, onStation }: Props) {
+export function SolarBar(props: Props) {
+  const { data, point, onRetry, onClose, capacity = null, onStation, home = null } = props;
   const i18n = useI18n();
   const { t } = i18n;
   const close = (
@@ -103,7 +108,7 @@ export function SolarBar({ data, point, onRetry, onClose, capacity = null, onSta
       </div>
       {point !== null && value !== null && (
         <>
-          <Roof yieldKwh={value} />
+          <Roof yieldKwh={value} point={point} home={home} />
           <Station capacity={capacity} point={point} {...(onStation ? { onStation } : {})} />
           <p className={styles.next}>
             {t("solarPvgis")}{" "}
@@ -197,12 +202,13 @@ const CONSUMPTION = { min: 1000, max: 15000, step: 250, start: 4000 } as const;
  * Kilowatt-hours rather than euros, because turning a bill into consumption would need a tariff we would
  * have to assume. What the answer is not is said under it: a yearly balance, not independence from the grid.
  */
-function Roof({ yieldKwh }: { yieldKwh: number }) {
+function Roof(props: { yieldKwh: number; point: { lng: number; lat: number }; home: HomeShapes | null }) {
+  const { yieldKwh, point, home } = props;
   const i18n = useI18n();
   const { t } = i18n;
   const [yearly, setYearly] = useState<number>(CONSUMPTION.start);
   const system = roofSystem(yearly, yieldKwh);
-  return (
+  const calculator = (
     <div className={styles.roof}>
       <h3>{t("roofTitle")}</h3>
       <label>
@@ -227,5 +233,14 @@ function Roof({ yieldKwh }: { yieldKwh: number }) {
       )}
       <p className={styles.note}>{t("roofNote")}</p>
     </div>
+  );
+  // the house is a block of its own beside the calculator: it has its own controls and their own layout
+  return (
+    <>
+      {calculator}
+      {system && home && (
+        <HomeFlow shapes={home} point={point} yearlyKwh={yearly} yieldKwh={yieldKwh} kwp={system.kwp} />
+      )}
+    </>
   );
 }

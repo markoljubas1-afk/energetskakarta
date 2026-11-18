@@ -27,6 +27,34 @@ const SOLAR = {
   image: "solar/pvout-0123456789abcdef.png",
 };
 
+/** The daily shapes behind the house: sun from 07:00 to 17:00 with its peak at noon, an evening household. */
+const DAY_OF_SUN = Array.from({ length: 24 }, (_, hour) => Math.max(0, 600 - 100 * Math.abs(hour - 12)));
+const DAY_OF_HOUSE = Array.from({ length: 24 }, (_, hour) => (hour >= 18 ? 200 : 90));
+const HOME = {
+  version: 1,
+  generatedAt: "2026-11-18T20:00:00+00:00",
+  timezone: "Europe/Zagreb",
+  sun: {
+    source: "PVGIS 5.3",
+    sourceUrl: "https://re.jrc.ec.europa.eu/pvg_tools/en/",
+    license: "CC-BY-4.0",
+    attribution: "PVGIS © European Communities, 2001-2026",
+    plane: { slopeDeg: 35, azimuthDeg: 0 },
+    unit: "W/m2",
+    grid: { west: 12, south: 44, step: 2, cols: 1, rows: 1 },
+    points: [Array.from({ length: 12 }, () => DAY_OF_SUN)],
+  },
+  household: {
+    source: "HEP ODS, nadomjesne krivulje opterećenja (NKO KSK), skupina kućanstvo K0",
+    sourceUrl: "https://www.hep.hr/ods/",
+    license: "HEP-ODS-permission",
+    year: 2026,
+    group: "K0",
+    unit: "W per 1000 kWh/year",
+    months: Array.from({ length: 12 }, () => DAY_OF_HOUSE),
+  },
+};
+
 async function open(page: Page): Promise<void> {
   await page.route("https://api.maptiler.com/**", (route) => route.abort());
   await page.route("**/local-data/solar/index.json", (route) => route.fulfill({ json: SOLAR }));
@@ -82,4 +110,50 @@ test("the bar folds away and a click on the map brings it back with the reading"
   if (!box) throw new Error("the map has no box");
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 3);
   await expect(bar.getByText("1.250", { exact: true })).toBeVisible();
+});
+
+test("the house under the calculator shows where the electricity goes, hour by hour, with a battery", async ({
+  page,
+}, testInfo) => {
+  await page.route("**/local-data/solar/home.json", (route) => route.fulfill({ json: HOME }));
+  await open(page);
+  const bar = page.getByRole("region", { name: "Sunčani potencijal" });
+  const box = await page.locator(".maplibregl-canvas").boundingBox();
+  if (!box) throw new Error("the map has no box");
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 3);
+  const house = bar.getByRole("img", { name: /paneli daju/ });
+  await house.scrollIntoViewIfNeeded();
+  // 13:00 without a battery: the panels cover the house and the rest goes to the grid
+  await expect(house).toHaveAccessibleName(
+    /^U 13:00, prosječan dan, \S+: paneli daju [\d,]+ kW, kuća troši [\d,]+ kW\. U mrežu ide [\d,]+ kW\.$/,
+  );
+  await expect(house.locator('[data-flow="pvToGrid"]')).toHaveCount(1);
+  await expect(house.locator('[data-flow="gridToHome"]')).toHaveCount(0);
+  await bar.screenshot({ path: testInfo.outputPath("house-noon.png") });
+
+  // 20:00: no sun, the grid feeds the house
+  const hour = bar.getByRole("slider", { name: "Sat u danu" });
+  await hour.fill("20");
+  await expect(house).toHaveAccessibleName(/^U 20:00, .*paneli daju 0 kW, .*Iz mreže dolazi [\d,]+ kW\.$/);
+  await expect(house.locator('[data-flow="gridToHome"]')).toHaveCount(1);
+  const before = await bar.getByText(/^Kroz godinu \(izračun\)/).textContent();
+
+  // with a battery the evening comes from it, and the year's shares rise beside the ones without it
+  await bar.getByRole("checkbox", { name: "Želim i kućnu bateriju" }).check();
+  await expect(house).toHaveAccessibleName(/Baterija daje kući [\d,]+ kW\.$/);
+  await expect(house.locator('[data-flow="batteryToHome"]')).toHaveCount(1);
+  await expect(house.locator('[data-flow="gridToHome"]')).toHaveCount(0);
+  const after = bar.getByText(/^Kroz godinu \(izračun\)/);
+  await expect(after).toContainText(/Bez baterije: \d+ % i \d+ %\./);
+  expect(await after.textContent()).not.toBe(before);
+  await expect(bar).toContainText("PVGIS © European Communities, 2001-2026");
+  await expect(bar).toContainText("HEP ODS, nadomjesne krivulje opterećenja");
+  await bar.screenshot({ path: testInfo.outputPath("house-evening-battery.png") });
+
+  // the drawing stays inside the bar
+  const drawing = await house.boundingBox();
+  const around = await bar.boundingBox();
+  if (!drawing || !around) throw new Error("no box");
+  expect(drawing.x).toBeGreaterThanOrEqual(around.x);
+  expect(drawing.x + drawing.width).toBeLessThanOrEqual(around.x + around.width + 0.5);
 });

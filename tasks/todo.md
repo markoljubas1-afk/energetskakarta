@@ -1439,7 +1439,13 @@ Nije napravljeno (moguće poslije): dnevni CO₂ u semaforu (ondje ostaje satni)
 Provjera: jedinični testovi za podatke i raspored slike, test u pregledniku za prozor i novu karticu,
 pregled preuzetih slika, zatim provjera uživo.
 
-## Faza 42 — Kuća s tokom energije u sunčanom kalkulatoru (PLAN, čeka potvrdu; provjera izvora 2026-11-18)
+## Faza 42 — Kuća s tokom energije u sunčanom kalkulatoru — KOD GOTOV 2026-11-18
+Korisnik potvrdio 2026-11-18: „imamo dopuštenje, gradi” (HEP ODS, krivulje NKO). Izvedeno: cjevovod
+`solar/home.py` + tijek `solar-home` (ručno, jednom godišnje) → `solar/home.json` (266 točaka, 182 sa suncem;
+oblik sunca iz PVGIS `DRcalc`, prosjek 2005.–2023., umjesto satnih nizova: jedan mali poziv po točki);
+web `data/homeFlow.ts`, `panels/HomeFlow.tsx` ispod kalkulatora za krov. Baterija: 5/10/15 kWh, gubitak 10 %
+pri punjenju (moj prijedlog; korisnik nije odgovorio posebno, ispisano uz prikaz). Uvjeti PVGIS-a: katalog
+JRC-a navodi CC BY 4.0, uz „PVGIS © European Communities”.
 Zahtjev korisnika 2026-11-18: uz izračun za krov prikazati kuću s animiranim tokom (sunce → kuća → mreža →
 baterija), klizač doba dana, prekidač „Želim i kućnu bateriju” s udjelom vlastite potrošnje.
 

@@ -47,6 +47,7 @@ import { StoryCard } from "../panels/StoryCard";
 import { GreenLight } from "../panels/GreenLight";
 import { GasStorageBar } from "../panels/GasStorageBar";
 import { SolarBar } from "../panels/SolarBar";
+import { HOME_KEY, loadHomeShapes } from "../data/homeFlow";
 import { loadSolar, SOLAR_KEY, solarImage, type SolarLoad } from "../data/solar";
 import { loadRoutes } from "../data/routes";
 import { loadRenewables, RENEWABLES_KEY } from "../data/eurostat";
@@ -551,6 +552,10 @@ function Explorer({
     retry: retrySolar,
     features: solarDoc,
   } = useOverlay(solarOn ? SOLAR_KEY : null, (signal) => loadSolar(config.dataBaseUrl, signal), solarOf);
+  // the house under the roof calculator: an extra, so its failure leaves the calculator as it is
+  const [homeShapes] = useAsync(solarOn ? HOME_KEY : null, (signal) =>
+    loadHomeShapes(config.dataBaseUrl, signal),
+  );
   const solarPicture = useMemo(
     () => (solarDoc ? solarImage(solarDoc, config.dataBaseUrl) : null),
     [solarDoc, config.dataBaseUrl],
@@ -1116,6 +1121,7 @@ function Explorer({
                     onClose={closeSolar}
                     capacity={capData}
                     onStation={showStation}
+                    home={homeShapes?.status === "ready" ? homeShapes.value : null}
                   />
                 </ErrorBoundary>
               </div>
