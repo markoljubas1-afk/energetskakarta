@@ -152,6 +152,30 @@ describe("the day in three figures", () => {
       expect(clicked).toHaveBeenCalledTimes(1);
     });
 
+    it("offers an upright picture for a story, saved under its own name", async () => {
+      const names: string[] = [];
+      vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function click(
+        this: HTMLAnchorElement,
+      ) {
+        names.push(this.download);
+      });
+      renderWithI18n(<DayCardDialog open onClose={vi.fn()} live={PRICED} storage={STORAGE} now={NOW} />);
+      const picture = screen.getByRole("img");
+      expect(picture).toHaveAttribute("width", "1200");
+      expect(screen.getByRole("radio", { name: "Vodoravna (objave, poveznice)" })).toBeChecked();
+
+      drawn.length = 0;
+      await userEvent.click(screen.getByRole("radio", { name: "Okomita (story)" }));
+      expect(picture).toHaveAttribute("width", "1080");
+      expect(picture).toHaveAttribute("height", "1920");
+      // the same words, drawn again for the new shape
+      expect(drawn).toEqual(expect.arrayContaining(["69", "100", "85", "€/MWh"]));
+      expect(drawn.join(" ")).toContain("gridatlas.eu");
+
+      await userEvent.click(screen.getByRole("button", { name: "Preuzmi sliku (PNG)" }));
+      expect(names).toEqual([expect.stringMatching(/^gridatlas-dan-hr-story-\d{4}-\d{2}-\d{2}\.png$/)]);
+    });
+
     it("shows another country with the figures it has, and says so when it has none", async () => {
       renderWithI18n(<DayCardDialog open onClose={vi.fn()} live={PRICED} storage={null} now={NOW} />);
       // Croatia was drawn first, with its price: only what is drawn from here on counts

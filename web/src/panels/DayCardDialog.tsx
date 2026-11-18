@@ -5,7 +5,15 @@ import type { GasStorage } from "../data/gasStorage";
 import { greenCountries } from "../data/greenShare";
 import type { Live } from "../data/live";
 import { useI18n, type I18n } from "../i18n";
-import { CARD_SIZE, dayCard, drawDayCard, type CardText, type DayCard } from "../share/dayCard";
+import {
+  CARD_FORMATS,
+  CARD_SIZES,
+  dayCard,
+  drawDayCard,
+  type CardFormat,
+  type CardText,
+  type DayCard,
+} from "../share/dayCard";
 import { download, fileStem, pictureTheme } from "../share/download";
 import styles from "./DayCardDialog.module.css";
 
@@ -76,6 +84,7 @@ export function DayCardDialog({ open, onClose, live, storage, now, home = "HR" }
   const canvas = useRef<HTMLCanvasElement>(null);
   const [chosen, setChosen] = useState(home);
   const [failed, setFailed] = useState(false);
+  const [format, setFormat] = useState<CardFormat>("wide");
 
   const countries = live ? greenCountries(live) : [];
   const country = countries.includes(chosen) ? chosen : (countries[0] ?? chosen);
@@ -101,8 +110,8 @@ export function DayCardDialog({ open, onClose, live, storage, now, home = "HR" }
     if (!open || !element || !words) return;
     const ctx = element.getContext("2d");
     if (!ctx) return;
-    drawDayCard(ctx, words, pictureTheme(element).font);
-  }, [open, summary]);
+    drawDayCard(ctx, words, pictureTheme(element).font, format);
+  }, [open, summary, format]);
 
   const save = (): void => {
     const element = canvas.current;
@@ -114,7 +123,8 @@ export function DayCardDialog({ open, onClose, live, storage, now, home = "HR" }
         return;
       }
       setFailed(false);
-      download(blob, `${fileStem(`gridatlas-dan-${country}`, now)}.png`);
+      const shape = format === "story" ? "-story" : "";
+      download(blob, `${fileStem(`gridatlas-dan-${country}${shape}`, now)}.png`);
     }, "image/png");
   };
 
@@ -145,11 +155,28 @@ export function DayCardDialog({ open, onClose, live, storage, now, home = "HR" }
       )}
       {text ? (
         <>
+          <fieldset className={styles.formats}>
+            <legend>{t("dayCardFormat")}</legend>
+            {CARD_FORMATS.map((each) => (
+              <label key={each}>
+                <input
+                  type="radio"
+                  name="day-card-format"
+                  checked={format === each}
+                  onChange={() => {
+                    setFormat(each);
+                  }}
+                />
+                {t(`dayCardFormat_${each}`)}
+              </label>
+            ))}
+          </fieldset>
           <canvas
             ref={canvas}
             className={styles.picture}
-            width={CARD_SIZE.width}
-            height={CARD_SIZE.height}
+            data-format={format}
+            width={CARD_SIZES[format].width}
+            height={CARD_SIZES[format].height}
             role="img"
             aria-label={summary}
           />

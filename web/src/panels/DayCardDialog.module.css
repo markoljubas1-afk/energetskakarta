@@ -95,3 +95,34 @@
   font-size: 12.5px;
   line-height: 1.45;
 }
+
+.formats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0 0 10px;
+  padding: 0;
+  border: 0;
+  font-size: 13px;
+}
+
+.formats legend {
+  padding: 0;
+  margin-bottom: 4px;
+  color: var(--muted);
+}
+
+.formats label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+/* the upright picture is shown whole: as tall as the window allows, centred */
+.picture[data-format="story"] {
+  width: auto;
+  max-width: 100%;
+  max-height: min(56dvh, 520px);
+  margin: 0 auto;
+}

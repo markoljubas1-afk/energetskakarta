@@ -85,8 +85,16 @@ export interface CardText {
   footer: string;
 }
 
-/** The size link previews are shown at. */
-export const CARD_SIZE = { width: 1200, height: 630 } as const;
+/**
+ * Two shapes of the same card: "wide" at the size link previews and posts are shown at, "story" upright
+ * for a phone's full screen (stories), with the figures one under another.
+ */
+export const CARD_FORMATS = ["wide", "story"] as const;
+export type CardFormat = (typeof CARD_FORMATS)[number];
+export const CARD_SIZES: Record<CardFormat, { width: number; height: number }> = {
+  wide: { width: 1200, height: 630 },
+  story: { width: 1080, height: 1920 },
+};
 
 const MARGIN = 64;
 const COLOURS = {
@@ -130,19 +138,118 @@ export function figureFonts(
   measure: (text: string, size: number) => number,
   figure: Pick<CardFigure, "value" | "unit">,
   width: number,
+  full: { value: number; unit: number; gap: number } = { value: VALUE_PX, unit: UNIT_PX, gap: GAP_PX },
 ): { value: number; unit: number; gap: number } {
-  const needed = measure(figure.value, VALUE_PX) + GAP_PX + measure(figure.unit, UNIT_PX);
+  const needed = measure(figure.value, full.value) + full.gap + measure(figure.unit, full.unit);
   const scale = Math.min(1, width / needed);
   return {
-    value: Math.floor(VALUE_PX * scale),
-    unit: Math.floor(UNIT_PX * scale),
-    gap: Math.round(GAP_PX * scale),
+    value: Math.floor(full.value * scale),
+    unit: Math.floor(full.unit * scale),
+    gap: Math.round(full.gap * scale),
   };
 }
 
-/** Draw the card on a canvas of CARD_SIZE. */
-export function drawDayCard(ctx: CanvasRenderingContext2D, text: CardText, font: string): void {
-  const { width, height } = CARD_SIZE;
+/**
+ * The upright card's measures. Three figures have to share the height two would have to themselves, so they
+ * are set tighter; the footer keeps its place either way.
+ */
+const STORY = {
+  roomy: { top: 330, title: 68, value: 210, unit: 76, afterValue: 70, label: 46, note: 36, between: 64 },
+  tight: { top: 250, title: 60, value: 150, unit: 56, afterValue: 54, label: 42, note: 32, between: 40 },
+} as const;
+/** where the last line of the footer sits, above the phone's own bar */
+const STORY_FOOTER_FROM_BOTTOM = 210;
+
+/** The measures for a card of this many figures. */
+function storyLayout(figures: number): (typeof STORY)[keyof typeof STORY] {
+  return figures > 2 ? STORY.tight : STORY.roomy;
+}
+
+/** Upright, for a story: the figures one under another, clear of the phone's own bars at top and bottom. */
+function drawStory(ctx: CanvasRenderingContext2D, text: CardText, font: string): void {
+  const { width, height } = CARD_SIZES.story;
+  const margin = 96;
+  const room = width - 2 * margin;
+  const measure = (each: string): number => ctx.measureText(each).width;
+  const background = ctx.createLinearGradient(0, 0, 0, height);
+  background.addColorStop(0, COLOURS.top);
+  background.addColorStop(1, COLOURS.bottom);
+  ctx.fillStyle = background;
+  ctx.fillRect(0, 0, width, height);
+  const bar = ctx.createLinearGradient(0, 0, width, 0);
+  bar.addColorStop(0, COLOURS.warm);
+  bar.addColorStop(1, COLOURS.accent);
+  ctx.fillStyle = bar;
+  ctx.fillRect(0, 0, width, 16);
+  ctx.textBaseline = "alphabetic";
+  ctx.textAlign = "left";
+
+  const m = storyLayout(text.figures.length);
+  let y: number = m.top;
+  ctx.fillStyle = COLOURS.ink;
+  ctx.font = `700 ${String(m.title)}px ${font}`;
+  for (const line of wrap(measure, text.title, room)) {
+    ctx.fillText(line, margin, y);
+    y += Math.round(m.title * 1.2);
+  }
+  ctx.fillStyle = COLOURS.muted;
+  ctx.font = `400 ${String(Math.round(m.title * 0.65))}px ${font}`;
+  ctx.fillText(text.subtitle, margin, y + 10);
+  y += 10 + m.between * 2;
+
+  for (const figure of text.figures) {
+    const sizes = figureFonts(
+      (each, size) => {
+        ctx.font = `700 ${String(size)}px ${font}`;
+        return ctx.measureText(each).width;
+      },
+      figure,
+      room,
+      { value: m.value, unit: m.unit, gap: 20 },
+    );
+    y += sizes.value;
+    ctx.fillStyle = COLOURS.accent;
+    ctx.font = `700 ${String(sizes.value)}px ${font}`;
+    ctx.fillText(figure.value, margin, y);
+    const after = margin + ctx.measureText(figure.value).width + sizes.gap;
+    ctx.font = `600 ${String(sizes.unit)}px ${font}`;
+    ctx.fillText(figure.unit, after, y);
+    y += m.afterValue;
+    ctx.fillStyle = COLOURS.ink;
+    ctx.font = `500 ${String(m.label)}px ${font}`;
+    for (const line of wrap(measure, figure.label, room)) {
+      ctx.fillText(line, margin, y);
+      y += Math.round(m.label * 1.25);
+    }
+    ctx.fillStyle = COLOURS.muted;
+    ctx.font = `400 ${String(m.note)}px ${font}`;
+    for (const line of wrap(measure, figure.note, room)) {
+      ctx.fillText(line, margin, y);
+      y += Math.round(m.note * 1.28);
+    }
+    y += m.between;
+  }
+
+  ctx.fillStyle = COLOURS.muted;
+  ctx.font = `400 34px ${font}`;
+  const footer = wrap(measure, text.footer, room);
+  footer.forEach((line, at) => {
+    ctx.fillText(line, margin, height - STORY_FOOTER_FROM_BOTTOM - (footer.length - 1 - at) * 44);
+  });
+}
+
+/** Draw the card on a canvas of the format's size (CARD_SIZES). */
+export function drawDayCard(
+  ctx: CanvasRenderingContext2D,
+  text: CardText,
+  font: string,
+  format: CardFormat = "wide",
+): void {
+  if (format === "story") {
+    drawStory(ctx, text, font);
+    return;
+  }
+  const { width, height } = CARD_SIZES.wide;
   const background = ctx.createLinearGradient(0, 0, 0, height);
   background.addColorStop(0, COLOURS.top);
   background.addColorStop(1, COLOURS.bottom);

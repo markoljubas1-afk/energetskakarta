@@ -58,6 +58,21 @@ test("the share menu opens the day card, which is drawn and saved as a PNG", asy
   expect(file.suggestedFilename()).toMatch(/^gridatlas-dan-[a-z]{2}-\d{4}-\d{2}-\d{2}\.png$/);
   await file.saveAs(testInfo.outputPath("day-card.png"));
 
+  // the upright shape for a story: the same figures on a 1080 × 1920 picture, under its own file name
+  await dialog.getByRole("radio", { name: "Okomita (story)" }).check();
+  await expect(picture).toHaveAttribute("height", "1920");
+  const shown = await picture.boundingBox();
+  const fits = await dialog.boundingBox();
+  if (!shown || !fits) throw new Error("no box");
+  // shown whole and undistorted, inside a dialog that still fits the screen
+  expect(shown.width / shown.height).toBeCloseTo(1080 / 1920, 1);
+  expect(fits.y + fits.height).toBeLessThanOrEqual(viewport.height);
+  const story = page.waitForEvent("download");
+  await dialog.getByRole("button", { name: "Preuzmi sliku (PNG)" }).click();
+  const upright = await story;
+  expect(upright.suggestedFilename()).toMatch(/^gridatlas-dan-[a-z]{2}-story-\d{4}-\d{2}-\d{2}\.png$/);
+  await upright.saveAs(testInfo.outputPath("day-card-story.png"));
+
   await dialog.getByRole("button", { name: "Zatvori" }).click();
   await expect(dialog).toBeHidden();
 });
