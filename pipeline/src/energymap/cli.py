@@ -29,6 +29,7 @@ from energymap.cities import read as cities_read
 from energymap.conflate import OverridesError
 from energymap.entsoe import fetch as energy_fetch
 from energymap.entsoe import live as energy_live
+from energymap.entsoe import prices as energy_prices
 from energymap.entsoe import records as live_records
 from energymap.entsoe import release as energy_release
 from energymap.entsoe import usual as energy_usual
@@ -182,6 +183,21 @@ def parser() -> argparse.ArgumentParser:
             step.add_argument(
                 "--days", type=_bounded_int(1, 366), default=7, help="how many days back, default 7"
             )
+
+    for name, text in (
+        ("prices-r2", "fetch monthly day-ahead price totals and publish them to Cloudflare R2"),
+        ("prices-dir", "the same, into a local mirror"),
+    ):
+        step = energy.add_parser(name, help=text)
+        _data_dir(step)
+        step.add_argument(
+            "--months",
+            type=_bounded_int(1, 60),
+            default=2,
+            help="how many months back, the current one included; default 2",
+        )
+        if name == "prices-dir":
+            step.add_argument("--out", type=Path, required=True)
 
     pull = energy.add_parser("pull", help="download the published yearly files (fresh machine)")
     _data_dir(pull)
@@ -694,6 +710,19 @@ def run(args: argparse.Namespace) -> None:
     elif args.group == "energy" and args.step == "pull":
         with make_client() as client:
             print(json.dumps(energy_release.pull(client, args.baseline_url, paths.root / "energy")))
+    elif args.group == "energy" and args.step.startswith("prices"):
+        now = datetime.now(UTC)
+        price_store: publish.ObjectStore = (
+            publish.R2Store.from_env() if args.step == "prices-r2" else publish.DirectoryStore(args.out)
+        )
+        with EntsoeClient.from_env() as client:
+            price_document = energy_prices.publish_prices(
+                price_store,
+                client,
+                energy_prices.months_back(now.astimezone(ENERGY_TZ).date(), args.months),
+                now,
+            )
+        print(json.dumps(sorted(price_document["zones"][energy_prices.HOME]["months"])))
     elif args.group == "energy" and args.step.startswith("publish"):
         target_store: publish.ObjectStore = (
             publish.R2Store.from_env() if args.step == "publish-r2" else publish.DirectoryStore(args.out)

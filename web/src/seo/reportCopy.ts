@@ -87,6 +87,10 @@ interface ReportCopy {
     co2: (grams: string) => string;
     /** the country of the region with the highest renewable share that month */
     top: (country: string, share: string) => string;
+    /** the day-ahead price at or below zero: `days` and `hours` are counts with their nouns */
+    free: (days: string, hours: string, lowest: string) => string;
+    /** a whole month without such an hour */
+    neverFree: (lowest: string) => string;
     share: string;
   };
   comparison: (name: string, share: string) => string;
@@ -146,6 +150,10 @@ export const REPORT_COPY: Record<Lang, ReportCopy> = {
       co2: (grams) =>
         `CO₂ intenzitet proizvodnje: oko ${grams} g/kWh (izračun iz faktora IPCC-a, ne mjerenje).`,
       top: (country, share) => `Najveći udio obnovljivih u regiji: ${country} (${share}).`,
+      free: (days, hours, lowest) =>
+        `Cijena struje na burzi (dan unaprijed) bila je nula ili niža ${days}, ukupno ${hours}; najniža je bila ${lowest} €/MWh. To je veleprodajna cijena; račun kućanstva je ne prati.`,
+      neverFree: (lowest) =>
+        `Cijena struje na burzi (dan unaprijed) nijedan sat nije pala na nulu; najniža je bila ${lowest} €/MWh.`,
       share: "Slobodno dijeljenje uz navođenje izvora: gridatlas.eu.",
     },
     comparison: (name, share) => `${name}: ${share}`,
@@ -221,6 +229,10 @@ export const REPORT_COPY: Record<Lang, ReportCopy> = {
       co2: (grams) =>
         `CO₂ intensity of generation: about ${grams} g/kWh (calculated from IPCC factors, not measured).`,
       top: (country, share) => `Highest renewable share in the region: ${country} (${share}).`,
+      free: (days, hours, lowest) =>
+        `The day-ahead exchange price was zero or below ${days}, ${hours} in all; the lowest was ${lowest} €/MWh. It is the wholesale price; a household bill does not follow it.`,
+      neverFree: (lowest) =>
+        `The day-ahead exchange price never fell to zero; the lowest hour was ${lowest} €/MWh.`,
       share: "Free to share with the source named: gridatlas.eu.",
     },
     comparison: (name, share) => `${name}: ${share}`,
@@ -273,3 +285,23 @@ export const REPORT_COPY: Record<Lang, ReportCopy> = {
     ],
   },
 };
+
+/**
+ * "na 6 dana" / "u 17 sati" / "on 6 days" / "17 hours": a count with its noun in the case the sentence
+ * needs. Croatian: 1 (but not 11) takes the singular, 2 to 4 (but not 12 to 14) their own form, the rest
+ * the genitive plural.
+ */
+export function countOf(lang: Lang, unit: "day" | "hour", count: number): string {
+  const number = new Intl.NumberFormat(lang === "hr" ? "hr-HR" : "en-GB").format(count);
+  if (lang === "en") {
+    const noun = unit === "day" ? (count === 1 ? "day" : "days") : count === 1 ? "hour" : "hours";
+    return unit === "day" ? `on ${number} ${noun}` : `${number} ${noun}`;
+  }
+  const last = count % 10;
+  const teens = count % 100 >= 11 && count % 100 <= 14;
+  const form = !teens && last === 1 ? 0 : !teens && last >= 2 && last <= 4 ? 1 : 2;
+  // "u 1 danu", "u 2 dana", "u 5 dana"; "1 sat", "2 sata", "5 sati"
+  const noun =
+    unit === "day" ? (["danu", "dana", "dana"] as const)[form] : (["sat", "sata", "sati"] as const)[form];
+  return unit === "day" ? `u ${number} ${noun}` : `${number} ${noun}`;
+}

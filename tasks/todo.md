@@ -1375,10 +1375,12 @@ Redoslijed koji je korisnik potvrdio: 40-1 slika dana → 40-2 detektor ekstrema
   Dodano: odjeljak „Ukratko” na vrhu (glavni izvor, udio obnovljivih uz promjenu prema istom mjesecu lani,
   CO₂ intenzitet, zemlja s najvećim udjelom obnovljivih u regiji) i redak „Slobodno dijeljenje uz navođenje
   izvora: gridatlas.eu.”
-- NIJE napravljeno, jer podatka nema: (a) „X dana s cijenom ≤ 0” — povijest cijena se ne sprema (samo
-  trodnevni prozor u `live/current.json`); treba nova obrada koja dnevno sprema satne cijene po zoni.
-  (b) „zalihe plina veće/manje nego lani” — AGSI povijest imamo od studenoga 2026.; treba jednokratno
-  povući prošlu godinu.
+- (a) „X dana s cijenom ≤ 0” — KOD GOTOV 2026-11-18: `entsoe/prices.py` sprema mjesečne zbrojeve cijene dan
+  unaprijed za HR (`energy/prices.json`: sati i dani ≤ 0, najniži sat, prosjek; sat = prosjek aukcije za taj
+  sat, kao u sloju uživo). Korak u `energy-daily` (zadnja 2 mjeseca dnevno; `price_months` za povijest).
+  Izvještaj piše natuknicu samo za mjesec kojem svaki sat ima cijenu.
+- (b) NIJE napravljeno: „zalihe plina veće/manje nego lani” — AGSI povijest imamo od studenoga 2026.; treba
+  jednokratno povući prošlu godinu.
 - Ugljični otisak u kartici semafora (35-17) sada koristi isti izračun kao izvještaji (`data/co2.ts`):
   nafta 650 i „ostalo” 700 g/kWh su pretpostavke i tako pišu u kartici (ranije: izostavljeni). L-079.
 

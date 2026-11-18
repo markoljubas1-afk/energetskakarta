@@ -17,6 +17,7 @@ import { CityRegisterSchema } from "../data/cities";
 import { CurrentSchema, type Current } from "../data/current";
 import { DiffSchema } from "../data/diff";
 import { EnergyPointerSchema, PeriodsSchema } from "../data/energy";
+import { PRICE_MONTHS_KEY, PriceMonthsSchema } from "../data/priceMonths";
 import { checkedRenewables, RENEWABLES_KEY, RenewablesSchema } from "../data/eurostat";
 import { GEOTHERMAL_KEY, GeothermalSchema } from "../data/geothermal";
 import { SUPPORT_CONTENT } from "../support";
@@ -158,6 +159,7 @@ export async function loadSiteData(options: PrerenderOptions): Promise<SiteData>
     live,
     geothermal,
     renewables,
+    priceMonths,
   ] = await Promise.all([
     loadJson(options, current.stats, StatsSchema),
     loadJson(options, current.search, SearchIndexSchema),
@@ -170,6 +172,7 @@ export async function loadSiteData(options: PrerenderOptions): Promise<SiteData>
     loadOptionalJson(options, "live/current.json", LiveSchema),
     loadOptionalJson(options, GEOTHERMAL_KEY, GeothermalSchema),
     loadOptionalJson(options, RENEWABLES_KEY, RenewablesSchema),
+    loadOptionalJson(options, PRICE_MONTHS_KEY, PriceMonthsSchema),
   ]);
   // the pointer names the file with monthly and yearly totals; once it exists, that file must load
   const energy = energyPointer ? await loadJson(options, energyPointer.periods.key, PeriodsSchema) : null;
@@ -189,6 +192,7 @@ export async function loadSiteData(options: PrerenderOptions): Promise<SiteData>
     timeline,
     geothermal,
     renewables: renewables ? checkedRenewables(renewables) : null,
+    priceMonths,
     energyUpdatedAt: energyPointer?.updatedAt ?? null,
     records,
     builtAt: new Date().toISOString(),

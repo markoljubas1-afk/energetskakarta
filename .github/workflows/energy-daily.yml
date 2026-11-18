@@ -10,6 +10,10 @@ on:
         description: "How many days back to refetch"
         default: "7"
         required: true
+      price_months:
+        description: "How many months of day-ahead price totals to fetch (2 daily; more to fill history)"
+        default: "2"
+        required: true
 
 permissions:
   contents: read
@@ -66,6 +70,16 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: energymap energy publish-r2 --data-dir data
+      - name: Monthly day-ahead price totals
+        # hours and days at or below zero per month, for the monthly reports; the published months are kept
+        env:
+          ENTSOE_TOKEN: ${{ secrets.ENTSOE_TOKEN }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          MONTHS: ${{ inputs.price_months || '2' }}
+        run: energymap energy prices-r2 --months "$MONTHS"
       - name: Report failure as an issue
         if: failure() && github.event_name == 'schedule'
         env:

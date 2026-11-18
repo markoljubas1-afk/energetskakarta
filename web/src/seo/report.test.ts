@@ -17,7 +17,8 @@ import {
   reportPages,
   shiftMonth,
 } from "./report";
-import { inMonth, monthName } from "./reportCopy";
+import type { PriceMonths } from "../data/priceMonths";
+import { countOf, inMonth, monthName } from "./reportCopy";
 import { bareSite } from "./site.fixture";
 import { llmsTxt } from "./sitemap";
 import { transitionPages } from "./transition";
@@ -172,6 +173,65 @@ describe("monthly reports", () => {
     );
     // Slovenia has no other complete month: in August only Croatia
     expect(plain(report("/izvjestaji/2026-08/").sections[2]?.html ?? "")).not.toContain("Slovenija</a>");
+  });
+
+  it("say on how many days the exchange price was zero or below, for a month that is fully priced", () => {
+    const month = (extra: object): PriceMonths => ({
+      version: 1,
+      generatedAt: "2026-11-18T09:00:00+00:00",
+      source: "ENTSO-E Transparency Platform",
+      timezone: "Europe/Zagreb",
+      zones: {
+        HR: {
+          zone: "10YHR-HEP------M",
+          months: {
+            "2026-09": {
+              hours: 720,
+              reported: 720,
+              freeHours: 6,
+              freeDays: 2,
+              min: -20.5,
+              minAt: "2026-09-06T13:00:00+02:00",
+              average: 89.9,
+              ...extra,
+            },
+          },
+        },
+      },
+    });
+    const brief = (prices: PriceMonths | null): string =>
+      plain(report("/izvjestaji/2026-09/", { ...site, priceMonths: prices }).sections[0]?.html ?? "");
+    expect(brief(month({}))).toContain(
+      "<li>Cijena struje na burzi (dan unaprijed) bila je nula ili niža u 2 dana, ukupno 6 sati; najniža je bila −20,5 €/MWh. To je veleprodajna cijena; račun kućanstva je ne prati.</li>",
+    );
+    expect(brief(month({ freeHours: 0, freeDays: 0, min: 12.4 }))).toContain(
+      "<li>Cijena struje na burzi (dan unaprijed) nijedan sat nije pala na nulu; najniža je bila 12,4 €/MWh.</li>",
+    );
+    // a month with a gap in its prices, and a release without the totals, say nothing about the price
+    expect(brief(month({ reported: 700 }))).not.toContain("Cijena struje na burzi");
+    expect(brief(null)).not.toContain("Cijena struje na burzi");
+    // the noun follows the number, in both languages
+    expect([1, 2, 5, 11, 21, 22].map((n) => countOf("hr", "day", n))).toEqual([
+      "u 1 danu",
+      "u 2 dana",
+      "u 5 dana",
+      "u 11 dana",
+      "u 21 danu",
+      "u 22 dana",
+    ]);
+    expect([1, 3, 5, 12, 21, 24].map((n) => countOf("hr", "hour", n))).toEqual([
+      "1 sat",
+      "3 sata",
+      "5 sati",
+      "12 sati",
+      "21 sat",
+      "24 sata",
+    ]);
+    expect([countOf("en", "day", 1), countOf("en", "day", 6), countOf("en", "hour", 1)]).toEqual([
+      "on 1 day",
+      "on 6 days",
+      "1 hour",
+    ]);
   });
 
   it("mention a HEP ODS release in the month it came out, and link the months to each other", () => {

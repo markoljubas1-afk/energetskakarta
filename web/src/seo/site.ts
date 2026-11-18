@@ -2,6 +2,7 @@
  * What a static page is and where it lives (Faza 26 split from pages.ts): the site data, the page model, the
  * addresses of every kind of page, and the JSON-LD the pages share.
  */
+import type { PriceMonths } from "../data/priceMonths";
 import type { Door } from "./markup";
 import type { CityRegister } from "../data/cities";
 import type { Current } from "../data/current";
@@ -69,6 +70,8 @@ export interface SiteData {
   geothermal?: Geothermal | null;
   /** the official renewable shares from Eurostat (Faza 28), when the bucket has them */
   renewables?: Renewables | null;
+  /** monthly totals of the day-ahead price (hours and days at or below zero), when the bucket has them */
+  priceMonths?: PriceMonths | null;
   /** when ENTSO-E's monthly and yearly totals were last updated (the energy pointer), when known */
   energyUpdatedAt?: string | null;
   /** when this build of the pages ran: the day a changed page is dated in the sitemap (Faza 31) */

@@ -6,6 +6,7 @@
  * (`COMPLETE_COVERAGE`), so a report never shows half a month. No energy data for Croatia, no reports.
  */
 import { intensity } from "../data/co2";
+import { priceMonth } from "../data/priceMonths";
 import { latestShare, RES_TARGET_2030 } from "../data/eurostat";
 import { trend } from "../data/hep";
 import { SCOPE_COUNTRIES, TECHNOLOGIES, type CountryCode } from "../domain";
@@ -14,7 +15,7 @@ import { LANGS, type Lang } from "../state/url";
 import { COMPLETE_COVERAGE, largestSource, periodRows, type PeriodRow } from "./energyPages";
 import type { FeedEntry } from "./feed";
 import { escapeHtml as e, linkedTable, list, stationsOf } from "./markup";
-import { inMonth, monthName, REPORT_COPY } from "./reportCopy";
+import { countOf, inMonth, monthName, REPORT_COPY } from "./reportCopy";
 import { TRANSITION_COPY } from "./transitionCopy";
 import { homeCrumb, other, PATHS, publisher, type Section, type SiteData, type StaticPage } from "./site";
 
@@ -130,7 +131,7 @@ function leadSentence(lang: Lang, ctx: Context, month: string): string {
 }
 
 /** The month in a few points, each one a figure from the tables below, and the line that invites sharing. */
-function briefSection(lang: Lang, ctx: Context, month: string): Section | null {
+function briefSection(site: SiteData, lang: Lang, ctx: Context, month: string): Section | null {
   const copy = REPORT_COPY[lang].brief;
   const i18n = createI18n(lang);
   const hr = ctx.byCountry.get("HR");
@@ -163,6 +164,16 @@ function briefSection(lang: Lang, ctx: Context, month: string): Section | null {
     }
   }
   if (top) points.push(copy.top(i18n.country(top.code), i18n.percent(top.share)));
+  // only a month whose every hour has a price says how many of them were free
+  const prices = priceMonth(site.priceMonths, "HR", month);
+  if (prices) {
+    const lowest = i18n.number(prices.min, 2);
+    points.push(
+      prices.freeHours > 0
+        ? copy.free(countOf(lang, "day", prices.freeDays), countOf(lang, "hour", prices.freeHours), lowest)
+        : copy.neverFree(lowest),
+    );
+  }
   return { heading: copy.heading, html: `${list(points.map((point) => e(point)))}<p>${e(copy.share)}</p>` };
 }
 
@@ -258,7 +269,7 @@ function reportPage(site: SiteData, lang: Lang, ctx: Context, month: string): St
   const row = ctx.byCountry.get("HR")?.get(month);
   const load =
     row && row.load !== null && row.loadCoverage >= COMPLETE_COVERAGE ? i18n.energy(row.load) : null;
-  const brief = briefSection(lang, ctx, month);
+  const brief = briefSection(site, lang, ctx, month);
   const sections: Section[] = [
     ...(brief ? [brief] : []),
     sourcesSection(lang, ctx, month),
