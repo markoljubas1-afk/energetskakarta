@@ -44,7 +44,14 @@ test("the learning page links to the stories", async ({ page }) => {
     "href",
     "/?story=granice",
   );
-  await expect(page.locator(".glossary details")).toHaveCount(14);
+  // fourteen terms of the glossary and five frequently asked questions, each folded
+  await expect(page.locator(".glossary details")).toHaveCount(19);
+  await expect(page.getByRole("heading", { name: "Česta pitanja" })).toBeVisible();
+  // the same questions as structured data (a script has no visible text, so its source is read)
+  const marked = await page
+    .locator('script[type="application/ld+json"]')
+    .evaluateAll((scripts) => scripts.filter((each) => each.textContent.includes('"FAQPage"')).length);
+  expect(marked).toBe(1);
   // the live box is filled by the page's own small script from the same data the map reads
   const now = page.locator("[data-live-now]");
   await expect(now).toBeVisible();

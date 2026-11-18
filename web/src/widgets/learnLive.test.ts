@@ -76,6 +76,9 @@ describe("the learning page's live box", () => {
     expect(element.hidden).toBe(false);
     expect(element.dataset.band).toBe("high");
     expect(element).toHaveTextContent("69 % proizvodnje je iz obnovljivih izvora");
+    const top = element.querySelector<HTMLElement>('[data-part="top"]');
+    expect(top?.hidden).toBe(false);
+    expect(top).toHaveTextContent(/^Najveći izvor u tom satu: [a-zčćšžđ ]+, \d+ % proizvodnje\.$/);
     const price = element.querySelector<HTMLElement>('[data-part="price"]');
     expect(price?.hidden).toBe(false);
     expect(price).toHaveTextContent("Cijena na burzi (dan unaprijed): 84,5 €/MWh");

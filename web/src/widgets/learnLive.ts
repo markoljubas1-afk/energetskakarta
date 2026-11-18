@@ -26,6 +26,8 @@ export interface NowFigures {
   /** EUR/MWh, or null where the country has no market or no price for the hour */
   price: number | null;
   renewableMw: number;
+  /** the technology that generated the most in that hour, and its share of the generation (0 to 1) */
+  top: { technology: string; share: number };
   /** against what all households draw on average; null without Eurostat's figure */
   households: { ratio: number; averageMw: number; year: number } | null;
 }
@@ -50,6 +52,7 @@ export function nowFigures(
     stale: ageHours(green, now) > STALE_AFTER_HOURS,
     price: pricesAt(live, green.index).find((row) => row.country === country)?.eur ?? null,
     renewableMw: green.renewableMw,
+    top: { technology: green.top.technology, share: green.top.mw / green.totalMw },
     households: found ? { ratio: found.ratio, averageMw: found.power.mw, year: found.power.year } : null,
   };
 }
@@ -76,6 +79,22 @@ export function fill(box: HTMLElement, figures: NowFigures, lang: string): void 
   set(box, "share", number(figures.share * 100));
   // a traffic light must not show the afternoon at night: an old figure keeps its number and loses its colour
   box.dataset.band = figures.stale ? "stale" : figures.band;
+  const top = part("top");
+  if (top) {
+    // the page carries the names; a source it has no name for leaves the sentence hidden
+    let names: Record<string, unknown> = {};
+    try {
+      names = JSON.parse(top.dataset.sources ?? "{}") as Record<string, unknown>;
+    } catch (error) {
+      console.error("[learn] the names of the sources could not be read", error);
+    }
+    const name = names[figures.top.technology];
+    if (typeof name === "string" && Number.isFinite(figures.top.share)) {
+      set(top, "source", name);
+      set(top, "topShare", number(figures.top.share * 100));
+      top.hidden = false;
+    }
+  }
   const price = part("price");
   if (price && figures.price !== null) {
     set(price, "price", number(figures.price, 2));

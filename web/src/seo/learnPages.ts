@@ -5,6 +5,7 @@
  */
 import { ArrowLeftRight, Factory, Map as MapIcon, Route, Sun, Zap } from "lucide-react";
 
+import type { Technology } from "../domain";
 import { TIME_MACHINE_START, type Lang } from "../state/url";
 import type { StoryKey } from "../stories/keys";
 import { STORIES, STORY_KEYS } from "../stories/stories";
@@ -33,6 +34,10 @@ interface LearnCopy {
   now: {
     title: string;
     share: string;
+    /** the source that generated the most in that hour, under the renewable share */
+    top: string;
+    /** how each source is named inside that sentence */
+    sources: Record<Technology, string>;
     price: string;
     free: string;
     stale: string;
@@ -84,12 +89,13 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
       "Primjer: elektrana od 100 MW koja deset sati radi punom snagom proizvede 1000 MWh.",
       "Na karti uz elektranu piše instalirana snaga, a na stranici „Proizvodnja kroz vrijeme” energija po satima, danima i mjesecima.",
     ],
-    solarHeading: "Sunčana energija u pet rečenica",
+    solarHeading: "Sunčana energija u šest rečenica",
     solar: [
       "Sunčani panel pretvara svjetlost izravno u struju. Njegova snaga piše se u kilovatima „u vrhu” (kWp): toliko daje pod punim suncem, okomito na zrake, pri 25 °C.",
       "Koliko struje to znači u godini, ovisi o mjestu. U našoj regiji jedan kWp daje otprilike između 1000 i 1600 kWh godišnje: najmanje u Alpama, najviše na jugu Italije; u Zagrebu oko 1250, u Dalmaciji oko 1450.",
       "Kućanstvo u Hrvatskoj troši reda veličine 3000 do 4000 kWh struje godišnje, pa bi mu za godišnju količinu trebalo otprilike 3 kWp panela, to jest sedam do osam današnjih panela na krovu.",
       "Sunce daje najviše ljeti i oko podneva, a troši se najviše zimi i navečer. Zato sunčana energija treba mrežu, hidroelektrane i baterije koje premošćuju razliku.",
+      "Kućna baterija (najčešće kapaciteta 5 do 10 kWh) radi kao vlastiti spremnik: sprema podnevni višak sunca da biste ga trošili navečer. Zimi i dalje trebate sigurnost javne mreže, jer ni velika kućna baterija ne može sačuvati ljetno sunce za siječanj.",
       "Brojke na karti su dugogodišnji prosjek modela Global Solar Atlasa. Za konkretan krov ili zemljište treba proračun koji uzima u obzir nagib, orijentaciju i zasjenjenje; besplatan je, na primjer, europski PVGIS.",
     ],
     roof: "Imate krov? Otvorite sunčani sloj, kliknite na svoje mjesto i pomaknite klizač na svoju godišnju potrošnju: karta kaže koliko panela treba.",
@@ -98,6 +104,22 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
     now: {
       title: "Upravo sada u Hrvatskoj",
       share: "{share} % proizvodnje je iz obnovljivih izvora",
+      top: "Najveći izvor u tom satu: {source}, {topShare} % proizvodnje.",
+      sources: {
+        hydro: "hidroelektrane",
+        pumped_storage: "reverzibilne hidroelektrane",
+        solar: "sunčane elektrane",
+        wind: "vjetroelektrane",
+        nuclear: "nuklearne elektrane",
+        gas: "plinske elektrane",
+        coal: "elektrane na ugljen",
+        lignite: "elektrane na lignit",
+        oil: "elektrane na loživo ulje",
+        biomass: "elektrane na biomasu",
+        geothermal: "geotermalne elektrane",
+        battery: "baterijski spremnici",
+        other: "ostale elektrane",
+      },
       price: "Cijena na burzi (dan unaprijed): {price} €/MWh",
       free: "Cijena je nula ili niža: tko sada uzme struju na burzi, ne plaća je.",
       stale: "Podatak je stariji od četiri sata, pa ne govori o ovom trenutku.",
@@ -254,12 +276,13 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
       "An example: a 100 MW plant running at full power for ten hours generates 1,000 MWh.",
       "On the map a plant carries its installed power; the “Generation over time” page shows energy by hour, day and month.",
     ],
-    solarHeading: "Solar energy in five sentences",
+    solarHeading: "Solar energy in six sentences",
     solar: [
       "A solar panel turns light straight into electricity. Its power is stated in kilowatts “peak” (kWp): what it gives in full sun, square to the rays, at 25 °C.",
       "How much electricity that means in a year depends on the place. In our region one kWp gives roughly between 1,000 and 1,600 kWh a year: least in the Alps, most in the south of Italy; about 1,250 in Zagreb, about 1,450 in Dalmatia.",
       "A household in Croatia uses in the order of 3,000 to 4,000 kWh of electricity a year, so a year's worth would take about 3 kWp of panels, that is seven or eight of today's panels on a roof.",
       "The sun gives the most in summer and around noon, while the most is used in winter and in the evening. That is why solar energy needs the grid, hydro plants and batteries to bridge the difference.",
+      "A home battery (most often 5 to 10 kWh) works as a store of your own: it keeps the midday surplus of sun for you to use in the evening. In winter you still need the security of the public grid, because even a large home battery cannot keep summer sun for January.",
       "The figures on the map are the long-term average of the Global Solar Atlas's model. A particular roof or plot needs a calculation that takes tilt, orientation and shading into account; the European PVGIS, for one, is free.",
     ],
     roof: "Have a roof? Open the solar layer, click your own place and move the slider to your yearly consumption: the map says how many panels it takes.",
@@ -268,6 +291,22 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
     now: {
       title: "Right now in Croatia",
       share: "{share}% of generation is from renewable sources",
+      top: "The largest source in that hour: {source}, {topShare}% of generation.",
+      sources: {
+        hydro: "hydropower",
+        pumped_storage: "pumped storage",
+        solar: "solar",
+        wind: "wind",
+        nuclear: "nuclear",
+        gas: "natural gas",
+        coal: "coal",
+        lignite: "lignite",
+        oil: "fuel oil",
+        biomass: "biomass",
+        geothermal: "geothermal",
+        battery: "battery storage",
+        other: "other plants",
+      },
       price: "Exchange price (day-ahead): {price} €/MWh",
       free: "The price is zero or below: whoever takes electricity on the exchange now does not pay for it.",
       stale: "The figure is more than four hours old, so it says nothing about this moment.",
@@ -425,6 +464,8 @@ function liveNow(now: LearnCopy["now"], dataBaseUrl: string, lang: Lang): string
     `<div class="now" data-live-now data-base="${e(dataBaseUrl)}" data-country="HR" data-lang="${lang}" hidden>`,
     `<div class="now-title">${e(now.title)}</div>`,
     `<div class="now-share"><i></i><span>${slots(now.share)}</span></div>`,
+    // the names travel with the page: the script only picks the one of the hour's largest source
+    `<div data-part="top" data-sources="${e(JSON.stringify(now.sources))}" hidden>${slots(now.top)}</div>`,
     `<div data-part="stale" hidden>${e(now.stale)}</div>`,
     `<div class="now-price" data-part="price" hidden><span>${slots(now.price)}</span> <em>${e(now.free)}</em></div>`,
     `<div data-part="times" hidden>${slots(now.times)}</div>`,

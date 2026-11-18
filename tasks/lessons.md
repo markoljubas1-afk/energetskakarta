@@ -489,3 +489,8 @@
 - What happened: okomita slika „Izvori struje” objavljena je s rečenicom o uvozu koja dodiruje redak s izvorom. Lokalno je izgledala dobro jer testni podaci imaju četiri izvora, a stvarni dan šest redaka legende. Uz to je linija „Podaci za sat” na kartici izvora udvostručila sat koji traka uživo već ispisuje i srušila `live.spec.ts`.
 - Root cause: raspored sam gledao samo na slici iz testnih podataka; test crteža provjeravao je da je tekst unutar slike, ne i da se dijelovi ne dodiruju. Liniju sam dodao bez pogleda na to gdje kartica stoji.
 - Rule going forward: test crteža slike radi se na najpunijem mogućem sadržaju (najviše redaka, sve brojke, najduža rečenica) i provjerava razmak među dijelovima. Prije dodavanja teksta u karticu pogledati što već piše oko nje.
+
+### L-081 — Promjena statične stranice traži i testove u pregledniku za tu stranicu (2026-11-18)
+- What happened: dodao sam odjeljak „Česta pitanja” na Edukaciju, pokrenuo samo jedinične testove i poslao. Objava je pala jer `e2e/story.spec.ts` broji sklopive stavke na toj stranici (14, a postalo ih je 19). Stranica je ostala na prethodnoj inačici dok nisam popravio.
+- Root cause: isto kao L-077/L-079, samo za web: provjerio sam ono što sam pisao, ne ono što već provjerava tu stranicu.
+- Rule going forward: prije slanja izmjene statične stranice `grep` po `e2e/` za njezinu adresu i klase koje diram, i pokrenuti te specifikacije lokalno.
