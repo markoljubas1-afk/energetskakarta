@@ -4,6 +4,7 @@ import { LANGS } from "../state/url";
 import { parseState } from "../state/url";
 import { STORIES, STORY_KEYS } from "../stories/stories";
 import { LEARN_COPY, learnPage } from "./learnPages";
+import { e } from "./markup";
 import { buildPages } from "./pages";
 import { PATHS } from "./site";
 import { bareSite } from "./site.fixture";
@@ -24,6 +25,23 @@ describe("the learning corner", () => {
     expect(LEARN_COPY.en.tries.map(([, , params]) => params)).toEqual(
       LEARN_COPY.hr.tries.map(([, , params]) => params),
     );
+  });
+
+  it("answers its questions on the page and marks the same ones up as an FAQ", () => {
+    for (const lang of LANGS) {
+      const page = learnPage(bareSite(), lang);
+      const copy = LEARN_COPY[lang];
+      const section = page.sections.find((each) => each.heading === copy.faqHeading);
+      const faq = page.jsonLd.find((doc) => doc["@type"] === "FAQPage") as
+        { mainEntity: { name: string; acceptedAnswer: { text: string } }[] } | undefined;
+      expect(faq?.mainEntity).toHaveLength(copy.faq.length);
+      for (const entry of faq?.mainEntity ?? []) {
+        // every marked-up question and answer is on the page itself
+        expect(section?.html).toContain(`<summary>${e(entry.name)}</summary>`);
+        expect(section?.html).toContain(`<p>${e(entry.acceptedAnswer.text)}</p>`);
+      }
+    }
+    expect(LEARN_COPY.en.faq).toHaveLength(LEARN_COPY.hr.faq.length);
   });
 
   it("links only to views the map understands", () => {
@@ -103,7 +121,9 @@ describe("the learning corner", () => {
     const html = learnPage(bareSite(), "hr")
       .sections.map((section) => section.html)
       .join("");
-    expect(html.match(/<details><summary>/g)).toHaveLength(LEARN_COPY.hr.terms.length);
+    expect(html.match(/<details><summary>/g)).toHaveLength(
+      LEARN_COPY.hr.terms.length + LEARN_COPY.hr.faq.length,
+    );
     expect(html).toContain("<summary>Instalirana snaga</summary>");
     expect(html).not.toContain("<dl>");
     // a story card: an icon, the title as the link, what it is about, and what the card does

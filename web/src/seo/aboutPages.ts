@@ -157,6 +157,8 @@ export function apiPage(site: SiteData, lang: Lang): StaticPage {
       { heading: api.rulesHeading, html: list(api.rules.map(e)) },
     ],
     jsonLd: [
+      // the data the API serves, so that dataset search finds it from this page too
+      datasetJsonLd(site, lang, createI18n(lang), copy),
       {
         "@context": "https://schema.org",
         "@type": "WebAPI",

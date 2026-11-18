@@ -44,6 +44,16 @@ interface Props {
 export const CARD_KINDS = ["figures", "day", "month"] as const;
 export type CardKind = (typeof CARD_KINDS)[number];
 
+/**
+ * Whether every figure in a picture's words is a real one. The data is checked where it is read (a missing
+ * value leaves its figure out), but the source does send gaps and oddities, and a picture is passed on and
+ * cannot be taken back: anything that still reads "NaN", "undefined", "null" or "Infinity" (as "∞" too)
+ * holds the whole picture back.
+ */
+export function presentable(summary: string): boolean {
+  return !/\b(NaN|undefined|null|Infinity)\b|∞/.test(summary);
+}
+
 /** A picture ready to draw: its words for a screen reader, how it is drawn, and its file's name. */
 interface Picture {
   summary: string;
@@ -151,6 +161,11 @@ export function DayCardDialog(props: Props) {
         slug: `gridatlas-izvori-${country}-${card.period}`,
       };
     }
+  }
+  // the last line of defence: a figure the data did not really have never goes onto a picture
+  if (picture && !presentable(picture.summary)) {
+    console.error("[share] a picture with a broken figure was held back", picture.summary);
+    picture = null;
   }
   const summary = picture?.summary ?? "";
   const waiting = kind === "figures" ? live === null : sources === null || sources.status === "loading";

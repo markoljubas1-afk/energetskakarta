@@ -7,7 +7,7 @@ import { GREEN_LIVE } from "../data/greenShare.fixture";
 import type { Live } from "../data/live";
 import { dayCard, figureFonts, wrap } from "../share/dayCard";
 import { renderWithI18n } from "../test/render";
-import { DayCardDialog } from "./DayCardDialog";
+import { DayCardDialog, presentable } from "./DayCardDialog";
 
 /** Croatia's latest reported hour is 09:00 to 10:00 on 16 November: 900 of 1300 MW renewable, 69 %. */
 const NOW = new Date("2026-11-16T11:20:00+01:00");
@@ -235,5 +235,37 @@ describe("the day in three figures", () => {
       );
       expect(screen.queryByRole("button", { name: "Preuzmi sliku (PNG)" })).toBeNull();
     });
+  });
+});
+
+describe("the last check before a picture", () => {
+  it("holds back any picture whose words carry a figure that is not one", () => {
+    expect(presentable("GridAtlas: Izvori električne energije. Hrvatska: 71 % obnovljivi izvori.")).toBe(
+      true,
+    );
+    expect(presentable("Udio obnovljivih je NaN %")).toBe(false);
+    expect(presentable("undefined GWh Proizvodnja")).toBe(false);
+    expect(presentable("≈ null g/kWh")).toBe(false);
+    expect(presentable("Infinity %")).toBe(false);
+    expect(presentable("∞ GWh")).toBe(false);
+  });
+
+  it("shows no picture when the hour's generation is all zero instead of dividing by it", () => {
+    const empty: Live = {
+      ...PRICED,
+      generation: { HR: { hydro: PRICED.hours.map(() => 0), solar: PRICED.hours.map(() => 0) } },
+    };
+    renderWithI18n(
+      <DayCardDialog
+        open
+        onClose={vi.fn()}
+        live={empty}
+        storage={STORAGE}
+        now={NOW}
+        dataBaseUrl={new URL("https://data.test/")}
+      />,
+    );
+    expect(screen.queryByRole("img")).toBeNull();
+    expect(screen.getByRole("status")).toBeInTheDocument();
   });
 });

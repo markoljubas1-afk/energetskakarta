@@ -46,6 +46,9 @@ interface LearnCopy {
   priceTry: [string, string];
   timing: string[];
   termsHeading: string;
+  /** questions and answers shown on the page, and the same ones as FAQPage structured data */
+  faqHeading: string;
+  faq: [string, string][];
   /** term, explanation */
   terms: [string, string][];
   storiesHeading: string;
@@ -120,6 +123,29 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
       "Struja se proizvodi u istom trenutku u kojem se troši. Kad usred sunčanog ili vjetrovitog dana uključite perilicu, veći dio te struje dolazi iz sunca i vjetra; u zimsku večer, kad svi kuhaju i griju se, više rade elektrane na plin i ugljen.",
       "Na karti, uz datum podataka, stoji točka u boji i postotak: udio obnovljivih izvora u onome što elektrane te zemlje proizvode ovaj sat. Zeleno je od 65 %, žuto od 35 %, ispod toga crveno.",
       "To je udio u domaćoj proizvodnji, prema podacima ENTSO-E-a. Ne govori o uvozu ni o cijeni koju plaća kućanstvo, pa je putokaz, a ne račun. Podatak stiže sat do dva nakon samog sata; ako je stariji od četiri sata, točka je siva.",
+    ],
+    faqHeading: "Česta pitanja",
+    faq: [
+      [
+        "Koja je razlika između snage (MW) i energije (MWh)?",
+        "Snaga kaže koliko elektrana može dati u jednom trenutku, a energija koliko je proizvedeno ili potrošeno kroz neko vrijeme. Elektrana od 100 MW koja jedan sat radi punom snagom proizvede 100 MWh.",
+      ],
+      [
+        "Odakle dolazi struja koju trošim?",
+        "U mreži se struja iz svih elektrana i iz uvoza miješa, pa se ne može reći iz koje je elektrane struja u pojedinoj utičnici. Može se reći od čega je bila struja u mreži u nekom satu: to karta pokazuje u sloju uživo.",
+      ],
+      [
+        "Što znači udio obnovljivih izvora na karti?",
+        "To je udio hidroelektrana, vjetroelektrana, sunčanih elektrana, elektrana na biomasu i geotermalnih elektrana u onome što su elektrane jedne zemlje proizvele u jednom satu. Uvoz se ne broji, a reverzibilne hidroelektrane i nuklearne elektrane ne ubrajaju se u obnovljive izvore.",
+      ],
+      [
+        "Zašto je cijena struje na burzi ponekad nula ili negativna?",
+        "Kad elektrane u nekom satu nude više struje nego što se troši, a proizvodnja se ne može brzo smanjiti ni pohraniti, cijena na burzi za dan unaprijed padne na nulu ili ispod nje. To je veleprodajna cijena; cijena za kućanstva ugovara se drukčije.",
+      ],
+      [
+        "Odakle su podaci i koliko su svježi?",
+        "Elektrane, vodovi i trafostanice dolaze iz OpenStreetMapa i Global Energy Monitora. Proizvodnja, tokovi preko granica i cijene dolaze s platforme ENTSO-E Transparency, s nekoliko sati zakašnjenja. Stanje skladišta plina dolazi iz GIE AGSI, dan ili dva nakon plinskog dana. Uz svaki podatak stoje izvor i datum.",
+      ],
     ],
     termsHeading: "Pojmovnik",
     terms: [
@@ -267,6 +293,29 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
       "Electricity is generated at the very moment it is used. When you start the washing machine in the middle of a sunny or windy day, more of that electricity comes from sun and wind; on a winter evening, when everyone is cooking and heating, gas and coal plants work harder.",
       "On the map, next to the date of the data, there is a coloured dot and a percentage: the share of renewable sources in what that country's plants are generating this hour. Green from 65 %, amber from 35 %, red below that.",
       "It is the share of domestic generation, from ENTSO-E's figures. It says nothing about imports or about the price a household pays, so it is a signpost, not a bill. The figure arrives an hour or two after the hour itself; when it is more than four hours old the dot is grey.",
+    ],
+    faqHeading: "Frequently asked questions",
+    faq: [
+      [
+        "What is the difference between capacity (MW) and energy (MWh)?",
+        "Capacity says how much a plant can deliver at one moment; energy says how much was generated or used over a time. A 100 MW plant running at full capacity for one hour generates 100 MWh.",
+      ],
+      [
+        "Where does the electricity I use come from?",
+        "In the grid the electricity of every plant and of imports mixes, so nobody can say which plant the electricity in one socket came from. What can be said is what the grid's electricity was made of in an hour: the map shows that in its live layer.",
+      ],
+      [
+        "What does the renewable share on the map mean?",
+        "It is the share of hydropower, wind, solar, biomass and geothermal plants in what one country's plants generated in one hour. Imports are not counted, and pumped storage and nuclear plants are not counted as renewable.",
+      ],
+      [
+        "Why is the exchange price of electricity sometimes zero or negative?",
+        "When plants offer more electricity in an hour than is used, and generation can neither be cut quickly nor stored, the day-ahead exchange price falls to zero or below. That is a wholesale price; household prices are agreed differently.",
+      ],
+      [
+        "Where do the data come from, and how fresh are they?",
+        "Plants, lines and substations come from OpenStreetMap and the Global Energy Monitor. Generation, cross-border flows and prices come from the ENTSO-E Transparency Platform, a few hours late. Gas in storage comes from GIE AGSI, a day or two after the gas day. Every figure carries its source and date.",
+      ],
     ],
     termsHeading: "Glossary",
     terms: [
@@ -445,6 +494,7 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
       // the ten largest plants of Croatia, when the release knows which plants are in operation
       ...(top ? [top] : []),
       { heading: copy.termsHeading, html: glossary(copy.terms) },
+      { heading: copy.faqHeading, html: glossary(copy.faq) },
       { heading: copy.tryHeading, html: `<p>${e(copy.tryIntro)}</p>${doors(tries)}` },
     ],
     jsonLd: [
@@ -457,6 +507,17 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
           "@type": "DefinedTerm",
           name: term,
           description: text,
+        })),
+      },
+      // the questions of the page's own section, word for word: structured data never says more than the page
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        inLanguage: lang,
+        mainEntity: copy.faq.map(([question, answer]) => ({
+          "@type": "Question",
+          name: question,
+          acceptedAnswer: { "@type": "Answer", text: answer },
         })),
       },
     ],

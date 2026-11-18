@@ -156,6 +156,8 @@ describe("open JSON", () => {
     expect(files.has("en/feed.xml")).toBe(true);
     expect(files.has("api/index.json")).toBe(true);
     expect(files.get("api/index.html")).toContain("WebAPI");
+    // the API page describes the data it serves as a dataset as well
+    expect(files.get("api/index.html")).toContain('"@type":"Dataset"');
     expect(files.get("o-karti/index.html")).toContain('type="application/atom+xml"');
   });
 });
