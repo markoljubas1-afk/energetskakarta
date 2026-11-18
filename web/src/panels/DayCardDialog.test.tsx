@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { GasStorage } from "../data/gasStorage";
 import { GREEN_LIVE } from "../data/greenShare.fixture";
 import type { Live } from "../data/live";
-import { dayCard, wrap } from "../share/dayCard";
+import { dayCard, figureFonts, wrap } from "../share/dayCard";
 import { renderWithI18n } from "../test/render";
 import { DayCardDialog } from "./DayCardDialog";
 
@@ -80,6 +80,18 @@ describe("the day in three figures", () => {
     const measure = (text: string): number => text.length * 10;
     expect(wrap(measure, "popunjenost skladišta plina", 200)).toEqual(["popunjenost", "skladišta plina"]);
     expect(wrap(measure, "kratko", 200)).toEqual(["kratko"]);
+  });
+
+  it("draws a figure smaller when it and its unit would not fit their column", () => {
+    // every character as wide as 0.6 of the font size
+    const measure = (text: string, size: number): number => text.length * size * 0.6;
+    // "67" + "%": 130 + 12 + 24 = 166 px, fits 320
+    expect(figureFonts(measure, { value: "67", unit: "%" }, 320)).toEqual({ value: 108, unit: 40, gap: 12 });
+    // "196" + "€/MWh": 194 + 12 + 120 = 326 px into 280: everything shrinks by the same factor
+    const tight = figureFonts(measure, { value: "196", unit: "€/MWh" }, 280);
+    expect(tight.value).toBe(Math.floor(108 * (280 / 326.4)));
+    expect(tight.unit).toBe(Math.floor(40 * (280 / 326.4)));
+    expect(measure("196", tight.value) + tight.gap + measure("€/MWh", tight.unit)).toBeLessThanOrEqual(280);
   });
 
   describe("as a picture", () => {

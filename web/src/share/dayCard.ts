@@ -115,6 +115,31 @@ export function wrap(measure: (text: string) => number, text: string, width: num
   return lines;
 }
 
+const VALUE_PX = 108;
+const UNIT_PX = 40;
+const GAP_PX = 12;
+/** the room left between a figure and the next column */
+const COLUMN_GUTTER = 56;
+
+/**
+ * The font sizes of a figure and its unit, scaled down together when they would not fit `width`.
+ * `measure` gives a text's width at a font size (bold; the unit is a little narrower, which errs on the
+ * safe side).
+ */
+export function figureFonts(
+  measure: (text: string, size: number) => number,
+  figure: Pick<CardFigure, "value" | "unit">,
+  width: number,
+): { value: number; unit: number; gap: number } {
+  const needed = measure(figure.value, VALUE_PX) + GAP_PX + measure(figure.unit, UNIT_PX);
+  const scale = Math.min(1, width / needed);
+  return {
+    value: Math.floor(VALUE_PX * scale),
+    unit: Math.floor(UNIT_PX * scale),
+    gap: Math.round(GAP_PX * scale),
+  };
+}
+
 /** Draw the card on a canvas of CARD_SIZE. */
 export function drawDayCard(ctx: CanvasRenderingContext2D, text: CardText, font: string): void {
   const { width, height } = CARD_SIZE;
@@ -141,11 +166,20 @@ export function drawDayCard(ctx: CanvasRenderingContext2D, text: CardText, font:
   const column = (width - 2 * MARGIN) / Math.max(text.figures.length, 1);
   text.figures.forEach((figure, at) => {
     const x = MARGIN + at * column;
+    // the figure and its unit stay inside their column: with three figures a long one is drawn smaller
+    const { value, unit, gap } = figureFonts(
+      (text, size) => {
+        ctx.font = `700 ${String(size)}px ${font}`;
+        return ctx.measureText(text).width;
+      },
+      figure,
+      column - COLUMN_GUTTER,
+    );
     ctx.fillStyle = COLOURS.accent;
-    ctx.font = `700 108px ${font}`;
+    ctx.font = `700 ${String(value)}px ${font}`;
     ctx.fillText(figure.value, x, 318);
-    const after = x + ctx.measureText(figure.value).width + 12;
-    ctx.font = `600 40px ${font}`;
+    const after = x + ctx.measureText(figure.value).width + gap;
+    ctx.font = `600 ${String(unit)}px ${font}`;
     ctx.fillText(figure.unit, after, 318);
     ctx.fillStyle = COLOURS.ink;
     ctx.font = `500 28px ${font}`;
