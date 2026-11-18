@@ -70,7 +70,7 @@ export function sourcesText(card: SourcesCard, i18n: I18n): SourcesText {
   const { t } = i18n;
   const { named, restShare } = foldParts(card.parts);
   const legend = named.map((part) => ({
-    label: i18n.technology(part.technology),
+    label: t(`sourceName_${part.technology}`),
     value: percent(part.share),
     share: part.share,
     colour: COLOURS[part.technology],

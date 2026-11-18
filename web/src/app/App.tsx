@@ -63,6 +63,7 @@ import type { Selection } from "../map/selection";
 import type { Locate } from "../panels/ChangesPanel";
 import { AlertBanner } from "../panels/AlertBanner";
 import { DayCardDialog } from "../panels/DayCardDialog";
+import { askedPictureMonth } from "../share/sourcesCard";
 import { DetailsPanel } from "../panels/DetailsPanel";
 import { ShortcutsHelp } from "../panels/ShortcutsHelp";
 import { Header } from "../panels/Header";
@@ -516,7 +517,9 @@ function Explorer({
   );
   // gas in storage rides on the gas layer; a failure only means the storage bar is not shown
   // the day card wants it too, and asks only once it is opened
-  const [dayCardOpen, setDayCardOpen] = useState(false);
+  // a monthly report links to the picture of its month: "?pic=2026-10" opens the dialog on it, once
+  const [pictureMonth, setPictureMonth] = useState(() => askedPictureMonth(window.location.search));
+  const [dayCardOpen, setDayCardOpen] = useState(pictureMonth !== null);
   const [storageData] = useAsync(gasOn || dayCardOpen ? GAS_STORAGE_KEY : null, (signal) =>
     loadGasStorage(config.dataBaseUrl, signal),
   );
@@ -1171,13 +1174,15 @@ function Explorer({
                 </ErrorBoundary>
               </div>
             )}
-            {dayCardOpen && (
+            {dayCardOpen && !state.embed && (
               <ErrorBoundary area="day-card" fallback={() => null}>
                 <DayCardDialog
                   open
                   onClose={() => {
                     setDayCardOpen(false);
+                    setPictureMonth(null);
                   }}
+                  month={pictureMonth}
                   live={liveDoc}
                   storage={
                     storageData?.status === "ready" && storageData.value.kind === "ready"

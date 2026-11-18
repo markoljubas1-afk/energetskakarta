@@ -25,7 +25,7 @@ test("the share menu opens the day card, which is drawn and saved as a PNG", asy
   await page.goto("/");
   await expect(page.locator('[data-map-status="ready"]')).toBeVisible();
   await page.getByRole("button", { name: "Podijeli", exact: true }).click();
-  await page.getByRole("button", { name: "Slika za dijeljenje: brojke dana, izvori struje" }).click();
+  await page.getByRole("button", { name: "Slika za dijeljenje: brojke dana, izvori energije" }).click();
 
   const dialog = page.getByRole("dialog", { name: "Slika za dijeljenje" });
   await expect(dialog).toBeVisible();
@@ -75,11 +75,11 @@ test("the share menu opens the day card, which is drawn and saved as a PNG", asy
 
   // what the electricity of the latest complete day was made of: a ring of sources, from the daily totals
   const kind = dialog.getByLabel("Što je na slici");
-  await kind.selectOption({ label: "Izvori struje: zadnji potpuni dan" });
+  await kind.selectOption({ label: "Izvori električne energije: zadnji potpuni dan" });
   await expect(picture).toHaveAccessibleName(
-    /^GridAtlas: od čega je bila struja\. Hrvatska · \d+\. \S+ \d{4}\. · cijeli dan: \d+ % obnovljivo; /,
+    /^GridAtlas: Izvori električne energije\. Hrvatska · \d+\. \S+ \d{4}\. · cijeli dan: \d+ % obnovljivi izvori; /,
   );
-  await expect(picture).toHaveAccessibleName(/proizvedeno; .* potrošeno \(opterećenje sustava\)/);
+  await expect(picture).toHaveAccessibleName(/ Proizvodnja; .* Potrošnja; /);
   const still = await dialog.boundingBox();
   if (!still) throw new Error("no box");
   expect(still.y + still.height).toBeLessThanOrEqual(viewport.height);
@@ -92,15 +92,43 @@ test("the share menu opens the day card, which is drawn and saved as a PNG", asy
   await ring.saveAs(testInfo.outputPath("sources-day-story.png"));
 
   // and of the latest complete month, on the wide picture
-  await kind.selectOption({ label: "Izvori struje: zadnji potpuni mjesec" });
+  await kind.selectOption({ label: "Izvori električne energije: zadnji potpuni mjesec" });
   await dialog.getByRole("radio", { name: "Vodoravna" }).check();
-  await expect(picture).toHaveAccessibleName(/^GridAtlas: od čega je bila struja\. Hrvatska · \S+ \d{4}\.: /);
+  await expect(picture).toHaveAccessibleName(
+    /^GridAtlas: Izvori električne energije\. Hrvatska · \S+ \d{4}\.: /,
+  );
   const monthly = page.waitForEvent("download");
   await dialog.getByRole("button", { name: "Preuzmi sliku (PNG)" }).click();
   const month = await monthly;
   expect(month.suggestedFilename()).toMatch(/^gridatlas-izvori-hr-\d{4}-\d{2}-\d{4}-\d{2}-\d{2}\.png$/);
   await month.saveAs(testInfo.outputPath("sources-month.png"));
 
+  await dialog.getByRole("button", { name: "Zatvori" }).click();
+  await expect(dialog).toBeHidden();
+});
+
+test("a monthly report's link opens the picture of that month", async ({ page }) => {
+  await page.route("https://api.maptiler.com/**", (route) => route.abort());
+  // the report of the latest month says where its picture is
+  await page.goto("/izvjestaji/");
+  const report = page.locator('main a[href^="/izvjestaji/20"]').first();
+  const month = /(\d{4}-\d{2})/.exec((await report.getAttribute("href")) ?? "")?.[1];
+  if (!month) throw new Error("no report in the test data");
+  await report.click();
+  const link = page.getByRole("link", {
+    name: "Preuzmi sliku mjeseca za objave: izvori električne energije",
+  });
+  await expect(link).toHaveAttribute("href", `/?pic=${month}`);
+  await link.click();
+  const dialog = page.getByRole("dialog", { name: "Slika za dijeljenje" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("img")).toHaveAccessibleName(
+    /^GridAtlas: Izvori električne energije\. Hrvatska · \S+ \d{4}\.: /,
+  );
+  const downloading = page.waitForEvent("download");
+  await dialog.getByRole("button", { name: "Preuzmi sliku (PNG)" }).click();
+  expect((await downloading).suggestedFilename()).toContain(`gridatlas-izvori-hr-${month}-`);
+  // closed, the share menu opens the ordinary picture again
   await dialog.getByRole("button", { name: "Zatvori" }).click();
   await expect(dialog).toBeHidden();
 });

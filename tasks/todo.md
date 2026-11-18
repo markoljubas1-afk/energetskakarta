@@ -1430,8 +1430,11 @@ bez zagrada, kraći natpis pretrage, kartica izvještaja maknuta s Edukacije (os
 Izvedba: `share/ring.ts`, `share/sourcesCard.ts`, `share/sourcesText.ts`, izbor „Što je na slici” u
 `DayCardDialog`; kartica `ring` u `energy/EnergyView.tsx` (`RingChart.tsx`, i u `ENERGY_CHARTS`, pa se
 može ugraditi i podijeliti kao ostale); `seo/topPlants.ts`; `gas-daily` u 19:20 UTC.
-Nije napravljeno (izvan opsega, moguće poslije): poveznica s mjesečnog izvještaja ravno na sliku mjeseca;
-dnevni CO₂ u semaforu (ondje ostaje satni).
+Dodano 2026-11-18 na zahtjev korisnika: naslov slike „GridAtlas: Izvori električne energije” i književniji
+nazivi (Hidroelektrane, Proizvodnja, Potrošnja, „razlika je namirena uvozom”); poveznica u odjeljku „Ukratko”
+svakog mjesečnog izvještaja otvara kartu s `?pic=GGGG-MM`, a ona prozor slike na tom mjesecu. Mjesec je
+„potpun” od 98 % pokrivenosti, kao i u izvještajima (`MONTH_COMPLETE`), da svaki izvještaj ima svoju sliku.
+Nije napravljeno (moguće poslije): dnevni CO₂ u semaforu (ondje ostaje satni).
 
 Provjera: jedinični testovi za podatke i raspored slike, test u pregledniku za prozor i novu karticu,
 pregled preuzetih slika, zatim provjera uživo.

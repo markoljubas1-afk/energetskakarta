@@ -148,7 +148,7 @@ describe("the day in three figures", () => {
       const picture = screen.getByRole("img");
       // the hour is written in the reader's own time zone (L-073): match it, do not spell it
       expect(picture).toHaveAccessibleName(
-        /^GridAtlas: energetska slika dana\. Hrvatska · 16\. studenoga 2026\.: 69 % obnovljivi izvori u proizvodnji struje \(sat od \d\d:00, bez uvoza\); 100 €\/MWh prosječna cijena na burzi, dan unaprijed \(prosjek 24 sati tog dana\); 85 % popunjenost skladišta plina \(PSP Okoli, plinski dan 15\. studenoga 2026\.\)\. Izvori: ENTSO-E Transparency Platform; GIE AGSI · gridatlas\.eu$/,
+        /^GridAtlas: Energetska slika dana\. Hrvatska · 16\. studenoga 2026\.: 69 % obnovljivi izvori u proizvodnji struje \(sat od \d\d:00, bez uvoza\); 100 €\/MWh prosječna cijena na burzi, dan unaprijed \(prosjek 24 sati tog dana\); 85 % popunjenost skladišta plina \(PSP Okoli, plinski dan 15\. studenoga 2026\.\)\. Izvori: ENTSO-E Transparency Platform; GIE AGSI · gridatlas\.eu$/,
       );
       expect(drawn).toEqual(
         expect.arrayContaining(["69", "100", "85", "€/MWh", "Hrvatska · 16. studenoga 2026."]),

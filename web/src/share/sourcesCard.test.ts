@@ -4,7 +4,16 @@ import type { Periods, YearFile } from "../data/energy";
 import { createI18n } from "../i18n";
 import { CARD_FORMATS, CARD_SIZES } from "./dayCard";
 import { ringArcs } from "./ring";
-import { drawSourcesCard, foldParts, latestDay, latestMonth, sourcesCountries } from "./sourcesCard";
+import { COMPLETE_COVERAGE } from "../seo/energyPages";
+import {
+  askedPictureMonth,
+  drawSourcesCard,
+  foldParts,
+  latestDay,
+  latestMonth,
+  MONTH_COMPLETE,
+  sourcesCountries,
+} from "./sourcesCard";
 import { sourcesSummary, sourcesText } from "./sourcesText";
 
 /** Three days of Croatia: the last one is still running (62 % reported), the one before lacks its load. */
@@ -102,6 +111,10 @@ describe("the sources of a complete day or month", () => {
     expect(month?.totalMwh).toBe(1000000);
     expect(month?.loadMwh).toBe(950000);
     expect(latestMonth(PERIODS, "AT")).toBeNull();
+    // a monthly report asks for its own month, and gets that one or nothing
+    expect(latestMonth(PERIODS, "HR", "2026-09")?.totalMwh).toBe(800000);
+    expect(latestMonth(PERIODS, "HR", "2026-11")).toBeNull();
+    expect(MONTH_COMPLETE).toBe(COMPLETE_COVERAGE);
     expect(sourcesCountries(PERIODS, ["SI", "HR", "AT"])).toEqual(["HR"]);
   });
 
@@ -113,14 +126,14 @@ describe("the sources of a complete day or month", () => {
     expect(restShare).toBeCloseTo(1500 / 40000, 6);
     const text = sourcesText(day, hr);
     expect(text.legend.map((row) => `${row.label} ${row.value}`)).toEqual([
-      "Hidro 40 %",
-      "Vjetar 35 %",
-      "Plin 10 %",
-      "Ugljen 8 %",
-      "Biomasa 4 %",
-      "ostali izvori 4 %",
+      "Hidroelektrane 40 %",
+      "Vjetroelektrane 35 %",
+      "Plinske elektrane 10 %",
+      "Elektrane na ugljen 8 %",
+      "Elektrane na biomasu 4 %",
+      "Ostali izvori 4 %",
     ]);
-    expect(text.centre).toEqual({ value: "81 %", label: "obnovljivo" });
+    expect(text.centre).toEqual({ value: "81 %", label: "obnovljivi izvori" });
     expect(text.subtitle).toBe("Hrvatska · 16. studenoga 2026. · cijeli dan");
     expect(text.sentence).toBeNull();
   });
@@ -131,17 +144,29 @@ describe("the sources of a complete day or month", () => {
     const text = sourcesText(month, hr);
     expect(text.subtitle).toBe("Hrvatska · listopad 2026.");
     expect(text.figures.map((f) => `${f.value} ${f.unit} ${f.label}`)).toEqual([
-      "1 TWh proizvedeno",
-      "950 GWh potrošeno (opterećenje sustava)",
-      "≈ 160 g/kWh CO₂ otisak proizvodnje (izračun)",
+      "1 TWh Proizvodnja",
+      "950 GWh Potrošnja",
+      "≈ 160 g/kWh Ugljični otisak (izračun)",
     ]);
     expect(text.sentence).toBe(
-      "Proizvodnja je bila veća od potrošnje za 50 GWh: višak je izvezen ili pohranjen.",
+      "Proizvodnja je premašila potrošnju za 50 GWh; višak je izvezen ili pohranjen.",
     );
     const more = sourcesText({ ...month, loadMwh: 1200000 }, hr);
-    expect(more.sentence).toBe("Potrošnja je bila veća od proizvodnje za 200 GWh: razliku je pokrio uvoz.");
-    expect(sourcesSummary(text)).toContain("70 % obnovljivo; Hidro 70 %, Plin 30 %.");
+    expect(more.sentence).toBe("Potrošnja je premašila proizvodnju za 200 GWh; razlika je namirena uvozom.");
+    expect(sourcesSummary(text)).toContain(
+      "70 % obnovljivi izvori; Hidroelektrane 70 %, Plinske elektrane 30 %.",
+    );
     expect(sourcesSummary(text)).toMatch(/IPCC AR5 · gridatlas\.eu$/);
+  });
+});
+
+describe("the link from a monthly report", () => {
+  it("reads the month from the address, and nothing that is not a month", () => {
+    expect(askedPictureMonth("?pic=2026-10")).toBe("2026-10");
+    expect(askedPictureMonth("?l=plants&pic=2025-01&c=HR")).toBe("2025-01");
+    expect(askedPictureMonth("?pic=2026-13")).toBeNull();
+    expect(askedPictureMonth("?pic=listopad")).toBeNull();
+    expect(askedPictureMonth("")).toBeNull();
   });
 });
 
@@ -205,15 +230,15 @@ describe("the drawing", () => {
     const { width, height } = CARD_SIZES[format];
     const all = written.map((each) => each.text).join(" ");
     for (const part of [
-      "Hidro",
+      "Hidroelektrane",
       "40 %",
-      "ostali izvori",
-      "obnovljivo",
+      "Ostali izvori",
+      "obnovljivi izvori",
       "52",
       "GWh",
       "≈ ",
       "gridatlas.eu",
-      "uvoz.",
+      "uvozom.",
     ]) {
       expect(all).toContain(part);
     }
@@ -223,12 +248,18 @@ describe("the drawing", () => {
     }
     // the sentence ends a clear line above the footer
     const sentenceEnd = Math.max(
-      ...written.filter((each) => each.text.endsWith("uvoz.")).map((each) => each.y),
+      ...written.filter((each) => each.text.endsWith("uvozom.")).map((each) => each.y),
     );
     const footerStart = Math.min(
       ...written.filter((each) => each.text.startsWith("Izvor:")).map((each) => each.y),
     );
     expect(footerStart - sentenceEnd).toBeGreaterThanOrEqual(format === "story" ? 60 : 30);
+    // and starts a clear line below everything above it (a figure's label that wraps must not reach it)
+    const sentenceStart = Math.min(
+      ...written.filter((each) => each.text.startsWith("Potrošnja je")).map((each) => each.y),
+    );
+    const above = written.filter((each) => each.y < sentenceStart).map((each) => each.y);
+    expect(sentenceStart - Math.max(...above)).toBeGreaterThanOrEqual(30);
     // nothing is written below the footer, and the footer is the last text down the picture
     const lowest = written.reduce((low, each) => (each.y > low.y ? each : low));
     expect(lowest.text).toContain("gridatlas.eu");

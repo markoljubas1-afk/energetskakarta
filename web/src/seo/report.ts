@@ -18,7 +18,16 @@ import type { FeedEntry } from "./feed";
 import { escapeHtml as e, linkedTable, list, stationsOf } from "./markup";
 import { countOf, inMonth, monthName, REPORT_COPY } from "./reportCopy";
 import { TRANSITION_COPY } from "./transitionCopy";
-import { homeCrumb, other, PATHS, publisher, type Section, type SiteData, type StaticPage } from "./site";
+import {
+  homeCrumb,
+  mapLink,
+  other,
+  PATHS,
+  publisher,
+  type Section,
+  type SiteData,
+  type StaticPage,
+} from "./site";
 
 /**
  * The first month with a report: the two years before the reports were launched (November 2026), so each could be
@@ -180,7 +189,10 @@ function briefSection(site: SiteData, lang: Lang, ctx: Context, month: string): 
       ),
     );
   }
-  return { heading: copy.heading, html: `${list(points.map((point) => e(point)))}<p>${e(copy.share)}</p>` };
+  return {
+    heading: copy.heading,
+    html: `${list(points.map((point) => e(point)))}<p>${e(copy.share)}</p><p><a href="${e(mapLink(lang, { pic: month }))}">${e(copy.picture)}</a></p>`,
+  };
 }
 
 function sourcesSection(lang: Lang, ctx: Context, month: string): Section {

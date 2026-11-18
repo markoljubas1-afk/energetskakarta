@@ -32,8 +32,13 @@ export interface SourcesCard {
   co2: number | null;
 }
 
-/** A period counts as reported in full from here (the pipeline writes 1.0 for a complete one). */
+/** A day counts as reported in full from here (the pipeline writes 1.0 for a complete one). */
 const COMPLETE = 0.999;
+/**
+ * A month counts as complete from here: the same limit as the monthly reports (seo/energyPages.ts,
+ * COMPLETE_COVERAGE), so that every report's month has its picture. A test holds the two together.
+ */
+export const MONTH_COMPLETE = 0.98;
 
 function build(
   country: string,
@@ -88,24 +93,39 @@ export function latestDay(files: readonly YearFile[], country: string): SourcesC
   return null;
 }
 
-/** The latest month the country's generation was reported in full. */
-export function latestMonth(periods: Periods, country: string): SourcesCard | null {
+/**
+ * The latest month the country's generation was reported in full; with `asked` ("2026-10"), that month
+ * and no other (a monthly report links to the picture of its own month).
+ */
+export function latestMonth(
+  periods: Periods,
+  country: string,
+  asked: string | null = null,
+): SourcesCard | null {
   if (!(country in periods.countries)) return null;
   const data = series(periods, country, "month");
   for (let index = data.periods.length - 1; index >= 0; index -= 1) {
     const month = data.periods[index];
-    if (month === undefined || (data.coverage[index] ?? 0) < COMPLETE) continue;
+    if (month === undefined || (data.coverage[index] ?? 0) < MONTH_COMPLETE) continue;
+    if (asked !== null && month !== asked) continue;
     const byTech = new Map<Technology, number>();
     for (const technology of TECHNOLOGIES) {
       const value = data.generation[technology]?.[index];
       if (value !== null && value !== undefined) byTech.set(technology, Math.max(0, value));
     }
     const load = data.load[index];
-    const loadKnown = (data.loadCoverage[index] ?? 0) >= COMPLETE && load !== null && load !== undefined;
+    const loadKnown =
+      (data.loadCoverage[index] ?? 0) >= MONTH_COMPLETE && load !== null && load !== undefined;
     const card = build(country, "month", month, byTech, loadKnown ? load : null);
     if (card) return card;
   }
   return null;
+}
+
+/** The month of "?pic=2026-10" in the address the page was opened with; null without one. */
+export function askedPictureMonth(search: string): string | null {
+  const month = new URLSearchParams(search).get("pic");
+  return month !== null && /^\d{4}-(0[1-9]|1[0-2])$/.test(month) ? month : null;
 }
 
 /** Countries that have a picture of this kind at all, in the order given. */
@@ -176,12 +196,16 @@ function drawLegend(
     ctx.arc(box.x + size.text * 0.36, y - size.text * 0.34, size.text * 0.36, 0, 2 * Math.PI);
     ctx.fill();
     ctx.fillStyle = ink;
-    ctx.font = `400 ${String(size.text)}px ${font}`;
-    ctx.fillText(row.label, box.x + size.text * 1.15, y);
     ctx.font = `700 ${String(size.text)}px ${font}`;
     ctx.textAlign = "right";
     ctx.fillText(row.value, box.x + box.width, y);
     ctx.textAlign = "left";
+    // a long name is written smaller rather than run into its percentage
+    const room = box.width - size.text * 1.15 - ctx.measureText(row.value).width - size.text * 0.6;
+    ctx.font = `400 ${String(size.text)}px ${font}`;
+    const needed = ctx.measureText(row.label).width;
+    if (needed > room) ctx.font = `400 ${String(Math.floor((size.text * room) / needed))}px ${font}`;
+    ctx.fillText(row.label, box.x + size.text * 1.15, y);
   });
 }
 
@@ -284,7 +308,7 @@ function drawStory(ctx: CanvasRenderingContext2D, text: SourcesText, font: strin
   drawCentre(ctx, text.centre, font, centre, { value: 80, label: 32 });
   // six rows of sources, three figures and a sentence of two lines have to end clear of the footer
   const legendRow = 58;
-  const legendTop = centre.y + 200 + 76;
+  const legendTop = centre.y + 200 + 64;
   drawLegend(ctx, text.legend, font, { x: margin, y: legendTop, width: room }, { text: 38, row: legendRow });
 
   const figuresTop = legendTop + text.legend.length * legendRow + 64;
@@ -301,7 +325,7 @@ function drawStory(ctx: CanvasRenderingContext2D, text: SourcesText, font: strin
   if (text.sentence) {
     ctx.fillStyle = ink;
     ctx.font = `500 34px ${font}`;
-    let line = figuresTop + 150;
+    let line = figuresTop + 142;
     for (const each of wrap(measure, text.sentence, room)) {
       ctx.fillText(each, margin, line);
       line += 46;

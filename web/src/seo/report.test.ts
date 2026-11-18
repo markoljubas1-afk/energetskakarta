@@ -158,6 +158,10 @@ describe("monthly reports", () => {
     );
     expect(brief).toContain("oko 70 g/kWh (izračun iz faktora IPCC-a, ne mjerenje)");
     expect(brief).toContain("<p>Slobodno dijeljenje uz navođenje izvora: gridatlas.eu.</p>");
+    // the month as a picture to post: the map opens its share dialog on this month
+    expect(brief).toMatch(
+      /<p><a href="\/\?pic=\d{4}-\d{2}">Preuzmi sliku mjeseca za objave: izvori električne energije<\/a><\/p>/,
+    );
     const sources = plain(page.sections[1]?.html ?? "");
     expect(sources).toContain(
       "<th>Izvor</th><th>rujan 2026.</th><th>Udio</th><th>kolovoz 2026.</th><th>rujan 2025.</th>",

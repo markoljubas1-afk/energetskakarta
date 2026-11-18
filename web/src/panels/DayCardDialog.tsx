@@ -18,7 +18,7 @@ import {
 } from "../share/dayCard";
 import { download, fileStem, pictureTheme } from "../share/download";
 import { drawSourcesCard, latestDay, latestMonth, sourcesCountries } from "../share/sourcesCard";
-import { loadSources, sourcesSummary, sourcesText } from "../share/sourcesText";
+import { loadSources, periodName, sourcesSummary, sourcesText } from "../share/sourcesText";
 import styles from "./DayCardDialog.module.css";
 
 interface Props {
@@ -33,6 +33,8 @@ interface Props {
   dataBaseUrl: URL;
   /** the country the card opens with */
   home?: string;
+  /** "2026-10": open on the sources of that month (a monthly report's link); absent: the three figures */
+  month?: string | null;
 }
 
 /**
@@ -97,7 +99,8 @@ export function cardSummary(text: CardText): string {
 }
 
 /** The day in three figures as a picture to save and share, in a native modal dialog. */
-export function DayCardDialog({ open, onClose, live, storage, now, dataBaseUrl, home = "HR" }: Props) {
+export function DayCardDialog(props: Props) {
+  const { open, onClose, live, storage, now, dataBaseUrl, home = "HR", month = null } = props;
   const i18n = useI18n();
   const { t } = i18n;
   const dialog = useRef<HTMLDialogElement>(null);
@@ -105,9 +108,9 @@ export function DayCardDialog({ open, onClose, live, storage, now, dataBaseUrl, 
   const [chosen, setChosen] = useState(home);
   const [failed, setFailed] = useState(false);
   const [format, setFormat] = useState<CardFormat>("wide");
-  const [kind, setKind] = useState<CardKind>("figures");
+  const [kind, setKind] = useState<CardKind>(month === null ? "figures" : "month");
   // the totals are read when a "sources" picture is first asked for, and kept after that
-  const [wantSources, setWantSources] = useState(false);
+  const [wantSources, setWantSources] = useState(month !== null);
   const [sources] = useAsync(wantSources ? `sources:${dataBaseUrl.href}` : null, (signal) =>
     loadSources(dataBaseUrl, signal),
   );
@@ -136,7 +139,8 @@ export function DayCardDialog({ open, onClose, live, storage, now, dataBaseUrl, 
       };
     }
   } else if (totals) {
-    const card = kind === "day" ? latestDay(totals.days, country) : latestMonth(totals.periods, country);
+    const card =
+      kind === "day" ? latestDay(totals.days, country) : latestMonth(totals.periods, country, month);
     if (card) {
       const text = sourcesText(card, i18n);
       picture = {
@@ -208,7 +212,9 @@ export function DayCardDialog({ open, onClose, live, storage, now, dataBaseUrl, 
         >
           {CARD_KINDS.map((each) => (
             <option key={each} value={each}>
-              {t(`dayCardKind_${each}`)}
+              {each === "month" && month !== null
+                ? t("dayCardKind_monthOf", { month: periodName({ unit: "month", period: month }, i18n) })
+                : t(`dayCardKind_${each}`)}
             </option>
           ))}
         </select>

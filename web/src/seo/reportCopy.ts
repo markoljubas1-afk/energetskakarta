@@ -94,6 +94,8 @@ interface ReportCopy {
     /** gas storage at the end of the month, with the same month-end a year earlier when it is known */
     storage: (full: string, day: string, yearAgo: string | null, source: string) => string;
     share: string;
+    /** the link to the month as a picture to post (the map opens its share dialog on that month) */
+    picture: string;
   };
   comparison: (name: string, share: string) => string;
   sources: {
@@ -159,6 +161,7 @@ export const REPORT_COPY: Record<Lang, ReportCopy> = {
       storage: (full, day, yearAgo, source) =>
         `Skladište plina u Hrvatskoj na kraju mjeseca (${day}) bilo je ${full} puno${yearAgo ? `; godinu ranije ${yearAgo}` : ""}. Izvor: ${source}.`,
       share: "Slobodno dijeljenje uz navođenje izvora: gridatlas.eu.",
+      picture: "Preuzmi sliku mjeseca za objave: izvori električne energije",
     },
     comparison: (name, share) => `${name}: ${share}`,
     sources: {
@@ -240,6 +243,7 @@ export const REPORT_COPY: Record<Lang, ReportCopy> = {
       storage: (full, day, yearAgo, source) =>
         `Croatia's gas storage was ${full} full at the end of the month (${day})${yearAgo ? `; a year earlier ${yearAgo}` : ""}. Source: ${source}.`,
       share: "Free to share with the source named: gridatlas.eu.",
+      picture: "Download the month as a picture to post: sources of electricity",
     },
     comparison: (name, share) => `${name}: ${share}`,
     sources: {
