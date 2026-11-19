@@ -42,6 +42,18 @@ jobs:
       - name: Install tippecanoe
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends tippecanoe
       - run: python -m pip install -e .
+      - name: Geofabrik connection (diagnostic)
+        # Six builds on 2026-11-19 ended in "Network is unreachable" at the next step. This step never fails
+        # the build: it says which addresses the runner gets for Geofabrik and what each protocol answers,
+        # so that the next failure names its cause.
+        run: |
+          echo "runner address: $(curl -4 -sS -m 10 https://api.ipify.org || echo unknown)"
+          getent ahosts download.geofabrik.de || echo "no address for download.geofabrik.de"
+          for version in 4 6; do
+            curl "-$version" -sS -o /dev/null -m 30 \
+              -w "IPv$version: HTTP %{http_code} from %{remote_ip} in %{time_total}s\n" \
+              https://download.geofabrik.de/index-v1-nogeom.json || echo "IPv$version failed, curl exit $?"
+          done
       - name: Download extracts
         env:
           COUNTRIES: ${{ inputs.countries }}
