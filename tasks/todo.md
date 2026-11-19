@@ -2804,5 +2804,16 @@ morski cjevovodi (EMODnet), izviđanje ENTSOG točaka (`gas/points.py`).
   - Provjera: pytest (tags, extract na fixtureu), web testovi naziva, zatim stvarni build u Actions.
   **Skok potrošnje:** isporuka kupcima i distribuciji (ENTSOG, točka FNC) prema prosjeku prethodnih sedam
   plinskih dana, kao rečenica u traci i kao slika `?pic=gasuse`; bez praga i bez riječi „alarm”.
+  **Gotovo i uživo provjereno 2026-11-19** (71,9 GWh za 17. 11., −13 % prema prosjeku 82,4 GWh).
+  **Stanje 44-4 (2026-11-19):** kod je u `main` (`11eedb8`, `6297bc6`, `b038a6a`). Probni build bez objave
+  (run 44516063339): 7.765 dionica iz OSM-a, 21.544 km (AT 6.372, HU 5.226, IT 4.802, HR 2.325, RS 425,
+  SI 311, BA 4, ME 0 km); HR: Plinacro 1.301 km, JANAF 610 km; izostavljeno oko 12.200 cijevi koje nisu
+  plin ni nafta; `grid.pmtiles` 53,1 → 61,2 MB. Vlasnik: „izbaci kratke komade ispod 50 m” →
+  `config.PIPELINE_MIN_LENGTH_M`, brojač `pipeline_too_short` (u probnom buildu 2.648 dionica, 35 km).
+  **Nije objavljeno:** build s objavom pao je više puta na dohvatu Geofabrikova indeksa s GitHubova
+  poslužitelja („Network is unreachable”); objavljeni build je i dalje 20261117T232934Z. Stavka se
+  označava tek kad build prođe i plinovodi se provjere na karti.
+  Poznato i neriješeno: u Austriji su ucrtane i distribucijske mreže, drugdje uglavnom transport; OSM
+  nema cijelu mrežu ni u jednoj zemlji (HR: Plinacro oko polovice stvarne duljine).
 - Ne predlažem bez podataka: „alarm” skoka potrošnje (ENTSOG ne objavljuje potrošnju zemlje kao jednu brojku;
   prvo provjeriti što se može izvesti iz izlaza prema distribuciji).
