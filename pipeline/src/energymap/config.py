@@ -101,6 +101,12 @@ EXTRACTION_TAGS: tuple[tuple[str, str], ...] = (
 # their own would read every country's 2 GB extract once more. Which pipelines are kept (gas and oil, not
 # water or sewage) is decided when the tags are read (osm/tags.py).
 PIPELINE_TAGS: tuple[tuple[str, str], ...] = (("man_made", "pipeline"),)
+# A mapped way shorter than this is piping inside a station or a plant, not a pipeline between places:
+# the trial build of 2026-11-19 had 2,648 of them (35 km in all, of 21,500 km), most in Austria and
+# Italy. They are left out and counted (the owner's decision, 2026-11-19: "izbaci kratke komade
+# ispod 50 m"). The length is the mapped way's own, so a long pipeline drawn in short ways would lose
+# those ways; the count in the build log is there to notice that.
+PIPELINE_MIN_LENGTH_M = 50.0
 EXTRACTION_FILTER = SourceFilter(
     "extraction",
     pairs=tuple(

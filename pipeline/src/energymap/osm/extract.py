@@ -333,7 +333,11 @@ def _add_pipeline(
     if not ctx.scope.intersection(countries):
         result.stats["outside_scope"] += 1
         return
-    kilometres = round(length_m(route) / 1000, 2)
+    metres = length_m(route)
+    if metres < config.PIPELINE_MIN_LENGTH_M:
+        result.stats["pipeline_too_short"] += 1
+        return
+    kilometres = round(metres / 1000, 2)
     key = asset_id("way", osm_id)
     result.pipelines[key] = Pipeline(
         id=key,

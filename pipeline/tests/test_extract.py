@@ -260,6 +260,8 @@ def test_pipelines_on_land_are_gas_and_oil_only(result: ExtractResult) -> None:
     assert result.counts()["pipelines"] == 2
     # the two that are pipelines of something else are counted, the disused one never reaches the extract
     assert result.stats["pipeline_not_gas_or_oil"] == 2
+    # piping inside a station (way 125, 31 m) is not a pipeline between places
+    assert result.stats["pipeline_too_short"] == 1
 
 
 def test_pipelines_survive_the_merge_of_two_countries(result: ExtractResult) -> None:

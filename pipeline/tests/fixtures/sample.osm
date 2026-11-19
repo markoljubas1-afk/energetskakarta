@@ -141,12 +141,14 @@
   <node id="91" lat="45.20" lon="15.24" version="1"/>
   <node id="92" lat="45.23" lon="15.24" version="1"/>
   <node id="93" lat="45.23" lon="15.20" version="1"/>
+  <!-- 94: 31 m east of 90, the end of the station piping of way 125 -->
+  <node id="94" lat="45.20" lon="15.2004" version="1"/>
   <way id="112" version="1">
     <nd ref="90"/><nd ref="91"/><nd ref="92"/><nd ref="93"/><nd ref="90"/>
     <tag k="landuse" v="quarry"/><tag k="resource" v="lignite"/><tag k="name" v="Površinski kop"/><tag k="operator" v="Ugljen d.o.o."/>
   </way>
   <!-- 120-124: pipelines. 120 gas across the border, 121 oil under construction, 122 water (left out),
-       123 no substance (left out), 124 disused gas (left out) -->
+       123 no substance (left out), 124 disused gas (left out), 125 gas but 31 m long (left out) -->
   <way id="120" version="1">
     <nd ref="1"/><nd ref="2"/>
     <tag k="man_made" v="pipeline"/><tag k="substance" v="gas"/><tag k="name" v="Magistralni plinovod"/><tag k="operator" v="Plinacro"/><tag k="diameter" v="800"/><tag k="location" v="underground"/><tag k="start_date" v="2011"/>
@@ -166,6 +168,10 @@
   <way id="124" version="1">
     <nd ref="92"/><nd ref="90"/>
     <tag k="disused:man_made" v="pipeline"/><tag k="substance" v="gas"/>
+  </way>
+  <way id="125" version="1">
+    <nd ref="90"/><nd ref="94"/>
+    <tag k="man_made" v="pipeline"/><tag k="substance" v="gas"/>
   </way>
   <way id="300" version="1">
     <nd ref="30"/><nd ref="31"/>
