@@ -20,7 +20,7 @@ test("a shared link opens an offshore pipeline with its source", async ({ page }
   await open(page, `v=44.7,13.85,9&sel=${encodeURIComponent(PIPELINE)}`);
   const details = page.getByRole("complementary", { name: "Detalji objekta" });
   await expect(details.getByRole("heading", { name: "Plinovod Primjer" })).toBeVisible();
-  await expect(details).toContainText("Podmorski cjevovod");
+  await expect(details).toContainText("Cjevovod");
   await expect(details).toContainText("Plin");
   await expect(details).toContainText("76 km");
   await expect(details.getByText("Izvori: EMODnet")).toBeVisible();
@@ -41,7 +41,7 @@ test("clicking the pipeline selects it; switching the layer off makes it unclick
 
   const toggle = page.getByRole("button", { name: "Filtri i pregled" });
   if (await toggle.isVisible()) await toggle.click();
-  await page.getByRole("checkbox", { name: /Cjevovodi \(more\)/ }).uncheck();
+  await page.getByRole("checkbox", { name: /Cjevovodi \(plin, nafta\)/ }).uncheck();
   // the exact layer list grows as layers are added; what matters is that pipelines left it
   await expect(page).not.toHaveURL(/pipelines/);
   await page.keyboard.press("Escape");
@@ -53,7 +53,7 @@ test("clicking the pipeline selects it; switching the layer off makes it unclick
 test("the pipelines download and legend entry are offered", async ({ page }, testInfo) => {
   await open(page, "v=44.7,13.85,8");
   await page.getByRole("button", { name: "Preuzmi bazu", exact: true }).click();
-  await expect(page.getByRole("link", { name: "Cjevovodi (more)" })).toHaveAttribute(
+  await expect(page.getByRole("link", { name: "Cjevovodi (plin, nafta)" })).toHaveAttribute(
     "href",
     /pipelines\.ndjson\.gz$/,
   );
@@ -62,7 +62,7 @@ test("the pipelines download and legend entry are offered", async ({ page }, tes
     const legend = page.locator("details", { hasText: "Legenda" });
     if (!(await legend.evaluate((el: HTMLDetailsElement) => el.open)))
       await legend.locator("summary").click();
-    await expect(page.getByRole("heading", { name: "Cjevovodi na moru" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Cjevovodi", exact: true })).toBeVisible();
   }
 });
 

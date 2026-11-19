@@ -9,6 +9,7 @@
 import type { Balance, FlowRow } from "../data/gasFlows";
 import type { I18n } from "../i18n";
 import type { CardText } from "./dayCard";
+import { signed } from "./gasCard";
 
 /** How many entries the picture has room for; the largest ones are shown. */
 const SHOWN = 3;
@@ -70,5 +71,51 @@ export function gasFlowCardText(balance: Balance, i18n: I18n): CardText {
     }),
     figures,
     footer,
+  };
+}
+
+/**
+ * How the day's deliveries to consumers stand against the average of the seven days before, in percent;
+ * null when there is nothing to compare with.
+ */
+export function deliveryChange(balance: Balance): number | null {
+  const { consumersKwh: now, usualConsumersKwh: usual } = balance;
+  return now === null || usual === null || !(usual > 0) ? null : (now / usual - 1) * 100;
+}
+
+/**
+ * "Gas delivered to consumers": the day's figure and how it stands against the seven days before (the
+ * owner's "consumption jump", 2026-11-19). It is the transmission operator's exit to final consumers and
+ * distribution, which is why the picture calls it delivered and not consumed; null when the country's
+ * system reports no such exit.
+ */
+export function gasUseCardText(balance: Balance, i18n: I18n): CardText | null {
+  const { t } = i18n;
+  if (balance.consumersKwh === null) return null;
+  const figures = [
+    {
+      value: gwh(balance.consumersKwh, i18n),
+      unit: t("unitGwh"),
+      label: t("gasUseCardDelivered"),
+      note: t("gasUseCardDeliveredNote", { operator: balance.operator }),
+    },
+  ];
+  const change = deliveryChange(balance);
+  if (change !== null && balance.usualConsumersKwh !== null) {
+    figures.push({
+      value: signed(Math.round(change), i18n),
+      unit: "%",
+      label: t("gasUseCardChange"),
+      note: t("gasUseCardChangeNote", { value: gwh(balance.usualConsumersKwh, i18n) }),
+    });
+  }
+  return {
+    title: t("gasUseCardTitle"),
+    subtitle: t(balance.provisional ? "gasFlowCardDayProvisional" : "gasFlowCardDay", {
+      country: i18n.country(balance.country),
+      date: i18n.date(balance.day),
+    }),
+    figures,
+    footer: t("gasFlowCardFooter"),
   };
 }

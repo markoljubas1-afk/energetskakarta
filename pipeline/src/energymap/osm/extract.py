@@ -22,7 +22,7 @@ from pydantic import ValidationError
 from shapely.geometry import LineString
 
 from energymap import config
-from energymap.geo.countries import CountryIndex
+from energymap.geo.countries import CountryIndex, length_m
 from energymap.osm import tags as t
 from energymap.schema import (
     ChargingStation,
@@ -50,7 +50,8 @@ class ExtractResult:
     lines: dict[str, TransmissionLine] = field(default_factory=dict)
     substations: dict[str, Substation] = field(default_factory=dict)
     plants: dict[str, PowerPlant] = field(default_factory=dict)
-    # offshore pipelines come from EMODnet, not from OSM (see marine/emodnet.py)
+    # on land from OSM (man_made=pipeline, gas and oil only); offshore ones are added from EMODnet
+    # after the countries are merged (see marine/emodnet.py)
     pipelines: dict[str, Pipeline] = field(default_factory=dict)
     # Distribution holds the same record types as the transmission layers above; only the layer differs
     # (energymap.osm.tags.Role). It is published separately so the main map never carries its weight.
@@ -83,6 +84,7 @@ class ExtractResult:
             + _merge_into(self.datacenters, other.datacenters)
             + _merge_into(self.chargers, other.chargers)
             + _merge_into(self.extraction, other.extraction)
+            + _merge_into(self.pipelines, other.pipelines)
             + _merge_into(self.cities, other.cities)
         )
         self.stats.update(other.stats)
@@ -151,6 +153,8 @@ def extract(path: Path, index: CountryIndex, scope: frozenset[str], retrieved_at
         centre = t.data_center(tag_map) if cycle is None else None
         charger = t.charging_station(tag_map) if cycle is None and centre is None else None
         site = t.extraction_site(tag_map) if cycle is None and centre is None and charger is None else None
+        nothing_else = cycle is None and centre is None and charger is None and site is None
+        pipe = t.pipeline(tag_map) if nothing_else else None
         try:
             if centre is not None:
                 _add_data_center(result, ctx, centre, tag_map, obj, wkb)
@@ -158,7 +162,15 @@ def extract(path: Path, index: CountryIndex, scope: frozenset[str], retrieved_at
                 _add_charger(result, ctx, charger, tag_map, obj, wkb)
             elif site is not None:
                 _add_extraction_site(result, ctx, site, tag_map, obj, wkb)
+            elif pipe is not None:
+                # a pipeline is a way; a closed one also arrives as an area, which is not a route
+                if isinstance(obj, osmium.osm.Way):
+                    coords = [(n.lon, n.lat) for n in obj.nodes]
+                    _add_pipeline(result, ctx, pipe, tag_map, obj.id, coords)
             elif cycle is None:
+                if nothing_else and tag_map.get("man_made") == "pipeline" and isinstance(obj, osmium.osm.Way):
+                    # water, sewage, heat, or no substance at all: counted, so the build log says how many
+                    result.stats["pipeline_not_gas_or_oil"] += 1
                 continue
             elif isinstance(obj, osmium.osm.Area):
                 if cycle.kind in _POINT_KINDS:
@@ -300,6 +312,41 @@ def _add_extraction_site(
         substance=site.substance,
         country=country,
         location=(round(lon, 6), round(lat, 6)),
+    )
+
+
+def _add_pipeline(
+    result: ExtractResult,
+    ctx: _Context,
+    pipe: t.PipelineTags,
+    tags: t.Tags,
+    osm_id: int,
+    coords: list[tuple[float, float]],
+) -> None:
+    deduped = [c for i, c in enumerate(coords) if i == 0 or c != coords[i - 1]]
+    if len(deduped) < 2:
+        result.stats["degenerate_pipeline"] += 1
+        return
+    route = LineString(deduped)
+    # a pipe that lies wholly at sea touches no country: those are EMODnet's, which has them as routes
+    countries = ctx.index.countries_of_line(route)
+    if not ctx.scope.intersection(countries):
+        result.stats["outside_scope"] += 1
+        return
+    kilometres = round(length_m(route) / 1000, 2)
+    key = asset_id("way", osm_id)
+    result.pipelines[key] = Pipeline(
+        id=key,
+        status=pipe.status,
+        operator=t.text(tags, "operator"),
+        provenance=_provenance(ctx, "way", osm_id),
+        name=t.text(tags, "name", "name:en"),
+        medium=pipe.medium,
+        diameter_in=t.parse_diameter_in(tags.get("diameter")),
+        length_km=kilometres if kilometres > 0 else None,
+        commissioning_year=t.parse_year(tags.get("start_date")),
+        countries=countries,
+        parts=(tuple((round(lon, 6), round(lat, 6)) for lon, lat in deduped),),
     )
 
 

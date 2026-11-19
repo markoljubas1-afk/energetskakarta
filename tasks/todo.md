@@ -2788,5 +2788,21 @@ morski cjevovodi (EMODnet), izviđanje ENTSOG točaka (`gas/points.py`).
     koji nisu prijavile sve točke (uzima se zadnji dan koji su prijavile sve).
   - Provjera: pytest s lažnim API-jem, vitest, e2e, pa ručno pokretanje posla i pregled uživo.
 - [ ] 44-4 Plinovodi na kopnu (7C): OSM `man_made=pipeline` odmah; GEM tracker traži preuzimanje korisnika.
+  **Plan 44-4 (2026-11-19, „može, kreni na korak 4 i dodaj skok potrošnje”).**
+  - Cilj: plinovodi i naftovodi na kopnu u postojećem sloju `pipelines` (isti zapis kao EMODnet-ovi morski).
+  - Pristup: par `man_made=pipeline` (s prefiksima životnog ciklusa) ide u postojeći prolaz predfiltra
+    „extraction” (bez novog čitanja izvora od 2 GB po zemlji); `tags.pipeline` čita `substance` (stari ključ
+    `type`); zadržavaju se samo plin i nafta, a voda, kanalizacija, toplovod i cijevi bez oznake tvari se
+    izostavljaju i broje. Samo putovi (way); promjer iz mm u inče; duljina se računa iz geometrije.
+    Cijev koja cijela leži na moru ostaje EMODnetu (izvan svih zemalja → izvan dosega).
+  - Razmotreno: zaseban prolaz predfiltra (odbijeno: još jedno čitanje svake zemlje); GEM tracker (traži
+    preuzimanje vlasnika; ostaje za poslije); položaji graničnih točaka iz presjeka cijevi i granice
+    (tek kad se vidi što OSM stvarno ima).
+  - Rizici: glavni arhiv pločica raste (cjevovodi su u `grid.pmtiles`); OSM ponegdje ima i lokalne plinske
+    cijevi; morski dio cijevi koja izlazi na kopno može se preklopiti s EMODnetom. Provjera na prvom
+    stvarnom buildu: broj zapisa po zemlji i veličina arhiva.
+  - Provjera: pytest (tags, extract na fixtureu), web testovi naziva, zatim stvarni build u Actions.
+  **Skok potrošnje:** isporuka kupcima i distribuciji (ENTSOG, točka FNC) prema prosjeku prethodnih sedam
+  plinskih dana, kao rečenica u traci i kao slika `?pic=gasuse`; bez praga i bez riječi „alarm”.
 - Ne predlažem bez podataka: „alarm” skoka potrošnje (ENTSOG ne objavljuje potrošnju zemlje kao jednu brojku;
   prvo provjeriti što se može izvesti iz izlaza prema distribuciji).

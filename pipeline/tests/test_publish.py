@@ -77,6 +77,7 @@ def test_publish_uploads_everything_and_pointer_last(make_build: BuildFactory) -
         "datacenters": 2,
         "chargers": 1,
         "extraction": 5,
+        "pipelines": 2,
     }
     assert pointer["downloads"]["lines"] == base + "lines.ndjson.gz"
     assert pointer["downloads"]["extraction"] == base + "extraction.ndjson.gz"

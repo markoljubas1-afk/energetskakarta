@@ -273,3 +273,26 @@ def test_implausible_capacity_is_recognised(capacity: float, technology: Technol
 )
 def test_parse_output_kw(tags: dict[str, str], expected: float | None) -> None:
     assert t.parse_output_kw(tags) == expected
+
+
+def test_pipeline_tags() -> None:
+    from energymap.schema import Medium
+
+    assert t.pipeline({"man_made": "pipeline", "substance": "gas"}) == (Status.OPERATING, Medium.GAS)
+    assert t.pipeline({"man_made": "pipeline", "substance": "Natural_Gas"}) == (Status.OPERATING, Medium.GAS)
+    assert t.pipeline({"man_made": "pipeline", "type": "oil"}) == (Status.OPERATING, Medium.OIL)
+    assert t.pipeline({"man_made": "pipeline", "substance": "oil;gas"}) == (Status.OPERATING, Medium.GAS)
+    assert t.pipeline({"proposed:man_made": "pipeline", "substance": "gas"}) == (Status.PLANNED, Medium.GAS)
+    for other in ("water", "sewage", "hot_water", "heat", "hydrogen", ""):
+        assert t.pipeline({"man_made": "pipeline", "substance": other}) is None
+    assert t.pipeline({"man_made": "pipeline"}) is None
+    assert t.pipeline({"disused:man_made": "pipeline", "substance": "gas"}) is None
+    assert t.pipeline({"man_made": "tower", "substance": "gas"}) is None
+
+
+def test_pipe_diameters_are_millimetres() -> None:
+    assert t.parse_diameter_in("1200") == 47.2
+    assert t.parse_diameter_in("508 mm") == 20.0
+    assert t.parse_diameter_in("406,4") == 16.0
+    for unreadable in (None, "", '28"', "28 in", "DN500", "5", "90000"):
+        assert t.parse_diameter_in(unreadable) is None

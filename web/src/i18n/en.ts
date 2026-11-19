@@ -197,6 +197,19 @@ export const en: Dictionary = {
   gasFlowCardConsumers: "To customers in the country: {value} GWh",
   gasFlowCardFooter: "Source: ENTSOG Transparency Platform · gridatlas.eu",
   gasFlowCardNone: "There are no figures on gas entering the system for this country.",
+  dayCardKind_gasuse: "Gas delivered to customers: latest gas day",
+  gasUseMore:
+    "Customers and distribution in the country were delivered {value} GWh: {change}% more than the average of the seven gas days before ({usual} GWh).",
+  gasUseLess:
+    "Customers and distribution in the country were delivered {value} GWh: {change}% less than the average of the seven gas days before ({usual} GWh).",
+  gasUseSame:
+    "Customers and distribution in the country were delivered {value} GWh, as much as the average of the seven gas days before.",
+  gasUseCardTitle: "GridAtlas: gas delivered to customers",
+  gasUseCardDelivered: "delivered to customers and distribution in the country",
+  gasUseCardDeliveredNote: "exit from the transmission system ({operator})",
+  gasUseCardChange: "against the average of the seven days before",
+  gasUseCardChangeNote: "average of those days: {value} GWh a day",
+  gasUseCardNone: "There are no figures on gas delivered to customers for this country.",
   gasCardTitle: "GridAtlas: gas in storage",
   gasCardStored: "gas in storage",
   gasCardStoredNote: "room for {capacity} TWh",
@@ -561,7 +574,7 @@ export const en: Dictionary = {
   herePrivacy:
     "Your location is not stored; rounded to about a kilometre, it is sent only to the weather service",
   unitEurMwh: "€/MWh",
-  layer_pipelines: "Pipelines (offshore)",
+  layer_pipelines: "Pipelines (gas, oil)",
   layer_datacenters: "Data centres",
   layer_datacenters_note:
     "OpenStreetMap plus our hand-kept list; every hand-kept record names its source. The list is not complete: there is no open database for this region.",
@@ -746,7 +759,7 @@ export const en: Dictionary = {
   layer_distribution_note:
     "Medium and low voltage from OpenStreetMap. Coverage varies by country, so this layer is incomplete. Shown from closer zoom levels.",
   legendDistribution: "Distribution network (thin lines, from closer zoom levels)",
-  kind_pipeline: "Offshore pipeline",
+  kind_pipeline: "Pipeline",
   kind_datacenter: "Data centre",
   kind_charger: "EV charging station",
   kind_city: "City",
@@ -785,13 +798,13 @@ export const en: Dictionary = {
   detailsMedium: "Medium",
   detailsDiameter: "Diameter",
   detailsLength: "Length",
-  downloadPipelines: "Pipelines (offshore)",
+  downloadPipelines: "Pipelines (gas, oil)",
   downloadDatacenters: "Data centres",
   downloadChargers: "Charging stations",
   downloadExtraction: "Wells and mines",
   downloadDistributionLines: "Distribution lines",
   downloadDistributionSubstations: "Distribution substations",
-  legendPipelines: "Offshore pipelines",
+  legendPipelines: "Pipelines",
   source_emodnet: "EMODnet",
   source_manual: "hand-kept list",
   attr_emodnet: "EMODnet Human Activities",

@@ -75,7 +75,7 @@ describe("StatusBar", () => {
     );
     expect(screen.getByRole("img", { name: "MapTiler" })).toBeInTheDocument();
     // this build has no offshore pipelines, so there is nothing to download for them
-    expect(screen.queryByRole("link", { name: "Cjevovodi (more)" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Cjevovodi (plin, nafta)" })).not.toBeInTheDocument();
   });
 
   it("lists the pipelines download when the build has it", () => {
@@ -94,7 +94,7 @@ describe("StatusBar", () => {
       />,
     );
     fireEvent.click(screen.getByRole("button", { name: "Preuzmi bazu" })); // the downloads are in a menu
-    expect(screen.getByRole("link", { name: "Cjevovodi (more)" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Cjevovodi (plin, nafta)" })).toHaveAttribute(
       "href",
       "https://data.test/builds/x/pl.ndjson.gz",
     );

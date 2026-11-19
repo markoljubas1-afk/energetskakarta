@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import type { AsyncState } from "../app/useAsync";
 import { balance, type FlowRow, type GasFlowsLoad } from "../data/gasFlows";
 import { useI18n } from "../i18n";
-import { flowName, gwh } from "../share/gasFlowCard";
+import { flowName, gwh, deliveryChange } from "../share/gasFlowCard";
 import styles from "./GasFlowBar.module.css";
 
 /** The country whose system the bar shows. */
@@ -29,6 +29,9 @@ export function GasFlowBar({ data, onClose }: Props) {
   const day = balance(flows, HOME);
   if (!day) return null;
   const title = t("gasFlowTitle", { country: i18n.country(day.country) });
+  // the day's deliveries against the seven days before: said only when both are in the data
+  const change = deliveryChange(day);
+  const rounded = change === null ? null : Math.round(change);
   return (
     <section className={styles.bar} aria-label={title}>
       <div className={styles.head}>
@@ -47,6 +50,15 @@ export function GasFlowBar({ data, onClose }: Props) {
         <Side heading={t("gasFlowEntered", { value: gwh(day.enteredKwh, i18n) })} rows={day.entries} />
         <Side heading={t("gasFlowLeft", { value: gwh(day.leftKwh, i18n) })} rows={day.exits} />
       </div>
+      {rounded !== null && day.consumersKwh !== null && day.usualConsumersKwh !== null && (
+        <p className={styles.use}>
+          {t(rounded > 0 ? "gasUseMore" : rounded < 0 ? "gasUseLess" : "gasUseSame", {
+            value: gwh(day.consumersKwh, i18n),
+            change: String(Math.abs(rounded)),
+            usual: gwh(day.usualConsumersKwh, i18n),
+          })}
+        </p>
+      )}
       <p className={styles.note}>
         {t("gasFlowNote")}{" "}
         <a href={flows.sourceUrl} target="_blank" rel="noopener noreferrer">

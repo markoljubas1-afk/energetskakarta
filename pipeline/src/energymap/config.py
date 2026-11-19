@@ -97,9 +97,15 @@ EXTRACTION_TAGS: tuple[tuple[str, str], ...] = (
     ("man_made", "adit"),
     ("landuse", "quarry"),
 )
+# Pipelines on land (Faza 44-4) ride on the same pass: one more exact pair costs nothing, while a pass of
+# their own would read every country's 2 GB extract once more. Which pipelines are kept (gas and oil, not
+# water or sewage) is decided when the tags are read (osm/tags.py).
+PIPELINE_TAGS: tuple[tuple[str, str], ...] = (("man_made", "pipeline"),)
 EXTRACTION_FILTER = SourceFilter(
     "extraction",
-    pairs=tuple(pair for key, value in EXTRACTION_TAGS for pair in _lifecycle_pairs(key, value)),
+    pairs=tuple(
+        pair for key, value in (*EXTRACTION_TAGS, *PIPELINE_TAGS) for pair in _lifecycle_pairs(key, value)
+    ),
 )
 SOURCE_FILTERS: tuple[SourceFilter, ...] = (POWER_FILTER, CHARGER_FILTER, EXTRACTION_FILTER)
 

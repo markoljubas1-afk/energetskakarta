@@ -12,7 +12,7 @@ from energymap import config
 from energymap.geo.countries import CountryIndex
 from energymap.osm.extract import ExtractResult, extract
 from energymap.osm.prefilter import prefilter
-from energymap.schema import ExtractionKind, Status, Substance, Technology
+from energymap.schema import ExtractionKind, Medium, Status, Substance, Technology
 
 RETRIEVED = datetime(2026, 9, 16, 12, 0, tzinfo=UTC)
 SCOPE = frozenset({"HR", "SI"})
@@ -238,3 +238,32 @@ def test_a_charging_station_is_not_found_by_the_power_pass(fixtures: Path, tmp_p
     chargers_only = prefilter(fixtures / "sample.osm", tmp_path / "c.osm.pbf", config.CHARGER_FILTER)
     kept = {(o.type_str(), o.id) for o in osmium.FileProcessor(str(chargers_only))}
     assert kept == {("n", 72)}  # and nothing else: the pass is exact, so the file stays tiny
+
+
+def test_pipelines_on_land_are_gas_and_oil_only(result: ExtractResult) -> None:
+    # water, a pipe that names no substance and a disused one are not on the map
+    assert set(result.pipelines) == {"osm:way/120", "osm:way/121"}
+    gas = result.pipelines["osm:way/120"]
+    assert gas.medium is Medium.GAS and gas.status is Status.OPERATING
+    assert gas.name == "Magistralni plinovod" and gas.operator == "Plinacro"
+    assert set(gas.countries) == {"HR", "SI"}
+    assert gas.parts == (((14.5, 45.5), (15.5, 45.5)),)
+    # 800 mm is 31.5 inches; one degree of longitude at 45.5° N is about 78 km
+    assert gas.diameter_in == 31.5
+    assert gas.length_km is not None and 77 < gas.length_km < 79
+    assert gas.commissioning_year == 2011
+    assert gas.provenance[0].source == "openstreetmap" and gas.provenance[0].source_id == "way/120"
+    oil = result.pipelines["osm:way/121"]
+    # the older type=* key names the substance; a diameter in inches is not read as millimetres
+    assert oil.medium is Medium.OIL and oil.status is Status.CONSTRUCTION
+    assert oil.diameter_in is None and oil.name is None
+    assert result.counts()["pipelines"] == 2
+    # the two that are pipelines of something else are counted, the disused one never reaches the extract
+    assert result.stats["pipeline_not_gas_or_oil"] == 2
+
+
+def test_pipelines_survive_the_merge_of_two_countries(result: ExtractResult) -> None:
+    merged = ExtractResult()
+    merged.merge(result)
+    merged.merge(result)
+    assert set(merged.pipelines) == set(result.pipelines)

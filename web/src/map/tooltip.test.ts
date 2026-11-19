@@ -65,7 +65,7 @@ describe("tooltipFor", () => {
 
   it("never returns an empty detail string", () => {
     const pipeline = selection("pipelines", { medium: "gas" });
-    expect(tooltipFor(pipeline, i18n)).toEqual({ title: "Podmorski cjevovod", detail: "Plin" });
+    expect(tooltipFor(pipeline, i18n)).toEqual({ title: "Cjevovod", detail: "Plin" });
   });
 });
 

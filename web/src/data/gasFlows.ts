@@ -94,6 +94,39 @@ export interface Balance {
   consumersKwh: number | null;
   /** at least one figure of the day is still provisional */
   provisional: boolean;
+  /**
+   * What went to consumers on average over the seven gas days before this one; null unless every one of
+   * those seven days is in the data with a figure (an average of the days that happen to be there misleads).
+   */
+  usualConsumersKwh: number | null;
+}
+
+/** The days the day's deliveries are compared with. */
+export const USUAL_DAYS = 7;
+
+/** What left to consumers and distribution on the day at `index`; null when a point has no figure. */
+function consumersOn(points: readonly Point[], index: number): number | null {
+  const exits = points.filter(
+    (point) => point.direction === "exit" && (point.kind === "FNC" || point.kind === "DIS"),
+  );
+  if (exits.length === 0 || index < 0) return null;
+  let total = 0;
+  for (const point of exits) {
+    const kwh = point.kwhPerDay[index];
+    if (kwh == null) return null;
+    total += kwh;
+  }
+  return total;
+}
+
+function usualBefore(points: readonly Point[], index: number): number | null {
+  let total = 0;
+  for (let back = 1; back <= USUAL_DAYS; back += 1) {
+    const kwh = consumersOn(points, index - back);
+    if (kwh === null) return null;
+    total += kwh;
+  }
+  return total / USUAL_DAYS;
 }
 
 function side(points: readonly Point[], direction: "entry" | "exit", index: number): [FlowRow[], number] {
@@ -131,7 +164,6 @@ export function balance(flows: GasFlows, country: string): Balance | null {
     const [entries, enteredKwh] = side(system.points, "entry", index);
     const [exits, leftKwh] = side(system.points, "exit", index);
     if (!(enteredKwh > 0)) return null;
-    const consumers = exits.filter((row) => row.kind === "FNC" || row.kind === "DIS");
     return {
       country,
       operator: system.operator,
@@ -140,8 +172,9 @@ export function balance(flows: GasFlows, country: string): Balance | null {
       exits,
       enteredKwh,
       leftKwh,
-      consumersKwh: consumers.length > 0 ? consumers.reduce((sum, row) => sum + row.kwh, 0) : null,
+      consumersKwh: consumersOn(system.points, index),
       provisional: system.points.some((point) => point.status[index] === "P"),
+      usualConsumersKwh: usualBefore(system.points, index),
     };
   }
   return null;

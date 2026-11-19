@@ -10,8 +10,9 @@ import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import StrEnum
+from typing import NamedTuple
 
-from energymap.schema import ENERGY_SUBSTANCES, ExtractionKind, Status, Substance, Technology
+from energymap.schema import ENERGY_SUBSTANCES, ExtractionKind, Medium, Status, Substance, Technology
 
 Tags = Mapping[str, str]
 
@@ -196,6 +197,58 @@ def substance(tags: Tags, kind: ExtractionKind) -> Substance:
     if energy:
         return sorted(energy)[0]
     return Substance.OTHER
+
+
+_PIPELINE_TAGS: tuple[tuple[str, str], ...] = (("man_made", "pipeline"),)
+# What a pipeline carries, from substance=* (and the older type=*). Only energy carriers are named here:
+# water, sewage, district heat and anything else are not part of this map.
+_PIPELINE_MEDIUM: dict[str, Medium] = {
+    "gas": Medium.GAS,
+    "natural_gas": Medium.GAS,
+    "naturalgas": Medium.GAS,
+    "cng": Medium.GAS,
+    "lng": Medium.GAS,
+    "oil": Medium.OIL,
+    "crude_oil": Medium.OIL,
+    "crude": Medium.OIL,
+    "petroleum": Medium.OIL,
+}
+#: a transmission pipe is between a few centimetres and a couple of metres across
+_PIPE_DIAMETER_MM = (25.0, 2500.0)
+_DIAMETER = re.compile(r"^(\d+(?:[.,]\d+)?)\s*(mm)?$", re.IGNORECASE)
+
+
+class PipelineTags(NamedTuple):
+    status: Status
+    medium: Medium
+
+
+def pipeline(tags: Tags) -> PipelineTags | None:
+    """A gas or oil pipeline's lifecycle status and what it carries, or ``None`` when the object is not one.
+
+    A pipeline that names no substance is left out, not guessed: most untagged pipes in OSM are water
+    mains. One tagged with several substances is a gas pipeline if gas is among them, else an oil one.
+    """
+    status = _tagged(tags, _PIPELINE_TAGS)
+    if status is None:
+        return None
+    raw = tags.get("substance", "").strip() or tags.get("type", "").strip()
+    found = {_PIPELINE_MEDIUM.get(part.strip().lower()) for part in raw.split(";")}
+    for medium in (Medium.GAS, Medium.OIL):
+        if medium in found:
+            return PipelineTags(status, medium)
+    return None
+
+
+def parse_diameter_in(raw: str | None) -> float | None:
+    """``diameter`` is in millimetres in OSM (``"1200"``, ``"1200 mm"``); the record keeps inches, as
+    the offshore pipelines do. A value in another unit or outside what a pipe can be is dropped."""
+    match = _DIAMETER.match(raw.strip()) if raw else None
+    if match is None:
+        return None
+    mm = float(match.group(1).replace(",", "."))
+    low, high = _PIPE_DIAMETER_MM
+    return round(mm / 25.4, 1) if low <= mm <= high else None
 
 
 def extraction_site(tags: Tags) -> Extraction | None:

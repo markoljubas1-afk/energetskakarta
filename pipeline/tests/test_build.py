@@ -109,6 +109,7 @@ def test_build_publishes_atomically(fixtures: Path, sample_pbf: Path, tmp_path: 
         "datacenters": 2,
         "chargers": 1,
         "extraction": 5,
+        "pipelines": 2,
     }
     assert manifest["interconnectors"] == 1
     assert manifest["sources"][0]["region_id"] == "croatia"

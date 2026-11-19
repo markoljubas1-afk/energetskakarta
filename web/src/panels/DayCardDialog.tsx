@@ -19,7 +19,7 @@ import {
 } from "../share/dayCard";
 import { download, fileStem, pictureTheme } from "../share/download";
 import { gasCard, gasCardText, gasCountries } from "../share/gasCard";
-import { gasFlowCardText } from "../share/gasFlowCard";
+import { gasFlowCardText, gasUseCardText } from "../share/gasFlowCard";
 import { drawSourcesCard, latestDay, latestMonth, sourcesCountries } from "../share/sourcesCard";
 import { loadSources, periodName, sourcesSummary, sourcesText } from "../share/sourcesText";
 import styles from "./DayCardDialog.module.css";
@@ -49,10 +49,10 @@ interface Props {
 
 /**
  * What the picture shows: the three figures of this moment, what the electricity of the latest complete
- * day or month was made of (Faza 41), the gas in storage on the last gas day, or where the gas that
- * entered the system that day came in (Faza 44).
+ * day or month was made of (Faza 41), the gas in storage on the last gas day, where the gas that
+ * entered the system that day came in, or how much of it was delivered to consumers (Faza 44).
  */
-export const CARD_KINDS = ["figures", "day", "month", "gas", "gasflow"] as const;
+export const CARD_KINDS = ["figures", "day", "month", "gas", "gasflow", "gasuse"] as const;
 export type CardKind = (typeof CARD_KINDS)[number];
 
 /**
@@ -148,7 +148,7 @@ export function DayCardDialog(props: Props) {
         ? storage
           ? gasCountries(storage, SCOPE_COUNTRIES)
           : []
-        : kind === "gasflow"
+        : kind === "gasflow" || kind === "gasuse"
           ? flows
             ? flowCountries(flows, SCOPE_COUNTRIES)
             : []
@@ -193,6 +193,18 @@ export function DayCardDialog(props: Props) {
         slug: `gridatlas-plin-ulaz-${country}-${day.day}`,
       };
     }
+  } else if (kind === "gasuse") {
+    const day = flows ? balance(flows, country) : null;
+    const text = day ? gasUseCardText(day, i18n) : null;
+    if (day && text) {
+      picture = {
+        summary: cardSummary(text),
+        draw: (ctx, font, shape) => {
+          drawDayCard(ctx, text, font, shape);
+        },
+        slug: `gridatlas-plin-kupci-${country}-${day.day}`,
+      };
+    }
   } else if (totals) {
     const card =
       kind === "day" ? latestDay(totals.days, country) : latestMonth(totals.periods, country, month);
@@ -218,7 +230,7 @@ export function DayCardDialog(props: Props) {
       ? live === null
       : kind === "gas"
         ? storage === null && storageWaiting
-        : kind === "gasflow"
+        : kind === "gasflow" || kind === "gasuse"
           ? flows === null && flowsWaiting
           : sources === null || sources.status === "loading";
   const failedToLoad = usesSources(kind) && sources?.status === "error";
@@ -354,7 +366,9 @@ export function DayCardDialog(props: Props) {
                     ? "gasCardNone"
                     : kind === "gasflow"
                       ? "gasFlowCardNone"
-                      : "sourcesNone",
+                      : kind === "gasuse"
+                        ? "gasUseCardNone"
+                        : "sourcesNone",
           )}
         </p>
       )}

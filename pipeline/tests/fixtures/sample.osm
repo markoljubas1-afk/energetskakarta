@@ -145,6 +145,28 @@
     <nd ref="90"/><nd ref="91"/><nd ref="92"/><nd ref="93"/><nd ref="90"/>
     <tag k="landuse" v="quarry"/><tag k="resource" v="lignite"/><tag k="name" v="Površinski kop"/><tag k="operator" v="Ugljen d.o.o."/>
   </way>
+  <!-- 120-124: pipelines. 120 gas across the border, 121 oil under construction, 122 water (left out),
+       123 no substance (left out), 124 disused gas (left out) -->
+  <way id="120" version="1">
+    <nd ref="1"/><nd ref="2"/>
+    <tag k="man_made" v="pipeline"/><tag k="substance" v="gas"/><tag k="name" v="Magistralni plinovod"/><tag k="operator" v="Plinacro"/><tag k="diameter" v="800"/><tag k="location" v="underground"/><tag k="start_date" v="2011"/>
+  </way>
+  <way id="121" version="1">
+    <nd ref="90"/><nd ref="91"/><nd ref="92"/>
+    <tag k="construction:man_made" v="pipeline"/><tag k="type" v="oil"/><tag k="diameter" v="28 in"/>
+  </way>
+  <way id="122" version="1">
+    <nd ref="90"/><nd ref="93"/>
+    <tag k="man_made" v="pipeline"/><tag k="substance" v="water"/>
+  </way>
+  <way id="123" version="1">
+    <nd ref="91"/><nd ref="93"/>
+    <tag k="man_made" v="pipeline"/>
+  </way>
+  <way id="124" version="1">
+    <nd ref="92"/><nd ref="90"/>
+    <tag k="disused:man_made" v="pipeline"/><tag k="substance" v="gas"/>
+  </way>
   <way id="300" version="1">
     <nd ref="30"/><nd ref="31"/>
     <tag k="highway" v="primary"/>

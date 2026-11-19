@@ -156,13 +156,14 @@ test("gas storage rides on the gas layer: a bar with how full it is, its source,
   await expect(page).not.toHaveURL(/l=[^&]*gas/);
 });
 
-/** Croatia's system over three gas days, in GWh a day, in the shape the pipeline publishes; the last day
- * is not reported yet. */
+/** Croatia's system over ten gas days, in GWh a day, in the shape the pipeline publishes: eight days like
+ * the first figure, then the second; the last day is not reported yet. */
+const FLOW_DAYS = Array.from({ length: 10 }, (_, at) => `2026-11-${String(9 + at).padStart(2, "0")}`);
 const flowPoint = (
   key: string,
   label: string,
   direction: "entry" | "exit",
-  gwh: number[],
+  gwh: [number, number],
   neighbour: string | null = null,
 ) => ({
   key,
@@ -170,8 +171,8 @@ const flowPoint = (
   kind: key.slice(0, 3),
   direction,
   neighbour,
-  kwhPerDay: [...gwh.map((value) => value * 1e6), null],
-  status: [...gwh.map(() => "P"), null],
+  kwhPerDay: FLOW_DAYS.map((_, at) => (at === 9 ? null : (at === 8 ? gwh[1] : gwh[0]) * 1e6)),
+  status: FLOW_DAYS.map((_, at) => (at === 9 ? null : "P")),
 });
 const FLOWS = {
   version: 1,
@@ -179,7 +180,7 @@ const FLOWS = {
   source: "ENTSOG Transparency Platform",
   sourceUrl: "https://transparency.entsog.eu/",
   unit: "kWh/d",
-  days: ["2026-11-16", "2026-11-17", "2026-11-18"],
+  days: FLOW_DAYS,
   countries: {
     HR: {
       operatorKey: "HR-TSO-0001",
@@ -213,6 +214,10 @@ test("the gas layer shows what entered the system and where it went, and a pictu
   const left = bar.getByRole("list", { name: "Izašlo iz transportnog sustava: 123,5 GWh" });
   await expect(left.getByRole("listitem").first()).toHaveText("kupci i distribucija u zemlji71,9 GWh · 58 %");
   await expect(left).toContainText("Dravaszerdahely (Mađarska)");
+  // the day against the seven before it: 71.9 GWh where 83.1 was usual
+  await expect(bar).toContainText(
+    "Kupcima i distribuciji u zemlji isporučeno je 71,9 GWh: 13 % manje od prosjeka prethodnih sedam plinskih dana (83,1 GWh).",
+  );
   await expect(bar).toContainText("Ulaz nije potrošnja");
   await expect(bar.getByRole("link", { name: "ENTSOG Transparency Platform" })).toHaveAttribute(
     "href",
@@ -244,4 +249,16 @@ test("the gas layer shows what entered the system and where it went, and a pictu
   const story = page.waitForEvent("download");
   await dialog.getByRole("button", { name: "Preuzmi sliku (PNG)" }).click();
   await (await story).saveAs(testInfo.outputPath("gas-flow-card-story.png"));
+
+  // and what was delivered to customers, with the same comparison
+  await page.goto("/?pic=gasuse");
+  await expect(dialog.getByLabel("Što je na slici")).toHaveValue("gasuse");
+  await expect(picture).toHaveAccessibleName(
+    "GridAtlas: Plin isporučen kupcima. Hrvatska · plinski dan 17. studenoga 2026. · privremeni podaci: 71,9 GWh isporučeno kupcima i distribuciji u zemlji (izlaz iz transportnog sustava (Plinacro Ltd)); −13 % prema prosjeku prethodnih sedam dana (prosjek tih dana: 83,1 GWh na dan). Izvor: ENTSOG Transparency Platform · gridatlas.eu",
+  );
+  const use = page.waitForEvent("download");
+  await dialog.getByRole("button", { name: "Preuzmi sliku (PNG)" }).click();
+  const useFile = await use;
+  expect(useFile.suggestedFilename()).toMatch(/^gridatlas-plin-kupci-hr-2026-11-17-\d{4}-\d{2}-\d{2}\.png$/);
+  await useFile.saveAs(testInfo.outputPath("gas-use-card.png"));
 });

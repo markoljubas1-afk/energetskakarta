@@ -150,7 +150,8 @@ class Medium(StrEnum):
 
 
 class Pipeline(_Asset):
-    """An offshore pipeline (EMODnet). Routes are often split into several parts."""
+    """A gas or oil pipeline: offshore from EMODnet (a route is often split into several parts),
+    on land from OpenStreetMap (one way, one part)."""
 
     LAYER: ClassVar[str] = "pipelines"
 

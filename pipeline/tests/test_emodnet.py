@@ -182,12 +182,18 @@ def marine_build(make_build: BuildFactory, marine_dir: Path) -> Path:
 def test_build_with_marine_data(make_build: BuildFactory, marine_dir: Path) -> None:
     build = marine_build(make_build, marine_dir)
     rows = [json.loads(line) for line in (build / "pipelines.ndjson").read_text().splitlines()]
-    assert [row["id"] for row in rows] == ["emodnet:pipelines/101", "emodnet:pipelines/104"]
+    # the two at sea from EMODnet, next to the two on land from OpenStreetMap
+    assert [row["id"] for row in rows] == [
+        "emodnet:pipelines/101",
+        "emodnet:pipelines/104",
+        "osm:way/120",
+        "osm:way/121",
+    ]
     assert rows[0]["geometry"]["type"] == "MultiLineString"
     plants = {json.loads(line)["id"] for line in (build / "plants.ndjson").read_text().splitlines()}
     assert "emodnet:windfarms/2" in plants  # VE More (HR); Beleolico is Italian and out of this build's scope
     manifest = json.loads((build / "manifest.json").read_text())
-    assert manifest["counts"]["pipelines"] == 2
+    assert manifest["counts"]["pipelines"] == 4
     assert manifest["marine"] == {"fetchedAt": "2026-09-15T03:00:00+00:00", "pipelines": 2, "windfarms": 1}
     assert "emodnet" in manifest["attributionSources"]
     # HR-only build: Nord Stream 2 (DE) and the Italian oil pipeline are both outside it
@@ -209,16 +215,18 @@ def test_build_with_marine_data(make_build: BuildFactory, marine_dir: Path) -> N
     }
 
 
-def test_build_without_marine_has_an_empty_uncounted_layer(make_build: BuildFactory) -> None:
+def test_build_without_marine_has_the_pipelines_on_land_only(make_build: BuildFactory) -> None:
     build = make_build(NOW)
-    assert (build / "pipelines.ndjson").read_text() == ""
-    assert "pipelines" not in json.loads((build / "manifest.json").read_text())["counts"]
+    rows = [json.loads(line) for line in (build / "pipelines.ndjson").read_text().splitlines()]
+    assert [row["id"] for row in rows] == ["osm:way/120", "osm:way/121"]
+    assert json.loads((build / "manifest.json").read_text())["counts"]["pipelines"] == 2
 
 
 def test_losing_the_marine_data_is_a_drop(make_build: BuildFactory, marine_dir: Path) -> None:
     marine_build(make_build, marine_dir)
     paths = config.Paths(marine_dir.parent / "data")
-    with pytest.raises(Exception, match="layer 'pipelines' disappeared"):
+    # the pipelines on land are still there, so the layer shrinks instead of disappearing
+    with pytest.raises(Exception, match="layer 'pipelines' dropped from 4 to 2"):
         pipeline.build(paths, [config.COUNTRY_BY_CODE["HR"]], now=datetime(2026, 9, 17, tzinfo=UTC))
 
 

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { balance, flowCountries, GasFlowsSchema, type GasFlows } from "../data/gasFlows";
 import { createI18n } from "../i18n";
-import { gasFlowCardText } from "../share/gasFlowCard";
+import { gasFlowCardText, gasUseCardText } from "../share/gasFlowCard";
 import { renderWithI18n } from "../test/render";
 import { GasFlowBar } from "./GasFlowBar";
 
@@ -180,5 +180,90 @@ describe("the gas flow bar", () => {
     expect(container).toBeEmptyDOMElement();
     renderWithI18n(<GasFlowBar data={{ status: "ready", value: { kind: "none" } }} onClose={vi.fn()} />);
     expect(screen.queryByRole("region")).toBeNull();
+  });
+});
+
+/** Nine gas days of deliveries to consumers: 80 GWh on each of the first eight, then `last`. */
+function deliveries(last: number): GasFlows {
+  const days = Array.from({ length: 9 }, (_, at) => `2026-11-${String(9 + at).padStart(2, "0")}`);
+  const series = (gwh: number[]): Point["kwhPerDay"] => gwh.map((value) => value * 1e6);
+  return {
+    ...FLOWS,
+    days,
+    countries: {
+      HR: {
+        operatorKey: "HR-TSO-0001",
+        operator: "Plinacro Ltd",
+        points: [
+          {
+            ...point("LNG-00032", "Croatia LNG", "entry", []),
+            kwhPerDay: series(days.map(() => 100)),
+            status: days.map(() => "C"),
+          },
+          {
+            ...point("FNC-00018", "Final Consumers and Distribution (HR)", "exit", []),
+            kwhPerDay: series([...days.slice(1).map(() => 80), last]),
+            status: days.map(() => "C"),
+          },
+        ],
+      },
+    },
+  };
+}
+
+describe("the day's deliveries against the seven days before", () => {
+  it("is said in the bar and drawn on its own picture", () => {
+    const flows = deliveries(100);
+    const day = balance(flows, "HR");
+    if (!day) throw new Error("no balance");
+    expect((day.usualConsumersKwh ?? 0) / 1e6).toBeCloseTo(80, 6);
+    renderWithI18n(<GasFlowBar data={ready(flows)} onClose={vi.fn()} />);
+    expect(screen.getByRole("region")).toHaveTextContent(
+      "Kupcima i distribuciji u zemlji isporučeno je 100 GWh: 25 % više od prosjeka prethodnih sedam plinskih dana (80 GWh).",
+    );
+    const text = gasUseCardText(day, createI18n("hr"));
+    expect(text?.title).toBe("GridAtlas: Plin isporučen kupcima");
+    expect(text?.subtitle).toBe("Hrvatska · plinski dan 17. studenoga 2026.");
+    expect(text?.figures).toEqual([
+      {
+        value: "100",
+        unit: "GWh",
+        label: "isporučeno kupcima i distribuciji u zemlji",
+        note: "izlaz iz transportnog sustava (Plinacro Ltd)",
+      },
+      {
+        value: "+25",
+        unit: "%",
+        label: "prema prosjeku prethodnih sedam dana",
+        note: "prosjek tih dana: 80 GWh na dan",
+      },
+    ]);
+    expect(text?.footer).toBe("Izvor: ENTSOG Transparency Platform · gridatlas.eu");
+  });
+
+  it("says less when less was delivered, and the same when nothing changed", () => {
+    const { unmount } = renderWithI18n(<GasFlowBar data={ready(deliveries(60))} onClose={vi.fn()} />);
+    expect(screen.getByRole("region")).toHaveTextContent("60 GWh: 25 % manje od prosjeka");
+    unmount();
+    renderWithI18n(<GasFlowBar data={ready(deliveries(80))} onClose={vi.fn()} />);
+    expect(screen.getByRole("region")).toHaveTextContent(
+      "isporučeno je 80 GWh, koliko i u prosjeku prethodnih sedam plinskih dana.",
+    );
+  });
+
+  it("is left out when the seven days before are not all in the data", () => {
+    // the first fixture has three days only
+    const day = balance(FLOWS, "HR");
+    if (!day) throw new Error("no balance");
+    expect(day.usualConsumersKwh).toBeNull();
+    expect(gasUseCardText(day, createI18n("hr"))?.figures).toHaveLength(1);
+    renderWithI18n(<GasFlowBar data={ready(FLOWS)} onClose={vi.fn()} />);
+    expect(screen.getByRole("region")).not.toHaveTextContent("prosjeka prethodnih sedam");
+    // and a day in between without a figure breaks the comparison too
+    const holed = deliveries(100);
+    const consumers = holed.countries.HR?.points[1];
+    if (!consumers) throw new Error("no consumers");
+    consumers.kwhPerDay[4] = null;
+    expect(balance(holed, "HR")?.usualConsumersKwh ?? null).toBeNull();
   });
 });

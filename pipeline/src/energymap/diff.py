@@ -23,7 +23,7 @@ LAYER_NAMES_HR = {
     "lines": "Dalekovodi i kabeli",
     "substations": "Trafostanice",
     "plants": "Elektrane",
-    "pipelines": "Cjevovodi (more)",
+    "pipelines": "Cjevovodi",
     "datacenters": "Podatkovni centri",
     "chargers": "Punionice",
     "extraction": "Crpilišta i rudnici",

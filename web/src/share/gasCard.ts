@@ -106,8 +106,11 @@ export function gasCountries(storage: GasStorage, order: readonly string[]): str
   return order.filter((code) => gasCard(storage, code) !== null);
 }
 
-/** The gas pictures a link can open: the storage ("?pic=gas") and what entered the system ("?pic=gasflow"). */
-export const GAS_PICTURES = ["gas", "gasflow"] as const;
+/**
+ * The gas pictures a link can open: the storage ("?pic=gas"), what entered the system ("?pic=gasflow") and
+ * what was delivered to consumers ("?pic=gasuse").
+ */
+export const GAS_PICTURES = ["gas", "gasflow", "gasuse"] as const;
 export type GasPicture = (typeof GAS_PICTURES)[number];
 
 /** The gas picture the address the page was opened with asks for; null without one. */
@@ -117,7 +120,7 @@ export function askedGasPicture(search: string): GasPicture | null {
 }
 
 /** A change with its sign written out; the minus is the real one, not a hyphen. */
-function signed(value: number, i18n: I18n): string {
+export function signed(value: number, i18n: I18n): string {
   const rounded = Math.round(value * 10) / 10;
   const figure = i18n.number(Math.abs(rounded), 1);
   return rounded > 0 ? `+${figure}` : rounded < 0 ? `−${figure}` : figure;
