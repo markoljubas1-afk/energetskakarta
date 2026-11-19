@@ -18,15 +18,18 @@ import {
   type Share,
 } from "../data/eurostat";
 import { countByCategory } from "../data/hep";
+import { standings, type SolarCapita } from "../data/solarCapita";
 import { summarize } from "../data/stats";
 import type { Timeline } from "../data/timeline";
 import { isOneOf, SCOPE_COUNTRIES, TECHNOLOGIES, type Technology } from "../domain";
 import { createI18n } from "../i18n";
+import { kwhEach, SOLAR_PICTURE } from "../share/solarCapitaCard";
 import { LANGS, type Lang } from "../state/url";
 import { COMPLETE_COVERAGE, lastComplete, RENEWABLE, yearRows } from "./energyPages";
 import {
   homeCrumb,
   latestDate,
+  mapLink,
   PATHS,
   publisher,
   type Section,
@@ -215,6 +218,70 @@ export function officialSections(
   };
 }
 
+/**
+ * Solar electricity per inhabitant: Croatia's sentence, the eight countries in the year they share, and
+ * what the figure is. Null when Croatia is not among them.
+ */
+export function solarCapitaSection(doc: SolarCapita, lang: Lang): StaticPage["sections"][number] | null {
+  const copy = TRANSITION_COPY[lang].solarCapita;
+  const i18n = createI18n(lang);
+  const rows = standings(doc);
+  const home = rows.find((row) => row.country === "HR");
+  const first = rows[0];
+  if (!home || !first) return null;
+  const gwh = (value: number): string => i18n.number(value, value < 100 ? 1 : 0);
+  const sentences = [
+    copy.sentence(
+      String(home.year),
+      gwh(home.gwh),
+      kwhEach(home.kwhPerPerson, i18n),
+      String(home.place),
+      String(home.of),
+    ),
+    home.place === 1
+      ? copy.first
+      : copy.behind(
+          i18n.country(first.country),
+          kwhEach(first.kwhPerPerson, i18n),
+          i18n.number(first.kwhPerPerson / home.kwhPerPerson, 1),
+        ),
+    ...(home.previous
+      ? [copy.before(String(home.previous.year), kwhEach(home.previous.kwhPerPerson, i18n))]
+      : []),
+  ];
+  const flagged = (text: string, flags: string[]): string =>
+    flags.length > 0 ? `${text} (${flags.join(", ")})` : text;
+  const used = [...new Set(rows.flatMap((row) => row.flags))].sort();
+  const words = TRANSITION_COPY[lang].official;
+  const legend = used.map((flag) => {
+    const word =
+      lang === "en"
+        ? (doc.flagLabels[flag] ?? words.flagWords[flag])
+        : (words.flagWords[flag] ?? doc.flagLabels[flag]);
+    return `${flag} – ${word ?? flag}`;
+  });
+  const sources = [doc.generation, doc.population]
+    .map((each) => `<a href="${e(each.url)}">Eurostat, ${e(each.dataset)}</a>`)
+    .join("; ");
+  return {
+    heading: copy.heading,
+    html:
+      `<p>${e(sentences.join(" "))}</p>` +
+      linkedTable(
+        [copy.columns[0], copy.columns[1], copy.columns[2], copy.columns[3]],
+        rows.map((row): Row => [
+          e(i18n.country(row.country)),
+          kwhEach(row.kwhPerPerson, i18n),
+          gwh(row.gwh),
+          flagged(i18n.number(Math.round(row.people)), row.flags),
+        ]),
+      ) +
+      `<p>${e(copy.note(String(doc.year)))} ${sources}.</p>` +
+      (legend.length > 0 ? `<p>${e(words.flags(legend.join(", ")))}</p>` : "") +
+      `<p><a href="${e(mapLink(lang, { pic: SOLAR_PICTURE }))}">${e(copy.picture)}</a></p>`,
+  };
+}
+
 function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
   if (!hasTransition(site)) return null;
   const copy = TRANSITION_COPY[lang];
@@ -270,6 +337,10 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
         ) + `<p>${e(copy.co2.note)}</p>`,
     });
   }
+
+  // solar electricity per inhabitant against the region (Eurostat, a calculation)
+  const solar = site.solarCapita ? solarCapitaSection(site.solarCapita, lang) : null;
+  if (solar) sections.push(solar);
 
   // installed renewable capacity, and closed fossil plants (timeline)
   const timeline = site.timeline;
@@ -392,6 +463,7 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
         })),
         isBasedOn: [
           ...(official && site.renewables ? [site.renewables.sourceUrl] : []),
+          ...(site.solarCapita ? [site.solarCapita.generation.url, site.solarCapita.population.url] : []),
           "https://transparency.entsoe.eu/",
           "https://www.openstreetmap.org/",
           "https://globalenergymonitor.org/",
@@ -407,6 +479,7 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
         site.energyUpdatedAt,
         site.capacity?.publishedAt,
         site.renewables?.retrievedAt,
+        site.solarCapita?.retrievedAt,
       ],
       site.current.createdAt,
     ),

@@ -38,6 +38,17 @@ interface TransitionCopy {
     missing: (names: string) => string;
   };
   share: { heading: string; note: string; columns: [string, string, string, string] };
+  /** solar electricity per inhabitant, a calculation from two of Eurostat's figures (Faza 46) */
+  solarCapita: {
+    heading: string;
+    sentence: (year: string, gwh: string, kwh: string, place: string, of: string) => string;
+    behind: (first: string, kwh: string, times: string) => string;
+    first: string;
+    before: (year: string, kwh: string) => string;
+    columns: [string, string, string, string];
+    note: (year: string) => string;
+    picture: string;
+  };
   co2: { heading: string; note: string; columns: [string, string] };
   capacity: {
     heading: string;
@@ -119,6 +130,18 @@ export const TRANSITION_COPY: Record<Lang, TransitionCopy> = {
       heading: "Udio obnovljivih izvora u proizvodnji struje",
       note: "Obnovljivi: hidro, vjetar, sunce, biomasa i geotermalna. Reverzibilne hidroelektrane se ne broje jer vraćaju struju koju su potrošile. Samo potpune godine.",
       columns: ["Godina", "Proizvodnja", "Iz obnovljivih", "Udio"],
+    },
+    solarCapita: {
+      heading: "Sunčana struja po stanovniku",
+      sentence: (year, gwh, kwh, place, of) =>
+        `Fotonaponske elektrane u Hrvatskoj proizvele su ${year}. godine ${gwh} GWh struje, što je ${kwh} kWh po stanovniku: ${place}. mjesto među ${of} zemalja regije.`,
+      behind: (first, kwh, times) => `Prva je ${first} s ${kwh} kWh po stanovniku, ${times} puta više.`,
+      first: "To je najviše u regiji.",
+      before: (year, kwh) => `Godine ${year}. bilo je ${kwh} kWh po stanovniku.`,
+      columns: ["Zemlja", "kWh po stanovniku", "Proizvodnja (GWh)", "Stanovnika (prosjek godine)"],
+      note: (year) =>
+        `Izračun GridAtlasa, a ne brojka koju Eurostat objavljuje: bruto proizvodnja fotonaponskih elektrana podijeljena s prosječnim brojem stanovnika iste godine. Zemlje se uspoređuju u zadnjoj godini za koju sve imaju oba podatka (${year}.).`,
+      picture: "Slika za dijeljenje: sunčana struja po stanovniku",
     },
     co2: {
       heading: "CO₂ intenzitet proizvodnje struje",
@@ -232,6 +255,19 @@ export const TRANSITION_COPY: Record<Lang, TransitionCopy> = {
       heading: "Renewable share of electricity generation",
       note: "Renewable: hydro, wind, solar, biomass and geothermal. Pumped storage is not counted, as it returns electricity it consumed. Complete years only.",
       columns: ["Year", "Generation", "From renewables", "Share"],
+    },
+    solarCapita: {
+      heading: "Solar electricity per inhabitant",
+      sentence: (year, gwh, kwh, place, of) =>
+        `Photovoltaic plants in Croatia generated ${gwh} GWh of electricity in ${year}, which is ${kwh} kWh per inhabitant: place ${place} among the ${of} countries of the region.`,
+      behind: (first, kwh, times) =>
+        `${first} is first with ${kwh} kWh per inhabitant, ${times} times as much.`,
+      first: "That is the most in the region.",
+      before: (year, kwh) => `In ${year} it was ${kwh} kWh per inhabitant.`,
+      columns: ["Country", "kWh per inhabitant", "Generation (GWh)", "Inhabitants (year's average)"],
+      note: (year) =>
+        `Calculated by GridAtlas, not a figure Eurostat publishes: the gross electricity production of photovoltaic plants divided by the average population of the same year. The countries are compared in the latest year all of them have both figures for (${year}).`,
+      picture: "Picture to share: solar electricity per inhabitant",
     },
     co2: {
       heading: "Carbon intensity of electricity generation",

@@ -55,6 +55,7 @@ import { loadRoutes } from "../data/routes";
 import { loadRenewables, RENEWABLES_KEY } from "../data/eurostat";
 import { freshBands, mixNow } from "../data/greenShare";
 import { HOUSEHOLDS_KEY, loadHouseholds } from "../data/households";
+import { loadSolarCapita, SOLAR_CAPITA_KEY } from "../data/solarCapita";
 import { loadUsual, USUAL_KEY } from "../data/usual";
 import { aroundOf, loadNearby } from "../data/nearby";
 import { measure } from "../stories/travel";
@@ -67,6 +68,7 @@ import type { Locate } from "../panels/ChangesPanel";
 import { AlertBanner } from "../panels/AlertBanner";
 import { DayCardDialog } from "../panels/DayCardDialog";
 import { askedGasPicture } from "../share/gasCard";
+import { askedSolarPicture } from "../share/solarCapitaCard";
 import { flowPointText } from "../share/gasFlowCard";
 import { askedPictureMonth } from "../share/sourcesCard";
 import { DetailsPanel } from "../panels/DetailsPanel";
@@ -527,7 +529,15 @@ function Explorer({
   const [pictureMonth, setPictureMonth] = useState(() => askedPictureMonth(window.location.search));
   // "?pic=gas" opens it on the gas in storage (the learning corner links to it), once as well
   const [gasPicture, setGasPicture] = useState(() => askedGasPicture(window.location.search));
-  const [dayCardOpen, setDayCardOpen] = useState(pictureMonth !== null || gasPicture !== null);
+  // "?pic=solarhead" opens it on solar electricity per inhabitant (the transition page links to it)
+  const [capitaPicture, setCapitaPicture] = useState(() => askedSolarPicture(window.location.search));
+  const [dayCardOpen, setDayCardOpen] = useState(
+    pictureMonth !== null || gasPicture !== null || capitaPicture !== null,
+  );
+  // a yearly figure for one picture: read only once the pictures are opened
+  const [solarCapita] = useAsync(dayCardOpen ? SOLAR_CAPITA_KEY : null, (signal) =>
+    loadSolarCapita(config.dataBaseUrl, signal),
+  );
   const [storageData] = useAsync(gasOn || dayCardOpen ? GAS_STORAGE_KEY : null, (signal) =>
     loadGasStorage(config.dataBaseUrl, signal),
   );
@@ -1225,9 +1235,12 @@ function Explorer({
                     setDayCardOpen(false);
                     setPictureMonth(null);
                     setGasPicture(null);
+                    setCapitaPicture(null);
                   }}
                   month={pictureMonth}
-                  {...(gasPicture ? { start: gasPicture } : {})}
+                  {...(gasPicture ? { start: gasPicture } : capitaPicture ? { start: capitaPicture } : {})}
+                  solar={solarCapita?.status === "ready" ? solarCapita.value : null}
+                  solarWaiting={solarCapita === null || solarCapita.status === "loading"}
                   flows={
                     flowData?.status === "ready" && flowData.value.kind === "ready"
                       ? flowData.value.flows

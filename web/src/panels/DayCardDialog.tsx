@@ -6,6 +6,7 @@ import { balance, flowCountries, type GasFlows } from "../data/gasFlows";
 import type { GasStorage } from "../data/gasStorage";
 import { greenCountries } from "../data/greenShare";
 import type { Live } from "../data/live";
+import { solarCapitaCountries, type SolarCapita } from "../data/solarCapita";
 import { SCOPE_COUNTRIES } from "../domain";
 import { useI18n, type I18n } from "../i18n";
 import {
@@ -20,6 +21,7 @@ import {
 import { download, fileStem, pictureTheme } from "../share/download";
 import { gasCard, gasCardText, gasCountries } from "../share/gasCard";
 import { gasFlowCardText, gasUseCardText } from "../share/gasFlowCard";
+import { solarCapitaCard, solarCapitaCardText } from "../share/solarCapitaCard";
 import { drawSourcesCard, latestDay, latestMonth, sourcesCountries } from "../share/sourcesCard";
 import { loadSources, periodName, sourcesSummary, sourcesText } from "../share/sourcesText";
 import styles from "./DayCardDialog.module.css";
@@ -36,6 +38,9 @@ interface Props {
   /** what entered the gas system and where it went; null while loading or when there is none */
   flows?: GasFlows | null;
   flowsWaiting?: boolean;
+  /** solar electricity per inhabitant by country and year; null while loading or when there is none */
+  solar?: SolarCapita | null;
+  solarWaiting?: boolean;
   now: Date;
   /** where the daily and monthly totals behind the "sources" pictures are read from */
   dataBaseUrl: URL;
@@ -50,9 +55,10 @@ interface Props {
 /**
  * What the picture shows: the three figures of this moment, what the electricity of the latest complete
  * day or month was made of (Faza 41), the gas in storage on the last gas day, where the gas that
- * entered the system that day came in, or how much of it was delivered to consumers (Faza 44).
+ * entered the system that day came in, how much of it was delivered to consumers (Faza 44), or a
+ * year's solar electricity per inhabitant against the region (Faza 46).
  */
-export const CARD_KINDS = ["figures", "day", "month", "gas", "gasflow", "gasuse"] as const;
+export const CARD_KINDS = ["figures", "day", "month", "gas", "gasflow", "gasuse", "solarhead"] as const;
 export type CardKind = (typeof CARD_KINDS)[number];
 
 /**
@@ -123,6 +129,7 @@ export function cardSummary(text: CardText): string {
 export function DayCardDialog(props: Props) {
   const { open, onClose, live, storage, now, dataBaseUrl, home = "HR", month = null } = props;
   const { storageWaiting = false, start = "figures", flows = null, flowsWaiting = false } = props;
+  const { solar = null, solarWaiting = false } = props;
   const usesSources = (each: CardKind): boolean => each === "day" || each === "month";
   const i18n = useI18n();
   const { t } = i18n;
@@ -152,9 +159,13 @@ export function DayCardDialog(props: Props) {
           ? flows
             ? flowCountries(flows, SCOPE_COUNTRIES)
             : []
-          : totals
-            ? sourcesCountries(totals.periods, SCOPE_COUNTRIES)
-            : [];
+          : kind === "solarhead"
+            ? solar
+              ? solarCapitaCountries(solar, SCOPE_COUNTRIES)
+              : []
+            : totals
+              ? sourcesCountries(totals.periods, SCOPE_COUNTRIES)
+              : [];
   const country = countries.includes(chosen) ? chosen : (countries[0] ?? chosen);
   let picture: Picture | null = null;
   if (kind === "figures") {
@@ -205,6 +216,18 @@ export function DayCardDialog(props: Props) {
         slug: `gridatlas-plin-kupci-${country}-${day.day}`,
       };
     }
+  } else if (kind === "solarhead") {
+    const card = solar ? solarCapitaCard(solar, country) : null;
+    if (card) {
+      const text = solarCapitaCardText(card, i18n);
+      picture = {
+        summary: cardSummary(text),
+        draw: (ctx, font, shape) => {
+          drawDayCard(ctx, text, font, shape);
+        },
+        slug: `gridatlas-sunce-po-stanovniku-${country}-${String(card.row.year)}`,
+      };
+    }
   } else if (totals) {
     const card =
       kind === "day" ? latestDay(totals.days, country) : latestMonth(totals.periods, country, month);
@@ -232,7 +255,9 @@ export function DayCardDialog(props: Props) {
         ? storage === null && storageWaiting
         : kind === "gasflow" || kind === "gasuse"
           ? flows === null && flowsWaiting
-          : sources === null || sources.status === "loading";
+          : kind === "solarhead"
+            ? solar === null && solarWaiting
+            : sources === null || sources.status === "loading";
   const failedToLoad = usesSources(kind) && sources?.status === "error";
 
   useEffect(() => {
@@ -368,7 +393,9 @@ export function DayCardDialog(props: Props) {
                       ? "gasFlowCardNone"
                       : kind === "gasuse"
                         ? "gasUseCardNone"
-                        : "sourcesNone",
+                        : kind === "solarhead"
+                          ? "solarHeadCardNone"
+                          : "sourcesNone",
           )}
         </p>
       )}

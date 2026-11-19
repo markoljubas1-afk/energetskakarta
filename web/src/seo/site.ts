@@ -3,6 +3,7 @@
  * addresses of every kind of page, and the JSON-LD the pages share.
  */
 import type { PriceMonths } from "../data/priceMonths";
+import type { SolarCapita } from "../data/solarCapita";
 import type { StorageMonths } from "../data/storageMonths";
 import type { Door } from "./markup";
 import type { CityRegister } from "../data/cities";
@@ -75,6 +76,8 @@ export interface SiteData {
   priceMonths?: PriceMonths | null;
   /** gas in storage at the end of each month (GIE AGSI), when the bucket has it */
   storageMonths?: StorageMonths | null;
+  /** solar electricity per inhabitant by country and year (Eurostat, Faza 46), when the bucket has it */
+  solarCapita?: SolarCapita | null;
   /** when ENTSO-E's monthly and yearly totals were last updated (the energy pointer), when known */
   energyUpdatedAt?: string | null;
   /** when this build of the pages ran: the day a changed page is dated in the sitemap (Faza 31) */

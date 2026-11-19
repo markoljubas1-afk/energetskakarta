@@ -2873,14 +2873,14 @@ ENTSO-E za proizvodnju: ne vidi dobar dio malih elektrana. Jedan izvor za sve; k
 broj se sam osvježi.
 
 **Koraci.**
-- [ ] 46-1 Pipeline: `eurostat/solar_capita.py` čita oba skupa, pydantic dokument
-  `live/solarcapita.json` (po zemlji i godini: GWh, stanovnici, kWh po stanovniku, oznaka privremenog
+- [x] 46-1 (2026-11-19) Pipeline: `eurostat/solar_capita.py` čita oba skupa, pydantic dokument
+  `eurostat/solarcapita.json` (uz ostale Eurostatove dokumente, ne pod `live/`) (po zemlji i godini: GWh, stanovnici, kWh po stanovniku, oznaka privremenog
   podatka, datumi objave obaju skupova); u postojeći Eurostatov tjedni posao. Ne objavljuje se ako neka
   zemlja nema zadnju godinu u oba skupa: tada se uzima zadnja godina koju imaju sve.
-- [ ] 46-2 „Zelena tranzicija”: stupci osam zemalja za zadnju godinu, s rečenicom o Hrvatskoj
+- [x] 46-2 (2026-11-19, tablica umjesto stupaca) „Zelena tranzicija”: stupci osam zemalja za zadnju godinu, s rečenicom o Hrvatskoj
   (mjesto u regiji, koliko puta manje od prve) i s formulom i izvorima ispod.
-- [ ] 46-3 Slika za dijeljenje `?pic=solarhead` u postojećem dijalogu slika; vrata na nju s „Zelene
-  tranzicije” i iz Edukacije (dio o suncu).
+- [x] 46-3 (2026-11-19) Slika za dijeljenje `?pic=solarhead` u postojećem dijalogu slika; vrata na nju s
+  „Zelene tranzicije”. Otvoreno: vrata iz Edukacije (dio o suncu).
 - [ ] 46-4 Stranica zemlje: jedna rečenica s brojem i mjestom u regiji.
 
 **Rizici.** Privremeni podatak za BiH mora biti označen. Fotonapon bez sunčanih toplinskih elektrana
