@@ -44,6 +44,37 @@ export function escapeHtml(text: string): string {
 
 export const e = escapeHtml;
 
+/**
+ * A heading as the fragment of an address: "Odakle Hrvatskoj dolazi plin?" → "odakle-hrvatskoj-dolazi-plin".
+ * Letters lose their marks (č → c, đ → d), everything else between words becomes one hyphen.
+ */
+export function anchor(heading: string): string {
+  return heading
+    .toLowerCase()
+    .replaceAll("đ", "d")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/**
+ * The page's sections, each heading with an `id` so a single fact has an address of its own (Faza 47-2).
+ * Two sections with the same heading get "-2", "-3"; a heading with no letters gets no id.
+ */
+export function sectionsHtml(sections: readonly { heading: string; html: string }[]): string {
+  const used = new Map<string, number>();
+  return sections
+    .map((section) => {
+      const base = anchor(section.heading);
+      const count = (used.get(base) ?? 0) + 1;
+      used.set(base, count);
+      const id = base === "" ? "" : ` id="${count === 1 ? base : `${base}-${String(count)}`}"`;
+      return `<section><h2${id}>${e(section.heading)}</h2>${section.html}</section>`;
+    })
+    .join("\n");
+}
+
 export function table(head: string[], rows: string[][]): string {
   const th = head.map((cell) => `<th>${e(cell)}</th>`).join("");
   const body = rows

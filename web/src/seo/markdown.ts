@@ -129,7 +129,8 @@ export function llmsFull(pages: readonly StaticPage[], site: SiteData): string {
       page.path === "/en/grid-capacity/" ||
       page.path === "/en/electricity-generation/" ||
       page.path === "/en/electricity-prices/" ||
-      page.path === "/en/energy-transition/");
+      page.path === "/en/energy-transition/" ||
+      page.path === "/en/gas/");
   const chosen = pages.filter(wanted);
   return [
     `# ${COPY.en.siteTitle}: full text of the main pages`,

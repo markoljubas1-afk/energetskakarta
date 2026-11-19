@@ -2889,22 +2889,23 @@ broj se sam osvježi.
 **Provjera.** pytest s Eurostatovim odgovorima kao fixture, vitest za stranicu i sliku, e2e za `?pic=`,
 uživo usporedba s gornjim brojevima.
 
-## Faza 47 — SEO i GEO nakon plina (provjera uživo 2026-11-19) — PRIJEDLOG, čeka potvrdu
+## Faza 47 — SEO i GEO nakon plina (provjera uživo 2026-11-19) — POTVRĐENO 2026-11-19 („može SEO plan, kreni redom”)
 
 Nalaz provjere (podagent, dohvaćeno uživo): osnove su u redu (robots.txt s dopuštenjem za AI robote,
 sitemap s 8382 adrese, llms.txt, hreflang i canonical ispravni, JSON-LD valjan). Glavna rupa: plin
 postoji samo u karti (`?l=gas`) i u dva odjeljka Edukacije; nijedna stranica nije o plinu, pa ga tražilice
 i AI odgovori ne vide. `/plin/`, `/en/gas/` vraćaju 404.
 
-- [ ] 47-1 Stranica `/plin/` i `/en/gas/` (`web/src/seo/gasPages.ts`): jučerašnji ulaz po točkama, punjenost
+- [x] 47-1 (2026-11-19; web se obnavlja i nakon `gas-daily`) Stranica `/plin/` i `/en/gas/` (`web/src/seo/gasPages.ts`): jučerašnji ulaz po točkama, punjenost
   Okolija, LNG Krk, km plinovoda, naslovi u obliku pitanja, `Dataset` + `FAQPage`; dnevna obnova s
   plinskim poslom, datum u sitemapu i `dateModified`. (veliko)
-- [ ] 47-2 Sidra (`id`) na svim H2 i pitanja o plinu u FAQ-u Edukacije. (malo)
-- [ ] 47-3 Poveznice na plin: početna, `/zemlja/hr/`, izvještaji, `llms.txt`, `llms-full.txt`, feed. (malo)
+- [x] 47-2 (2026-11-19) Sidra (`id`) na svim H2 i pitanja o plinu u FAQ-u Edukacije. (malo)
+- [x] 47-3 (2026-11-19) Poveznice na plin: početna, `/zemlja/hr/`, `llms.txt`, `llms-full.txt`. Otvoreno:
+  izvještaji i feed (feed nosi samo mjesečne izvještaje).
 - [ ] 47-4 Naslovi do 60 i opisi do 155 znakova (početna 97, `/en/` 110; opisi 188 do 294). (malo)
 - [ ] 47-5 `Organization` na početnoj, `Article` + `dateModified` na Edukaciji i izvještajima; oznaka
   „[Skup podataka]” u citatu Edukacije. (malo)
-- [ ] 47-6 `pages.dev` kopija: preusmjerenje ili `noindex` (`web/public/_headers`). (malo)
+- [x] 47-6 (2026-11-19) `pages.dev` kopija: `X-Robots-Tag: noindex` (`web/vite/securityHeaders.ts`).
 - [ ] 47-7 Slika pregleda po stranici i za `?pic=` (sada svuda ista `og-gridatlas.png`). (srednje)
 - [ ] 47-8 Stranice za LNG terminal Krk i skladište Okoli kao objekte. (srednje)
 

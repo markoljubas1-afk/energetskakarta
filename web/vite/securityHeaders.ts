@@ -80,6 +80,10 @@ export function headersFile(dataBaseUrl: string): string {
     "/*.md",
     "  Content-Type: text/markdown; charset=utf-8",
     "  Access-Control-Allow-Origin: *",
+    // the same site answers on Cloudflare's own address too; only the real one belongs in search results
+    // (Faza 47-6; the pattern is the one in Cloudflare's documentation of _headers)
+    "https://:project.pages.dev/*",
+    "  X-Robots-Tag: noindex",
     "",
   ].join("\n");
 }

@@ -16,6 +16,7 @@ import { energyLinks } from "./energyPages";
 import { geothermalLinks } from "./geothermal";
 import { reportLinks } from "./report";
 import { transitionLinks } from "./transition";
+import { gasLinks } from "./gasPages";
 import { DATASET_LICENSE } from "./license";
 import { PATHS, publisher, type SiteData } from "./site";
 import { escapeHtml as e } from "./markup";
@@ -91,6 +92,7 @@ export function homeBody(site: SiteData, lang: Lang = "hr"): string {
     ...(site.capacity ? [`<a href="${PATHS[lang].capacity}">${e(CAPACITY_COPY[lang].linkText)}</a>`] : []),
     ...energyLinks(site, lang, null),
     ...transitionLinks(site, lang),
+    ...gasLinks(site, lang),
     ...reportLinks(site, lang),
     ...geothermalLinks(site, lang),
     `<a href="${PATHS[lang].api}">${e(copy.api.title)}</a>`,

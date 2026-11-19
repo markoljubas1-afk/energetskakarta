@@ -12,6 +12,7 @@ import { hasFeed } from "./feed";
 import { reportMonths } from "./report";
 import { monthName } from "./reportCopy";
 import { hasTransition } from "./transition";
+import { hasGasPage } from "./gasPages";
 
 /** Sitemaps are capped at 50 000 URLs; the pages are split into files of this many, home first. */
 export const SITEMAP_CHUNK = 5000;
@@ -155,6 +156,11 @@ export function llmsTxt(site: SiteData): string {
     ...(hasTransition(site)
       ? [
           `- [Croatia's energy transition: indicators (English)](${base}${PATHS.en.transition}): ${site.renewables ? "the official renewable share of gross final energy consumption (Eurostat) against the 2030 target and compared with the neighbours, " : ""}renewable share and carbon intensity of electricity generation, installed renewable capacity, what is being built and closed, free grid capacity; with methodology`,
+        ]
+      : []),
+    ...(hasGasPage(site)
+      ? [
+          `- [Gas in Croatia: the day's picture (English)](${base}${PATHS.en.gas}): what entered the gas transmission system on the latest gas day and at which point (the LNG terminal on Krk, domestic fields, storage, the borders), how much was delivered to customers on each of the last gas days, and how full the gas storage facilities are; from the ENTSOG Transparency Platform and GIE AGSI, rebuilt daily`,
         ]
       : []),
     ...(reportMonths(site).length > 0

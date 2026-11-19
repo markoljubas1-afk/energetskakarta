@@ -18,6 +18,8 @@ import { CurrentSchema, type Current } from "../data/current";
 import { DiffSchema } from "../data/diff";
 import { EnergyPointerSchema, PeriodsSchema } from "../data/energy";
 import { PRICE_MONTHS_KEY, PriceMonthsSchema } from "../data/priceMonths";
+import { GAS_FLOWS_KEY, GasFlowsSchema } from "../data/gasFlows";
+import { GAS_STORAGE_KEY, GasStorageSchema } from "../data/gasStorage";
 import { SOLAR_CAPITA_KEY, SolarCapitaSchema } from "../data/solarCapita";
 import { STORAGE_MONTHS_KEY, StorageMonthsSchema } from "../data/storageMonths";
 import { checkedRenewables, RENEWABLES_KEY, RenewablesSchema } from "../data/eurostat";
@@ -164,6 +166,8 @@ export async function loadSiteData(options: PrerenderOptions): Promise<SiteData>
     priceMonths,
     storageMonths,
     solarCapita,
+    gasFlows,
+    gasStorage,
   ] = await Promise.all([
     loadJson(options, current.stats, StatsSchema),
     loadJson(options, current.search, SearchIndexSchema),
@@ -179,6 +183,8 @@ export async function loadSiteData(options: PrerenderOptions): Promise<SiteData>
     loadOptionalJson(options, PRICE_MONTHS_KEY, PriceMonthsSchema),
     loadOptionalJson(options, STORAGE_MONTHS_KEY, StorageMonthsSchema),
     loadOptionalJson(options, SOLAR_CAPITA_KEY, SolarCapitaSchema),
+    loadOptionalJson(options, GAS_FLOWS_KEY, GasFlowsSchema),
+    loadOptionalJson(options, GAS_STORAGE_KEY, GasStorageSchema),
   ]);
   // the pointer names the file with monthly and yearly totals; once it exists, that file must load
   const energy = energyPointer ? await loadJson(options, energyPointer.periods.key, PeriodsSchema) : null;
@@ -201,6 +207,8 @@ export async function loadSiteData(options: PrerenderOptions): Promise<SiteData>
     priceMonths,
     storageMonths,
     solarCapita,
+    gasFlows,
+    gasStorage,
     energyUpdatedAt: energyPointer?.updatedAt ?? null,
     records,
     builtAt: new Date().toISOString(),

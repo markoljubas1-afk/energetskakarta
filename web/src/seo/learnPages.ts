@@ -260,6 +260,14 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
         "Odakle su podaci i koliko su svježi?",
         "Elektrane, vodovi i trafostanice dolaze iz OpenStreetMapa i Global Energy Monitora. Proizvodnja, tokovi preko granica i cijene dolaze s platforme ENTSO-E Transparency, s nekoliko sati zakašnjenja. Stanje skladišta plina dolazi iz GIE AGSI, dan ili dva nakon plinskog dana. Uz svaki podatak stoje izvor i datum.",
       ],
+      [
+        "Odakle Hrvatskoj dolazi plin?",
+        "U hrvatski transportni sustav ušlo je 2024. godine 38,8 TWh plina: 69 % s terminala za ukapljeni plin (LNG) na Krku, 16 % iz domaćih polja, 12 % iz skladišta i 2,5 % plinovodima iz Slovenije i Mađarske.",
+      ],
+      [
+        "Koliko plina troši Hrvatska?",
+        "Kupcima u Hrvatskoj isporučeno je 2024. godine 24,6 TWh plina, od toga kućanstvima 6,2 TWh. Ulaz u sustav bio je veći, 38,8 TWh, jer je četvrtina plina otišla dalje preko granice, a desetina u skladište.",
+      ],
     ],
     termsHeading: "Pojmovnik",
     terms: [
@@ -515,6 +523,14 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
       [
         "Where do the data come from, and how fresh are they?",
         "Plants, lines and substations come from OpenStreetMap and the Global Energy Monitor. Generation, cross-border flows and prices come from the ENTSO-E Transparency Platform, a few hours late. Gas in storage comes from GIE AGSI, a day or two after the gas day. Every figure carries its source and date.",
+      ],
+      [
+        "Where does Croatia's gas come from?",
+        "In 2024, 38.8 TWh of gas entered Croatia's transmission system: 69% from the liquefied gas (LNG) terminal on the island of Krk, 16% from the country's own fields, 12% from storage and 2.5% through the pipelines from Slovenia and Hungary.",
+      ],
+      [
+        "How much gas does Croatia use?",
+        "Customers in Croatia were delivered 24.6 TWh of gas in 2024, households 6.2 TWh of it. More entered the system, 38.8 TWh, because a quarter of the gas went on across the border and a tenth into storage.",
       ],
     ],
     termsHeading: "Glossary",

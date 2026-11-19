@@ -28,7 +28,7 @@ import { pageCitation } from "./citation";
 import { supportLinks } from "./support";
 import { markdownPath } from "./markdown";
 import { mapLink, PATHS, type SiteData, type StaticPage } from "./site";
-import { doors, escapeHtml as e } from "./markup";
+import { doors, escapeHtml as e, sectionsHtml } from "./markup";
 import { STATIC_STYLE } from "./style";
 
 function head(page: StaticPage, site: SiteData): string {
@@ -144,9 +144,7 @@ export function renderPage(page: StaticPage, site: SiteData): string {
   const countries = SCOPE_COUNTRIES.map(
     (code) => `<a href="${PATHS[page.lang].country(code.toLowerCase())}">${e(i18n.country(code))}</a>`,
   ).join(" · ");
-  const sections = [...page.sections, ...(page.nav ? [page.nav] : [])]
-    .map((section) => `<section><h2>${e(section.heading)}</h2>${section.html}</section>`)
-    .join("\n");
+  const sections = sectionsHtml([...page.sections, ...(page.nav ? [page.nav] : [])]);
   const mapHref = mapLink(page.lang, {});
   return `<!doctype html>
 <html lang="${page.lang}">

@@ -3,6 +3,8 @@
  * addresses of every kind of page, and the JSON-LD the pages share.
  */
 import type { PriceMonths } from "../data/priceMonths";
+import type { GasFlows } from "../data/gasFlows";
+import type { GasStorage } from "../data/gasStorage";
 import type { SolarCapita } from "../data/solarCapita";
 import type { StorageMonths } from "../data/storageMonths";
 import type { Door } from "./markup";
@@ -78,6 +80,9 @@ export interface SiteData {
   storageMonths?: StorageMonths | null;
   /** solar electricity per inhabitant by country and year (Eurostat, Faza 46), when the bucket has it */
   solarCapita?: SolarCapita | null;
+  /** the gas system's daily flows (ENTSOG) and the storage fill (GIE AGSI), for the gas page (Faza 47) */
+  gasFlows?: GasFlows | null;
+  gasStorage?: GasStorage | null;
   /** when ENTSO-E's monthly and yearly totals were last updated (the energy pointer), when known */
   energyUpdatedAt?: string | null;
   /** when this build of the pages ran: the day a changed page is dated in the sitemap (Faza 31) */
@@ -147,6 +152,7 @@ interface Paths {
   generationCountry: (code: string) => string;
   prices: string;
   transition: string;
+  gas: string;
   geothermal: string;
   support: string;
   reports: string;
@@ -214,6 +220,7 @@ export const PATHS: Record<Lang, Paths> = {
     generationCountry: (code) => `/proizvodnja/${code}/`,
     prices: "/cijene-struje/",
     transition: "/zelena-tranzicija/",
+    gas: "/plin/",
     geothermal: "/geotermalna-energija/",
     support: "/podrska/",
     reports: "/izvjestaji/",
@@ -235,6 +242,7 @@ export const PATHS: Record<Lang, Paths> = {
     generationCountry: (code) => `/en/electricity-generation/${code}/`,
     prices: "/en/electricity-prices/",
     transition: "/en/energy-transition/",
+    gas: "/en/gas/",
     geothermal: "/en/geothermal-energy/",
     support: "/en/support/",
     reports: "/en/reports/",

@@ -45,7 +45,7 @@ test("the learning page links to the stories", async ({ page }) => {
     "/?story=granice",
   );
   // fourteen terms of the glossary and five frequently asked questions, each folded
-  await expect(page.locator(".glossary details")).toHaveCount(19);
+  await expect(page.locator(".glossary details")).toHaveCount(21);
   await expect(page.getByRole("heading", { name: "Česta pitanja" })).toBeVisible();
   // the same questions as structured data (a script has no visible text, so its source is read)
   const marked = await page

@@ -64,4 +64,8 @@ describe("content security policy", () => {
       /img-src 'self' data: blob: https:\/\/api\.maptiler\.com(;|$)/,
     );
   });
+
+  it("keeps Cloudflare's own address of the site out of search results", () => {
+    expect(headersFile("/d/")).toContain("https://:project.pages.dev/*\n  X-Robots-Tag: noindex\n");
+  });
 });

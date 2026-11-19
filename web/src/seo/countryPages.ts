@@ -25,6 +25,7 @@ import {
   type StaticPage,
 } from "./site";
 import { solarCapitaSentence, transitionLinks } from "./transition";
+import { gasLinks } from "./gasPages";
 import { energyLinks } from "./energyPages";
 import { DATASET_LICENSE } from "./license";
 
@@ -79,13 +80,16 @@ export function countryPage(site: SiteData, lang: Lang, code: CountryCode, hubs:
         heading: copy.nav.map,
         html: `<p><a href="${e(mapLink(lang, { c: code }))}">${e(copy.country.openMap)}</a></p>`,
       },
-      ...([...energyLinks(site, lang, code), ...(code === "HR" ? transitionLinks(site, lang) : [])].length > 0
+      ...([
+        ...energyLinks(site, lang, code),
+        ...(code === "HR" ? [...transitionLinks(site, lang), ...gasLinks(site, lang)] : []),
+      ].length > 0
         ? [
             {
               heading: copy.country.energyHeading,
               html: list([
                 ...energyLinks(site, lang, code),
-                ...(code === "HR" ? transitionLinks(site, lang) : []),
+                ...(code === "HR" ? [...transitionLinks(site, lang), ...gasLinks(site, lang)] : []),
               ]),
             },
           ]
