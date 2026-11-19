@@ -243,7 +243,7 @@ def test_real_tippecanoe_build(make_build: BuildFactory) -> None:
     lon_min, lat_min, lon_max, lat_max = grid.bounds
     assert 14.4 < lon_min < lon_max < 16.6 and 45.1 < lat_min < lat_max < 45.9
     assert {v["id"] for v in tiles.read_pmtiles_metadata(build / "grid.pmtiles")["vector_layers"]} == {
-        "lines", "substations", "plants", "datacenters"
+        "lines", "substations", "plants", "datacenters", "pipelines"
     }  # fmt: skip
 
     boundaries = infos["boundaries"]
