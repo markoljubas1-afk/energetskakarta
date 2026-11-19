@@ -229,3 +229,28 @@ describe("section anchors", () => {
     expect(renderPage(page("hr"), site)).toContain('<h2 id="koliko-je-puno-skladiste-plina-okoli">');
   });
 });
+
+describe("a description in a search result", () => {
+  it("is whole when it fits, else its leading sentences, else a cut at a word", async () => {
+    const { snippet } = await import("./markup");
+    expect(snippet("Kratak opis.")).toBe("Kratak opis.");
+    const two =
+      "Otvorena karta elektrana, dalekovoda i trafostanica Hrvatske i regije, s podacima uživo. " +
+      "Podaci OpenStreetMap, Global Energy Monitor i ENTSO-E, tjedno ažurirani, pod otvorenom licencom.";
+    expect(two.length).toBeGreaterThan(155);
+    expect(snippet(two)).toBe(
+      "Otvorena karta elektrana, dalekovoda i trafostanica Hrvatske i regije, s podacima uživo.",
+    );
+    // a decimal point is not the end of a sentence
+    expect(snippet("Udio je 34.1 %. " + "x".repeat(200) + ".")).toBe("Udio je 34.1 %.");
+    const one = `${"riječ ".repeat(40)}kraj.`;
+    const cut = snippet(one);
+    expect(cut.length).toBeLessThanOrEqual(155);
+    expect(cut.endsWith("riječ…")).toBe(true);
+    const { renderPage } = await import("./html");
+    const long = { ...page("hr"), description: two };
+    expect(renderPage(long, site)).toContain(
+      '<meta name="description" content="Otvorena karta elektrana, dalekovoda i trafostanica Hrvatske i regije, s podacima uživo.">',
+    );
+  });
+});

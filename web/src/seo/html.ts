@@ -28,7 +28,7 @@ import { pageCitation } from "./citation";
 import { supportLinks } from "./support";
 import { markdownPath } from "./markdown";
 import { mapLink, PATHS, type SiteData, type StaticPage } from "./site";
-import { doors, escapeHtml as e, sectionsHtml } from "./markup";
+import { doors, escapeHtml as e, sectionsHtml, snippet } from "./markup";
 import { STATIC_STYLE } from "./style";
 
 function head(page: StaticPage, site: SiteData): string {
@@ -63,7 +63,7 @@ function head(page: StaticPage, site: SiteData): string {
     `<meta charset="utf-8">`,
     `<meta name="viewport" content="width=device-width, initial-scale=1">`,
     `<title>${e(page.title)}</title>`,
-    `<meta name="description" content="${e(page.description)}">`,
+    `<meta name="description" content="${e(snippet(page.description))}">`,
     `<meta name="robots" content="index, follow, max-image-preview:large">`,
     ...(canonical ? [`<link rel="canonical" href="${e(canonical)}">`] : []),
     ...alternates,

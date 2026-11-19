@@ -44,6 +44,30 @@ export function escapeHtml(text: string): string {
 
 export const e = escapeHtml;
 
+/** What a search result shows of a description before it cuts it. */
+export const SNIPPET_LENGTH = 155;
+
+/**
+ * A page's description for a search result (Faza 47-4): the whole of it when it fits, else its leading
+ * sentences that do, else its first sentence cut at a word with an ellipsis. The page's full description
+ * stays where length does no harm (the share preview, the structured data).
+ */
+export function snippet(description: string, limit = SNIPPET_LENGTH): string {
+  const text = description.trim();
+  if (text.length <= limit) return text;
+  // a sentence ends where its mark is followed by a space: "34.1 %" is not two sentences
+  let kept = "";
+  for (const sentence of text.split(/(?<=[.!?])\s+/)) {
+    const next = kept === "" ? sentence : `${kept} ${sentence}`;
+    if (next.length > limit) break;
+    kept = next;
+  }
+  if (kept !== "") return kept;
+  const cut = text.slice(0, limit - 1);
+  const word = cut.lastIndexOf(" ");
+  return `${(word > 0 ? cut.slice(0, word) : cut).replace(/[,;:]$/, "")}…`;
+}
+
 /**
  * A heading as the fragment of an address: "Odakle Hrvatskoj dolazi plin?" → "odakle-hrvatskoj-dolazi-plin".
  * Letters lose their marks (č → c, đ → d), everything else between words becomes one hyphen.

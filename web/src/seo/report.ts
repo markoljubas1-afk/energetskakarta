@@ -18,6 +18,7 @@ import type { FeedEntry } from "./feed";
 import { escapeHtml as e, linkedTable, list, stationsOf } from "./markup";
 import { countOf, inMonth, monthName, REPORT_COPY } from "./reportCopy";
 import { TRANSITION_COPY } from "./transitionCopy";
+import { gasLinks } from "./gasPages";
 import {
   homeCrumb,
   mapLink,
@@ -320,6 +321,7 @@ function reportPage(site: SiteData, lang: Lang, ctx: Context, month: string): St
         : []),
       `<a href="${PATHS[lang].reports}">${e(copy.linkText)}</a>`,
       `<a href="${PATHS[lang].transition}">${e(TRANSITION_COPY[lang].linkText)}</a>`,
+      ...gasLinks(site, lang),
     ]),
   };
 
