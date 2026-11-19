@@ -62,3 +62,13 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: energymap eurostat households-publish-r2 --data-dir data
+      # Solar electricity per inhabitant (nrg_bal_peh over demo_gind), a calculation from two official figures.
+      - name: Fetch solar electricity per inhabitant
+        run: energymap eurostat solar-fetch --data-dir data >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish solar electricity per inhabitant
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: energymap eurostat solar-publish-r2 --data-dir data

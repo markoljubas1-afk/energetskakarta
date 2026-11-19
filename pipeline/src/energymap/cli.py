@@ -41,6 +41,7 @@ from energymap.entsoe.parse import EntsoeParseError
 from energymap.entsoe.store import EnergyDataError
 from energymap.eurostat import households as eurostat_households
 from energymap.eurostat import renewables as eurostat_renewables
+from energymap.eurostat import solar_capita as eurostat_solar
 from energymap.files import read_json, write_json_atomic
 from energymap.gas import agsi, entsog, storage_months
 from energymap.gas import flows as gas_flows
@@ -375,6 +376,15 @@ def parser() -> argparse.ArgumentParser:
         step = eurostat.add_parser(name, help=text)
         _data_dir(step)
         if name == "households-publish-dir":
+            step.add_argument("--out", type=Path, required=True)
+    for name, text in (
+        ("solar-fetch", "fetch solar electricity per inhabitant into data/eurostat/solarcapita.json"),
+        ("solar-publish-r2", "publish data/eurostat/solarcapita.json to Cloudflare R2"),
+        ("solar-publish-dir", "publish data/eurostat/solarcapita.json to a local mirror"),
+    ):
+        step = eurostat.add_parser(name, help=text)
+        _data_dir(step)
+        if name == "solar-publish-dir":
             step.add_argument("--out", type=Path, required=True)
     for name, text in (
         ("fetch", "fetch the shares into data/eurostat/renewables.json"),
@@ -778,6 +788,35 @@ def run(args: argparse.Namespace) -> None:
                 else publish.DirectoryStore(args.out)
             )
             eurostat_households.publish_households(households_store, read_json(households_file))
+    elif args.group == "eurostat" and args.step.startswith("solar-"):
+        solar_file = paths.root / "eurostat" / "solarcapita.json"
+        if args.step == "solar-fetch":
+            with make_client() as client:
+                solar_capita = eurostat_solar.collect(client, datetime.now(UTC))
+            write_json_atomic(solar_file, eurostat_solar.dump(solar_capita), compact=True)
+            print(
+                json.dumps(
+                    {
+                        "year": solar_capita.year,
+                        "kwhPerPerson": {
+                            geo: years[-1].kwh_per_person
+                            for geo, years in solar_capita.countries.items()
+                            if years[-1].year == solar_capita.year
+                        },
+                    }
+                )
+            )
+        else:
+            if not solar_file.exists():
+                raise BuildValidationError(
+                    [f"{solar_file} not found; run `energymap eurostat solar-fetch` first"]
+                )
+            capita_store: publish.ObjectStore = (
+                publish.R2Store.from_env()
+                if args.step == "solar-publish-r2"
+                else publish.DirectoryStore(args.out)
+            )
+            eurostat_solar.publish_solar_capita(capita_store, eurostat_solar.parse(read_json(solar_file)))
     elif args.group == "eurostat":
         shares_file = paths.root / "eurostat" / "renewables.json"
         if args.step == "fetch":
