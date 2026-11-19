@@ -43,6 +43,7 @@ import { reportPages } from "./report";
 import { supportPages } from "./support";
 import { transitionPages } from "./transition";
 import { gasPages } from "./gasPages";
+import { gasPlacePages } from "./gasPlaces";
 
 /** Every static page of a release, both languages: about, API, cities, the largest plants, countries with
  * their topic pages, then the assets. Every asset page is linked from a topic page (no orphans). */
@@ -71,6 +72,7 @@ export function buildPages(site: SiteData): StaticPage[] {
   pages.push(...energyPages(site));
   pages.push(...transitionPages(site));
   pages.push(...gasPages(site));
+  pages.push(...gasPlacePages(site));
   pages.push(...reportPages(site));
   pages.push(...geothermalPages(site));
   pages.push(...supportPages(site));

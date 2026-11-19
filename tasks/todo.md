@@ -2902,15 +2902,17 @@ i AI odgovori ne vide. `/plin/`, `/en/gas/` vraćaju 404.
   Okolija, LNG Krk, km plinovoda, naslovi u obliku pitanja, `Dataset` + `FAQPage`; dnevna obnova s
   plinskim poslom, datum u sitemapu i `dateModified`. (veliko)
 - [x] 47-2 (2026-11-19) Sidra (`id`) na svim H2 i pitanja o plinu u FAQ-u Edukacije. (malo)
-- [x] 47-3 (2026-11-19) Poveznice na plin: početna, `/zemlja/hr/`, `llms.txt`, `llms-full.txt`. Otvoreno:
-  izvještaji i feed (feed nosi samo mjesečne izvještaje).
-- [ ] 47-4 Naslovi do 60 i opisi do 155 znakova. Početna (hr i en) gotova 2026-11-19; otvoreno: opisi
-  stranica zemalja, tranzicije i izvještaja (188 do 294 znaka).
+- [x] 47-3 (2026-11-19) Poveznice na plin: početna, `/zemlja/hr/`, `llms.txt`, `llms-full.txt`, mjesečni
+  izvještaji. Feed ostaje samo za mjesečne izvještaje.
+- [x] 47-4 (2026-11-19) Naslovi do 60 i opisi do 155 znakova: početna prepisana; opis u tražilici na svim
+  stranicama je početak punog opisa do kraja rečenice (`snippet` u `markup.ts`), puni opis ostaje u
+  strukturiranim podacima. Otvoreno: tri naslova preko 60 znakova (cijene 67, kapaciteti 81, geotermalna 65).
 - [x] 47-5 (2026-11-19; `dateModified` na svakom `Dataset`, `Article` na Edukaciji) `Organization` na početnoj, `Article` + `dateModified` na Edukaciji i izvještajima; oznaka
   „[Skup podataka]” u citatu Edukacije. (malo)
 - [x] 47-6 (2026-11-19) `pages.dev` kopija: `X-Robots-Tag: noindex` (`web/vite/securityHeaders.ts`).
 - [ ] 47-7 Slika pregleda po stranici i za `?pic=` (sada svuda ista `og-gridatlas.png`). (srednje)
-- [ ] 47-8 Stranice za LNG terminal Krk i skladište Okoli kao objekte. (srednje)
+- [x] 47-8 (2026-11-19) Stranice `/plin/lng-terminal-krk/` i `/plin/skladiste-plina-okoli/` (i engleske),
+  `web/src/seo/gasPlaces.ts`; činjenice su rečenice Edukacije s njezinim izvorima.
 
 Samo vlasnik: Google Search Console i Bing Webmaster (potvrda, sitemap, zahtjev za indeksiranje),
 `INDEXNOW_KEY`, poveznice s drugih stranica (Wikipedija, energetski mediji, fakulteti, HERA, Plinacro).

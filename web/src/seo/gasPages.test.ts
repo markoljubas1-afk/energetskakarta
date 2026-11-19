@@ -254,3 +254,66 @@ describe("a description in a search result", () => {
     );
   });
 });
+
+describe("the pages of the terminal and the storage", () => {
+  it("say the day's figure of each place, with the learning page's facts and sources", async () => {
+    const { gasPlacePages, gasPlaceLinks } = await import("./gasPlaces");
+    const pages = gasPlacePages(site);
+    expect(pages.map((each) => each.path)).toEqual([
+      "/plin/lng-terminal-krk/",
+      "/plin/skladiste-plina-okoli/",
+      "/en/gas/krk-lng-terminal/",
+      "/en/gas/okoli-gas-storage/",
+    ]);
+    const [terminal, storage] = pages;
+    if (!terminal || !storage) throw new Error("no pages");
+    expect(terminal.alternatePath).toBe("/en/gas/krk-lng-terminal/");
+    expect(text(terminal.lead)).toBe(
+      " Plinskog dana 17. studenoga 2026. LNG terminal na Krku poslao je u hrvatski transportni sustav 98,4 GWh plina, 81 % svega što je taj dan ušlo u sustav (121,2 GWh). Podaci operatora za taj dan još su privremeni. ",
+    );
+    const [perDay, what] = terminal.sections.map((section) => section.html);
+    expect(perDay?.match(/<tr>/g)?.length).toBe(9);
+    expect(perDay).toContain('<td>16. studenoga 2026.</td><td class="num">100</td><td class="num">83 %</td>');
+    expect(what).toContain("Ukapljeni plin (LNG) dolazi brodovima na terminal u Omišlju");
+    expect(what).toContain('href="https://sabor.hr/');
+    expect(terminal.breadcrumbs.at(-1)).toEqual({ name: "Plin u Hrvatskoj", path: "/plin/" });
+
+    expect(storage.heading).toBe("Skladište plina Okoli (PSP Okoli)");
+    expect(text(storage.lead)).toBe(
+      " Skladište plina PSP Okoli bilo je plinskog dana 18. studenoga 2026. puno 82,5 %: u njemu je bilo 3,94 TWh plina od 5 TWh koliko stane. Tog se dana praznilo: povučeno je 5 GWh. ",
+    );
+    expect(storage.sections[0]?.html).toContain("GIE AGSI");
+    expect(storage.sections[1]?.html).toContain("Hrvatska ima jedno skladište, Okoli");
+    expect(storage.sections[2]?.html).toContain("v=45.60%2C16.40%2C10");
+    for (const each of pages) {
+      const faq = each.jsonLd.find((ld) => ld["@type"] === "FAQPage") as {
+        mainEntity: { acceptedAnswer: { text: string } }[];
+      };
+      const body = text(each.sections.map((section) => section.html).join(" "));
+      for (const question of faq.mainEntity) expect(body).toContain(question.acceptedAnswer.text);
+      expect(each.title.length).toBeLessThanOrEqual(60);
+    }
+    // the gas page leads to both
+    expect(gasPlaceLinks(site, "hr")).toHaveLength(2);
+    expect(page("hr").sections.find((section) => section.heading === "Više o plinu")?.html).toContain(
+      'href="/plin/skladiste-plina-okoli/"',
+    );
+    expect(buildPages(site).filter((each) => each.path.startsWith("/plin/"))).toHaveLength(3);
+  });
+
+  it("exist only while their figures do", async () => {
+    const { gasPlacePages } = await import("./gasPlaces");
+    expect(gasPlacePages(bareSite())).toEqual([]);
+    // no storage document: the terminal's page alone
+    expect(gasPlacePages(bareSite({ gasFlows: FLOWS })).map((each) => each.path)).toEqual([
+      "/plin/lng-terminal-krk/",
+      "/en/gas/krk-lng-terminal/",
+    ]);
+    // a storage without the flows has no gas page to hang under
+    expect(gasPlacePages(bareSite({ gasStorage: STORAGE }))).toEqual([]);
+    const hungary = STORAGE.facilities[1];
+    if (!hungary) throw new Error("no second facility");
+    const abroad = bareSite({ gasFlows: FLOWS, gasStorage: { ...STORAGE, facilities: [hungary] } });
+    expect(gasPlacePages(abroad).map((each) => each.path)).not.toContain("/plin/skladiste-plina-okoli/");
+  });
+});

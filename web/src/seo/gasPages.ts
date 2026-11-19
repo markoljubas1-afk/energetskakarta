@@ -13,6 +13,7 @@ import { readings, type GasStorage, type Reading } from "../data/gasStorage";
 import { createI18n, type I18n } from "../i18n";
 import { flowName, gwh } from "../share/gasFlowCard";
 import { LANGS, type Lang } from "../state/url";
+import { gasPlaceLinks } from "./gasPlaces";
 import { e, list, table } from "./markup";
 import { home, mapLink, other, PATHS, publisher, type Section, type SiteData, type StaticPage } from "./site";
 
@@ -329,6 +330,7 @@ function gasPage(site: SiteData, flows: GasFlows, storage: GasStorage | null, la
     {
       heading: copy.more.heading,
       html: list([
+        ...gasPlaceLinks(site, lang),
         `<a href="${e(PATHS[lang].learn)}">${e(copy.more.learn)}</a>`,
         ...copy.more.pictures.map(([text, pic]) => `<a href="${e(mapLink(lang, { pic }))}">${e(text)}</a>`),
       ]),
