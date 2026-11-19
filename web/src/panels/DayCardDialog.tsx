@@ -17,6 +17,7 @@ import {
   type DayCard,
 } from "../share/dayCard";
 import { download, fileStem, pictureTheme } from "../share/download";
+import { gasCard, gasCardText, gasCountries } from "../share/gasCard";
 import { drawSourcesCard, latestDay, latestMonth, sourcesCountries } from "../share/sourcesCard";
 import { loadSources, periodName, sourcesSummary, sourcesText } from "../share/sourcesText";
 import styles from "./DayCardDialog.module.css";
@@ -28,6 +29,8 @@ interface Props {
   live: Live | null;
   /** gas in storage; null while loading, or when there is none: the card then has two figures */
   storage: GasStorage | null;
+  /** the gas in storage is still being read: its picture says "loading" rather than "none" */
+  storageWaiting?: boolean;
   now: Date;
   /** where the daily and monthly totals behind the "sources" pictures are read from */
   dataBaseUrl: URL;
@@ -35,13 +38,15 @@ interface Props {
   home?: string;
   /** "2026-10": open on the sources of that month (a monthly report's link); absent: the three figures */
   month?: string | null;
+  /** the picture the dialog opens on ("?pic=gas"); a month given takes precedence */
+  start?: CardKind;
 }
 
 /**
- * What the picture shows: the three figures of this moment, or what the electricity of the latest complete
- * day or month was made of (Faza 41).
+ * What the picture shows: the three figures of this moment, what the electricity of the latest complete
+ * day or month was made of (Faza 41), or the gas in storage on the last gas day (Faza 44).
  */
-export const CARD_KINDS = ["figures", "day", "month"] as const;
+export const CARD_KINDS = ["figures", "day", "month", "gas"] as const;
 export type CardKind = (typeof CARD_KINDS)[number];
 
 /**
@@ -111,6 +116,8 @@ export function cardSummary(text: CardText): string {
 /** The day in three figures as a picture to save and share, in a native modal dialog. */
 export function DayCardDialog(props: Props) {
   const { open, onClose, live, storage, now, dataBaseUrl, home = "HR", month = null } = props;
+  const { storageWaiting = false, start = "figures" } = props;
+  const usesSources = (each: CardKind): boolean => each === "day" || each === "month";
   const i18n = useI18n();
   const { t } = i18n;
   const dialog = useRef<HTMLDialogElement>(null);
@@ -118,7 +125,7 @@ export function DayCardDialog(props: Props) {
   const [chosen, setChosen] = useState(home);
   const [failed, setFailed] = useState(false);
   const [format, setFormat] = useState<CardFormat>("wide");
-  const [kind, setKind] = useState<CardKind>(month === null ? "figures" : "month");
+  const [kind, setKind] = useState<CardKind>(month === null ? start : "month");
   // the totals are read when a "sources" picture is first asked for, and kept after that
   const [wantSources, setWantSources] = useState(month !== null);
   const [sources] = useAsync(wantSources ? `sources:${dataBaseUrl.href}` : null, (signal) =>
@@ -131,9 +138,13 @@ export function DayCardDialog(props: Props) {
       ? live
         ? greenCountries(live)
         : []
-      : totals
-        ? sourcesCountries(totals.periods, SCOPE_COUNTRIES)
-        : [];
+      : kind === "gas"
+        ? storage
+          ? gasCountries(storage, SCOPE_COUNTRIES)
+          : []
+        : totals
+          ? sourcesCountries(totals.periods, SCOPE_COUNTRIES)
+          : [];
   const country = countries.includes(chosen) ? chosen : (countries[0] ?? chosen);
   let picture: Picture | null = null;
   if (kind === "figures") {
@@ -146,6 +157,18 @@ export function DayCardDialog(props: Props) {
           drawDayCard(ctx, text, font, shape);
         },
         slug: `gridatlas-dan-${country}`,
+      };
+    }
+  } else if (kind === "gas") {
+    const card = storage ? gasCard(storage, country) : null;
+    if (card) {
+      const text = gasCardText(card, i18n);
+      picture = {
+        summary: cardSummary(text),
+        draw: (ctx, font, shape) => {
+          drawDayCard(ctx, text, font, shape);
+        },
+        slug: `gridatlas-plin-${country}-${card.day}`,
       };
     }
   } else if (totals) {
@@ -168,8 +191,13 @@ export function DayCardDialog(props: Props) {
     picture = null;
   }
   const summary = picture?.summary ?? "";
-  const waiting = kind === "figures" ? live === null : sources === null || sources.status === "loading";
-  const failedToLoad = kind !== "figures" && sources?.status === "error";
+  const waiting =
+    kind === "figures"
+      ? live === null
+      : kind === "gas"
+        ? storage === null && storageWaiting
+        : sources === null || sources.status === "loading";
+  const failedToLoad = usesSources(kind) && sources?.status === "error";
 
   useEffect(() => {
     const element = dialog.current;
@@ -222,7 +250,7 @@ export function DayCardDialog(props: Props) {
           onChange={(event) => {
             const next = CARD_KINDS.find((each) => each === event.currentTarget.value) ?? "figures";
             setKind(next);
-            if (next !== "figures") setWantSources(true);
+            if (usesSources(next)) setWantSources(true);
           }}
         >
           {CARD_KINDS.map((each) => (
@@ -298,7 +326,9 @@ export function DayCardDialog(props: Props) {
                 ? "dayCardLoading"
                 : kind === "figures"
                   ? "dayCardNone"
-                  : "sourcesNone",
+                  : kind === "gas"
+                    ? "gasCardNone"
+                    : "sourcesNone",
           )}
         </p>
       )}

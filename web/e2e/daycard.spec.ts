@@ -132,3 +132,70 @@ test("a monthly report's link opens the picture of that month", async ({ page })
   await dialog.getByRole("button", { name: "Zatvori" }).click();
   await expect(dialog).toBeHidden();
 });
+
+/** Nine gas days of one Croatian facility that is being emptied: 80 % down to 76 % of 5 TWh. */
+const GAS_DAYS = Array.from({ length: 9 }, (_, at) => `2026-11-${String(9 + at).padStart(2, "0")}`);
+const GAS_STORAGE = {
+  version: 1,
+  generatedAt: "2026-11-18T08:00:00+00:00",
+  source: "GIE AGSI",
+  sourceUrl: "https://agsi.gie.eu/",
+  attribution: "GIE (Gas Infrastructure Europe), AGSI platform",
+  license: "GIE-AGSI-attribution",
+  days: GAS_DAYS,
+  facilities: [
+    {
+      id: "31W-PRIMJER-UGSB",
+      name: "UGS Primjer",
+      operator: "Primjer",
+      operatorId: "31X-PRIMJER----A",
+      country: "HR",
+      lon: 16.5,
+      lat: 45.6,
+      workingGasTwh: 5,
+      status: GAS_DAYS.map(() => "C"),
+      fullPercent: GAS_DAYS.map((_, at) => 80 - at * 0.5),
+      inStorageTwh: GAS_DAYS.map((_, at) => 4 - at * 0.025),
+      injectionGwhPerDay: GAS_DAYS.map(() => 0),
+      withdrawalGwhPerDay: GAS_DAYS.map(() => 25),
+    },
+  ],
+  missing: { facilities: [], countries: ["SI"] },
+};
+
+test("the learning corner's card opens the picture of the gas in storage", async ({ page }, testInfo) => {
+  await page.route("https://api.maptiler.com/**", (route) => route.abort());
+  // the test data has no storage document (it needs a personal key); hand the page one
+  await page.route(/\/local-data\/live\/gasstorage\.json/, (route) => route.fulfill({ json: GAS_STORAGE }));
+  await page.goto("/edukacija/");
+  await expect(page.getByRole("heading", { name: "Prirodni plin u šest rečenica" })).toBeVisible();
+  await page.getByRole("link", { name: "Slika za dijeljenje: zalihe plina" }).click();
+
+  const dialog = page.getByRole("dialog", { name: "Slika za dijeljenje" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByLabel("Što je na slici")).toHaveValue("gas");
+  const picture = dialog.getByRole("img");
+  await expect(picture).toHaveAccessibleName(
+    "GridAtlas: Zalihe plina. Hrvatska · 17. studenoga 2026.: 76 % popunjenost skladišta plina (UGS Primjer, plinski dan 17. studenoga 2026.); 3,8 TWh plina u skladištu (stane 5 TWh); −3,5 p. b. promjena popunjenosti u sedam dana (u postotnim bodovima; 10. studenoga 2026. bilo je 79,5 %). Izvor: GIE AGSI (agsi.gie.eu) · gridatlas.eu",
+  );
+  const box = await dialog.boundingBox();
+  const viewport = page.viewportSize();
+  if (!box || !viewport) throw new Error("no box");
+  expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
+  expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
+
+  const downloading = page.waitForEvent("download");
+  await dialog.getByRole("button", { name: "Preuzmi sliku (PNG)" }).click();
+  const file = await downloading;
+  expect(file.suggestedFilename()).toMatch(/^gridatlas-plin-hr-2026-11-17-\d{4}-\d{2}-\d{2}\.png$/);
+  await file.saveAs(testInfo.outputPath("gas-card.png"));
+  await dialog.getByRole("radio", { name: "Okomita" }).check();
+  await expect(picture).toHaveAttribute("height", "1920");
+  const story = page.waitForEvent("download");
+  await dialog.getByRole("button", { name: "Preuzmi sliku (PNG)" }).click();
+  await (await story).saveAs(testInfo.outputPath("gas-card-story.png"));
+
+  // closed, the share menu opens the ordinary picture again
+  await dialog.getByRole("button", { name: "Zatvori" }).click();
+  await expect(dialog).toBeHidden();
+});

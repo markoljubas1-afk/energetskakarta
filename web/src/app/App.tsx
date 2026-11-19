@@ -64,6 +64,7 @@ import type { Selection } from "../map/selection";
 import type { Locate } from "../panels/ChangesPanel";
 import { AlertBanner } from "../panels/AlertBanner";
 import { DayCardDialog } from "../panels/DayCardDialog";
+import { askedGasPicture } from "../share/gasCard";
 import { askedPictureMonth } from "../share/sourcesCard";
 import { DetailsPanel } from "../panels/DetailsPanel";
 import { ShortcutsHelp } from "../panels/ShortcutsHelp";
@@ -521,7 +522,9 @@ function Explorer({
   // the day card wants it too, and asks only once it is opened
   // a monthly report links to the picture of its month: "?pic=2026-10" opens the dialog on it, once
   const [pictureMonth, setPictureMonth] = useState(() => askedPictureMonth(window.location.search));
-  const [dayCardOpen, setDayCardOpen] = useState(pictureMonth !== null);
+  // "?pic=gas" opens it on the gas in storage (the learning corner links to it), once as well
+  const [gasPicture, setGasPicture] = useState(() => askedGasPicture(window.location.search));
+  const [dayCardOpen, setDayCardOpen] = useState(pictureMonth !== null || gasPicture);
   const [storageData] = useAsync(gasOn || dayCardOpen ? GAS_STORAGE_KEY : null, (signal) =>
     loadGasStorage(config.dataBaseUrl, signal),
   );
@@ -1191,8 +1194,11 @@ function Explorer({
                   onClose={() => {
                     setDayCardOpen(false);
                     setPictureMonth(null);
+                    setGasPicture(false);
                   }}
                   month={pictureMonth}
+                  {...(gasPicture ? { start: "gas" as const } : {})}
+                  storageWaiting={storageData === null || storageData.status === "loading"}
                   live={liveDoc}
                   storage={
                     storageData?.status === "ready" && storageData.value.kind === "ready"

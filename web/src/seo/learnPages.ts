@@ -3,7 +3,7 @@
  * and links that open the map on what each paragraph describes. Written for someone who has never looked
  * at a grid map; nothing here depends on a data release except the date in the footer.
  */
-import { ArrowLeftRight, Factory, Map as MapIcon, Route, Sun, Zap } from "lucide-react";
+import { ArrowLeftRight, Factory, Flame, Image, Map as MapIcon, Route, Sun, Zap } from "lucide-react";
 
 import type { Technology } from "../domain";
 import { TIME_MACHINE_START, type Lang } from "../state/url";
@@ -27,6 +27,18 @@ interface LearnCopy {
   /** the call-out that sends a reader with a roof of their own to the exact calculation */
   roof: string;
   roofAction: string;
+  /**
+   * Natural gas (Faza 44-1). Every figure is from a document named in `gasSources`; the year the
+   * figures are of is written in the sentence, and a test holds the two languages to the same figures.
+   */
+  gasHeading: string;
+  gas: string[];
+  gasSourcesLabel: string;
+  /** the document with what it is cited for, and its address */
+  gasSources: [string, string][];
+  /** the two cards under the text: the gas layer of the map, and the storage picture to share */
+  gasMap: [string, string];
+  gasPicture: [string, string];
   /** what a story card does */
   storyStart: string;
   timingHeading: string;
@@ -100,6 +112,39 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
     ],
     roof: "Imate krov? Otvorite sunčani sloj, kliknite na svoje mjesto i pomaknite klizač na svoju godišnju potrošnju: karta kaže koliko panela treba.",
     roofAction: "Izračunaj na karti",
+    gasHeading: "Prirodni plin u šest rečenica",
+    gas: [
+      "Prirodni plin je većinom metan. Plinomjer broji kubične metre, ali se plin naplaćuje po energiji, u kilovatsatima: kubični metar daje otprilike 10 kWh topline. Točna vrijednost ovisi o sastavu plina i piše na svakom računu (gornja ogrjevna vrijednost, od 1. listopada 2022.).",
+      "U hrvatski transportni sustav ušlo je 2024. godine 38,8 TWh plina: 69 % s terminala za ukapljeni plin (LNG) na Krku, 16 % iz domaćih polja, 12 % iz skladišta i 2,5 % plinovodima iz Slovenije i Mađarske (točke Rogatec i Dravaszerdahely).",
+      "Ulaz nije isto što i potrošnja: četvrtina tog plina otišla je dalje preko granice, a desetina u skladište. Kupcima u Hrvatskoj isporučeno je 24,6 TWh, od toga kućanstvima 6,2 TWh.",
+      "Plin se sprema pod zemlju za zimu. Hrvatska ima jedno skladište, Okoli: u pravilu se puni od travnja do rujna, a prazni od listopada do ožujka, i u njega stane 4,8 TWh. Pravilo EU-a traži da skladišta jednom između 1. listopada i 1. prosinca budu 90 % puna.",
+      "Plinske elektrane rade više kad nema dovoljno vode, sunca i vjetra. Po kilovatsatu struje ispuštaju oko 40 % manje stakleničkih plinova nego elektrane na ugljen (490 prema 820 grama CO₂, prema IPCC-u). Ali i sam metan je staklenički plin, kroz sto godina 28 puta jači od CO₂, pa svako curenje iz bušotina i cijevi smanjuje tu prednost.",
+      "Istim cijevima može teći i biometan, plin iz otpada i gnoja: države EU-a prijavile su planove za 26 milijardi kubičnih metara godišnje do 2030. Hoće li i koliko plinovoda jednom nositi vodik, danas je plan, a ne činjenica.",
+    ],
+    gasSourcesLabel: "Izvori",
+    gasSources: [
+      [
+        "HERA, Godišnje izvješće za 2024. (ulazi i izlazi transportnog sustava, isporuka kupcima, skladište Okoli, obračun u kWh)",
+        "https://sabor.hr/sites/default/files/uploads/sabor/2025-06-30/144704/GODISNJE_IZVJESCE_HERA_2024.pdf",
+      ],
+      [
+        "Uredba (EU) 2022/1032 s izmjenom iz 2025. (punjenje skladišta)",
+        "https://eur-lex.europa.eu/eli/reg/2022/1032/oj",
+      ],
+      [
+        "IPCC, Peto izvješće o procjeni (emisije po kilovatsatu, metan)",
+        "https://www.ipcc.ch/assessment-report/ar5/",
+      ],
+      [
+        "Europska komisija: biometan",
+        "https://energy.ec.europa.eu/topics/renewable-energy/bioenergy/biomethane_en",
+      ],
+    ],
+    gasMap: ["Plin na karti", "skladišta i koliko su puna, proizvodnja plina po zemljama, cjevovodi"],
+    gasPicture: [
+      "Slika za dijeljenje: zalihe plina",
+      "popunjenost, količina i promjena u sedam dana, s navedenim izvorom (GIE AGSI)",
+    ],
     storyStart: "Pokreni priču",
     now: {
       title: "Upravo sada u Hrvatskoj",
@@ -287,6 +332,39 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
     ],
     roof: "Have a roof? Open the solar layer, click your own place and move the slider to your yearly consumption: the map says how many panels it takes.",
     roofAction: "Calculate on the map",
+    gasHeading: "Natural gas in six sentences",
+    gas: [
+      "Natural gas is mostly methane. A gas meter counts cubic metres, but gas is billed by its energy, in kilowatt-hours: a cubic metre gives roughly 10 kWh of heat. The exact value depends on what the gas is made of and is written on every bill (the gross calorific value, since 1 October 2022).",
+      "In 2024, 38.8 TWh of gas entered Croatia's transmission system: 69% from the liquefied gas (LNG) terminal on the island of Krk, 16% from the country's own fields, 12% from storage and 2.5% through the pipelines from Slovenia and Hungary (the points Rogatec and Drávaszerdahely).",
+      "What enters is not what is used: a quarter of that gas went on across the border, and a tenth into storage. Customers in Croatia were delivered 24.6 TWh, households 6.2 TWh of it.",
+      "Gas is kept underground for the winter. Croatia has one storage facility, Okoli: as a rule it is filled from April to September and emptied from October to March, and it holds 4.8 TWh. An EU rule asks that at some point between 1 October and 1 December storage be 90% full.",
+      "Gas-fired plants work harder when there is not enough water, sun and wind. Per kilowatt-hour of electricity they emit about 40% less greenhouse gas than coal plants (490 against 820 grams of CO₂, according to the IPCC). But methane is a greenhouse gas itself, 28 times stronger than CO₂ over a hundred years, so every leak from wells and pipes eats into that advantage.",
+      "The same pipes can carry biomethane, gas made from waste and manure: EU countries have reported plans for 26 billion cubic metres a year by 2030. Whether, and how many, pipelines will one day carry hydrogen is a plan today, not a fact.",
+    ],
+    gasSourcesLabel: "Sources",
+    gasSources: [
+      [
+        "HERA, Annual Report for 2024, in Croatian (entries and exits of the transmission system, deliveries to customers, the Okoli storage, billing in kWh)",
+        "https://sabor.hr/sites/default/files/uploads/sabor/2025-06-30/144704/GODISNJE_IZVJESCE_HERA_2024.pdf",
+      ],
+      [
+        "Regulation (EU) 2022/1032 as amended in 2025 (filling of storage)",
+        "https://eur-lex.europa.eu/eli/reg/2022/1032/oj",
+      ],
+      [
+        "IPCC, Fifth Assessment Report (emissions per kilowatt-hour, methane)",
+        "https://www.ipcc.ch/assessment-report/ar5/",
+      ],
+      [
+        "European Commission: biomethane",
+        "https://energy.ec.europa.eu/topics/renewable-energy/bioenergy/biomethane_en",
+      ],
+    ],
+    gasMap: ["Gas on the map", "storage and how full it is, gas production by country, pipelines"],
+    gasPicture: [
+      "Picture to share: gas in storage",
+      "the fill, the amount and the change over seven days, with the source named (GIE AGSI)",
+    ],
     storyStart: "Start the story",
     now: {
       title: "Right now in Croatia",
@@ -451,6 +529,12 @@ const STORY_ICONS: Record<StoryKey, string> = {
 };
 const MAP_ICON = icon(MapIcon);
 const SUN_ICON = icon(Sun, 22);
+const GAS_ICON = icon(Flame);
+const PICTURE_ICON = icon(Image);
+
+/** The gas layer with the pipelines under it, and the dialog opened on the picture of the storage. */
+const GAS_MAP_PARAMS = { l: "lines,pipelines,gas" };
+const GAS_PICTURE_PARAMS = { pic: "gas" };
 
 /** The words of a sentence with each `{slot}` turned into an element the script writes a figure into. */
 const slots = (text: string): string => e(text).replace(/\{(\w+)\}/g, '<b data-v="$1"></b>');
@@ -529,6 +613,25 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
             title: copy.priceTry[0],
             text: copy.priceTry[1],
             icon: MAP_ICON,
+          },
+        ])}`,
+      },
+      {
+        heading: copy.gasHeading,
+        html: `${list(copy.gas.map(e))}<p>${e(copy.gasSourcesLabel)}: ${copy.gasSources
+          .map(([name, url]) => `<a href="${e(url)}" rel="noopener">${e(name)}</a>`)
+          .join("; ")}.</p>${doors([
+          {
+            href: mapLink(lang, GAS_MAP_PARAMS),
+            title: copy.gasMap[0],
+            text: copy.gasMap[1],
+            icon: GAS_ICON,
+          },
+          {
+            href: mapLink(lang, GAS_PICTURE_PARAMS),
+            title: copy.gasPicture[0],
+            text: copy.gasPicture[1],
+            icon: PICTURE_ICON,
           },
         ])}`,
       },

@@ -218,6 +218,62 @@ describe("the day in three figures", () => {
       expect(drawn).not.toContain("€/MWh");
     });
 
+    it("draws the gas in storage of a country, opened from a link or chosen in the dialog", async () => {
+      const clicked = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
+      const names: string[] = [];
+      clicked.mockImplementation(function click(this: HTMLAnchorElement) {
+        names.push(this.download);
+      });
+      renderWithI18n(
+        <DayCardDialog
+          open
+          onClose={vi.fn()}
+          live={null}
+          storage={STORAGE}
+          start="gas"
+          now={NOW}
+          dataBaseUrl={new URL("https://data.test/")}
+        />,
+      );
+      // one day in the data: the fill and the volume, no change over seven days; the source is GIE's
+      expect(screen.getByRole("img")).toHaveAccessibleName(
+        /^GridAtlas: Zalihe plina\. Hrvatska · 15\. studenoga 2026\.: 85 % popunjenost skladišta plina \(PSP Okoli, plinski dan 15\. studenoga 2026\.\); 4,3 TWh plina u skladištu \(stane 5 TWh\)\. Izvor: GIE AGSI \(agsi\.gie\.eu\) · gridatlas\.eu$/,
+      );
+      expect(drawn).toEqual(expect.arrayContaining(["85", "%", "4,3", "TWh"]));
+      // only countries with storage are offered; Austria's two are added up: 40 of 80 TWh
+      const country = screen.getByRole("combobox", { name: "Zemlja" });
+      expect([...country.querySelectorAll("option")].map((option) => option.value)).toEqual(["HR", "AT"]);
+      await userEvent.selectOptions(country, "AT");
+      expect(screen.getByRole("img")).toHaveAccessibleName(
+        /Austrija · 15\. studenoga 2026\.: 50 % popunjenost skladišta plina \(2 skladišta zajedno, plinski dan 15\. studenoga 2026\.\); 40 TWh plina u skladištu \(stane 80 TWh\)/,
+      );
+      await userEvent.click(screen.getByRole("button", { name: "Preuzmi sliku (PNG)" }));
+      expect(names).toEqual([expect.stringMatching(/^gridatlas-plin-at-2026-11-15-\d{4}-\d{2}-\d{2}\.png$/)]);
+    });
+
+    it("says whether the gas in storage is still loading or is not there", () => {
+      const dialog = (storageWaiting: boolean) => (
+        <DayCardDialog
+          open
+          onClose={vi.fn()}
+          live={PRICED}
+          storage={null}
+          storageWaiting={storageWaiting}
+          start="gas"
+          now={NOW}
+          dataBaseUrl={new URL("https://data.test/")}
+        />
+      );
+      const { unmount } = renderWithI18n(dialog(true));
+      expect(screen.getByRole("status")).toHaveTextContent("Podaci se učitavaju…");
+      unmount();
+      renderWithI18n(dialog(false));
+      expect(screen.getByRole("status")).toHaveTextContent(
+        "Za ovu zemlju nema podataka o skladištima plina.",
+      );
+      expect(screen.queryByRole("img")).toBeNull();
+    });
+
     it("says that there is nothing fresh instead of drawing an old picture", () => {
       renderWithI18n(
         <DayCardDialog

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { askedGasPicture } from "../share/gasCard";
 import { LANGS } from "../state/url";
 import { parseState } from "../state/url";
 import { STORIES, STORY_KEYS } from "../stories/stories";
@@ -70,11 +71,21 @@ describe("the learning corner", () => {
       ]);
       expect(solar.map((link) => link.includes("sun="))).toEqual([false, true]);
       // the section on negative prices opens the hourly prices; it comes before the "try it" list
-      // links out of the site (the roof calculator) are not views of the map
+      // links out of the site are the documents the gas section's figures are from, and nothing else
       const external = links.filter((link) => link.startsWith("https://"));
-      expect(external).toEqual([]);
+      expect(external).toEqual(LEARN_COPY[lang].gasSources.map(([, url]) => url));
+      // the gas section's cards: the gas layer over the pipelines, and the picture of the storage
+      const gas = links.filter((link) => !link.startsWith("https://") && link.includes("gas"));
+      expect(gas).toHaveLength(2);
+      const gasMap = parseState(new URL(gas[0] ?? "", "https://karta.test").search, lang);
+      expect([...gasMap.layers]).toEqual(expect.arrayContaining(["lines", "pipelines", "gas"]));
+      expect(askedGasPicture(new URL(gas[1] ?? "", "https://karta.test").search)).toBe(true);
       const [price, ...views] = links.filter(
-        (link) => !link.includes("story=") && !link.includes("solar") && !link.startsWith("https://"),
+        (link) =>
+          !link.includes("story=") &&
+          !link.includes("solar") &&
+          !link.includes("gas") &&
+          !link.startsWith("https://"),
       );
       expect(parseState(new URL(price ?? "", "https://karta.test").search, lang).live).toBe(true);
       expect(views).toHaveLength(LEARN_COPY[lang].tries.length);
@@ -88,6 +99,28 @@ describe("the learning corner", () => {
         expect(state.live, link).toBe(asked.live === "1");
       }
     }
+  });
+
+  it("tells natural gas in six sentences, the same figures in both languages, each with its source", () => {
+    const figures = (text: string): string[] =>
+      (text.match(/\d+(?:[.,]\d+)?/g) ?? []).map((figure) => figure.replace(",", "."));
+    expect(LEARN_COPY.hr.gas).toHaveLength(6);
+    expect(LEARN_COPY.en.gas).toHaveLength(6);
+    for (const [index, sentence] of LEARN_COPY.hr.gas.entries()) {
+      expect(figures(LEARN_COPY.en.gas[index] ?? ""), sentence).toEqual(figures(sentence));
+    }
+    expect(LEARN_COPY.en.gasSources.map(([, url]) => url)).toEqual(
+      LEARN_COPY.hr.gasSources.map(([, url]) => url),
+    );
+    const section = learnPage(bareSite(), "hr").sections.find(
+      (each) => each.heading === "Prirodni plin u šest rečenica",
+    );
+    expect(section?.html).toContain("69 % s terminala");
+    expect(section?.html).toMatch(
+      /<p>Izvori: <a href="https:\/\/sabor\.hr\/[^"]+" rel="noopener">HERA, Godišnje izvješće za 2024\./,
+    );
+    expect(section?.html).toContain('<a href="/?l=lines%2Cpipelines%2Cgas">Plin na karti</a>');
+    expect(section?.html).toContain('<a href="/?pic=gas">Slika za dijeljenje: zalihe plina</a>');
   });
 
   it("carries its glossary as structured data", () => {

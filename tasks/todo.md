@@ -2750,3 +2750,25 @@ Zahtjev korisnika 2026-11-18: „dodaj poveznicu na kuću u edukaciju i dodaj na
   Razmotreno i odbačeno: fotorealistična kuća (teško čitljiva na 300 px, ne prati teme).
 - Provjera: jedinični testovi (url, vrata, HomeFlow), e2e `solar.spec.ts` (i otvaranje preko `?sun=`),
   `story.spec.ts`, snimka zaslona danju i noću, pa uživo.
+
+## Faza 44 — Plin: ulazne točke, slika za dijeljenje, edukacija — POTVRĐENO 2026-11-19 („može, kreni tim redoslijedom”); 44-1 i 44-2 KOD GOTOV
+Povod: korisnik zalijepio Geminijev prijedlog (plinovodi, interkonekcije, LNG, skladišta, ENTSOG, „Prirodni plin
+u šest crtica”, tri slike za dijeljenje). Već postoji: proizvodnja plina po zemlji (ENTSOG), skladišta s
+popunjenošću i 30 dana povijesti (GIE AGSI), popunjenost na slici dana, zalihe prema lani u izvještaju,
+morski cjevovodi (EMODnet), izviđanje ENTSOG točaka (`gas/points.py`).
+- [x] 44-1 Edukacija „Prirodni plin u šest rečenica”: tekst iznova, svaka tvrdnja s izvorom (ne Geminijeve
+  brojke i ne prognoze kao činjenice). Brojke iz Godišnjeg izvješća HERA-e za 2024. (pročitano iz PDF-a:
+  ulaz 38.774 GWh; UPP 69,1 %, proizvodnja 16,0 %, skladište 12,4 %, interkonekcije 2,5 %; izlaz na
+  interkonekcijama 25,5 %, u PSP Okoli 10,3 %; kupcima 24.592 GWh, kućanstvima 6.160 GWh; Okoli 4.772 GWh).
+  Biometan: 26 mlrd. m³ (stranica EK), ne 35. Dvije tvrdnje bez pročitanog primarnog dokumenta: „otprilike
+  10 kWh po m³” i pravilo EU-a o 90 % (stranica Vijeća odbila dohvat; dva službena priopćenja u pretrazi
+  slažu se). Izostavljeno: brzina plinskih elektrana (izvor nije pročitan). Test drži iste brojke u oba jezika.
+- [x] 44-2 Slika za dijeljenje „Zalihe plina”: popunjenost, količina, promjena u 7 dana (podaci već postoje).
+  `share/gasCard.ts`, četvrta vrsta slike u dijalogu, `?pic=gas` otvara je (kartica na Edukaciji). Zemlja s
+  više skladišta zbraja se samo za dan koji su sva prijavila. U AGSI-ju za HR postoji samo Okoli; RS nema.
+- [ ] 44-3 Tokovi na ulaznim točkama (ENTSOG: interkonekcije, LNG, skladište, proizvodnja) po plinskom danu →
+  traka „Odakle je plin ušao” + slika. Otvoreno: koordinate točaka (ENTSOG ih nema) i smiju li se udjeli
+  zvati „pokriva potrebe” (ulaz ≠ potrošnja; dio plina ide u tranzit i skladište).
+- [ ] 44-4 Plinovodi na kopnu (7C): OSM `man_made=pipeline` odmah; GEM tracker traži preuzimanje korisnika.
+- Ne predlažem bez podataka: „alarm” skoka potrošnje (ENTSOG ne objavljuje potrošnju zemlje kao jednu brojku;
+  prvo provjeriti što se može izvesti iz izlaza prema distribuciji).
