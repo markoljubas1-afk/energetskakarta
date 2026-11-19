@@ -77,6 +77,8 @@ const PATHS: Record<
   },
   gridToHome: { d: "M262 164 L204 164", tone: "grid", label: [233, 156], anchor: "middle", battery: false },
 };
+/** Moves the house and the grid, as a pair, to the middle of the drawing: their span is 136 to 322 of 340. */
+const NO_BATTERY_SHIFT = -59;
 const FLOWS = Object.keys(PATHS) as FlowKey[];
 
 /**
@@ -210,116 +212,122 @@ export function HomeFlow({ shapes, point, yearlyKwh, yieldKwh, kwp, month: openM
             <circle key={`${String(x)}-${String(y)}`} className={styles.star} cx={x} cy={y} r={r} />
           ))}
         </g>
-        <circle
-          className={styles.sky}
-          cx={NODES.sun.x}
-          cy={NODES.sun.y}
-          r="54"
-          fill={`url(#${gradients}-glow)`}
-          style={{ opacity: light }}
-        />
+        {/* without a battery its place is empty: the rest moves over, so the drawing stays centred */}
+        <g
+          className={styles.scene}
+          style={{ transform: `translateX(${String(battery ? 0 : NO_BATTERY_SHIFT)}px)` }}
+        >
+          <circle
+            className={styles.sky}
+            cx={NODES.sun.x}
+            cy={NODES.sun.y}
+            r="54"
+            fill={`url(#${gradients}-glow)`}
+            style={{ opacity: light }}
+          />
 
-        {/* the wires are always there; the dots run on the ones that carry electricity in this hour */}
-        {FLOWS.filter((key) => battery || !PATHS[key].battery).map((key) => (
-          <path key={key} className={styles.track} d={PATHS[key].d} />
-        ))}
-        {FLOWS.map((key) => {
-          const value = now[key];
-          if (value < SHOWN_FROM_KW) return null;
-          const path = PATHS[key];
-          const strength = Math.min(1, value / peak);
-          return (
-            <g key={key} data-flow={key}>
-              <path className={styles.live} data-tone={path.tone} d={path.d} />
-              <path
-                className={styles.dots}
-                data-tone={path.tone}
-                d={path.d}
-                style={{
-                  strokeWidth: 3 + 2.5 * strength,
-                  animationDuration: `${(2.2 - 1.5 * strength).toFixed(2)}s`,
-                }}
-              />
-              <text
-                className={styles.flowFigure}
-                x={path.label[0]}
-                y={path.label[1]}
-                textAnchor={path.anchor}
-              >
-                {kw(value)}
-              </text>
-            </g>
-          );
-        })}
-
-        {/* the panels: the ring fills as the sun climbs to the day's best hour */}
-        <Ring at={NODES.sun} parts={[{ tone: "sun", share: light }]} />
-        <g className={styles.sun} data-on={now.pv >= SHOWN_FROM_KW}>
-          <circle cx="170" cy="38" r="5" />
-          {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
-            <line
-              key={angle}
-              x1="170"
-              y1="29.5"
-              x2="170"
-              y2="27"
-              transform={`rotate(${String(angle)} 170 38)`}
-            />
+          {/* the wires are always there; the dots run on the ones that carry electricity in this hour */}
+          {FLOWS.filter((key) => battery || !PATHS[key].battery).map((key) => (
+            <path key={key} className={styles.track} d={PATHS[key].d} />
           ))}
+          {FLOWS.map((key) => {
+            const value = now[key];
+            if (value < SHOWN_FROM_KW) return null;
+            const path = PATHS[key];
+            const strength = Math.min(1, value / peak);
+            return (
+              <g key={key} data-flow={key}>
+                <path className={styles.live} data-tone={path.tone} d={path.d} />
+                <path
+                  className={styles.dots}
+                  data-tone={path.tone}
+                  d={path.d}
+                  style={{
+                    strokeWidth: 3 + 2.5 * strength,
+                    animationDuration: `${(2.2 - 1.5 * strength).toFixed(2)}s`,
+                  }}
+                />
+                <text
+                  className={styles.flowFigure}
+                  x={path.label[0]}
+                  y={path.label[1]}
+                  textAnchor={path.anchor}
+                >
+                  {kw(value)}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* the panels: the ring fills as the sun climbs to the day's best hour */}
+          <Ring at={NODES.sun} parts={[{ tone: "sun", share: light }]} />
+          <g className={styles.sun} data-on={now.pv >= SHOWN_FROM_KW}>
+            <circle cx="170" cy="38" r="5" />
+            {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+              <line
+                key={angle}
+                x1="170"
+                y1="29.5"
+                x2="170"
+                y2="27"
+                transform={`rotate(${String(angle)} 170 38)`}
+              />
+            ))}
+          </g>
+          <text className={styles.figure} x="170" y="65" textAnchor="middle">
+            {kw(now.pv)}
+          </text>
+          <text className={styles.name} x="170" y="13" textAnchor="middle">
+            {t("homeSun")}
+          </text>
+
+          {/* the house: its ring is what its electricity is made of in this hour */}
+          <Ring
+            at={NODES.house}
+            parts={[
+              { tone: "sun", share: now.pvToHome / fed },
+              { tone: "battery", share: now.batteryToHome / fed },
+              { tone: "grid", share: now.gridToHome / fed },
+            ]}
+          />
+          <path
+            className={styles.icon}
+            d="M158 154 L170 143 L182 154 M161.5 152 V163 H178.5 V152 M168 163 V157 H172 V163"
+          />
+          <text className={styles.figure} x="170" y="181" textAnchor="middle">
+            {kw(now.load)}
+          </text>
+          <text className={styles.name} x="170" y="213" textAnchor="middle">
+            {t("homeHouse")}
+          </text>
+
+          {/* the grid: a pylon */}
+          <Ring at={NODES.grid} parts={[{ tone: "grid", share: exchanging ? 1 : 0 }]} />
+          <path
+            className={styles.icon}
+            d="M292 148 L285 180 M292 148 L299 180 M283 157 H301 M285.5 166 H298.5 M287 172 L297.5 180 M297 172 L286.5 180"
+          />
+          <text className={styles.name} x="292" y="213" textAnchor="middle">
+            {t("homeGrid")}
+          </text>
+
+          {/* the battery: its ring is how full it is */}
+          {battery && (
+            <>
+              <Ring at={NODES.battery} parts={[{ tone: "battery", share: fullPercent / 100 }]} />
+              <path
+                className={styles.icon}
+                d="M41 146 H55 A2 2 0 0 1 57 148 V162 A2 2 0 0 1 55 164 H41 A2 2 0 0 1 39 162 V148 A2 2 0 0 1 41 146 Z M45 146 V143.5 H51 V146"
+              />
+              <text className={styles.figure} x="48" y="181" textAnchor="middle">
+                {fullPercent} %
+              </text>
+              <text className={styles.name} x="48" y="213" textAnchor="middle">
+                {t("homeBattery")}
+              </text>
+            </>
+          )}
         </g>
-        <text className={styles.figure} x="170" y="65" textAnchor="middle">
-          {kw(now.pv)}
-        </text>
-        <text className={styles.name} x="170" y="13" textAnchor="middle">
-          {t("homeSun")}
-        </text>
-
-        {/* the house: its ring is what its electricity is made of in this hour */}
-        <Ring
-          at={NODES.house}
-          parts={[
-            { tone: "sun", share: now.pvToHome / fed },
-            { tone: "battery", share: now.batteryToHome / fed },
-            { tone: "grid", share: now.gridToHome / fed },
-          ]}
-        />
-        <path
-          className={styles.icon}
-          d="M158 154 L170 143 L182 154 M161.5 152 V163 H178.5 V152 M168 163 V157 H172 V163"
-        />
-        <text className={styles.figure} x="170" y="181" textAnchor="middle">
-          {kw(now.load)}
-        </text>
-        <text className={styles.name} x="170" y="213" textAnchor="middle">
-          {t("homeHouse")}
-        </text>
-
-        {/* the grid: a pylon */}
-        <Ring at={NODES.grid} parts={[{ tone: "grid", share: exchanging ? 1 : 0 }]} />
-        <path
-          className={styles.icon}
-          d="M292 148 L285 180 M292 148 L299 180 M283 157 H301 M285.5 166 H298.5 M287 172 L297.5 180 M297 172 L286.5 180"
-        />
-        <text className={styles.name} x="292" y="213" textAnchor="middle">
-          {t("homeGrid")}
-        </text>
-
-        {/* the battery: its ring is how full it is */}
-        {battery && (
-          <>
-            <Ring at={NODES.battery} parts={[{ tone: "battery", share: fullPercent / 100 }]} />
-            <path
-              className={styles.icon}
-              d="M41 146 H55 A2 2 0 0 1 57 148 V162 A2 2 0 0 1 55 164 H41 A2 2 0 0 1 39 162 V148 A2 2 0 0 1 41 146 Z M45 146 V143.5 H51 V146"
-            />
-            <text className={styles.figure} x="48" y="181" textAnchor="middle">
-              {fullPercent} %
-            </text>
-            <text className={styles.name} x="48" y="213" textAnchor="middle">
-              {t("homeBattery")}
-            </text>
-          </>
-        )}
       </svg>
 
       <label className={styles.slider}>
