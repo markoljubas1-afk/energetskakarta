@@ -494,3 +494,12 @@
 - What happened: dodao sam odjeljak „Česta pitanja” na Edukaciju, pokrenuo samo jedinične testove i poslao. Objava je pala jer `e2e/story.spec.ts` broji sklopive stavke na toj stranici (14, a postalo ih je 19). Stranica je ostala na prethodnoj inačici dok nisam popravio.
 - Root cause: isto kao L-077/L-079, samo za web: provjerio sam ono što sam pisao, ne ono što već provjerava tu stranicu.
 - Rule going forward: prije slanja izmjene statične stranice `grep` po `e2e/` za njezinu adresu i klase koje diram, i pokrenuti te specifikacije lokalno.
+
+### L-082 — „Network is unreachable” nije bio uzrok, nego zadnja od dvije greške (2026-11-19)
+- What happened: sedam buildova zaredom palo je na dohvatu s Geofabrika s porukom „[Errno 101] Network is
+  unreachable”. Dijagnostički korak (`curl -4`, `curl -6`, `getent ahosts`) pokazao je da runner dobije i
+  IPv4 i IPv6 adrese, da IPv4 veza bude odbijena za 0,45 s (curl exit 7), a IPv6 uopće nema puta.
+- Root cause: httpx proba sve adrese i javlja grešku zadnje (IPv6, kojeg runner nema), pa je stvarni
+  uzrok, odbijanje na IPv4, ostao skriven. Čekanja i ponavljanja ne pomažu kad poslužitelj odbija adresu.
+- Rule going forward: kad dohvat s vanjskog izvora padne više puta zaredom, prije novog pokušaja ispisati
+  što se vidi po protokolu i adresi; poruku transportne greške ne uzimati kao uzrok dok to nije potvrđeno.
