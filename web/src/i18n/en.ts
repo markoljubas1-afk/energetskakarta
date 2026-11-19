@@ -3,8 +3,7 @@ import type { Dictionary } from "./hr";
 export const en: Dictionary = {
   appName: "GridAtlas",
   appTagline: "Regional energy map",
-  documentTitle:
-    "GridAtlas – interactive energy map of Croatia and the region: power plants, transmission lines and substations",
+  documentTitle: "GridAtlas: energy map of Croatia, power plants, grid, gas",
   skipToMap: "Skip to map",
   searchPlaceholder: "Search a plant, city…",
   searchLabel: "Search",

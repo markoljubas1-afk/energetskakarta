@@ -52,7 +52,13 @@ function head(page: StaticPage, site: SiteData): string {
     `<meta name="twitter:card" content="summary_large_image">`,
   ];
   const breadcrumbLd = breadcrumbJsonLd(page, site);
-  const jsonLd = [...page.jsonLd, ...(breadcrumbLd ? [breadcrumbLd] : [])].map(jsonLdScript);
+  // every data set says when its data is from, unless the page already said so more exactly (Faza 47-5)
+  const dated = page.jsonLd.map((each) =>
+    each["@type"] === "Dataset" && !("dateModified" in each)
+      ? { ...each, dateModified: page.lastModified }
+      : each,
+  );
+  const jsonLd = [...dated, ...(breadcrumbLd ? [breadcrumbLd] : [])].map(jsonLdScript);
   return [
     `<meta charset="utf-8">`,
     `<meta name="viewport" content="width=device-width, initial-scale=1">`,

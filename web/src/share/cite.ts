@@ -5,6 +5,8 @@
 import type { Lang } from "../state/url";
 
 export interface CiteInput {
+  /** "text": a page of explanations, not a data set; its APA line gets no "[Data set]" (Faza 47-5) */
+  kind?: "data" | "text";
   lang: Lang;
   /** the site's name in that language ("GridAtlas") */
   site: string;
@@ -94,7 +96,7 @@ export function citations(input: CiteInput): Citations {
   // no full stop after the URL, as APA asks
   const apa = [
     `${sentence(site)} (${when}).`,
-    sentence(`${title} [${copy.dataSet}]`),
+    sentence(input.kind === "text" ? title : `${title} [${copy.dataSet}]`),
     seen ? copy.retrieved(seen.full, url) : url,
   ].join(" ");
 

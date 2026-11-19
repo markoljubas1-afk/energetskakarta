@@ -15,5 +15,7 @@ export function pageCitation(page: StaticPage, site: SiteData): Citations {
     sources: [],
     dataDate: page.lastModified,
     accessed: null,
+    // a page that describes no data set (the learning corner) is cited as a text
+    ...(page.jsonLd.some((each) => each["@type"] === "Dataset") ? {} : { kind: "text" as const }),
   });
 }

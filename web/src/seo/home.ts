@@ -73,6 +73,7 @@ export function homeHead(site: SiteData, lang: Lang = "hr"): string {
         ]
       : []),
     jsonLdScript(website),
+    jsonLdScript({ "@context": "https://schema.org", ...publisher(site, i18n) }),
   ].join("\n    ");
 }
 
@@ -156,7 +157,7 @@ function toEnglish(template: string): string {
   html = replaceOnce(
     html,
     /<meta\s+name="description"\s+content="[^"]*"\s*\/?>/,
-    () => `<meta name="description" content="${attr(copy.siteDescription)}" />`,
+    () => `<meta name="description" content="${attr(copy.metaDescription)}" />`,
     "descriptions",
   );
   html = replaceOnce(

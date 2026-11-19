@@ -2902,8 +2902,9 @@ i AI odgovori ne vide. `/plin/`, `/en/gas/` vraćaju 404.
 - [x] 47-2 (2026-11-19) Sidra (`id`) na svim H2 i pitanja o plinu u FAQ-u Edukacije. (malo)
 - [x] 47-3 (2026-11-19) Poveznice na plin: početna, `/zemlja/hr/`, `llms.txt`, `llms-full.txt`. Otvoreno:
   izvještaji i feed (feed nosi samo mjesečne izvještaje).
-- [ ] 47-4 Naslovi do 60 i opisi do 155 znakova (početna 97, `/en/` 110; opisi 188 do 294). (malo)
-- [ ] 47-5 `Organization` na početnoj, `Article` + `dateModified` na Edukaciji i izvještajima; oznaka
+- [ ] 47-4 Naslovi do 60 i opisi do 155 znakova. Početna (hr i en) gotova 2026-11-19; otvoreno: opisi
+  stranica zemalja, tranzicije i izvještaja (188 do 294 znaka).
+- [x] 47-5 (2026-11-19; `dateModified` na svakom `Dataset`, `Article` na Edukaciji) `Organization` na početnoj, `Article` + `dateModified` na Edukaciji i izvještajima; oznaka
   „[Skup podataka]” u citatu Edukacije. (malo)
 - [x] 47-6 (2026-11-19) `pages.dev` kopija: `X-Robots-Tag: noindex` (`web/vite/securityHeaders.ts`).
 - [ ] 47-7 Slika pregleda po stranici i za `?pic=` (sada svuda ista `og-gridatlas.png`). (srednje)

@@ -6,12 +6,13 @@
 import { ArrowLeftRight, Factory, Flame, Image, Map as MapIcon, Route, Sun, Zap } from "lucide-react";
 
 import type { Technology } from "../domain";
+import { createI18n } from "../i18n";
 import { TIME_MACHINE_START, type Lang } from "../state/url";
 import type { StoryKey } from "../stories/keys";
 import { STORIES, STORY_KEYS } from "../stories/stories";
 import { callout, doors, e, glossary, list, type Door } from "./markup";
 import { homeDoor, icon } from "./pageDoors";
-import { home, mapLink, other, PATHS, type SiteData, type StaticPage } from "./site";
+import { home, mapLink, other, PATHS, publisher, type SiteData, type StaticPage } from "./site";
 import { topPlantsSection } from "./topPlants";
 
 interface LearnCopy {
@@ -784,6 +785,18 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
           name: question,
           acceptedAnswer: { "@type": "Answer", text: answer },
         })),
+      },
+      // the page as a text with a date, next to its glossary and questions
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        headline: copy.title,
+        description: copy.description,
+        inLanguage: lang,
+        dateModified: site.current.createdAt,
+        isAccessibleForFree: true,
+        publisher: publisher(site, createI18n(lang)),
+        ...(site.siteUrl ? { url: site.siteUrl + PATHS[lang].learn } : {}),
       },
     ],
     lastModified: site.current.createdAt,

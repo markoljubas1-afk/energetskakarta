@@ -260,9 +260,7 @@ describe("home page", () => {
   it("has an English twin at /en/ with its own language, title, intro and alternates", () => {
     const en = homeHtml(template, site, "en");
     expect(en).toContain('<html lang="en" data-theme="dark">');
-    expect(en).toContain(
-      "<title>GridAtlas – interactive energy map of Croatia and the region: power plants, transmission lines and substations</title>",
-    );
+    expect(en).toContain("<title>GridAtlas: energy map of Croatia, power plants, grid, gas</title>");
     expect(en).toContain('<link rel="canonical" href="https://karta.example/en/">');
     expect(en).toContain('<meta property="og:locale" content="en_GB" />');
     expect(en).toContain("<h1>GridAtlas: Regional energy map</h1>");

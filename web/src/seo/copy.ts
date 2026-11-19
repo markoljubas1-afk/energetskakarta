@@ -20,6 +20,8 @@ export interface Copy {
   /** appears in <title> and og:title of the home and about pages */
   siteTitle: string;
   siteDescription: string;
+  /** the home page's description in search results: 155 characters at most */
+  metaDescription: string;
   /** schema.org Dataset keywords and measured variables */
   keywords: string[];
   variables: string[];
@@ -223,6 +225,8 @@ const hr: Copy = {
     "jugoistočna Europa",
   ],
   variables: ["instalirana snaga (MW)", "napon (kV)", "duljina vodova (km)", "status objekta"],
+  metaDescription:
+    "Otvorena karta elektrana, dalekovoda, trafostanica i plinovoda Hrvatske i još sedam zemalja regije, s podacima uživo. Besplatno, pod otvorenom licencom.",
   siteDescription:
     "Otvorena karta elektrana, dalekovoda, trafostanica, cjevovoda i podatkovnih centara Hrvatske, Slovenije, Mađarske, Srbije, BiH, Crne Gore, Italije i Austrije. Podaci OpenStreetMap, Global Energy Monitor i ENTSO-E, tjedno ažurirani, za preuzimanje pod otvorenom licencom.",
   about: {
@@ -549,6 +553,8 @@ const en: Copy = {
     "South East Europe",
   ],
   variables: ["installed capacity (MW)", "voltage (kV)", "line length (km)", "asset status"],
+  metaDescription:
+    "An open map of power plants, transmission lines, substations and gas pipelines in Croatia and seven more countries of the region, with live data. Free.",
   siteDescription:
     "An open map of power plants, transmission lines, substations, pipelines and data centres in Croatia, Slovenia, Hungary, Serbia, Bosnia and Herzegovina, Montenegro, Italy and Austria. Data from OpenStreetMap, Global Energy Monitor and ENTSO-E, updated weekly, downloadable under an open licence.",
   about: {

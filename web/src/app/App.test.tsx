@@ -119,9 +119,7 @@ describe("App", () => {
     expect(window.location.pathname).toBe("/en/");
     expect(window.location.search).toBe("");
     expect(screen.getByRole("tab", { name: "Filters" })).toHaveAttribute("aria-selected", "true");
-    expect(document.title).toBe(
-      "GridAtlas – interactive energy map of Croatia and the region: power plants, transmission lines and substations",
-    );
+    expect(document.title).toBe("GridAtlas: energy map of Croatia, power plants, grid, gas");
   });
 
   it("switches panels with arrow keys", async () => {
