@@ -50,7 +50,9 @@ FLOWS_KEY = "live/gasflows.json"
 FLOWS_META = ObjectMeta("application/json; charset=utf-8", "public, max-age=3600, must-revalidate")
 
 #: country → the one transmission operator whose points are that country's whole system
-OPERATORS: dict[str, str] = {"HR": "HR-TSO-0001"}
+#: Slovenia and Hungary checked on 2026-11-19: Plinovodi and FGSZ report every point of their country
+#: (the second Hungarian operator on the platform, MGT, reports no flows at all).
+OPERATORS: dict[str, str] = {"HR": "HR-TSO-0001", "SI": "SI-TSO-0001", "HU": "HU-TSO-0001"}
 
 #: the kinds of point a balance is made of, by the prefix of ENTSOG's point key
 Kind = Literal["LNG", "PRD", "UGS", "ITP", "VIP", "FNC", "DIS", "OTHER"]

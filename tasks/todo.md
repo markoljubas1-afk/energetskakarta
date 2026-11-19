@@ -2851,7 +2851,9 @@ iz polja i tlačenje u kompresorskim stanicama.
   (way/848938794); svaka točka u `live/gasflows.json` nosi `place` s izvorom. Krug prati dan na klizaču.
   Izvan opsega: proizvodnja i potrošači (zbroj po zemlji, nemaju jedno mjesto), skladište (već ima svoj
   krug iz AGSI-ja), kompresorska stanica Velika Ludina (nema toka u ENTSOG-u ni objekta u OSM-u).
-- [ ] 45-4 Tokovi za Sloveniju i Mađarsku (po jedan operator); traka dobiva izbor zemlje.
+- [x] 45-4 (2026-11-19) Tokovi za Sloveniju (Plinovodi) i Mađarsku (FGSZ); traka dobiva izbor zemlje. Dvije
+  točke iste vrste na istoj strani (mađarska skladišta, distribucija i izravni kupci) nose i ime s platforme.
+  Na karti krug imaju samo točke s položajem (Krk, Rogatec, Dravaszerdahely); ostale točke SI i HU nemaju.
 
 ## Faza 46 — Sunčana struja po stanovniku (kWh), za dijeljenje i na stranicama — POTVRĐENO 2026-11-19 („može plan za sunce po stanovniku, kreni”)
 
@@ -2880,7 +2882,7 @@ broj se sam osvježi.
 - [x] 46-2 (2026-11-19, tablica umjesto stupaca) „Zelena tranzicija”: stupci osam zemalja za zadnju godinu, s rečenicom o Hrvatskoj
   (mjesto u regiji, koliko puta manje od prve) i s formulom i izvorima ispod.
 - [x] 46-3 (2026-11-19) Slika za dijeljenje `?pic=solarhead` u postojećem dijalogu slika; vrata na nju s
-  „Zelene tranzicije”. Otvoreno: vrata iz Edukacije (dio o suncu).
+  „Zelene tranzicije” i iz Edukacije (dio o suncu).
 - [x] 46-4 (2026-11-19) Stranica zemlje: jedna rečenica s brojem i mjestom u regiji, s poveznicom na usporedbu.
 
 **Rizici.** Privremeni podatak za BiH mora biti označen. Fotonapon bez sunčanih toplinskih elektrana

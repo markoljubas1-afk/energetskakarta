@@ -2,13 +2,21 @@ import { Pause, Play, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import type { AsyncState } from "../app/useAsync";
-import { balances, type Balance, type FlowRow, type GasFlows, type GasFlowsLoad } from "../data/gasFlows";
+import {
+  balances,
+  flowCountries,
+  type Balance,
+  type FlowRow,
+  type GasFlows,
+  type GasFlowsLoad,
+} from "../data/gasFlows";
+import { SCOPE_COUNTRIES } from "../domain";
 import { useI18n } from "../i18n";
 import { deliveryChange, flowName, gwh } from "../share/gasFlowCard";
 import styles from "./GasFlowBar.module.css";
 import { drawing, frame, slotId, TRUNK_LEFT, TRUNK_RIGHT, type Frame, type Slot } from "./gasSankey";
 
-/** The country whose system the bar shows. */
+/** The country whose system the bar opens on, when the data has it. */
 const HOME = "HR";
 /** How long a day stays on the screen while the period is played. */
 const STEP_MS = 700;
@@ -17,8 +25,8 @@ interface Props {
   data: AsyncState<GasFlowsLoad> | null;
   /** switches the gas layer off */
   onClose: () => void;
-  /** the gas day the bar shows, whenever it changes: the map's points follow it */
-  onDay?: (day: string) => void;
+  /** the gas day and the country the bar shows, whenever either changes: the map's points follow */
+  onDay?: (day: string, country: string) => void;
 }
 
 /**
@@ -36,7 +44,11 @@ export function GasFlowBar({ data, onClose, onDay }: Props) {
 function Bar({ flows, onClose, onDay }: { flows: GasFlows } & Pick<Props, "onClose" | "onDay">) {
   const i18n = useI18n();
   const { t } = i18n;
-  const days = useMemo(() => balances(flows, HOME), [flows]);
+  // the countries whose operator reports a whole system; the reader picks among them
+  const countries = useMemo(() => flowCountries(flows, SCOPE_COUNTRIES), [flows]);
+  const [picked, setPicked] = useState(HOME);
+  const country = countries.includes(picked) ? picked : (countries[0] ?? HOME);
+  const days = useMemo(() => balances(flows, country), [flows, country]);
   const shape = useMemo(() => frame(days), [days]);
   // the day the reader chose; null: the last one, also when newer data arrives
   const [chosen, setChosen] = useState<string | null>(null);
@@ -62,8 +74,8 @@ function Bar({ flows, onClose, onDay }: { flows: GasFlows } & Pick<Props, "onClo
   const day = days[at];
   const shown = day?.day;
   useEffect(() => {
-    if (shown !== undefined) onDay?.(shown);
-  }, [shown, onDay]);
+    if (shown !== undefined) onDay?.(shown, country);
+  }, [shown, country, onDay]);
   if (!day || !shape) return null;
   const title = t("gasFlowTitle", { country: i18n.country(day.country) });
   // the day's deliveries against the seven days before: said only when both are in the data
@@ -93,6 +105,25 @@ function Bar({ flows, onClose, onDay }: { flows: GasFlows } & Pick<Props, "onClo
           operator: day.operator,
         })}
       </p>
+      {countries.length > 1 && (
+        <label className={styles.country}>
+          {t("dayCardCountry")}
+          <select
+            value={country}
+            onChange={(event) => {
+              setPlaying(false);
+              setChosen(null);
+              setPicked(event.currentTarget.value);
+            }}
+          >
+            {countries.map((code) => (
+              <option key={code} value={code}>
+                {i18n.country(code)}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       {days.length > 1 && (
         <div className={styles.days}>
           <button

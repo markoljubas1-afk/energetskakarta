@@ -90,6 +90,12 @@ class Platform:
         return httpx.Response(200, json={"operationalData": rows + self.extra})
 
 
+@pytest.fixture(autouse=True)
+def _croatia_only(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The stand-in platform knows one operator; the countries read are the module's own business."""
+    monkeypatch.setattr(flows, "OPERATORS", {"HR": OPERATOR})
+
+
 @pytest.fixture
 def platform() -> Platform:
     return Platform()

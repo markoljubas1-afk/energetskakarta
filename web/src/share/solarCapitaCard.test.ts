@@ -115,4 +115,14 @@ describe("solar electricity per inhabitant", () => {
     expect(solarCapitaSentence(bareSite({ renewables: SAMPLE_RENEWABLES }), "hr", "SI")).toBe("");
     expect(solarCapitaSentence(bareSite({ solarCapita: SAMPLE_SOLAR_CAPITA }), "hr", "SI")).toBe("");
   });
+
+  it("has a door on the learning page, only when the figures are there", async () => {
+    const { learnPage } = await import("../seo/learnPages");
+    const html = (site: ReturnType<typeof bareSite>): string =>
+      learnPage(site, "hr")
+        .sections.map((section) => section.html)
+        .join("");
+    expect(html(bareSite({ solarCapita: SAMPLE_SOLAR_CAPITA }))).toContain("pic=solarhead");
+    expect(html(bareSite())).not.toContain("pic=solarhead");
+  });
 });

@@ -92,6 +92,11 @@ export interface FlowRow {
   kwh: number;
   /** its part of everything that entered (or left), 0 to 1; 0 when nothing did */
   share: number;
+  /**
+   * Another point of the same kind is on the same side (Hungary has two storage points, and its
+   * distribution and its direct customers apart): the kind's name alone would not tell them apart.
+   */
+  shared: boolean;
 }
 
 export interface Balance {
@@ -148,6 +153,10 @@ function side(points: readonly Point[], direction: "entry" | "exit", index: numb
     .filter((point) => point.direction === direction)
     .map((point) => ({ point, kwh: point.kwhPerDay[index] ?? 0 }));
   const total = rows.reduce((sum, row) => sum + row.kwh, 0);
+  // consumers and distribution are one name in the reader's words, whichever of the two kinds reports them
+  const group = (kind: PointKind): string => (kind === "DIS" ? "FNC" : kind);
+  const count = new Map<string, number>();
+  for (const { point } of rows) count.set(group(point.kind), (count.get(group(point.kind)) ?? 0) + 1);
   return [
     rows
       .map(({ point, kwh }) => ({
@@ -158,6 +167,7 @@ function side(points: readonly Point[], direction: "entry" | "exit", index: numb
         neighbour: point.neighbour,
         kwh,
         share: total > 0 ? kwh / total : 0,
+        shared: (count.get(group(point.kind)) ?? 0) > 1,
       }))
       .sort((a, b) => b.kwh - a.kwh || a.label.localeCompare(b.label)),
     total,

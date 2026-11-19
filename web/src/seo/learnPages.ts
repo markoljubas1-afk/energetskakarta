@@ -7,6 +7,7 @@ import { ArrowLeftRight, Factory, Flame, Image, Map as MapIcon, Route, Sun, Zap 
 
 import type { Technology } from "../domain";
 import { createI18n } from "../i18n";
+import { SOLAR_PICTURE } from "../share/solarCapitaCard";
 import { TIME_MACHINE_START, type Lang } from "../state/url";
 import type { StoryKey } from "../stories/keys";
 import { STORIES, STORY_KEYS } from "../stories/stories";
@@ -40,6 +41,8 @@ interface LearnCopy {
   /** the two cards under the text: the gas layer of the map, and the storage picture to share */
   gasMap: [string, string];
   gasPicture: [string, string];
+  /** the picture of solar electricity per inhabitant, under the solar sentences (Faza 46) */
+  solarPicture: [string, string];
   /**
    * The path of gas from the well to the stove (Faza 45-2): six stations, each a sentence or two whose
    * figures and names are from the documents in `gasPathSources` (HERA's report for 2024, and the pages of
@@ -156,6 +159,10 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
     gasPicture: [
       "Slika za dijeljenje: zalihe plina",
       "popunjenost, količina i promjena u sedam dana, s navedenim izvorom (GIE AGSI)",
+    ],
+    solarPicture: [
+      "Slika za dijeljenje: sunčana struja po stanovniku",
+      "koliko kilovatsati sunčane struje dolazi na jednog stanovnika, po zemljama regije (izračun iz podataka Eurostata)",
     ],
     gasPathHeading: "Put plina: od bušotine do štednjaka",
     gasPath: [
@@ -420,6 +427,10 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
     gasPicture: [
       "Picture to share: gas in storage",
       "the fill, the amount and the change over seven days, with the source named (GIE AGSI)",
+    ],
+    solarPicture: [
+      "Picture to share: solar electricity per inhabitant",
+      "how many kilowatt-hours of solar electricity there are per inhabitant, by country of the region (calculated from Eurostat data)",
     ],
     gasPathHeading: "The path of gas: from the well to the stove",
     gasPath: [
@@ -702,7 +713,21 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
       { heading: copy.unitsHeading, html: list(copy.units.map(e)) },
       {
         heading: copy.solarHeading,
-        html: `${list(copy.solar.map(e))}${callout(copy.roof, { href: mapLink(lang, { l: "lines,solar" }), label: copy.roofAction }, SUN_ICON)}${doors([homeDoor(lang)])}`,
+        html: `${list(copy.solar.map(e))}${callout(copy.roof, { href: mapLink(lang, { l: "lines,solar" }), label: copy.roofAction }, SUN_ICON)}${doors(
+          [
+            homeDoor(lang),
+            ...(site.solarCapita
+              ? [
+                  {
+                    href: mapLink(lang, { pic: SOLAR_PICTURE }),
+                    title: copy.solarPicture[0],
+                    text: copy.solarPicture[1],
+                    icon: PICTURE_ICON,
+                  },
+                ]
+              : []),
+          ],
+        )}`,
       },
       {
         heading: copy.timingHeading,

@@ -28,7 +28,7 @@ const point = (
   key,
   label,
   kind: GasFlowsSchema.shape.countries.valueType.shape.points.element.shape.kind.parse(
-    ["LNG", "PRD", "UGS", "ITP", "FNC"].find((kind) => key.startsWith(kind)) ?? "OTHER",
+    ["LNG", "PRD", "UGS", "ITP", "FNC", "DIS"].find((kind) => key.startsWith(kind)) ?? "OTHER",
   ),
   direction,
   neighbour,
@@ -272,9 +272,9 @@ describe("the system's points on the map", () => {
   it("follow the day the bar shows", () => {
     const onDay = vi.fn();
     renderWithI18n(<GasFlowBar data={ready(FLOWS)} onClose={vi.fn()} onDay={onDay} />);
-    expect(onDay).toHaveBeenLastCalledWith("2026-11-17");
+    expect(onDay).toHaveBeenLastCalledWith("2026-11-17", "HR");
     fireEvent.change(screen.getByRole("slider", { name: "Plinski dan" }), { target: { value: "0" } });
-    expect(onDay).toHaveBeenLastCalledWith("2026-11-16");
+    expect(onDay).toHaveBeenLastCalledWith("2026-11-16", "HR");
   });
 });
 
@@ -404,5 +404,59 @@ describe("the day's deliveries against the seven days before", () => {
     if (!consumers) throw new Error("no consumers");
     consumers.kwhPerDay[4] = null;
     expect(balance(holed, "HR")?.usualConsumersKwh ?? null).toBeNull();
+  });
+});
+
+describe("a second country in the gas flow bar", () => {
+  /** Hungary as FGSZ reports it: two storage points, distribution and direct customers apart, blending. */
+  const TWO: GasFlows = {
+    ...FLOWS,
+    countries: {
+      ...FLOWS.countries,
+      HU: {
+        operatorKey: "HU-TSO-0001",
+        operator: "FGSZ",
+        points: [
+          point("ITP-10013", "Kiskundorozsma-2 (HU) / Horgos (RS)", "entry", [240, 246.3, null], "RS"),
+          point("UGS-00020", "UGS-1-Aggregated Storage (HU)", "entry", [30, 32, null]),
+          point("UGS-00021", "UGS-2-SZOREG (HU)", "entry", [0, 0, null]),
+          point("DIS-00196", "Aggregated Distribution (HU)", "exit", [230, 235.3, null]),
+          point("FNC-00200", "Aggregated Final Consumers (HU)", "exit", [50, 49.8, null]),
+          point("PRD-00235", "Exit for Blending (HU)", "exit", [40, 43.7, null]),
+        ],
+      },
+    },
+  };
+
+  it("lets the reader pick the country, and names twin points by the platform's own names", () => {
+    const onDay = vi.fn();
+    renderWithI18n(<GasFlowBar data={ready(TWO)} onClose={vi.fn()} onDay={onDay} />);
+    // Croatia first: it is the country the bar opens on
+    expect(screen.getByRole("region")).toHaveAccessibleName(
+      "Plin, Hrvatska: što je ušlo u sustav i kamo je otišlo",
+    );
+    expect(onDay).toHaveBeenLastCalledWith("2026-11-17", "HR");
+    fireEvent.change(screen.getByRole("combobox", { name: "Zemlja" }), { target: { value: "HU" } });
+    const bar = screen.getByRole("region", { name: "Plin, Mađarska: što je ušlo u sustav i kamo je otišlo" });
+    expect(onDay).toHaveBeenLastCalledWith("2026-11-17", "HU");
+    const entered = within(bar).getByRole("list", { name: "Ušlo u transportni sustav: 278,3 GWh" });
+    expect(within(entered).getAllByRole("listitem")[1]).toHaveTextContent(
+      "iz skladišta (UGS-1-Aggregated Storage (HU))32 GWh · 11 %",
+    );
+    const left = within(bar).getByRole("list", { name: "Izašlo iz transportnog sustava: 328,8 GWh" });
+    const names = within(left)
+      .getAllByRole("listitem")
+      .map((item) => item.textContent);
+    expect(names[0]).toContain("kupci i distribucija u zemlji (Aggregated Distribution (HU))");
+    expect(names[1]).toContain("kupci i distribucija u zemlji (Aggregated Final Consumers (HU))");
+    // gas that leaves at a production point is not "the country's own fields"
+    expect(names[2]).toContain("Exit for Blending (HU)");
+    // distribution and direct customers together are what was delivered: 235.3 + 49.8
+    expect(balance(TWO, "HU")?.consumersKwh).toBeCloseTo(285.1e6, 0);
+  });
+
+  it("has no country choice when one operator is all the data has", () => {
+    renderWithI18n(<GasFlowBar data={ready(FLOWS)} onClose={vi.fn()} />);
+    expect(screen.queryByRole("combobox")).toBeNull();
   });
 });

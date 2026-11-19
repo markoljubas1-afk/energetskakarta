@@ -11,7 +11,13 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 
 import type { AppConfig } from "../config";
 import { gasOverlay, loadGas, type GasLoad } from "../data/gas";
-import { balance as gasBalance, flowOverlay, GAS_FLOWS_KEY, loadGasFlows } from "../data/gasFlows";
+import {
+  balance as gasBalance,
+  flowCountries,
+  flowOverlay,
+  GAS_FLOWS_KEY,
+  loadGasFlows,
+} from "../data/gasFlows";
 import { GAS_STORAGE_KEY, loadGasStorage, storageOverlay } from "../data/gasStorage";
 import { alerts, closedAlerts, rememberClosed, type Alert } from "../data/alerts";
 import {
@@ -30,6 +36,7 @@ import { loadTimeline, retiredFeatures } from "../data/timeline";
 import {
   DATA_SOURCES,
   isOneOf,
+  SCOPE_COUNTRIES,
   type CountryCode,
   type DataSource,
   type LayerKey,
@@ -550,16 +557,20 @@ function Explorer({
     gasOn &&
     flowData?.status === "ready" &&
     flowData.value.kind === "ready" &&
-    gasBalance(flowData.value.flows, "HR") !== null;
+    flowCountries(flowData.value.flows, SCOPE_COUNTRIES).length > 0;
   // the gas day the flow bar shows; the system's points on the map carry that day's flow
-  const [flowDay, setFlowDay] = useState<string | null>(null);
+  const [flowDay, setFlowDay] = useState<{ day: string; country: string } | null>(null);
+  const showFlowDay = useCallback((day: string, country: string) => {
+    setFlowDay((was) => (was?.day === day && was.country === country ? was : { day, country }));
+  }, []);
   const flowPoints = useMemo(() => {
     if (!gasOn || flowData?.status !== "ready" || flowData.value.kind !== "ready") return null;
     const { flows } = flowData.value;
-    const latest = gasBalance(flows, "HR");
-    if (!latest) return null;
-    const day = flowDay !== null && flows.days.includes(flowDay) ? flowDay : latest.day;
-    return flowOverlay(flows, "HR", day, (row) => flowPointText(row, i18n));
+    const country = flowDay?.country ?? flowCountries(flows, SCOPE_COUNTRIES)[0];
+    const latest = country === undefined ? null : gasBalance(flows, country);
+    if (!latest || country === undefined) return null;
+    const day = flowDay !== null && flows.days.includes(flowDay.day) ? flowDay.day : latest.day;
+    return flowOverlay(flows, country, day, (row) => flowPointText(row, i18n));
   }, [gasOn, flowData, flowDay, i18n]);
   const storagePoints = useMemo(
     () =>
@@ -1169,7 +1180,7 @@ function Explorer({
             {flowsShown && (
               <div className={styles.liveSlot}>
                 <ErrorBoundary area="gas flows" fallback={panelFallback}>
-                  <GasFlowBar data={flowData} onClose={closeGas} onDay={setFlowDay} />
+                  <GasFlowBar data={flowData} onClose={closeGas} onDay={showFlowDay} />
                 </ErrorBoundary>
               </div>
             )}

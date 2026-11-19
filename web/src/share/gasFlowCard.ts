@@ -23,16 +23,19 @@ export const gwh = (kwh: number, i18n: I18n): string => i18n.number(kwh / 1e6, 1
  */
 export function flowName(row: FlowRow, i18n: I18n): string {
   const { t } = i18n;
+  // two points of one kind on the same side keep the platform's own name next to ours
+  const named = (name: string): string => (row.shared ? `${name} (${row.label})` : name);
   switch (row.kind) {
     case "LNG":
-      return t("gasFlow_LNG");
+      return named(t("gasFlow_LNG"));
     case "PRD":
-      return t("gasFlow_PRD");
+      // gas leaves at a production point too (Hungary's "Exit for Blending"): that is not a field's output
+      return row.direction === "entry" ? named(t("gasFlow_PRD")) : row.label;
     case "UGS":
-      return t(row.direction === "entry" ? "gasFlow_UGS_entry" : "gasFlow_UGS_exit");
+      return named(t(row.direction === "entry" ? "gasFlow_UGS_entry" : "gasFlow_UGS_exit"));
     case "FNC":
     case "DIS":
-      return t("gasFlow_consumers");
+      return named(t("gasFlow_consumers"));
     case "ITP":
     case "VIP":
       return row.neighbour === null ? row.label : `${row.label} (${i18n.country(row.neighbour)})`;
