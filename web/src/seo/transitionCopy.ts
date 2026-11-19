@@ -48,6 +48,9 @@ interface TransitionCopy {
     columns: [string, string, string, string];
     note: (year: string) => string;
     picture: string;
+    /** the sentence on a country's own page; `link` is the words that lead to the comparison */
+    country: (year: string, gwh: string, kwh: string, place: string, of: string) => string;
+    link: string;
   };
   co2: { heading: string; note: string; columns: [string, string] };
   capacity: {
@@ -142,6 +145,9 @@ export const TRANSITION_COPY: Record<Lang, TransitionCopy> = {
       note: (year) =>
         `Izračun GridAtlasa, a ne brojka koju Eurostat objavljuje: bruto proizvodnja fotonaponskih elektrana podijeljena s prosječnim brojem stanovnika iste godine. Zemlje se uspoređuju u zadnjoj godini za koju sve imaju oba podatka (${year}.).`,
       picture: "Slika za dijeljenje: sunčana struja po stanovniku",
+      country: (year, gwh, kwh, place, of) =>
+        `Sunčana struja po stanovniku: ${kwh} kWh u ${year}. godini (${gwh} GWh iz fotonaponskih elektrana), ${place}. mjesto među ${of} zemalja regije.`,
+      link: "Usporedba zemalja i izvori",
     },
     co2: {
       heading: "CO₂ intenzitet proizvodnje struje",
@@ -268,6 +274,9 @@ export const TRANSITION_COPY: Record<Lang, TransitionCopy> = {
       note: (year) =>
         `Calculated by GridAtlas, not a figure Eurostat publishes: the gross electricity production of photovoltaic plants divided by the average population of the same year. The countries are compared in the latest year all of them have both figures for (${year}).`,
       picture: "Picture to share: solar electricity per inhabitant",
+      country: (year, gwh, kwh, place, of) =>
+        `Solar electricity per inhabitant: ${kwh} kWh in ${year} (${gwh} GWh from photovoltaic plants), place ${place} among the ${of} countries of the region.`,
+      link: "The countries compared, and the sources",
     },
     co2: {
       heading: "Carbon intensity of electricity generation",

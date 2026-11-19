@@ -2881,10 +2881,34 @@ broj se sam osvježi.
   (mjesto u regiji, koliko puta manje od prve) i s formulom i izvorima ispod.
 - [x] 46-3 (2026-11-19) Slika za dijeljenje `?pic=solarhead` u postojećem dijalogu slika; vrata na nju s
   „Zelene tranzicije”. Otvoreno: vrata iz Edukacije (dio o suncu).
-- [ ] 46-4 Stranica zemlje: jedna rečenica s brojem i mjestom u regiji.
+- [x] 46-4 (2026-11-19) Stranica zemlje: jedna rečenica s brojem i mjestom u regiji, s poveznicom na usporedbu.
 
 **Rizici.** Privremeni podatak za BiH mora biti označen. Fotonapon bez sunčanih toplinskih elektrana
 (u regiji ih nema, ali naziv mora biti točan: „sunčane elektrane (fotonapon)”).
 
 **Provjera.** pytest s Eurostatovim odgovorima kao fixture, vitest za stranicu i sliku, e2e za `?pic=`,
 uživo usporedba s gornjim brojevima.
+
+## Faza 47 — SEO i GEO nakon plina (provjera uživo 2026-11-19) — PRIJEDLOG, čeka potvrdu
+
+Nalaz provjere (podagent, dohvaćeno uživo): osnove su u redu (robots.txt s dopuštenjem za AI robote,
+sitemap s 8382 adrese, llms.txt, hreflang i canonical ispravni, JSON-LD valjan). Glavna rupa: plin
+postoji samo u karti (`?l=gas`) i u dva odjeljka Edukacije; nijedna stranica nije o plinu, pa ga tražilice
+i AI odgovori ne vide. `/plin/`, `/en/gas/` vraćaju 404.
+
+- [ ] 47-1 Stranica `/plin/` i `/en/gas/` (`web/src/seo/gasPages.ts`): jučerašnji ulaz po točkama, punjenost
+  Okolija, LNG Krk, km plinovoda, naslovi u obliku pitanja, `Dataset` + `FAQPage`; dnevna obnova s
+  plinskim poslom, datum u sitemapu i `dateModified`. (veliko)
+- [ ] 47-2 Sidra (`id`) na svim H2 i pitanja o plinu u FAQ-u Edukacije. (malo)
+- [ ] 47-3 Poveznice na plin: početna, `/zemlja/hr/`, izvještaji, `llms.txt`, `llms-full.txt`, feed. (malo)
+- [ ] 47-4 Naslovi do 60 i opisi do 155 znakova (početna 97, `/en/` 110; opisi 188 do 294). (malo)
+- [ ] 47-5 `Organization` na početnoj, `Article` + `dateModified` na Edukaciji i izvještajima; oznaka
+  „[Skup podataka]” u citatu Edukacije. (malo)
+- [ ] 47-6 `pages.dev` kopija: preusmjerenje ili `noindex` (`web/public/_headers`). (malo)
+- [ ] 47-7 Slika pregleda po stranici i za `?pic=` (sada svuda ista `og-gridatlas.png`). (srednje)
+- [ ] 47-8 Stranice za LNG terminal Krk i skladište Okoli kao objekte. (srednje)
+
+Samo vlasnik: Google Search Console i Bing Webmaster (potvrda, sitemap, zahtjev za indeksiranje),
+`INDEXNOW_KEY`, poveznice s drugih stranica (Wikipedija, energetski mediji, fakulteti, HERA, Plinacro).
+Realno: dugi upiti na hrvatskom s malo konkurencije mogu doći na prvu stranicu za 3 do 6 tjedana od
+indeksiranja; „LNG terminal Krk” ostaje iza lng.hr i Wikipedije. Vrh u 50 dana nitko ne može obećati.

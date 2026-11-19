@@ -24,7 +24,7 @@ import {
   type SiteData,
   type StaticPage,
 } from "./site";
-import { transitionLinks } from "./transition";
+import { solarCapitaSentence, transitionLinks } from "./transition";
 import { energyLinks } from "./energyPages";
 import { DATASET_LICENSE } from "./license";
 
@@ -46,7 +46,9 @@ export function countryPage(site: SiteData, lang: Lang, code: CountryCode, hubs:
     title: copy.country.title(name),
     description: copy.country.description(name, operating),
     heading: copy.country.heading(name),
-    lead: `<p>${e(copy.country.intro(name, operating, plants, i18n.km(totalKm)))}</p>`,
+    lead:
+      `<p>${e(copy.country.intro(name, operating, plants, i18n.km(totalKm)))}</p>` +
+      solarCapitaSentence(site, lang, code),
     sections: [
       {
         heading: copy.country.capacityHeading,

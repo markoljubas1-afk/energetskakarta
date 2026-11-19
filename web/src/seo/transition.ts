@@ -219,6 +219,26 @@ export function officialSections(
 }
 
 /**
+ * A country's solar electricity per inhabitant as one sentence for its own page, with a link to the
+ * comparison on the transition page; empty when the country is not compared or the page does not exist.
+ */
+export function solarCapitaSentence(site: SiteData, lang: Lang, country: string): string {
+  const doc = site.solarCapita;
+  const row = doc ? standings(doc).find((each) => each.country === country) : undefined;
+  if (!row || !hasTransition(site)) return "";
+  const copy = TRANSITION_COPY[lang].solarCapita;
+  const i18n = createI18n(lang);
+  const sentence = copy.country(
+    String(row.year),
+    i18n.number(row.gwh, row.gwh < 100 ? 1 : 0),
+    kwhEach(row.kwhPerPerson, i18n),
+    String(row.place),
+    String(row.of),
+  );
+  return `<p>${e(sentence)} <a href="${e(PATHS[lang].transition)}">${e(copy.link)}</a>.</p>`;
+}
+
+/**
  * Solar electricity per inhabitant: Croatia's sentence, the eight countries in the year they share, and
  * what the figure is. Null when Croatia is not among them.
  */

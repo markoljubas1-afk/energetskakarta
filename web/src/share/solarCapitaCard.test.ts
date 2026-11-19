@@ -5,7 +5,9 @@ import { SolarCapitaSchema, solarCapitaCountries, standings } from "../data/sola
 import { SCOPE_COUNTRIES } from "../domain";
 import { createI18n } from "../i18n";
 import { cardSummary, presentable } from "../panels/DayCardDialog";
-import { solarCapitaSection } from "../seo/transition";
+import { bareSite } from "../seo/site.fixture";
+import { solarCapitaSection, solarCapitaSentence } from "../seo/transition";
+import { SAMPLE_RENEWABLES } from "../data/eurostat.fixture";
 import { askedSolarPicture, solarCapitaCard, solarCapitaCardText } from "./solarCapitaCard";
 
 const hr = createI18n("hr");
@@ -98,5 +100,19 @@ describe("solar electricity per inhabitant", () => {
     expect(solarCapitaSection(SAMPLE_SOLAR_CAPITA, "en")?.html).toContain(
       "place 5 among the 8 countries of the region. Hungary is first with 962 kWh per inhabitant, 4.5 times as much.",
     );
+  });
+
+  it("is one sentence on a country's own page, leading to the comparison", () => {
+    const site = bareSite({ renewables: SAMPLE_RENEWABLES, solarCapita: SAMPLE_SOLAR_CAPITA });
+    expect(solarCapitaSentence(site, "hr", "SI")).toBe(
+      "<p>Sunčana struja po stanovniku: 596 kWh u 2024. godini (1.268 GWh iz fotonaponskih elektrana), " +
+        '4. mjesto među 8 zemalja regije. <a href="/zelena-tranzicija/">Usporedba zemalja i izvori</a>.</p>',
+    );
+    expect(solarCapitaSentence(site, "en", "RS")).toContain(
+      "25 kWh in 2024 (163 GWh from photovoltaic plants), place 8 among the 8",
+    );
+    // nothing without the document, and no link to a page that does not exist
+    expect(solarCapitaSentence(bareSite({ renewables: SAMPLE_RENEWABLES }), "hr", "SI")).toBe("");
+    expect(solarCapitaSentence(bareSite({ solarCapita: SAMPLE_SOLAR_CAPITA }), "hr", "SI")).toBe("");
   });
 });
