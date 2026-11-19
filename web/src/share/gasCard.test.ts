@@ -170,9 +170,9 @@ describe("the gas storage card", () => {
   });
 
   it("opens from a link", () => {
-    expect(askedGasPicture("?pic=gas")).toBe(true);
-    expect(askedGasPicture("?l=lines&pic=gas")).toBe(true);
-    expect(askedGasPicture("?pic=2026-10")).toBe(false);
-    expect(askedGasPicture("")).toBe(false);
+    expect(askedGasPicture("?pic=gas")).toBe("gas");
+    expect(askedGasPicture("?l=lines&pic=gasflow")).toBe("gasflow");
+    expect(askedGasPicture("?pic=2026-10")).toBeNull();
+    expect(askedGasPicture("")).toBeNull();
   });
 });

@@ -79,7 +79,7 @@ describe("the learning corner", () => {
       expect(gas).toHaveLength(2);
       const gasMap = parseState(new URL(gas[0] ?? "", "https://karta.test").search, lang);
       expect([...gasMap.layers]).toEqual(expect.arrayContaining(["lines", "pipelines", "gas"]));
-      expect(askedGasPicture(new URL(gas[1] ?? "", "https://karta.test").search)).toBe(true);
+      expect(askedGasPicture(new URL(gas[1] ?? "", "https://karta.test").search)).toBe("gas");
       const [price, ...views] = links.filter(
         (link) =>
           !link.includes("story=") &&

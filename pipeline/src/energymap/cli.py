@@ -43,6 +43,7 @@ from energymap.eurostat import households as eurostat_households
 from energymap.eurostat import renewables as eurostat_renewables
 from energymap.files import read_json, write_json_atomic
 from energymap.gas import agsi, entsog, storage_months
+from energymap.gas import flows as gas_flows
 from energymap.gas import points as gas_points
 from energymap.gem.read import GemFormatError
 from energymap.geo.countries import CountryDataError
@@ -258,6 +259,22 @@ def parser() -> argparse.ArgumentParser:
     )
     _data_dir(gas_survey)
     gas_survey.add_argument("--days", type=_bounded_int(1, 14), default=gas_points.DEFAULT_DAYS)
+    for name, text in (
+        ("flows-fetch", "fetch what entered and left the gas system each day into data/live/gasflows.json"),
+        ("flows-publish-r2", "publish data/live/gasflows.json to Cloudflare R2"),
+        ("flows-publish-dir", "publish data/live/gasflows.json to a local mirror"),
+    ):
+        step = gas.add_parser(name, help=text)
+        _data_dir(step)
+        if name == "flows-fetch":
+            step.add_argument(
+                "--days",
+                type=_bounded_int(1, gas_flows.MAX_DAYS),
+                default=gas_flows.DEFAULT_DAYS,
+                help="gas days to fetch",
+            )
+        if name == "flows-publish-dir":
+            step.add_argument("--out", type=Path, required=True)
     for name, text in (
         ("storage-fetch", "fetch the last days of gas storage from GIE AGSI into data/live/gasstorage.json"),
         ("storage-publish-r2", "publish data/live/gasstorage.json to Cloudflare R2"),
@@ -587,6 +604,23 @@ def run(args: argparse.Namespace) -> None:
             storage = agsi.survey(client, datetime.now(UTC), config.SCOPE_CODES)
         write_json_atomic(paths.root / "gas" / "storage-survey.json", storage)
         print(agsi.markdown(storage), end="")
+    elif args.group == "gas" and args.step.startswith("flows-"):
+        flows_file = paths.root / "live" / "gasflows.json"
+        if args.step == "flows-fetch":
+            with make_client() as client:
+                balance = gas_flows.collect(client, datetime.now(UTC), days=args.days)
+            gas_flows.validate(balance)
+            write_json_atomic(flows_file, balance.model_dump(mode="json", by_alias=True))
+            print(json.dumps({"countries": sorted(balance.countries), "missing": balance.missing}))
+        else:
+            if not flows_file.exists():
+                raise BuildValidationError([f"{flows_file} not found; run `energymap gas flows-fetch` first"])
+            flows_store: publish.ObjectStore = (
+                publish.R2Store.from_env()
+                if args.step == "flows-publish-r2"
+                else publish.DirectoryStore(args.out)
+            )
+            gas_flows.publish_flows(flows_store, gas_flows.parse(read_json(flows_file)))
     elif args.group == "gas" and args.step == "points":
         with make_client() as client:
             survey = gas_points.survey(client, datetime.now(UTC), config.SCOPE_CODES, days=args.days)
@@ -889,6 +923,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         agsi.AgsiError,
         agsi.StorageDataError,
         entsog.GasDataError,
+        gas_flows.FlowDataError,
         GeothermalDataError,
         hep_capacity.HepSourceError,
         hep_capacity.HepDataError,

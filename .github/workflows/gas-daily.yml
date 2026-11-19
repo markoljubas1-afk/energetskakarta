@@ -60,6 +60,42 @@ jobs:
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: energymap gas publish-r2 --data-dir data
 
+  # What entered the transmission system and where it went (ENTSOG, Faza 44-3): its own job, so a failure
+  # here does not hold back production or storage. No API key is needed. A gas day is published in the
+  # evening of the day after it, so the evening run brings the new day and the morning run corrections.
+  flows:
+    if: github.event_name != 'schedule' || vars.SCHEDULE_GAS == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check configuration
+        env:
+          HAS_R2: ${{ secrets.R2_ACCOUNT_ID != '' && secrets.R2_ACCESS_KEY_ID != '' && secrets.R2_SECRET_ACCESS_KEY != '' && secrets.R2_BUCKET != '' }}
+        run: |
+          if [ "$HAS_R2" != "true" ]; then
+            echo "::error::Not configured: R2_* secrets are required (infra/README.md)"
+            exit 1
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/pyproject.toml
+      - run: python -m pip install -e .
+      - name: Fetch
+        run: energymap gas flows-fetch --data-dir data
+      - name: Publish
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: energymap gas flows-publish-r2 --data-dir data
+
   # Gas in storage (GIE AGSI, Faza 37): its own job, so neither source's failure holds back the other.
   # AGSI publishes a gas day at 19:30 and 23:00 CET: the evening run (19:20 UTC) picks up the first
   # publication, the morning run the corrections of the second.

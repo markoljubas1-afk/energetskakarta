@@ -200,9 +200,13 @@ function drawStory(ctx: CanvasRenderingContext2D, text: CardText, font: string):
     y += Math.round(m.title * 1.2);
   }
   ctx.fillStyle = COLOURS.muted;
-  ctx.font = `400 ${String(Math.round(m.title * 0.65))}px ${font}`;
-  ctx.fillText(text.subtitle, margin, y + 10);
-  y += 10 + m.between * 2;
+  const subtitlePx = Math.round(m.title * 0.65);
+  ctx.font = `400 ${String(subtitlePx)}px ${font}`;
+  const subtitle = wrap(measure, text.subtitle, room);
+  subtitle.forEach((line, at) => {
+    ctx.fillText(line, margin, y + 10 + at * Math.round(subtitlePx * 1.3));
+  });
+  y += 10 + (subtitle.length - 1) * Math.round(subtitlePx * 1.3) + m.between * 2;
 
   for (const figure of text.figures) {
     const sizes = figureFonts(

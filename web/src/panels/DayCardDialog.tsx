@@ -2,6 +2,7 @@ import { Download, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { useAsync } from "../app/useAsync";
+import { balance, flowCountries, type GasFlows } from "../data/gasFlows";
 import type { GasStorage } from "../data/gasStorage";
 import { greenCountries } from "../data/greenShare";
 import type { Live } from "../data/live";
@@ -18,6 +19,7 @@ import {
 } from "../share/dayCard";
 import { download, fileStem, pictureTheme } from "../share/download";
 import { gasCard, gasCardText, gasCountries } from "../share/gasCard";
+import { gasFlowCardText } from "../share/gasFlowCard";
 import { drawSourcesCard, latestDay, latestMonth, sourcesCountries } from "../share/sourcesCard";
 import { loadSources, periodName, sourcesSummary, sourcesText } from "../share/sourcesText";
 import styles from "./DayCardDialog.module.css";
@@ -31,6 +33,9 @@ interface Props {
   storage: GasStorage | null;
   /** the gas in storage is still being read: its picture says "loading" rather than "none" */
   storageWaiting?: boolean;
+  /** what entered the gas system and where it went; null while loading or when there is none */
+  flows?: GasFlows | null;
+  flowsWaiting?: boolean;
   now: Date;
   /** where the daily and monthly totals behind the "sources" pictures are read from */
   dataBaseUrl: URL;
@@ -44,9 +49,10 @@ interface Props {
 
 /**
  * What the picture shows: the three figures of this moment, what the electricity of the latest complete
- * day or month was made of (Faza 41), or the gas in storage on the last gas day (Faza 44).
+ * day or month was made of (Faza 41), the gas in storage on the last gas day, or where the gas that
+ * entered the system that day came in (Faza 44).
  */
-export const CARD_KINDS = ["figures", "day", "month", "gas"] as const;
+export const CARD_KINDS = ["figures", "day", "month", "gas", "gasflow"] as const;
 export type CardKind = (typeof CARD_KINDS)[number];
 
 /**
@@ -116,7 +122,7 @@ export function cardSummary(text: CardText): string {
 /** The day in three figures as a picture to save and share, in a native modal dialog. */
 export function DayCardDialog(props: Props) {
   const { open, onClose, live, storage, now, dataBaseUrl, home = "HR", month = null } = props;
-  const { storageWaiting = false, start = "figures" } = props;
+  const { storageWaiting = false, start = "figures", flows = null, flowsWaiting = false } = props;
   const usesSources = (each: CardKind): boolean => each === "day" || each === "month";
   const i18n = useI18n();
   const { t } = i18n;
@@ -142,9 +148,13 @@ export function DayCardDialog(props: Props) {
         ? storage
           ? gasCountries(storage, SCOPE_COUNTRIES)
           : []
-        : totals
-          ? sourcesCountries(totals.periods, SCOPE_COUNTRIES)
-          : [];
+        : kind === "gasflow"
+          ? flows
+            ? flowCountries(flows, SCOPE_COUNTRIES)
+            : []
+          : totals
+            ? sourcesCountries(totals.periods, SCOPE_COUNTRIES)
+            : [];
   const country = countries.includes(chosen) ? chosen : (countries[0] ?? chosen);
   let picture: Picture | null = null;
   if (kind === "figures") {
@@ -169,6 +179,18 @@ export function DayCardDialog(props: Props) {
           drawDayCard(ctx, text, font, shape);
         },
         slug: `gridatlas-plin-${country}-${card.day}`,
+      };
+    }
+  } else if (kind === "gasflow") {
+    const day = flows ? balance(flows, country) : null;
+    if (day) {
+      const text = gasFlowCardText(day, i18n);
+      picture = {
+        summary: cardSummary(text),
+        draw: (ctx, font, shape) => {
+          drawDayCard(ctx, text, font, shape);
+        },
+        slug: `gridatlas-plin-ulaz-${country}-${day.day}`,
       };
     }
   } else if (totals) {
@@ -196,7 +218,9 @@ export function DayCardDialog(props: Props) {
       ? live === null
       : kind === "gas"
         ? storage === null && storageWaiting
-        : sources === null || sources.status === "loading";
+        : kind === "gasflow"
+          ? flows === null && flowsWaiting
+          : sources === null || sources.status === "loading";
   const failedToLoad = usesSources(kind) && sources?.status === "error";
 
   useEffect(() => {
@@ -328,7 +352,9 @@ export function DayCardDialog(props: Props) {
                   ? "dayCardNone"
                   : kind === "gas"
                     ? "gasCardNone"
-                    : "sourcesNone",
+                    : kind === "gasflow"
+                      ? "gasFlowCardNone"
+                      : "sourcesNone",
           )}
         </p>
       )}

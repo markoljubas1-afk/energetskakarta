@@ -155,3 +155,93 @@ test("gas storage rides on the gas layer: a bar with how full it is, its source,
   await expect(bar).toHaveCount(0);
   await expect(page).not.toHaveURL(/l=[^&]*gas/);
 });
+
+/** Croatia's system over three gas days, in GWh a day, in the shape the pipeline publishes; the last day
+ * is not reported yet. */
+const flowPoint = (
+  key: string,
+  label: string,
+  direction: "entry" | "exit",
+  gwh: number[],
+  neighbour: string | null = null,
+) => ({
+  key,
+  label,
+  kind: key.slice(0, 3),
+  direction,
+  neighbour,
+  kwhPerDay: [...gwh.map((value) => value * 1e6), null],
+  status: [...gwh.map(() => "P"), null],
+});
+const FLOWS = {
+  version: 1,
+  generatedAt: "2026-11-19T10:00:00+00:00",
+  source: "ENTSOG Transparency Platform",
+  sourceUrl: "https://transparency.entsog.eu/",
+  unit: "kWh/d",
+  days: ["2026-11-16", "2026-11-17", "2026-11-18"],
+  countries: {
+    HR: {
+      operatorKey: "HR-TSO-0001",
+      operator: "Plinacro Ltd",
+      points: [
+        flowPoint("LNG-00032", "Croatia LNG", "entry", [98.7, 98.4]),
+        flowPoint("PRD-00197", "Production (HR)", "entry", [19.4, 19.5]),
+        flowPoint("UGS-00028", "UGS Croatia", "entry", [17.5, 3.3]),
+        flowPoint("UGS-00028", "UGS Croatia", "exit", [0, 0]),
+        flowPoint("ITP-00042", "Rogatec", "entry", [0, 0], "SI"),
+        flowPoint("ITP-00042", "Rogatec", "exit", [24.9, 25.3], "SI"),
+        flowPoint("ITP-00011", "Dravaszerdahely", "entry", [0, 0], "HU"),
+        flowPoint("ITP-00011", "Dravaszerdahely", "exit", [24.3, 26.3], "HU"),
+        flowPoint("FNC-00018", "Final Consumers and Distribution (HR)", "exit", [83.1, 71.9]),
+      ],
+    },
+  },
+  missing: [],
+};
+
+test("the gas layer shows what entered the system and where it went, and a picture of it to share", async ({
+  page,
+}, testInfo) => {
+  // the test data has no flow document; hand the page one
+  await page.route(/\/local-data\/live\/gasflows\.json/, (route) => route.fulfill({ json: FLOWS }));
+  await open(page, "l=gas");
+  const bar = page.getByRole("region", { name: "Plin, Hrvatska: što je ušlo u sustav i kamo je otišlo" });
+  await expect(bar).toContainText("Plinski dan 17. studenoga 2026., privremeni podaci operatora");
+  const entered = bar.getByRole("list", { name: "Ušlo u transportni sustav: 121,2 GWh" });
+  await expect(entered.getByRole("listitem").first()).toHaveText("LNG terminal98,4 GWh · 81 %");
+  const left = bar.getByRole("list", { name: "Izašlo iz transportnog sustava: 123,5 GWh" });
+  await expect(left.getByRole("listitem").first()).toHaveText("kupci i distribucija u zemlji71,9 GWh · 58 %");
+  await expect(left).toContainText("Dravaszerdahely (Mađarska)");
+  await expect(bar).toContainText("Ulaz nije potrošnja");
+  await expect(bar.getByRole("link", { name: "ENTSOG Transparency Platform" })).toHaveAttribute(
+    "href",
+    "https://transparency.entsog.eu/",
+  );
+  // the bar stays inside the screen, phone included
+  const box = await bar.boundingBox();
+  const viewport = page.viewportSize();
+  if (!box || !viewport) throw new Error("no box");
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
+  await bar.screenshot({ path: testInfo.outputPath("gas-flow-bar.png") });
+
+  // the same day as a picture: "?pic=gasflow" opens the dialog on it
+  await page.goto("/?pic=gasflow");
+  const dialog = page.getByRole("dialog", { name: "Slika za dijeljenje" });
+  await expect(dialog.getByLabel("Što je na slici")).toHaveValue("gasflow");
+  const picture = dialog.getByRole("img");
+  await expect(picture).toHaveAccessibleName(
+    "GridAtlas: Odakle je plin ušao. Hrvatska · plinski dan 17. studenoga 2026. · privremeni podaci: 81 % LNG terminal (98,4 GWh od 121,2 GWh ušlih u transportni sustav); 16 % domaća polja (19,5 GWh); 3 % iz skladišta (3,3 GWh). Kupcima u zemlji isporučeno 71,9 GWh · Izvor: ENTSOG Transparency Platform · gridatlas.eu",
+  );
+  const downloading = page.waitForEvent("download");
+  await dialog.getByRole("button", { name: "Preuzmi sliku (PNG)" }).click();
+  const file = await downloading;
+  expect(file.suggestedFilename()).toMatch(/^gridatlas-plin-ulaz-hr-2026-11-17-\d{4}-\d{2}-\d{2}\.png$/);
+  await file.saveAs(testInfo.outputPath("gas-flow-card.png"));
+  await dialog.getByRole("radio", { name: "Okomita" }).check();
+  await expect(picture).toHaveAttribute("height", "1920");
+  const story = page.waitForEvent("download");
+  await dialog.getByRole("button", { name: "Preuzmi sliku (PNG)" }).click();
+  await (await story).saveAs(testInfo.outputPath("gas-flow-card-story.png"));
+});

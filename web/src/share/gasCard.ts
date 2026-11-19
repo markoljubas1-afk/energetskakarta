@@ -106,9 +106,14 @@ export function gasCountries(storage: GasStorage, order: readonly string[]): str
   return order.filter((code) => gasCard(storage, code) !== null);
 }
 
-/** Whether the address the page was opened with asks for this picture ("?pic=gas"). */
-export function askedGasPicture(search: string): boolean {
-  return new URLSearchParams(search).get("pic") === "gas";
+/** The gas pictures a link can open: the storage ("?pic=gas") and what entered the system ("?pic=gasflow"). */
+export const GAS_PICTURES = ["gas", "gasflow"] as const;
+export type GasPicture = (typeof GAS_PICTURES)[number];
+
+/** The gas picture the address the page was opened with asks for; null without one. */
+export function askedGasPicture(search: string): GasPicture | null {
+  const asked = new URLSearchParams(search).get("pic");
+  return GAS_PICTURES.find((each) => each === asked) ?? null;
 }
 
 /** A change with its sign written out; the minus is the real one, not a hyphen. */

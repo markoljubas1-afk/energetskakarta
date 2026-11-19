@@ -2766,9 +2766,27 @@ morski cjevovodi (EMODnet), izviđanje ENTSOG točaka (`gas/points.py`).
 - [x] 44-2 Slika za dijeljenje „Zalihe plina”: popunjenost, količina, promjena u 7 dana (podaci već postoje).
   `share/gasCard.ts`, četvrta vrsta slike u dijalogu, `?pic=gas` otvara je (kartica na Edukaciji). Zemlja s
   više skladišta zbraja se samo za dan koji su sva prijavila. U AGSI-ju za HR postoji samo Okoli; RS nema.
-- [ ] 44-3 Tokovi na ulaznim točkama (ENTSOG: interkonekcije, LNG, skladište, proizvodnja) po plinskom danu →
+- [x] 44-3 (KOD GOTOV 2026-11-19: traka uz sloj plina i slika `?pic=gasflow`, samo HR; oznake točaka na
+  karti i ostale zemlje ostaju otvorene) Tokovi na ulaznim točkama (ENTSOG: interkonekcije, LNG, skladište, proizvodnja) po plinskom danu →
   traka „Odakle je plin ušao” + slika. Otvoreno: koordinate točaka (ENTSOG ih nema) i smiju li se udjeli
   zvati „pokriva potrebe” (ulaz ≠ potrošnja; dio plina ide u tranzit i skladište).
+  **Plan 44-3 (2026-11-19, „može, nastavi s korakom 3”).** Nalaz na živom API-ju: jedan upit
+  `operationalData?operatorKey=HR-TSO-0001` (Plinacro) daje cijelu dnevnu bilancu: ulaz LNG, proizvodnja,
+  skladište, Rogatec, Dravaszerdahely; izlaz Rogatec, Dravaszerdahely, skladište i „Final Consumers and
+  Distribution (HR)” (isporuka kupcima i distribuciji, dakle dnevna potrošnja preko transportnog sustava).
+  Podatak je „Provisional”, objavljen navečer dan poslije plinskog dana. Filtar `tSOCountry` na
+  `operationalData` ne radi (vraća cijelu Europu).
+  - Cilj: traka „Plin u Hrvatskoj: što je ušlo i kamo je otišlo” uz sloj plina i slika za dijeljenje
+    „Odakle je plin ušao”. Riječi govore o ulazu u transportni sustav, ne o „pokrivanju potreba”.
+  - Pristup: `gas/flows.py` → `live/gasflows.json` (30 plinskih dana, po točki i smjeru, kWh/d, oznaka
+    privremeno/potvrđeno); vlastiti posao u `gas-daily` (ne ovisi o proizvodnji ni o skladištima). Web:
+    `data/gasFlows.ts` (zod), `GasFlowBar`, peta vrsta slike (`?pic=gasflow`).
+  - Razmotreno i odbačeno: sve zemlje odjednom (zemlje s više operatora traže zbrajanje bez dvostrukog
+    brojanja unutarnjih točaka; prvo HR, ostale kad se provjeri svaka); oznake točaka na karti (ENTSOG nema
+    koordinate; ostaje otvoreno, traka i slika ih ne trebaju).
+  - Rizici: promjena odgovora API-ja (validacija jedinice i oblika; neuspjeh ostavlja staru objavu); dan
+    koji nisu prijavile sve točke (uzima se zadnji dan koji su prijavile sve).
+  - Provjera: pytest s lažnim API-jem, vitest, e2e, pa ručno pokretanje posla i pregled uživo.
 - [ ] 44-4 Plinovodi na kopnu (7C): OSM `man_made=pipeline` odmah; GEM tracker traži preuzimanje korisnika.
 - Ne predlažem bez podataka: „alarm” skoka potrošnje (ENTSOG ne objavljuje potrošnju zemlje kao jednu brojku;
   prvo provjeriti što se može izvesti iz izlaza prema distribuciji).

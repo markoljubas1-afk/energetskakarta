@@ -11,6 +11,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 
 import type { AppConfig } from "../config";
 import { gasOverlay, loadGas, type GasLoad } from "../data/gas";
+import { balance as gasBalance, GAS_FLOWS_KEY, loadGasFlows } from "../data/gasFlows";
 import { GAS_STORAGE_KEY, loadGasStorage, storageOverlay } from "../data/gasStorage";
 import { alerts, closedAlerts, rememberClosed, type Alert } from "../data/alerts";
 import {
@@ -45,6 +46,7 @@ import { NOTHING_IN_VIEW } from "../map/inView";
 import type { Spotlight } from "../map/spotlight";
 import { StoryCard } from "../panels/StoryCard";
 import { GreenLight } from "../panels/GreenLight";
+import { GasFlowBar } from "../panels/GasFlowBar";
 import { GasStorageBar } from "../panels/GasStorageBar";
 import { SolarBar } from "../panels/SolarBar";
 import { HOME_KEY, loadHomeShapes } from "../data/homeFlow";
@@ -524,11 +526,20 @@ function Explorer({
   const [pictureMonth, setPictureMonth] = useState(() => askedPictureMonth(window.location.search));
   // "?pic=gas" opens it on the gas in storage (the learning corner links to it), once as well
   const [gasPicture, setGasPicture] = useState(() => askedGasPicture(window.location.search));
-  const [dayCardOpen, setDayCardOpen] = useState(pictureMonth !== null || gasPicture);
+  const [dayCardOpen, setDayCardOpen] = useState(pictureMonth !== null || gasPicture !== null);
   const [storageData] = useAsync(gasOn || dayCardOpen ? GAS_STORAGE_KEY : null, (signal) =>
     loadGasStorage(config.dataBaseUrl, signal),
   );
   const storageShown = storageData?.status === "ready" && storageData.value.kind === "ready";
+  // what entered the gas system and where it went rides on the gas layer too, and on the pictures
+  const [flowData] = useAsync(gasOn || dayCardOpen ? GAS_FLOWS_KEY : null, (signal) =>
+    loadGasFlows(config.dataBaseUrl, signal),
+  );
+  const flowsShown =
+    gasOn &&
+    flowData?.status === "ready" &&
+    flowData.value.kind === "ready" &&
+    gasBalance(flowData.value.flows, "HR") !== null;
   const storagePoints = useMemo(
     () =>
       storageData?.status === "ready" && storageData.value.kind === "ready"
@@ -587,7 +598,7 @@ function Explorer({
     capOn && "capacity",
     solarOn && "solar",
     geoOn && "geothermal",
-    storageShown && "gas",
+    (storageShown || flowsShown) && "gas",
     state.year !== null && "time",
     state.live && "live",
   ]
@@ -1133,6 +1144,13 @@ function Explorer({
                 </ErrorBoundary>
               </div>
             )}
+            {flowsShown && (
+              <div className={styles.liveSlot}>
+                <ErrorBoundary area="gas flows" fallback={panelFallback}>
+                  <GasFlowBar data={flowData} onClose={closeGas} />
+                </ErrorBoundary>
+              </div>
+            )}
             {storageShown && (
               <div className={styles.liveSlot}>
                 <ErrorBoundary area="gas storage" fallback={panelFallback}>
@@ -1194,10 +1212,16 @@ function Explorer({
                   onClose={() => {
                     setDayCardOpen(false);
                     setPictureMonth(null);
-                    setGasPicture(false);
+                    setGasPicture(null);
                   }}
                   month={pictureMonth}
-                  {...(gasPicture ? { start: "gas" as const } : {})}
+                  {...(gasPicture ? { start: gasPicture } : {})}
+                  flows={
+                    flowData?.status === "ready" && flowData.value.kind === "ready"
+                      ? flowData.value.flows
+                      : null
+                  }
+                  flowsWaiting={flowData === null || flowData.status === "loading"}
                   storageWaiting={storageData === null || storageData.status === "loading"}
                   live={liveDoc}
                   storage={
