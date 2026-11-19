@@ -39,6 +39,17 @@ interface LearnCopy {
   /** the two cards under the text: the gas layer of the map, and the storage picture to share */
   gasMap: [string, string];
   gasPicture: [string, string];
+  /**
+   * The path of gas from the well to the stove (Faza 45-2): six stations, each a sentence or two whose
+   * figures and names are from the documents in `gasPathSources` (HERA's report for 2024, and the pages of
+   * INA, LNG Hrvatska and Plinacro as read on 2026-11-19).
+   */
+  gasPathHeading: string;
+  gasPath: string[];
+  gasPathSources: [string, string][];
+  /** the two cards under it: the wells of Podravina and the northern Adriatic, on the map */
+  gasPathWells: [string, string];
+  gasPathSea: [string, string];
   /** what a story card does */
   storyStart: string;
   timingHeading: string;
@@ -145,6 +156,42 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
       "Slika za dijeljenje: zalihe plina",
       "popunjenost, količina i promjena u sedam dana, s navedenim izvorom (GIE AGSI)",
     ],
+    gasPathHeading: "Put plina: od bušotine do štednjaka",
+    gasPath: [
+      "Gdje se crpi. Plin se u Hrvatskoj crpi iz polja u Podravini (INA-ina polja Molve, Kalinovac i Ferdinandovac) i s platformi u sjevernom Jadranu (polja Sjeverni Jadran, Marica i Izabela). Domaća polja dala su 2024. oko 6,2 TWh, 16 % svega što je ušlo u transportni sustav.",
+      "Gdje stiže brodom. Ukapljeni plin (LNG) dolazi brodovima na terminal u Omišlju na Krku, koji radi od 1. siječnja 2021. Na usidrenom brodu „LNG Croatia” tekućina se ponovno pretvara u plin (uplinjava) i šalje u cijevi. Godine 2024. stiglo je 28 brodova iz 5 zemalja, a od studenoga 2025. terminal može primiti 6,1 milijardu kubičnih metara godišnje.",
+      "Gdje se tlači. Plin kroz cijevi ne teče sam, gura ga tlak. Transportni plinovodi rade na 50, 75 i 100 bara, a jedina kompresorska stanica u sustavu, u Velikoj Ludini (u radu od prosinca 2019., snage 4,5 MW), omogućuje da plin ide iz Hrvatske u Mađarsku i iz 50-barskog dijela sustava u 75-barski.",
+      "Gdje se čuva. Što ljeti nije potrošeno, utiskuje se bušotinama u podzemno ležište Okoli, a zimi se iz njega povlači. Najviše što je skladište 2024. dalo u jednom satu bilo je 2.149 MWh.",
+      "Gdje se spušta tlak. Prije nego što uđe u naselja, plin prolazi kroz jednu od 153 mjerno-redukcijske stanice: ondje mu se spušta tlak i mjeri količina. Prirodni plin nema miris, pa mu se zbog sigurnosti dodaje miris po kojem ga prepoznajemo, obično odmah nakon izlaza iz transportnog sustava.",
+      "Gdje završava. Do kuća i tvrtki plin nosi 20.049 km distribucijskih plinovoda, kojima upravlja 27 operatora. Veliki kupci, njih 21, priključeni su izravno na transportni sustav, a dio plina odlazi preko granice, u Sloveniju i Mađarsku.",
+    ],
+    gasPathSources: [
+      [
+        "HERA, Godišnje izvješće za 2024. (proizvodnja, brodovi, skladište, tlakovi, distribucija)",
+        "https://sabor.hr/sites/default/files/uploads/sabor/2025-06-30/144704/GODISNJE_IZVJESCE_HERA_2024.pdf",
+      ],
+      [
+        "INA: polja u Podravini",
+        "https://www.ina.hr/announcement/ina-prijavila-komercijalno-otkrice-plina-u-podravini/",
+      ],
+      [
+        "INA: polja u Jadranu",
+        "https://www.ina.hr/announcement/ina-osigurala-novu-proizvodnju-plina-iz-jadrana/",
+      ],
+      [
+        "LNG Hrvatska: početak rada",
+        "https://lng.hr/en/2021/09/08/1000000000-m3-of-natural-gas-delivered-to-the-croatian-transport-system/",
+      ],
+      ["LNG Hrvatska: povećani kapacitet", "https://lng.hr/en/2025/11/10/completion-of-probationary-period/"],
+      ["Plinacro: kompresorska stanica", "https://www.plinacro.hr/default.aspx?id=902"],
+      ["Plinacro: opis transportnog sustava", "https://www.plinacro.hr/default.aspx?id=162"],
+      ["Plinacro: sigurnosne mjere (miris plina)", "https://www.plinacro.hr/default.aspx?id=164"],
+    ],
+    gasPathWells: [
+      "Bušotine u Podravini",
+      "polja oko Molva na karti: svaka točka je jedna bušotina iz OpenStreetMapa",
+    ],
+    gasPathSea: ["Sjeverni Jadran", "platforma i podmorski cjevovodi prema Puli i Italiji"],
     storyStart: "Pokreni priču",
     now: {
       title: "Upravo sada u Hrvatskoj",
@@ -365,6 +412,42 @@ export const LEARN_COPY: Record<Lang, LearnCopy> = {
       "Picture to share: gas in storage",
       "the fill, the amount and the change over seven days, with the source named (GIE AGSI)",
     ],
+    gasPathHeading: "The path of gas: from the well to the stove",
+    gasPath: [
+      "Where it is produced. Croatia's gas comes from fields in Podravina (INA's fields Molve, Kalinovac and Ferdinandovac) and from platforms in the northern Adriatic (the fields Sjeverni Jadran, Marica and Izabela). In 2024 the country's own fields gave about 6.2 TWh, 16% of everything that entered the transmission system.",
+      "Where it arrives by ship. Liquefied gas (LNG) comes by ship to the terminal at Omišalj on the island of Krk, in operation since 1 January 2021. On the moored ship LNG Croatia the liquid is turned back into gas (regasified) and sent into the pipes. In 2024, 28 ships arrived from 5 countries, and since November 2025 the terminal can take 6.1 billion cubic metres a year.",
+      "Where it is compressed. Gas does not flow through pipes by itself; pressure pushes it. The transmission pipelines work at 50, 75 and 100 bar, and the system's only compressor station, at Velika Ludina (in operation since December 2019, 4.5 MW), lets gas go from Croatia to Hungary and from the 50-bar part of the system into the 75-bar part.",
+      "Where it is kept. What is not used in summer is injected through wells into the underground reservoir Okoli, and withdrawn from it in winter. The most the storage gave in one hour of 2024 was 2,149 MWh.",
+      "Where the pressure is lowered. Before it enters a town, gas passes one of 153 measuring and reduction stations, where its pressure is lowered and its quantity measured. Natural gas has no smell, so for safety the smell we know it by is added, usually right after it leaves the transmission system.",
+      "Where it ends. Homes and businesses are reached by 20,049 km of distribution pipelines, run by 27 operators. The large customers, 21 of them, are connected to the transmission system directly, and part of the gas goes on across the border, to Slovenia and Hungary.",
+    ],
+    gasPathSources: [
+      [
+        "HERA, Annual Report for 2024 (production, ships, storage, pressures, distribution; in Croatian)",
+        "https://sabor.hr/sites/default/files/uploads/sabor/2025-06-30/144704/GODISNJE_IZVJESCE_HERA_2024.pdf",
+      ],
+      [
+        "INA: fields in Podravina (in Croatian)",
+        "https://www.ina.hr/announcement/ina-prijavila-komercijalno-otkrice-plina-u-podravini/",
+      ],
+      [
+        "INA: fields in the Adriatic (in Croatian)",
+        "https://www.ina.hr/announcement/ina-osigurala-novu-proizvodnju-plina-iz-jadrana/",
+      ],
+      [
+        "LNG Croatia: start of operation",
+        "https://lng.hr/en/2021/09/08/1000000000-m3-of-natural-gas-delivered-to-the-croatian-transport-system/",
+      ],
+      ["LNG Croatia: the larger capacity", "https://lng.hr/en/2025/11/10/completion-of-probationary-period/"],
+      ["Plinacro: the compressor station (in Croatian)", "https://www.plinacro.hr/default.aspx?id=902"],
+      ["Plinacro: the transmission system (in Croatian)", "https://www.plinacro.hr/default.aspx?id=162"],
+      ["Plinacro: safety (the smell of gas; in Croatian)", "https://www.plinacro.hr/default.aspx?id=164"],
+    ],
+    gasPathWells: [
+      "Wells in Podravina",
+      "the fields around Molve on the map: each dot is one well from OpenStreetMap",
+    ],
+    gasPathSea: ["Northern Adriatic", "a platform and the subsea pipelines towards Pula and Italy"],
     storyStart: "Start the story",
     now: {
       title: "Right now in Croatia",
@@ -535,6 +618,9 @@ const PICTURE_ICON = icon(Image);
 /** The gas layer with the pipelines under it, and the dialog opened on the picture of the storage. */
 const GAS_MAP_PARAMS = { l: "lines,pipelines,gas" };
 const GAS_PICTURE_PARAMS = { pic: "gas" };
+/** Where the path of gas starts: the wells around Molve, and the platform off Istria with its pipelines. */
+const WELLS_PARAMS = { l: "extraction", v: "46.09,17.06,11" };
+const SEA_PARAMS = { l: "extraction,pipelines", v: "44.75,13.3,9" };
 
 /** The words of a sentence with each `{slot}` turned into an element the script writes a figure into. */
 const slots = (text: string): string => e(text).replace(/\{(\w+)\}/g, '<b data-v="$1"></b>');
@@ -632,6 +718,25 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
             title: copy.gasPicture[0],
             text: copy.gasPicture[1],
             icon: PICTURE_ICON,
+          },
+        ])}`,
+      },
+      {
+        heading: copy.gasPathHeading,
+        html: `${list(copy.gasPath.map(e))}<p>${e(copy.gasSourcesLabel)}: ${copy.gasPathSources
+          .map(([name, url]) => `<a href="${e(url)}" rel="noopener">${e(name)}</a>`)
+          .join("; ")}.</p>${doors([
+          {
+            href: mapLink(lang, WELLS_PARAMS),
+            title: copy.gasPathWells[0],
+            text: copy.gasPathWells[1],
+            icon: MAP_ICON,
+          },
+          {
+            href: mapLink(lang, SEA_PARAMS),
+            title: copy.gasPathSea[0],
+            text: copy.gasPathSea[1],
+            icon: MAP_ICON,
           },
         ])}`,
       },

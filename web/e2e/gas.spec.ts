@@ -269,3 +269,20 @@ test("the gas layer shows what entered the system and where it went, and a pictu
   expect(useFile.suggestedFilename()).toMatch(/^gridatlas-plin-kupci-hr-2026-11-17-\d{4}-\d{2}-\d{2}\.png$/);
   await useFile.saveAs(testInfo.outputPath("gas-use-card.png"));
 });
+
+test("the path of gas on the learning page names its sources and opens the wells on the map", async ({
+  page,
+}) => {
+  await page.route("https://api.maptiler.com/**", (route) => route.abort());
+  await page.goto("/edukacija/");
+  await expect(page.getByRole("heading", { name: "Put plina: od bušotine do štednjaka" })).toBeVisible();
+  await expect(page.getByText("jedina kompresorska stanica u sustavu, u Velikoj Ludini")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Plinacro: kompresorska stanica" })).toHaveAttribute(
+    "href",
+    "https://www.plinacro.hr/default.aspx?id=902",
+  );
+  await page.getByRole("link", { name: "Bušotine u Podravini" }).click();
+  // the map opens on Podravina with the extraction layer on, and nothing else asked for
+  await expect(page).toHaveURL(/l=extraction/);
+  await expect(page).toHaveURL(/v=46\.09/);
+});

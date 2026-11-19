@@ -2835,8 +2835,16 @@ iz polja i tlačenje u kompresorskim stanicama.
     `data/gasFlows.ts` (`balances`), i18n, testovi (`GasFlowBar.test.tsx`, `e2e/gas.spec.ts`).
   - Izvan opsega: dijagram kao slika za dijeljenje (postojeća slika `?pic=gasflow` ostaje).
   - Poznato: traka je na mobitelu visoka i pomiče se unutar sebe.
-- [ ] 45-2 Stranica „Put plina” u kutku za učenje: crpljenje, LNG, tlačenje, skladište, redukcija tlaka,
-  izlaz; svaka postaja s izvorom i vratima na kartu. Tvrdnje tek nakon provjere u izvorima.
+- [x] 45-2 „Put plina: od bušotine do štednjaka”, odjeljak u kutku za učenje (ne zasebna stranica): šest
+  postaja (crpljenje, LNG, tlačenje, skladište, redukcija tlaka i miris, kraj puta), popis izvora i dvoja
+  vrata na kartu (bušotine oko Molva, sjeverni Jadran). Izvori pročitani 2026-11-19: HERA 2024, INA (dvije
+  objave), LNG Hrvatska (dvije objave), Plinacro (id=902, 162, 164).
+  - Izostavljeno jer se izvori ne slažu ili nisu aktualni: broj platformi (18 ili 19), popis kopnenih
+    polja iz studije 2015., kapacitet kompresorske stanice (200.000 ili 201.000 m3/h), duljina sustava
+    (HERA 2.544 km, Plinacro 2.603 km), opis MRS-a iz mrežnih pravila 2014.
+  - Stranice INA-e i LNG Hrvatske čitane su kroz alat za dohvat (bez provjere sirovog teksta).
+  - Kompresorska stanica: „u radu od prosinca 2019.” (Plinacro id=902); Plinacrova povijest kaže 2020.
+  - Vrata „Sjeverni Jadran”: OSM u Hrvatskoj ima jednu platformu; ostale se na karti ne vide.
 - [ ] 45-3 Točke sustava na karti (LNG Krk, Rogatec, Dravaszerdahely, kompresorska stanica) s krugom
   veličine dnevnog toka. ENTSOG nema koordinate: položaji iz OSM-a ili službenog izvora, s provenance.
 - [ ] 45-4 Tokovi za Sloveniju i Mađarsku (po jedan operator); traka dobiva izbor zemlje.

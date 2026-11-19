@@ -73,7 +73,20 @@ describe("the learning corner", () => {
       // the section on negative prices opens the hourly prices; it comes before the "try it" list
       // links out of the site are the documents the gas section's figures are from, and nothing else
       const external = links.filter((link) => link.startsWith("https://"));
-      expect(external).toEqual(LEARN_COPY[lang].gasSources.map(([, url]) => url));
+      expect(external).toEqual(
+        [...LEARN_COPY[lang].gasSources, ...LEARN_COPY[lang].gasPathSources].map(([, url]) => url),
+      );
+      // the path of gas opens the map on a place: the wells of Podravina, then the northern Adriatic
+      const places = links.filter((link) => link.includes("extraction") && link.includes("v="));
+      expect(
+        places.map((link) => {
+          const state = parseState(new URL(link.replaceAll("&amp;", "&"), "https://karta.test").search, lang);
+          return [[...state.layers].sort(), state.view?.zoom];
+        }),
+      ).toEqual([
+        [["extraction"], 11],
+        [["extraction", "pipelines"], 9],
+      ]);
       // the gas section's cards: the gas layer over the pipelines, and the picture of the storage
       const gas = links.filter((link) => !link.startsWith("https://") && link.includes("gas"));
       expect(gas).toHaveLength(2);
@@ -85,6 +98,7 @@ describe("the learning corner", () => {
           !link.includes("story=") &&
           !link.includes("solar") &&
           !link.includes("gas") &&
+          !(link.includes("extraction") && link.includes("v=")) &&
           !link.startsWith("https://"),
       );
       expect(parseState(new URL(price ?? "", "https://karta.test").search, lang).live).toBe(true);
@@ -121,6 +135,25 @@ describe("the learning corner", () => {
     );
     expect(section?.html).toContain('<a href="/?l=lines%2Cpipelines%2Cgas">Plin na karti</a>');
     expect(section?.html).toContain('<a href="/?pic=gas">Slika za dijeljenje: zalihe plina</a>');
+  });
+
+  it("tells the path of gas in six stations, the same figures in both languages, each with its source", () => {
+    const figures = (text: string): string[] =>
+      (text.match(/\d+(?:[.,]\d+)*/g) ?? []).map((figure) => figure.replace(/[.,]/g, ""));
+    expect(LEARN_COPY.hr.gasPath).toHaveLength(6);
+    expect(LEARN_COPY.en.gasPath).toHaveLength(6);
+    for (const [index, sentence] of LEARN_COPY.hr.gasPath.entries()) {
+      expect(figures(LEARN_COPY.en.gasPath[index] ?? ""), sentence).toEqual(figures(sentence));
+    }
+    expect(LEARN_COPY.en.gasPathSources.map(([, url]) => url)).toEqual(
+      LEARN_COPY.hr.gasPathSources.map(([, url]) => url),
+    );
+    const section = learnPage(bareSite(), "hr").sections.find(
+      (each) => each.heading === "Put plina: od bušotine do štednjaka",
+    );
+    expect(section?.html).toContain("jedina kompresorska stanica u sustavu, u Velikoj Ludini");
+    expect(section?.html).toContain('rel="noopener">Plinacro: kompresorska stanica</a>');
+    expect(section?.html).toContain(">Bušotine u Podravini</a>");
   });
 
   it("carries its glossary as structured data", () => {
