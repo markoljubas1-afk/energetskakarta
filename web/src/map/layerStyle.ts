@@ -217,6 +217,21 @@ export const GAS_RADIUS: Expr = [
   56,
 ];
 
+// the same scale as the country's disc, so a point's circle can be held against it
+export const GAS_FLOW_RADIUS: Expr = [
+  "interpolate",
+  ["linear"],
+  ["sqrt", ["min", ["get", "kwh"], 100_000_000]],
+  0,
+  4,
+  1000,
+  8,
+  5000,
+  40,
+  10_000,
+  56,
+];
+
 export function pipelineColor(palette: Palette): ExpressionSpecification {
   const c = palette.pipeline;
   return ["match", ["get", "medium"], "gas", c.gas, "oil", c.oil, "other", c.other, c.unknown];

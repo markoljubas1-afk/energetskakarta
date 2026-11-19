@@ -2845,6 +2845,46 @@ iz polja i tlačenje u kompresorskim stanicama.
   - Stranice INA-e i LNG Hrvatske čitane su kroz alat za dohvat (bez provjere sirovog teksta).
   - Kompresorska stanica: „u radu od prosinca 2019.” (Plinacro id=902); Plinacrova povijest kaže 2020.
   - Vrata „Sjeverni Jadran”: OSM u Hrvatskoj ima jednu platformu; ostale se na karti ne vide.
-- [ ] 45-3 Točke sustava na karti (LNG Krk, Rogatec, Dravaszerdahely, kompresorska stanica) s krugom
-  veličine dnevnog toka. ENTSOG nema koordinate: položaji iz OSM-a ili službenog izvora, s provenance.
+- [x] 45-3 Točke sustava na karti s krugom veličine dnevnog toka (kod gotov 2026-11-19). ENTSOG daje
+  samo koordinate svoje sheme (`tpMapX`, `tpMapY`), pa su položaji iz OpenStreetMapa, ručno pročitani iz
+  cjevovoda probnog builda: LNG Omišalj (way/1042656312), Rogatec (way/854206570), Dravaszerdahely
+  (way/848938794); svaka točka u `live/gasflows.json` nosi `place` s izvorom. Krug prati dan na klizaču.
+  Izvan opsega: proizvodnja i potrošači (zbroj po zemlji, nemaju jedno mjesto), skladište (već ima svoj
+  krug iz AGSI-ja), kompresorska stanica Velika Ludina (nema toka u ENTSOG-u ni objekta u OSM-u).
 - [ ] 45-4 Tokovi za Sloveniju i Mađarsku (po jedan operator); traka dobiva izbor zemlje.
+
+## Faza 46 — Sunčana struja po stanovniku (kWh), za dijeljenje i na stranicama — POTVRĐENO 2026-11-19 („može plan za sunce po stanovniku, kreni”)
+
+Zahtjev vlasnika (2026-11-19): „usporedba godišnje proizvodnje solarne električne energije po stanovniku
+(u kWh) za Hrvatsku i regiju … da imamo za share i negdje da još ubacimo da imamo taj broj”.
+
+**Cilj.** Za svaku od osam zemalja: godišnja proizvodnja sunčanih elektrana podijeljena s brojem stanovnika,
+u kWh po stanovniku, kao jasno označen izračun iz dvaju službenih brojeva (kao otisak CO₂).
+
+**Izvor (provjereno uživo 2026-11-19, Eurostat, CC BY 4.0, bez ključa).**
+- Proizvodnja: `nrg_bal_peh`, `nrg_bal=GEP`, `siec=RA420` (fotonapon), GWh. Zadnja godina 2024 za svih osam.
+- Stanovništvo: `demo_gind`, `indic_de=AVG` (prosječno stanovništvo godine). BiH ima samo privremeni
+  podatak (oznaka `p`); `demo_pjan` za BiH nema ništa, zato `demo_gind`.
+- Provjera 2024: HU 962, AT 887, IT 610, SI 596, HR 212, BA 176, ME 102, RS 25 kWh po stanovniku.
+
+**Odbačeno.** Svježiji nacionalni izvori (HOPS, HERA i drugi) za 2025: osam različitih izvještaja s
+različitim obuhvatom (krovne elektrane negdje jesu, negdje nisu), pa brojevi ne bi bili usporedivi.
+ENTSO-E za proizvodnju: ne vidi dobar dio malih elektrana. Jedan izvor za sve; kad Eurostat objavi 2025,
+broj se sam osvježi.
+
+**Koraci.**
+- [ ] 46-1 Pipeline: `eurostat/solar_capita.py` čita oba skupa, pydantic dokument
+  `live/solarcapita.json` (po zemlji i godini: GWh, stanovnici, kWh po stanovniku, oznaka privremenog
+  podatka, datumi objave obaju skupova); u postojeći Eurostatov tjedni posao. Ne objavljuje se ako neka
+  zemlja nema zadnju godinu u oba skupa: tada se uzima zadnja godina koju imaju sve.
+- [ ] 46-2 „Zelena tranzicija”: stupci osam zemalja za zadnju godinu, s rečenicom o Hrvatskoj
+  (mjesto u regiji, koliko puta manje od prve) i s formulom i izvorima ispod.
+- [ ] 46-3 Slika za dijeljenje `?pic=solarhead` u postojećem dijalogu slika; vrata na nju s „Zelene
+  tranzicije” i iz Edukacije (dio o suncu).
+- [ ] 46-4 Stranica zemlje: jedna rečenica s brojem i mjestom u regiji.
+
+**Rizici.** Privremeni podatak za BiH mora biti označen. Fotonapon bez sunčanih toplinskih elektrana
+(u regiji ih nema, ali naziv mora biti točan: „sunčane elektrane (fotonapon)”).
+
+**Provjera.** pytest s Eurostatovim odgovorima kao fixture, vitest za stranicu i sliku, e2e za `?pic=`,
+uživo usporedba s gornjim brojevima.

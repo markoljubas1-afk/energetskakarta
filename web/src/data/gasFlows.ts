@@ -8,12 +8,24 @@
  * the country's needs. Gas that enters also leaves across the border and into storage, and the difference
  * between what entered and what left stays in the pipes.
  */
+import type { Feature, FeatureCollection, Point as GeoPoint } from "geojson";
 import { z } from "zod";
 
 import { assetUrl, DataError } from "./current";
 
 const POINT_KINDS = ["LNG", "PRD", "UGS", "ITP", "VIP", "FNC", "DIS", "OTHER"] as const;
 export type PointKind = (typeof POINT_KINDS)[number];
+
+/** Where a point is on the earth, and the OpenStreetMap object that says so (Faza 45-3). */
+const PlaceSchema = z.object({
+  lon: z.number().min(-180).max(180),
+  lat: z.number().min(-90).max(90),
+  source: z.string().min(1),
+  sourceId: z.string().min(1),
+  license: z.string().min(1),
+  retrievedAt: z.string(),
+  what: z.string(),
+});
 
 export const GasFlowsSchema = z.object({
   version: z.literal(1),
@@ -39,6 +51,8 @@ export const GasFlowsSchema = z.object({
           kwhPerDay: z.array(z.number().nonnegative().nullable()),
           /** P provisional, C confirmed; null: the platform gave neither, or no figure */
           status: z.array(z.enum(["P", "C"]).nullable()),
+          /** absent or null: a sum over the country, or a point nobody placed */
+          place: PlaceSchema.nullish(),
         }),
       ),
     }),
@@ -210,4 +224,47 @@ export function balances(flows: GasFlows, country: string): Balance[] {
 /** The countries that have a balance, in the order given. */
 export function flowCountries(flows: GasFlows, order: readonly string[]): string[] {
   return order.filter((code) => balance(flows, code) !== null);
+}
+
+export interface FlowPointProperties {
+  key: string;
+  /** the larger of what entered and what left through the point that day, in kWh */
+  kwh: number;
+  direction: "entry" | "exit";
+  /** the point's name and its flow, in the reader's words */
+  text: string;
+}
+
+/**
+ * The points of a country's system that are one place on the earth, as points for the map, each with its
+ * flow on the gas day `day`: the circle's size on the map. A border point reports both directions; the one
+ * that carried more that day is the one shown. Empty when the day has no balance.
+ */
+export function flowOverlay(
+  flows: GasFlows,
+  country: string,
+  day: string,
+  describe: (row: FlowRow) => string,
+): FeatureCollection<GeoPoint, FlowPointProperties> {
+  const system = flows.countries[country];
+  const balance = balanceOn(flows, country, flows.days.indexOf(day));
+  const features: Feature<GeoPoint, FlowPointProperties>[] = [];
+  if (system && balance) {
+    const rows = [...balance.entries, ...balance.exits];
+    const seen = new Set<string>();
+    for (const point of system.points) {
+      if (!point.place || seen.has(point.key)) continue;
+      seen.add(point.key);
+      const row = rows
+        .filter((each) => each.key === point.key)
+        .reduce<FlowRow | null>((best, each) => (best === null || each.kwh > best.kwh ? each : best), null);
+      if (!row) continue;
+      features.push({
+        type: "Feature",
+        geometry: { type: "Point", coordinates: [point.place.lon, point.place.lat] },
+        properties: { key: row.key, kwh: row.kwh, direction: row.direction, text: describe(row) },
+      });
+    }
+  }
+  return { type: "FeatureCollection", features };
 }

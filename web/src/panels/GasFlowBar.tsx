@@ -17,6 +17,8 @@ interface Props {
   data: AsyncState<GasFlowsLoad> | null;
   /** switches the gas layer off */
   onClose: () => void;
+  /** the gas day the bar shows, whenever it changes: the map's points follow it */
+  onDay?: (day: string) => void;
 }
 
 /**
@@ -26,12 +28,12 @@ interface Props {
  * what the figures are not (consumption, or who supplied whom). The reader can go back through the days
  * the data has, or have them played. Nothing is shown while there is nothing to show.
  */
-export function GasFlowBar({ data, onClose }: Props) {
+export function GasFlowBar({ data, onClose, onDay }: Props) {
   if (data?.status !== "ready" || data.value.kind !== "ready") return null;
-  return <Bar flows={data.value.flows} onClose={onClose} />;
+  return <Bar flows={data.value.flows} onClose={onClose} {...(onDay ? { onDay } : {})} />;
 }
 
-function Bar({ flows, onClose }: { flows: GasFlows; onClose: () => void }) {
+function Bar({ flows, onClose, onDay }: { flows: GasFlows } & Pick<Props, "onClose" | "onDay">) {
   const i18n = useI18n();
   const { t } = i18n;
   const days = useMemo(() => balances(flows, HOME), [flows]);
@@ -58,6 +60,10 @@ function Bar({ flows, onClose }: { flows: GasFlows; onClose: () => void }) {
   }, [playing, at, last, days]);
 
   const day = days[at];
+  const shown = day?.day;
+  useEffect(() => {
+    if (shown !== undefined) onDay?.(shown);
+  }, [shown, onDay]);
   if (!day || !shape) return null;
   const title = t("gasFlowTitle", { country: i18n.country(day.country) });
   // the day's deliveries against the seven days before: said only when both are in the data

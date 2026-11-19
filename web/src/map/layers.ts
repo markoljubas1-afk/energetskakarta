@@ -22,6 +22,7 @@ import { stepPattern } from "./flowAnimation";
 import {
   CITY_RADIUS_STOPS,
   DATACENTER_RADIUS_STOPS,
+  GAS_FLOW_RADIUS,
   GAS_RADIUS,
   LINE_WIDTH_STOPS,
   PLANT_RADIUS_STOPS,
@@ -52,6 +53,8 @@ import { priceFill } from "./priceScale";
 import {
   BOUNDARY_SOURCE,
   CAPACITY_LAYER,
+  GAS_FLOW_LAYER,
+  GAS_FLOW_SOURCE,
   GAS_STORAGE_LAYER,
   GAS_STORAGE_SOURCE,
   CHARGER_OVERVIEW_LAYER,
@@ -84,6 +87,8 @@ export {
   CAPACITY_SOURCE,
   CHARGER_OVERVIEW_LAYER,
   CHARGER_OVERVIEW_SOURCE,
+  GAS_FLOW_LAYER,
+  GAS_FLOW_SOURCE,
   GAS_STORAGE_LAYER,
   GAS_STORAGE_SOURCE,
   CHARGER_SOURCE,
@@ -873,6 +878,44 @@ export function dataLayers({
         "text-offset": [0, 1.2],
         "text-anchor": "top",
         "text-max-width": 12,
+      },
+      paint: {
+        "text-color": palette.labelText,
+        "text-halo-color": palette.labelHalo,
+        "text-halo-width": 1.4,
+      },
+    });
+  }
+
+  // The points of the gas system that are one place (the LNG terminal, the border points): a circle whose
+  // area follows what flowed through the point on the gas day the bar shows, on the country disc's scale.
+  layers.push({
+    id: GAS_FLOW_LAYER,
+    type: "circle",
+    source: GAS_FLOW_SOURCE,
+    layout: { visibility: show("gas") },
+    paint: {
+      "circle-radius": GAS_FLOW_RADIUS,
+      "circle-color": palette.gas,
+      "circle-opacity": 0.3,
+      "circle-stroke-color": palette.gas,
+      "circle-stroke-width": 2,
+    },
+  });
+  if (labels) {
+    layers.push({
+      id: `${LAYER_PREFIX}gas-flow-labels`,
+      type: "symbol",
+      source: GAS_FLOW_SOURCE,
+      layout: {
+        visibility: show("gas"),
+        "text-field": ["get", "text"],
+        "text-font": labels,
+        "text-size": 11.5,
+        "text-variable-anchor": ["top", "bottom", "left", "right"],
+        "text-radial-offset": 1,
+        "text-max-width": 12,
+        "text-allow-overlap": true,
       },
       paint: {
         "text-color": palette.labelText,

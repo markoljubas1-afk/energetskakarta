@@ -120,6 +120,22 @@ def test_collect_reads_every_point_direction_of_the_operator(client: httpx.Clien
     assert by_key[("ITP-00011", "exit")].neighbour == "HU"
     assert by_key[("FNC-00018", "exit")].kind == "FNC"
     assert by_key[("UGS-00028", "exit")].neighbour is None
+    # the points that are one place on the earth say where, and what says so; the sums over the country do not
+    place = terminal.place
+    assert place is not None and (place.lon, place.lat) == (14.534393, 45.199449)
+    assert place.source == "openstreetmap" and place.source_id == "way/1042656312"
+    assert by_key[("ITP-00042", "entry")].place == by_key[("ITP-00042", "exit")].place
+    assert by_key[("FNC-00018", "exit")].place is None
+    published = document.model_dump(mode="json", by_alias=True)["countries"]["HR"]["points"]
+    assert next(point for point in published if point["key"] == "ITP-00011")["place"] == {
+        "lon": 18.112835,
+        "lat": 45.775902,
+        "source": "openstreetmap",
+        "sourceId": "way/848938794",
+        "license": "ODbL-1.0",
+        "retrievedAt": "2026-11-18",
+        "what": "the border end of the Városföld - Slobodnica pipeline (Plinacro)",
+    }
 
 
 def test_blank_and_broken_values_are_gaps(client: httpx.Client, platform: Platform) -> None:

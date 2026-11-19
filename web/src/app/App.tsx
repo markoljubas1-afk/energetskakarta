@@ -11,7 +11,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 
 import type { AppConfig } from "../config";
 import { gasOverlay, loadGas, type GasLoad } from "../data/gas";
-import { balance as gasBalance, GAS_FLOWS_KEY, loadGasFlows } from "../data/gasFlows";
+import { balance as gasBalance, flowOverlay, GAS_FLOWS_KEY, loadGasFlows } from "../data/gasFlows";
 import { GAS_STORAGE_KEY, loadGasStorage, storageOverlay } from "../data/gasStorage";
 import { alerts, closedAlerts, rememberClosed, type Alert } from "../data/alerts";
 import {
@@ -67,6 +67,7 @@ import type { Locate } from "../panels/ChangesPanel";
 import { AlertBanner } from "../panels/AlertBanner";
 import { DayCardDialog } from "../panels/DayCardDialog";
 import { askedGasPicture } from "../share/gasCard";
+import { flowPointText } from "../share/gasFlowCard";
 import { askedPictureMonth } from "../share/sourcesCard";
 import { DetailsPanel } from "../panels/DetailsPanel";
 import { ShortcutsHelp } from "../panels/ShortcutsHelp";
@@ -540,6 +541,16 @@ function Explorer({
     flowData?.status === "ready" &&
     flowData.value.kind === "ready" &&
     gasBalance(flowData.value.flows, "HR") !== null;
+  // the gas day the flow bar shows; the system's points on the map carry that day's flow
+  const [flowDay, setFlowDay] = useState<string | null>(null);
+  const flowPoints = useMemo(() => {
+    if (!gasOn || flowData?.status !== "ready" || flowData.value.kind !== "ready") return null;
+    const { flows } = flowData.value;
+    const latest = gasBalance(flows, "HR");
+    if (!latest) return null;
+    const day = flowDay !== null && flows.days.includes(flowDay) ? flowDay : latest.day;
+    return flowOverlay(flows, "HR", day, (row) => flowPointText(row, i18n));
+  }, [gasOn, flowData, flowDay, i18n]);
   const storagePoints = useMemo(
     () =>
       storageData?.status === "ready" && storageData.value.kind === "ready"
@@ -920,6 +931,7 @@ function Explorer({
             capacity={capOn ? capFeatures : null}
             onCapacityStation={pickCapStation}
             gasStorage={gasOn ? storagePoints : null}
+            gasFlow={flowPoints}
             onGasStorage={pickStorage}
             onGeothermalSite={pickGeoSite}
             attribution={i18n.attribution(sources)}
@@ -1147,7 +1159,7 @@ function Explorer({
             {flowsShown && (
               <div className={styles.liveSlot}>
                 <ErrorBoundary area="gas flows" fallback={panelFallback}>
-                  <GasFlowBar data={flowData} onClose={closeGas} />
+                  <GasFlowBar data={flowData} onClose={closeGas} onDay={setFlowDay} />
                 </ErrorBoundary>
               </div>
             )}

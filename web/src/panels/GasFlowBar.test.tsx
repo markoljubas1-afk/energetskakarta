@@ -1,7 +1,14 @@
 import { act, fireEvent, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { balance, balances, flowCountries, GasFlowsSchema, type GasFlows } from "../data/gasFlows";
+import {
+  balance,
+  balances,
+  flowCountries,
+  flowOverlay,
+  GasFlowsSchema,
+  type GasFlows,
+} from "../data/gasFlows";
 import { createI18n } from "../i18n";
 import { gasFlowCardText, gasUseCardText } from "../share/gasFlowCard";
 import { renderWithI18n } from "../test/render";
@@ -220,6 +227,54 @@ describe("the diagram between the two lists", () => {
     // and smaller than the day before, when more entered
     expect(drawing(first, shape).trunk.height).toBeGreaterThan(picture.trunk.height);
     expect(frame([])).toBeNull();
+  });
+});
+
+describe("the system's points on the map", () => {
+  const place = (lon: number, lat: number, way: number) => ({
+    lon,
+    lat,
+    source: "openstreetmap",
+    sourceId: `way/${String(way)}`,
+    license: "ODbL-1.0",
+    retrievedAt: "2026-11-18",
+    what: "the end of the pipeline",
+  });
+  const placed = changed((each) =>
+    each.key === "LNG-00032"
+      ? { ...each, place: place(14.534393, 45.199449, 1042656312) }
+      : each.key === "ITP-00042"
+        ? { ...each, place: place(15.7516, 46.209509, 854206570) }
+        : each,
+  );
+  const name = (row: { key: string; direction: string }) => `${row.key} ${row.direction}`;
+
+  it("are the points with a place, each with the larger of its two directions on the chosen day", () => {
+    expect(GasFlowsSchema.safeParse(placed).success).toBe(true);
+    const points = flowOverlay(placed, "HR", "2026-11-17", name).features;
+    expect(points.map((each) => each.properties)).toEqual([
+      { key: "LNG-00032", kwh: 98.4 * 1e6, direction: "entry", text: "LNG-00032 entry" },
+      // nothing came in at Rogatec that day and 25.3 GWh left: the exit is the one shown
+      { key: "ITP-00042", kwh: 25.3 * 1e6, direction: "exit", text: "ITP-00042 exit" },
+    ]);
+    expect(points[0]?.geometry.coordinates).toEqual([14.534393, 45.199449]);
+    // the day before, the terminal sent more
+    expect(flowOverlay(placed, "HR", "2026-11-16", name).features[0]?.properties.kwh).toBe(98.7 * 1e6);
+  });
+
+  it("are none on a day without a balance, and none without a place", () => {
+    expect(flowOverlay(placed, "HR", "2026-11-18", name).features).toEqual([]);
+    expect(flowOverlay(placed, "HR", "2026-01-01", name).features).toEqual([]);
+    expect(flowOverlay(FLOWS, "HR", "2026-11-17", name).features).toEqual([]);
+    expect(flowOverlay(placed, "SI", "2026-11-17", name).features).toEqual([]);
+  });
+
+  it("follow the day the bar shows", () => {
+    const onDay = vi.fn();
+    renderWithI18n(<GasFlowBar data={ready(FLOWS)} onClose={vi.fn()} onDay={onDay} />);
+    expect(onDay).toHaveBeenLastCalledWith("2026-11-17");
+    fireEvent.change(screen.getByRole("slider", { name: "Plinski dan" }), { target: { value: "0" } });
+    expect(onDay).toHaveBeenLastCalledWith("2026-11-16");
   });
 });
 

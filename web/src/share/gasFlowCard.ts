@@ -41,6 +41,16 @@ export function flowName(row: FlowRow, i18n: I18n): string {
   }
 }
 
+/** A point's label on the map: its name, and under it what flowed through it that day and which way. */
+export function flowPointText(row: FlowRow, i18n: I18n): string {
+  const { t } = i18n;
+  const flow =
+    row.kwh > 0
+      ? t(row.direction === "entry" ? "gasFlowPointIn" : "gasFlowPointOut", { value: gwh(row.kwh, i18n) })
+      : t("gasFlowPointIdle");
+  return `${flowName(row, i18n)}\n${flow}`;
+}
+
 /** What the picture says, in the reader's language. */
 export function gasFlowCardText(balance: Balance, i18n: I18n): CardText {
   const { t } = i18n;

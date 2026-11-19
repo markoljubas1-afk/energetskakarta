@@ -12,6 +12,10 @@ Verified against the live API on 2026-11-19 (no key needed):
 * The ``tSOCountry`` filter does nothing on ``operationalData`` (the whole of Europe comes back); it does
   work on ``operatorpointdirections``, which names the neighbouring country of an interconnection.
 
+The platform places its points on a drawing, not on the earth (``connectionpoints`` has ``tpMapX`` and
+``tpMapY``, the drawing's own coordinates). Where a point is on the map comes from OpenStreetMap, point
+by point (``PLACES``), each with the object it was read from.
+
 Only countries whose whole system is one operator's are read (``OPERATORS``): where several operators share
 a country, their common points would be counted twice, and each such country needs its own check first.
 An entry is not consumption: gas that enters also leaves across the border and into storage.
@@ -64,6 +68,52 @@ class FlowDataError(ValueError):
 _CONFIG = ConfigDict(extra="forbid", alias_generator=to_camel, populate_by_name=True)
 
 
+class Place(BaseModel):
+    """Where a point is on the earth, and the object that says so."""
+
+    model_config = _CONFIG
+
+    lon: float = Field(ge=-180, le=180)
+    lat: float = Field(ge=-90, le=90)
+    source: Literal["openstreetmap"]
+    #: the OpenStreetMap object the position is read from
+    source_id: str = Field(pattern=r"^(node|way|relation)/\d+$")
+    license: Literal["ODbL-1.0"]
+    #: the date of the extract it was read from
+    retrieved_at: date
+    #: which part of the object the position is
+    what: str = Field(min_length=1)
+
+
+def _osm(lon: float, lat: float, way: int, what: str) -> Place:
+    return Place(
+        lon=lon,
+        lat=lat,
+        source="openstreetmap",
+        source_id=f"way/{way}",
+        license="ODbL-1.0",
+        retrieved_at=date(2026, 11, 18),
+        what=what,
+    )
+
+
+#: Point key → where it is. Read by hand from the pipelines of the build of 2026-11-19 (Geofabrik extracts
+#: of 2026-11-18): the node at which the operator's pipeline ends at the border or at the terminal. A point
+#: that is a sum over the country (production, consumers) has no place, and the storage has its own on the
+#: map already (GIE AGSI). A point not listed here is simply not drawn.
+PLACES: dict[str, Place] = {
+    "LNG-00032": _osm(
+        14.534393, 45.199449, 1042656312, "the terminal's end of Plinacro's connecting pipeline at Omišalj"
+    ),
+    "ITP-00042": _osm(
+        15.7516, 46.209509, 854206570, "the border end of the Rogatec - Zabok pipeline (Plinacro)"
+    ),
+    "ITP-00011": _osm(
+        18.112835, 45.775902, 848938794, "the border end of the Városföld - Slobodnica pipeline (Plinacro)"
+    ),
+}
+
+
 class Point(BaseModel):
     model_config = _CONFIG
 
@@ -75,6 +125,8 @@ class Point(BaseModel):
     neighbour: str | None
     kwh_per_day: list[float | None]
     status: list[Status | None]
+    #: where the point is on the map; None when it has no one place or none is known
+    place: Place | None = None
 
 
 class CountryFlows(BaseModel):
@@ -193,6 +245,7 @@ def country_flows(
             neighbour=across.get(point_key) if kind_of(point_key) in ("ITP", "VIP") else None,
             kwh_per_day=point["kwhPerDay"],
             status=point["status"],
+            place=PLACES.get(point_key),
         )
         for (point_key, direction), point in sorted(series.items())
     ]
