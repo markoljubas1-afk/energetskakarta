@@ -223,6 +223,13 @@ test("the gas layer shows what entered the system and where it went, and a pictu
     "href",
     "https://transparency.entsog.eu/",
   );
+  // the diagram between the lists has a band for each point that flowed, and the reader can go back a day
+  await expect(bar.locator('svg[preserveAspectRatio="none"] path')).toHaveCount(6);
+  const slider = bar.getByRole("slider", { name: "Plinski dan" });
+  await slider.press("ArrowLeft");
+  await expect(bar).toContainText("Plinski dan 16. studenoga 2026.");
+  await slider.press("ArrowRight");
+  await expect(bar).toContainText("Plinski dan 17. studenoga 2026.");
   // the bar stays inside the screen, phone included
   const box = await bar.boundingBox();
   const viewport = page.viewportSize();

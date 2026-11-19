@@ -159,25 +159,52 @@ export function balance(flows: GasFlows, country: string): Balance | null {
   const system = flows.countries[country];
   if (!system || system.points.length === 0) return null;
   for (let index = flows.days.length - 1; index >= 0; index -= 1) {
-    const day = flows.days[index];
-    if (day === undefined || system.points.some((point) => point.kwhPerDay[index] == null)) continue;
-    const [entries, enteredKwh] = side(system.points, "entry", index);
-    const [exits, leftKwh] = side(system.points, "exit", index);
-    if (!(enteredKwh > 0)) return null;
-    return {
-      country,
-      operator: system.operator,
-      day,
-      entries,
-      exits,
-      enteredKwh,
-      leftKwh,
-      consumersKwh: consumersOn(system.points, index),
-      provisional: system.points.some((point) => point.status[index] === "P"),
-      usualConsumersKwh: usualBefore(system.points, index),
-    };
+    if (system.points.some((point) => point.kwhPerDay[index] == null)) continue;
+    return balanceOn(flows, country, index);
   }
   return null;
+}
+
+/**
+ * A country's balance on the gas day at `index`; null when a point did not report that day, or nothing
+ * entered on it.
+ */
+function balanceOn(flows: GasFlows, country: string, index: number): Balance | null {
+  const system = flows.countries[country];
+  const day = flows.days[index];
+  if (!system || system.points.length === 0 || day === undefined) return null;
+  if (system.points.some((point) => point.kwhPerDay[index] == null)) return null;
+  const [entries, enteredKwh] = side(system.points, "entry", index);
+  const [exits, leftKwh] = side(system.points, "exit", index);
+  if (!(enteredKwh > 0)) return null;
+  return {
+    country,
+    operator: system.operator,
+    day,
+    entries,
+    exits,
+    enteredKwh,
+    leftKwh,
+    consumersKwh: consumersOn(system.points, index),
+    provisional: system.points.some((point) => point.status[index] === "P"),
+    usualConsumersKwh: usualBefore(system.points, index),
+  };
+}
+
+/**
+ * The balances of every gas day in the data that has one, oldest first, up to the day `balance` gives:
+ * the days the bar lets the reader go back through. Empty when `balance` is null.
+ */
+export function balances(flows: GasFlows, country: string): Balance[] {
+  const latest = balance(flows, country);
+  if (!latest) return [];
+  const days: Balance[] = [];
+  for (let index = 0; index < flows.days.length; index += 1) {
+    const day = balanceOn(flows, country, index);
+    if (day) days.push(day);
+    if (flows.days[index] === latest.day) break;
+  }
+  return days;
 }
 
 /** The countries that have a balance, in the order given. */

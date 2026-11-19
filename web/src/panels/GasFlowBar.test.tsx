@@ -1,11 +1,12 @@
-import { screen, within } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { act, fireEvent, screen, within } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { balance, flowCountries, GasFlowsSchema, type GasFlows } from "../data/gasFlows";
+import { balance, balances, flowCountries, GasFlowsSchema, type GasFlows } from "../data/gasFlows";
 import { createI18n } from "../i18n";
 import { gasFlowCardText, gasUseCardText } from "../share/gasFlowCard";
 import { renderWithI18n } from "../test/render";
 import { GasFlowBar } from "./GasFlowBar";
+import { drawing, frame } from "./gasSankey";
 
 type Point = GasFlows["countries"][string]["points"][number];
 
@@ -180,6 +181,89 @@ describe("the gas flow bar", () => {
     expect(container).toBeEmptyDOMElement();
     renderWithI18n(<GasFlowBar data={{ status: "ready", value: { kind: "none" } }} onClose={vi.fn()} />);
     expect(screen.queryByRole("region")).toBeNull();
+  });
+});
+
+describe("the diagram between the two lists", () => {
+  it("is drawn to one scale for the whole period, with a band for every point that flowed", () => {
+    const days = balances(FLOWS, "HR");
+    expect(days.map((day) => day.day)).toEqual(["2026-11-16", "2026-11-17"]);
+    const shape = frame(days);
+    if (!shape) throw new Error("no frame");
+    // the largest side of the period is what entered on the 16th: 135.6 GWh is the trunk at its full height
+    expect(shape.scale * 135.6e6).toBeCloseTo(110, 6);
+    expect(shape.entries.map((slot) => slot.id)).toEqual([
+      "LNG-00032-entry",
+      "PRD-00197-entry",
+      "UGS-00028-entry",
+      "ITP-00042-entry",
+    ]);
+    // the LNG terminal's band is thicker than a label, so its room is as high as its largest day
+    expect(shape.entries[0]?.height).toBeCloseTo(98.7e6 * shape.scale + 8, 6);
+    expect(shape.entries[3]?.height).toBe(46);
+    const [first, second] = days;
+    if (!first || !second) throw new Error("no days");
+    const picture = drawing(second, shape);
+    // nothing came in at Rogatec and nothing went into storage: no band for either
+    expect(picture.entries.map((band) => band.id)).toEqual([
+      "LNG-00032-entry",
+      "PRD-00197-entry",
+      "UGS-00028-entry",
+    ]);
+    expect(picture.exits.map((band) => band.id)).toEqual([
+      "FNC-00018-exit",
+      "ITP-00011-exit",
+      "ITP-00042-exit",
+    ]);
+    // the trunk is as high as the larger side of the day: 123.5 GWh left
+    expect(picture.trunk.height).toBeCloseTo(123.5e6 * shape.scale, 0);
+    // and smaller than the day before, when more entered
+    expect(drawing(first, shape).trunk.height).toBeGreaterThan(picture.trunk.height);
+    expect(frame([])).toBeNull();
+  });
+});
+
+describe("the days of the gas flow bar", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("lets the reader go back a day, and the whole bar follows", () => {
+    renderWithI18n(<GasFlowBar data={ready(FLOWS)} onClose={vi.fn()} />);
+    const bar = screen.getByRole("region");
+    const slider = within(bar).getByRole("slider", { name: "Plinski dan" });
+    expect(slider).toHaveValue("1");
+    fireEvent.change(slider, { target: { value: "0" } });
+    expect(bar).toHaveTextContent("Plinski dan 16. studenoga 2026.");
+    const entered = within(bar).getByRole("list", { name: "Ušlo u transportni sustav: 135,6 GWh" });
+    expect(within(entered).getAllByRole("listitem")[2]).toHaveTextContent("iz skladišta17,5 GWh · 13 %");
+  });
+
+  it("plays the days from the first to the last and stops there", () => {
+    vi.useFakeTimers();
+    renderWithI18n(<GasFlowBar data={ready(FLOWS)} onClose={vi.fn()} />);
+    const bar = screen.getByRole("region");
+    fireEvent.click(within(bar).getByRole("button", { name: "Pusti sve dane redom (2)" }));
+    expect(bar).toHaveTextContent("Plinski dan 16. studenoga 2026.");
+    expect(within(bar).getByRole("button", { name: "Zaustavi" })).toBeInTheDocument();
+    act(() => {
+      vi.advanceTimersByTime(700);
+    });
+    expect(bar).toHaveTextContent("Plinski dan 17. studenoga 2026.");
+    act(() => {
+      vi.advanceTimersByTime(700);
+    });
+    expect(within(bar).getByRole("button", { name: "Pusti sve dane redom (2)" })).toBeInTheDocument();
+  });
+
+  it("has no slider when the data has one day only", () => {
+    const one: GasFlows = {
+      ...changed((each) => ({ ...each, kwhPerDay: each.kwhPerDay.slice(1), status: each.status.slice(1) })),
+      days: FLOWS.days.slice(1),
+    };
+    renderWithI18n(<GasFlowBar data={ready(one)} onClose={vi.fn()} />);
+    expect(screen.getByRole("region")).toHaveTextContent("Plinski dan 17. studenoga 2026.");
+    expect(screen.queryByRole("slider")).toBeNull();
   });
 });
 

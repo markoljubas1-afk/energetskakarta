@@ -2817,3 +2817,26 @@ morski cjevovodi (EMODnet), izviđanje ENTSOG točaka (`gas/points.py`).
   nema cijelu mrežu ni u jednoj zemlji (HR: Plinacro oko polovice stvarne duljine).
 - Ne predlažem bez podataka: „alarm” skoka potrošnje (ENTSOG ne objavljuje potrošnju zemlje kao jednu brojku;
   prvo provjeriti što se može izvesti iz izlaza prema distribuciji).
+
+## Faza 45 — Plin: dijagram toka, „Put plina”, točke na karti, susjedi — POTVRĐENO 2026-11-19 („oboje, kreni tim redoslijedom”)
+
+Cilj: spojiti brojke o plinu s kartom i dati im sliku koja se pamti. „Gdje se pumpa” znači oboje: crpljenje
+iz polja i tlačenje u kompresorskim stanicama.
+
+- [x] 45-1 Dijagram toka (Sankey) u traci plina, s klizačem i reprodukcijom dana koje podaci imaju.
+  - Pristup: ulazi lijevo, izlazi desno, transportni sustav kao deblo u sredini; debljina vrpce = GWh.
+    Vrpce idu od ulaza do debla i od debla do izlaza, nikad od ulaza do izlaza (ENTSOG mjeri točke, ne
+    put plina). Mjerilo, redoslijed točaka i prostor svake točke su od cijelog razdoblja, pa dijagram
+    stoji mirno dok se dani vrte. Popisi su natpisi dijagrama (HTML, čitaju se čitaču zaslona); SVG je
+    rastegnut po širini, pa radi i na mobitelu.
+  - Razmotreno: animirane strelice duž plinovoda (odbijeno: tok po cijevi nitko ne objavljuje);
+    biblioteka za Sankey (odbijeno: dvije strane i deblo su tridesetak redaka geometrije).
+  - Datoteke: `web/src/panels/gasSankey.ts` (novo), `GasFlowBar.tsx`, `.module.css`,
+    `data/gasFlows.ts` (`balances`), i18n, testovi (`GasFlowBar.test.tsx`, `e2e/gas.spec.ts`).
+  - Izvan opsega: dijagram kao slika za dijeljenje (postojeća slika `?pic=gasflow` ostaje).
+  - Poznato: traka je na mobitelu visoka i pomiče se unutar sebe.
+- [ ] 45-2 Stranica „Put plina” u kutku za učenje: crpljenje, LNG, tlačenje, skladište, redukcija tlaka,
+  izlaz; svaka postaja s izvorom i vratima na kartu. Tvrdnje tek nakon provjere u izvorima.
+- [ ] 45-3 Točke sustava na karti (LNG Krk, Rogatec, Dravaszerdahely, kompresorska stanica) s krugom
+  veličine dnevnog toka. ENTSOG nema koordinate: položaji iz OSM-a ili službenog izvora, s provenance.
+- [ ] 45-4 Tokovi za Sloveniju i Mađarsku (po jedan operator); traka dobiva izbor zemlje.
