@@ -48,7 +48,9 @@ function head(page: StaticPage, site: SiteData): string {
     `<meta property="og:description" content="${e(page.description)}">`,
     `<meta property="og:locale" content="${page.lang === "hr" ? "hr_HR" : "en_GB"}">`,
     ...(canonical ? [`<meta property="og:url" content="${e(canonical)}">`] : []),
-    ...(site.siteUrl ? [`<meta property="og:image" content="${e(site.siteUrl + OG_IMAGE)}">`] : []),
+    ...(site.siteUrl
+      ? [`<meta property="og:image" content="${e(site.siteUrl + (page.image ?? OG_IMAGE))}">`]
+      : []),
     `<meta name="twitter:card" content="summary_large_image">`,
   ];
   const breadcrumbLd = breadcrumbJsonLd(page, site);

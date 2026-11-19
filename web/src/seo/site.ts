@@ -114,6 +114,8 @@ export interface StaticPage {
   lastModified: string;
   /** the trail from the home page to this page's parent; the page itself is the last step (html.ts) */
   breadcrumbs: Crumb[];
+  /** the picture a shared link to the page shows, as a path; absent: the site's own (seo/ogImages.ts) */
+  image?: string;
   /** the open JSON twin of this page (seo/api.ts), when there is one */
   apiPath?: string;
   /**

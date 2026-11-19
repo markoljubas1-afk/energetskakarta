@@ -15,6 +15,7 @@ import { flowName, gwh } from "../share/gasFlowCard";
 import { LANGS, type Lang } from "../state/url";
 import { gasPlaceLinks } from "./gasPlaces";
 import { e, list, table } from "./markup";
+import { ogImage } from "./ogImages";
 import { home, mapLink, other, PATHS, publisher, type Section, type SiteData, type StaticPage } from "./site";
 
 const HOME = "HR";
@@ -376,6 +377,7 @@ function gasPage(site: SiteData, flows: GasFlows, storage: GasStorage | null, la
         })),
       },
     ],
+    image: ogImage("gas", lang),
     lastModified: flows.generatedAt,
     breadcrumbs: [home(lang)],
   };

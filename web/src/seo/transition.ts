@@ -42,6 +42,7 @@ import { geothermalLinks } from "./geothermal";
 import { reportLinks } from "./report";
 import { REPORT_COPY } from "./reportCopy";
 import { TRANSITION_COPY } from "./transitionCopy";
+import { ogImage } from "./ogImages";
 
 const FOSSIL: readonly Technology[] = ["coal", "lignite", "gas", "oil"];
 export { RES_TARGET_2030 };
@@ -503,6 +504,7 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
       ],
       site.current.createdAt,
     ),
+    image: ogImage("transition", lang),
     breadcrumbs: [homeCrumb(lang)],
   };
 }

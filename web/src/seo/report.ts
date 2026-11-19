@@ -19,6 +19,7 @@ import { escapeHtml as e, linkedTable, list, stationsOf } from "./markup";
 import { countOf, inMonth, monthName, REPORT_COPY } from "./reportCopy";
 import { TRANSITION_COPY } from "./transitionCopy";
 import { gasLinks } from "./gasPages";
+import { ogImage } from "./ogImages";
 import {
   homeCrumb,
   mapLink,
@@ -355,6 +356,7 @@ function reportPage(site: SiteData, lang: Lang, ctx: Context, month: string): St
       },
     ],
     lastModified: site.energyUpdatedAt ?? site.current.createdAt,
+    image: ogImage("report", lang),
     breadcrumbs: [homeCrumb(lang), { name: copy.indexTitle, path: PATHS[lang].reports }],
   };
 }
@@ -423,6 +425,7 @@ function indexPage(site: SiteData, lang: Lang, ctx: Context): StaticPage {
       },
     ],
     lastModified: site.energyUpdatedAt ?? site.current.createdAt,
+    image: ogImage("report", lang),
     breadcrumbs: [homeCrumb(lang)],
   };
 }

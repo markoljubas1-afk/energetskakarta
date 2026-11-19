@@ -14,6 +14,7 @@ import { gwh } from "../share/gasFlowCard";
 import { LANGS, type Lang } from "../state/url";
 import { LEARN_COPY } from "./learnPages";
 import { e, list, table } from "./markup";
+import { ogImage } from "./ogImages";
 import { home, mapLink, other, PATHS, publisher, type Crumb, type SiteData, type StaticPage } from "./site";
 
 const HOME = "HR";
@@ -241,6 +242,7 @@ function terminalPage(site: SiteData, flows: GasFlows, lang: Lang): StaticPage |
       ]),
     ],
     lastModified: flows.generatedAt,
+    image: ogImage("gas", lang),
     breadcrumbs: trail(lang),
   };
 }
@@ -330,6 +332,7 @@ function storagePage(site: SiteData, storage: GasStorage, reading: Reading, lang
       ]),
     ],
     lastModified: storage.generatedAt,
+    image: ogImage("gas", lang),
     breadcrumbs: trail(lang),
   };
 }

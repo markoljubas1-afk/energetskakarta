@@ -317,3 +317,26 @@ describe("the pages of the terminal and the storage", () => {
     expect(gasPlacePages(abroad).map((each) => each.path)).not.toContain("/plin/skladiste-plina-okoli/");
   });
 });
+
+describe("the picture a shared link shows", () => {
+  it("is the topic's own on the gas, transition and report pages, and each file exists", async () => {
+    const { existsSync } = await import("node:fs");
+    const { OG_TOPIC_IMAGES } = await import("./ogImages");
+    for (const byLang of Object.values(OG_TOPIC_IMAGES)) {
+      for (const file of Object.values(byLang)) expect(existsSync(`public${file}`), file).toBe(true);
+    }
+    const { renderPage } = await import("./html");
+    expect(renderPage(page("hr"), site)).toContain(
+      '<meta property="og:image" content="https://karta.example/og-plin.png">',
+    );
+    expect(renderPage(page("en"), site)).toContain("https://karta.example/og-gas.png");
+    const { gasPlacePages } = await import("./gasPlaces");
+    expect(
+      gasPlacePages(site).every((each) => each.image?.endsWith(each.lang === "hr" ? "plin.png" : "gas.png")),
+    ).toBe(true);
+    // a page without a picture of its own keeps the site's
+    const plain = { ...page("hr") };
+    delete plain.image;
+    expect(renderPage(plain, site)).toContain("https://karta.example/og-gridatlas.png");
+  });
+});

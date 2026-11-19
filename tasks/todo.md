@@ -2910,7 +2910,9 @@ i AI odgovori ne vide. `/plin/`, `/en/gas/` vraćaju 404.
 - [x] 47-5 (2026-11-19; `dateModified` na svakom `Dataset`, `Article` na Edukaciji) `Organization` na početnoj, `Article` + `dateModified` na Edukaciji i izvještajima; oznaka
   „[Skup podataka]” u citatu Edukacije. (malo)
 - [x] 47-6 (2026-11-19) `pages.dev` kopija: `X-Robots-Tag: noindex` (`web/vite/securityHeaders.ts`).
-- [ ] 47-7 Slika pregleda po stranici i za `?pic=` (sada svuda ista `og-gridatlas.png`). (srednje)
+- [x] 47-7 (2026-11-19, manja inačica po odluci vlasnika) Vlastita slika pregleda za stranice o plinu,
+  „Zelenu tranziciju” i mjesečne izvještaje, hr i en (`web/scripts/og-topics.mjs`, `web/src/seo/ogImages.ts`);
+  bez brojki, pa ne zastarijevaju. Izvan opsega: slika po svakoj stranici i za `?pic=` poveznice.
 - [x] 47-8 (2026-11-19) Stranice `/plin/lng-terminal-krk/` i `/plin/skladiste-plina-okoli/` (i engleske),
   `web/src/seo/gasPlaces.ts`; činjenice su rečenice Edukacije s njezinim izvorima.
 
