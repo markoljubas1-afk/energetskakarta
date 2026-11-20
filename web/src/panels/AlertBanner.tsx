@@ -6,7 +6,7 @@ import {
   PartyPopper,
   Pickaxe,
   Sparkles,
-  TreePine,
+  Star,
   TrendingDown,
   Trophy,
   Wind,
@@ -37,10 +37,10 @@ const OCCASION_ICONS: Record<OccasionKey, LucideIcon> = {
   earth: Earth,
   women: Sparkles,
   men: HardHat,
-  orthodoxChristmas: TreePine,
+  orthodoxChristmas: Star,
   easter: Egg,
   orthodoxEaster: Egg,
-  christmas: TreePine,
+  christmas: Star,
   newYear: PartyPopper,
 };
 
