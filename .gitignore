@@ -15,3 +15,6 @@ __pycache__/
 
 # Wrangler local cache
 .wrangler/
+
+# Screenshots kept for the owner (local only)
+/snimke/
