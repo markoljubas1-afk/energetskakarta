@@ -408,6 +408,41 @@ export const en: Dictionary = {
   alertShowHour: "Show that hour on the map",
   alertShowDay: "Show that day on the map",
   alertClose: "Close the notice",
+  occasion_tesla_title: "Nikola Tesla Day.",
+  occasion_tesla_text:
+    "On this day in 1856 Nikola Tesla was born in Smiljan. His polyphase alternating-current system is still the basis of the grid this map shows.",
+  occasion_miners_title: "Saint Barbara, Miners' Day.",
+  occasion_miners_text:
+    "Today we remember the miners who for decades dug the coal that heated and powered the region.",
+  occasion_efficiency_title: "World Energy Efficiency Day.",
+  occasion_efficiency_text:
+    "The cleanest energy is the energy not used. The live layer shows what today's electricity is made from and what it costs on the exchange.",
+  occasion_wind_title: "Global Wind Day.",
+  occasion_wind_text:
+    "The region's wind farms are on the map, and the live layer shows the share of renewables in today's electricity generation.",
+  occasion_earth_title: "Earth Day.",
+  occasion_earth_text:
+    "The traffic light in the live layer shows the share of renewables in today's electricity generation.",
+  occasion_women_title: "Happy International Women's Day!",
+  occasion_women_text:
+    "Greetings to all women, and above all to those in energy and science, on the path of Marie Curie, Lise Meitner and Mária Telkes.",
+  occasion_men_title: "Happy International Men's Day!",
+  occasion_men_text:
+    "A special greeting to everyone who keeps the grid and the pipelines working out in the field, in any weather.",
+  occasion_orthodoxChristmas_title: "Merry Christmas!",
+  occasion_orthodoxChristmas_text: "Greetings to everyone who celebrates Christmas by the Julian calendar.",
+  occasion_easter_title: "Happy Easter!",
+  occasion_easter_text:
+    "The days are getting longer, so solar plants work more hours. The live layer shows today's generation.",
+  occasion_orthodoxEaster_title: "Happy Easter!",
+  occasion_orthodoxEaster_text: "Greetings to everyone who celebrates Easter by the Julian calendar.",
+  occasion_christmas_title: "Merry Christmas and happy holidays!",
+  occasion_christmas_text:
+    "Thank you for following GridAtlas. The data on the map keeps updating through the holidays.",
+  occasion_newYear_title: "Happy New Year!",
+  occasion_newYear_text:
+    "Another year of the energy transition lies ahead. GridAtlas keeps following it from open data.",
+  occasionShow: "Open the live layer",
   recordDays: "Record days",
   recordToday: "Today (live)",
   record_wind: "most electricity from wind",

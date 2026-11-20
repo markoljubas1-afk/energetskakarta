@@ -405,6 +405,39 @@ export const hr = {
   alertShowHour: "Pokaži taj sat na karti",
   alertShowDay: "Pokaži taj dan na karti",
   alertClose: "Zatvori obavijest",
+  occasion_tesla_title: "Dan Nikole Tesle.",
+  occasion_tesla_text:
+    "Na današnji dan 1856. u Smiljanu je rođen Nikola Tesla. Njegov višefazni sustav izmjenične struje i danas je temelj mreže koju ova karta prikazuje.",
+  occasion_miners_title: "Sveta Barbara, Dan rudara.",
+  occasion_miners_text:
+    "Danas se sjećamo rudara koji su desetljećima kopali ugljen za toplinu i struju regije.",
+  occasion_efficiency_title: "Svjetski dan energetske učinkovitosti.",
+  occasion_efficiency_text:
+    "Najčišća je energija ona koja se ne potroši. Sloj uživo pokazuje iz čega struja danas nastaje i koliko stoji na burzi.",
+  occasion_wind_title: "Svjetski dan vjetra.",
+  occasion_wind_text:
+    "Vjetroelektrane regije su na karti, a sloj uživo pokazuje koliki je danas udio obnovljivih izvora u proizvodnji struje.",
+  occasion_earth_title: "Dan planeta Zemlje.",
+  occasion_earth_text:
+    "Semafor u sloju uživo pokazuje koliki je danas udio obnovljivih izvora u proizvodnji struje.",
+  occasion_women_title: "Sretan Dan žena!",
+  occasion_women_text:
+    "Čestitka svim ženama, a posebno onima u energetici i znanosti, putem kojim su išle Marie Curie, Lise Meitner i Mária Telkes.",
+  occasion_men_title: "Sretan Međunarodni dan muškaraca!",
+  occasion_men_text: "Poseban pozdrav svima koji na terenu, po svakom vremenu, održavaju mrežu i plinovode.",
+  occasion_orthodoxChristmas_title: "Sretan Božić!",
+  occasion_orthodoxChristmas_text: "Čestitka svima koji Božić slave po julijanskom kalendaru.",
+  occasion_easter_title: "Sretan Uskrs!",
+  occasion_easter_text:
+    "Dani su sve duži, pa sunčane elektrane rade sve više sati. Sloj uživo pokazuje današnju proizvodnju.",
+  occasion_orthodoxEaster_title: "Sretan Uskrs!",
+  occasion_orthodoxEaster_text: "Čestitka svima koji Uskrs slave po julijanskom kalendaru.",
+  occasion_christmas_title: "Sretan Božić i blagdane!",
+  occasion_christmas_text: "Hvala što pratite GridAtlas. Podaci na karti osvježavaju se i tijekom blagdana.",
+  occasion_newYear_title: "Sretna nova godina!",
+  occasion_newYear_text:
+    "Pred nama je još jedna godina energetske tranzicije. GridAtlas je i dalje prati iz otvorenih podataka.",
+  occasionShow: "Otvori sloj uživo",
   recordDays: "Povijesni dani",
   recordToday: "Danas (uživo)",
   record_wind: "najviše struje iz vjetra",

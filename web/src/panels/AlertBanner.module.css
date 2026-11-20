@@ -24,6 +24,15 @@
   color: var(--warn-ink);
 }
 
+/* a greeting is not a warning: the site's own colour */
+.banner[data-alert="occasion"] {
+  border-left-color: var(--accent);
+}
+
+.banner[data-alert="occasion"] .icon {
+  color: var(--accent);
+}
+
 .show {
   padding: 0;
   border: 0;

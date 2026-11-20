@@ -482,12 +482,15 @@ function Explorer({
   const recordDays = liveDays?.status === "ready" ? liveDays.value : null;
   const recordDay = recordDays?.days.find((day) => day.date === state.liveDay) ?? null;
   // Something out of the ordinary gets one line above the map (data/alerts.ts): a price of zero or below
-  // today or tomorrow, or a new record day. Closed notices are remembered and do not come back.
+  // today or tomorrow, or a new record day, or the day's occasion (not for automated browsers, like the
+  // intro). Closed notices are remembered and do not come back.
   const [closed, setClosed] = useState(closedAlerts);
   const alert =
     state.embed || state.live
       ? null
-      : (alerts(liveDoc, recordDays, liveNow).find((each) => !closed.includes(each.id)) ?? null);
+      : (alerts(liveDoc, recordDays, liveNow, "HR", !navigator.webdriver).find(
+          (each) => !closed.includes(each.id),
+        ) ?? null);
   const closeAlert = (each: Alert): void => {
     const next = [...closed, each.id];
     setClosed(next);

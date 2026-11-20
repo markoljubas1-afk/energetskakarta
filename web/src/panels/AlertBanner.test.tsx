@@ -120,3 +120,45 @@ describe("AlertBanner", () => {
     expect(screen.getByRole("button", { name: "Pokaži taj dan na karti" })).toBeInTheDocument();
   });
 });
+
+describe("the day's occasion", () => {
+  const TESLA = new Date("2026-07-10T09:00:00+02:00");
+
+  it("is a notice only when asked for, and comes after what the data says", () => {
+    expect(alerts(null, null, TESLA)).toEqual([]);
+    expect(alerts(null, null, TESLA, "HR", true)).toEqual([
+      { kind: "occasion", id: "occasion:tesla:2026", occasion: "tesla" },
+    ]);
+    // 4 December 2026 is not in the fixture's hours, so only the record days speak before it
+    const barbara = new Date("2026-11-19T10:30:00+01:00");
+    expect(alerts(null, DAYS, barbara, "HR", true).map((alert) => alert.kind)).toEqual([
+      "record",
+      "occasion",
+    ]);
+  });
+
+  it("greets without a button when its words point at nothing on the map", async () => {
+    const [alert] = alerts(null, null, TESLA, "HR", true);
+    if (!alert) throw new Error("an alert");
+    const onClose = vi.fn();
+    renderWithI18n(<AlertBanner alert={alert} onShow={vi.fn()} onClose={onClose} />);
+    const banner = screen.getByRole("status");
+    expect(banner).toHaveAttribute("data-alert", "occasion");
+    expect(banner).toHaveTextContent(
+      "Dan Nikole Tesle. Na današnji dan 1856. u Smiljanu je rođen Nikola Tesla.",
+    );
+    expect(screen.getAllByRole("button")).toHaveLength(1);
+    await userEvent.click(screen.getByRole("button", { name: "Zatvori obavijest" }));
+    expect(onClose).toHaveBeenCalledWith(alert);
+  });
+
+  it("offers the live layer on a day whose words are about the day's figures", async () => {
+    const [alert] = alerts(null, null, new Date("2026-06-15T09:00:00+02:00"), "HR", true);
+    if (!alert) throw new Error("an alert");
+    const onShow = vi.fn();
+    renderWithI18n(<AlertBanner alert={alert} onShow={onShow} onClose={vi.fn()} />);
+    expect(screen.getByRole("status")).toHaveTextContent("Svjetski dan vjetra.");
+    await userEvent.click(screen.getByRole("button", { name: "Otvori sloj uživo" }));
+    expect(onShow).toHaveBeenCalledWith(alert);
+  });
+});

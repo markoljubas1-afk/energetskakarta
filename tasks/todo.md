@@ -2920,3 +2920,29 @@ Samo vlasnik: Google Search Console i Bing Webmaster (potvrda, sitemap, zahtjev 
 `INDEXNOW_KEY`, poveznice s drugih stranica (Wikipedija, energetski mediji, fakulteti, HERA, Plinacro).
 Realno: dugi upiti na hrvatskom s malo konkurencije mogu doći na prvu stranicu za 3 do 6 tjedana od
 indeksiranja; „LNG terminal Krk” ostaje iza lng.hr i Wikipedije. Vrh u 50 dana nitko ne može obećati.
+
+## Faza 48 — Prigodne poruke po datumu (traka iznad karte) — POTVRĐENO 2026-11-20 („može po prijedlozima, kreni”), KOD GOTOV
+
+Cilj: na određene dane u godini iznad karte stoji jedan red s prigodnom porukom, koji se može zatvoriti i
+ne vraća se nakon zatvaranja (do iste prigode iduće godine).
+
+Pristup: prigodna poruka je treća vrsta postojeće trake obavijesti (`kind: "occasion"` u
+`web/src/data/alerts.ts`, `AlertBanner.tsx`); nema nove komponente ni novog spremanja.
+
+- [x] 48-1 (2026-11-20) `web/src/data/occasions.ts`: dvanaest prigoda, `occasionOn(date)`, dan u vremenu
+  Zagreba, Uskrs računom za gregorijanski i julijanski kalendar (provjereno za 2026. do 2030.).
+- [x] 48-2 (2026-11-20) Tekstovi hr i en (`occasion_*`), ikone koje stranica već koristi; gumb „Otvori sloj
+  uživo” samo na danima čiji tekst govori o brojkama dana (učinkovitost, vjetar, Zemlja, Uskrs).
+- [x] 48-3 (2026-11-20) Obavijest iz podataka ide ispred prigodne poruke. Automatizirani preglednici
+  (testovi, roboti tražilica) poruku ne dobivaju, kao ni uvod: ostali testovi su isti svaki dan u godini.
+  e2e `web/e2e/occasion.spec.ts`.
+
+Odluke vlasnika (po prijedlozima): katolički i pravoslavni Uskrs i Božić; postojeće ikone; Uskrs od
+Velikog petka do Uskrsnog ponedjeljka; Božić 15. do 26. 12., Nova godina 27. 12. do 5. 1., pravoslavni
+Božić 6. i 7. 1.; svih deset dana iz prijedloga. Kad se dva Uskrsa poklope, jedna je čestitka; jednodnevna
+prigoda ide ispred višednevnog blagdana.
+
+Tekstovi su prepisani bez brojki i uzročnih tvrdnji iz prijedloga (Tesla: višefazni sustav, ne „izmislio
+izmjeničnu struju”; bez „stotina tisuća lampica”; bez „potrošnje uživo”).
+
+Otvoreno: pregled uživo na prvi dan s porukom (4. prosinca 2026., Dan rudara).

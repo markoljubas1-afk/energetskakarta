@@ -7,11 +7,15 @@
  *    falls within the last days. A record is found once its day is completely reported, so the notice
  *    comes a few days after the day itself and says its date.
  *
+ *  - An occasion of the calendar (data/occasions.ts, Faza 48): a day of energy or science, a holiday.
+ *    It comes last, after anything the data has to say.
+ *
  * What is deliberately not here: "the country imports X % of its electricity" (the map has no hourly
  * demand to divide by) and anything predicted.
  */
 import type { CountryCode } from "../domain";
 import { freeHours, type FreeHour, type Live, type LiveDays } from "./live";
+import { occasionOn, type OccasionKey } from "./occasions";
 
 /** A record day is news for this long after the day itself. */
 export const RECORD_FRESH_DAYS = 10;
@@ -32,7 +36,8 @@ export type Alert =
       country: string;
       date: string;
       record: { kind: string; value: number; unit: "MWh" | "share" };
-    };
+    }
+  | { kind: "occasion"; id: string; occasion: OccasionKey };
 
 const HOUR_MS = 3_600_000;
 const DAY_MS = 24 * HOUR_MS;
@@ -91,14 +96,31 @@ function recordAlerts(days: LiveDays, now: Date): Alert[] {
   );
 }
 
-/** What there is to announce, most pressing first: a free price today, one tomorrow, then new records. */
+/** The day's occasion as a notice; closing it holds for that year's occurrence only. */
+function occasionAlerts(now: Date): Alert[] {
+  const occasion = occasionOn(now);
+  if (!occasion) return [];
+  return [
+    { kind: "occasion", id: `occasion:${occasion.key}:${String(occasion.year)}`, occasion: occasion.key },
+  ];
+}
+
+/**
+ * What there is to announce, most pressing first: a free price today, one tomorrow, then new records,
+ * then the day's occasion (`greet`; off for automated browsers, which get the plain map).
+ */
 export function alerts(
   live: Live | null,
   days: LiveDays | null,
   now: Date,
   home: CountryCode = "HR",
+  greet = false,
 ): Alert[] {
-  return [...(live ? freeAlerts(live, now, home) : []), ...(days ? recordAlerts(days, now) : [])];
+  return [
+    ...(live ? freeAlerts(live, now, home) : []),
+    ...(days ? recordAlerts(days, now) : []),
+    ...(greet ? occasionAlerts(now) : []),
+  ];
 }
 
 const STORAGE_KEY = "gridatlas-alerts-closed";
