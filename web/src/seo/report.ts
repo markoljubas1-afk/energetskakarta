@@ -15,7 +15,7 @@ import { createI18n } from "../i18n";
 import { LANGS, type Lang } from "../state/url";
 import { COMPLETE_COVERAGE, largestSource, periodRows, type PeriodRow } from "./energyPages";
 import type { FeedEntry } from "./feed";
-import { escapeHtml as e, linkedTable, list, stationsOf } from "./markup";
+import { callout, escapeHtml as e, linkedTable, list, stationsOf } from "./markup";
 import { countOf, inMonth, monthName, REPORT_COPY } from "./reportCopy";
 import { TRANSITION_COPY } from "./transitionCopy";
 import { gasLinks } from "./gasPages";
@@ -41,6 +41,15 @@ export const REPORTS_FROM = "2024-11";
 /** How many of the latest reports go into the Atom feed. */
 export const FEED_REPORTS = 3;
 const ENTSOE_URL = "https://transparency.entsoe.eu/";
+
+/**
+ * The comparisons page (Faza 49, reports/CompareView.tsx), opened on a report's month: that month across
+ * the years, and the countries in that month.
+ */
+export function compareLink(lang: Lang, month: string | null): string {
+  if (month === null) return mapLink(lang, { p: "compare" });
+  return mapLink(lang, { p: "compare", cm: String(Number(month.slice(5, 7))), cp: month });
+}
 
 /** A table row for `linkedTable` (at least one cell). */
 type Row = [string, ...string[]];
@@ -336,7 +345,8 @@ function reportPage(site: SiteData, lang: Lang, ctx: Context, month: string): St
     heading: copy.title(name),
     lead:
       `<p>${e(leadSentence(lang, ctx, month))}</p>` +
-      (row?.total != null ? `<p>${e(copy.totals(i18n.energy(row.total), load))}</p>` : ""),
+      (row?.total != null ? `<p>${e(copy.totals(i18n.energy(row.total), load))}</p>` : "") +
+      callout(copy.compare.month(name), { href: compareLink(lang, month), label: copy.compare.label }),
     sections,
     nav,
     jsonLd: [
@@ -406,7 +416,9 @@ function indexPage(site: SiteData, lang: Lang, ctx: Context): StaticPage {
     title: copy.indexTitle,
     description: copy.indexDescription,
     heading: copy.indexTitle,
-    lead: `<p>${e(copy.indexLead)}</p>`,
+    lead:
+      `<p>${e(copy.indexLead)}</p>` +
+      callout(copy.compare.index, { href: compareLink(lang, null), label: copy.compare.label }),
     sections,
     jsonLd: [
       {

@@ -25,7 +25,7 @@ export const LANGS = ["hr", "en"] as const;
 export type Lang = (typeof LANGS)[number];
 export const PANELS = ["filters", "overview", "changes"] as const;
 export type Panel = (typeof PANELS)[number];
-export const PAGES = ["map", "energy"] as const;
+export const PAGES = ["map", "energy", "compare"] as const;
 export type Page = (typeof PAGES)[number];
 export const ENERGY_UNITS = ["month", "year"] as const;
 export type EnergyUnit = (typeof ENERGY_UNITS)[number];
@@ -49,6 +49,22 @@ export interface EnergyState {
   chart: EnergyChart | null;
 }
 
+/**
+ * The comparisons page (Faza 49). Each choice is in the link, so a comparison someone made opens the same
+ * for whoever follows it; null means "the latest", worked out from the data when the page opens.
+ */
+export interface CompareState {
+  /** the country (or the region) of the month-across-years and year-against-year cards */
+  area: EnergyArea;
+  /** 1–12 */
+  month: number | null;
+  years: readonly [string, string] | null;
+  /** the countries side by side: a month or a year */
+  unit: EnergyUnit;
+  /** "2026-10" with months, "2025" with years */
+  period: string | null;
+}
+
 export interface View {
   lng: number;
   lat: number;
@@ -69,6 +85,7 @@ export interface AppState {
   panel: Panel;
   page: Page;
   energy: EnergyState;
+  compare: CompareState;
   /** live flows and prices layer */
   live: boolean;
   /** "2026-09-16T13+02" (older links: without the offset); null = the current hour */
@@ -99,6 +116,7 @@ export function defaultState(lang: Lang): AppState {
     panel: "filters",
     page: "map",
     energy: { area: "ALL", unit: "month", tech: "solar", range: null, show: "chart", chart: null },
+    compare: { area: "HR", month: null, years: null, unit: "month", period: null },
     live: false,
     liveHour: null,
     liveDay: null,
@@ -189,6 +207,31 @@ export function parseState(search: string, fallbackLang: Lang): AppState {
       show: pick(ENERGY_SHOWS, params.get("es"), defaults.energy.show),
       chart: pickOrNull(ENERGY_CHARTS, params.get("ec")),
     },
+    compare: parseCompare(params, defaults.compare),
+  };
+}
+
+function parseCompare(params: URLSearchParams, defaults: CompareState): CompareState {
+  const month = params.get("cm") ?? "";
+  const [first, second, ...rest] = (params.get("cy") ?? "").split(",");
+  const years =
+    first &&
+    second &&
+    rest.length === 0 &&
+    /^\d{4}$/.test(first) &&
+    /^\d{4}$/.test(second) &&
+    first !== second
+      ? ([first, second] as const)
+      : null;
+  const unit = pick(ENERGY_UNITS, params.get("cu"), defaults.unit);
+  const period = params.get("cp") ?? "";
+  const periodOk = unit === "month" ? /^\d{4}-(0[1-9]|1[0-2])$/.test(period) : /^\d{4}$/.test(period);
+  return {
+    area: pick(ENERGY_AREAS, params.get("ca"), defaults.area),
+    month: /^(1[0-2]|[1-9])$/.test(month) ? Number(month) : null,
+    years,
+    unit,
+    period: periodOk ? period : null,
   };
 }
 
@@ -249,6 +292,12 @@ export function serializeState(state: AppState, fallbackLang: Lang): string {
   if (energy.range) params.set("er", `${energy.range.from},${energy.range.to}`);
   if (energy.show !== defaults.energy.show) params.set("es", energy.show);
   if (energy.chart) params.set("ec", energy.chart);
+  const compare = state.compare;
+  if (compare.area !== defaults.compare.area) params.set("ca", compare.area);
+  if (compare.month !== null) params.set("cm", String(compare.month));
+  if (compare.years) params.set("cy", compare.years.join(","));
+  if (compare.unit !== defaults.compare.unit) params.set("cu", compare.unit);
+  if (compare.period) params.set("cp", compare.period);
   const text = params.toString();
   return text ? `?${text}` : "";
 }

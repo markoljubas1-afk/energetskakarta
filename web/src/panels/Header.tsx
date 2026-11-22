@@ -1,6 +1,7 @@
 import {
   ChartColumnStacked,
   FileText,
+  GitCompareArrows,
   GraduationCap,
   UserRound,
   Info,
@@ -25,7 +26,8 @@ interface Props {
   children: React.ReactNode;
 }
 
-const PAGE_ICONS = { map: MapIcon, energy: ChartColumnStacked } as const;
+const PAGE_ICONS = { map: MapIcon, energy: ChartColumnStacked, compare: GitCompareArrows } as const;
+const PAGE_LABELS = { map: "pageMap", energy: "pageEnergy", compare: "pageCompare" } as const;
 
 export function Header({ theme, page, onPage, onToggleTheme, onToggleLang, children }: Props) {
   const { t, lang } = useI18n();
@@ -50,12 +52,14 @@ export function Header({ theme, page, onPage, onToggleTheme, onToggleLang, child
               key={option}
               type="button"
               aria-pressed={page === option}
+              // on a phone the comparisons are reached from the reports; the row has no room for a third
+              className={option === "compare" ? styles.widePage : undefined}
               onClick={() => {
                 onPage(option);
               }}
             >
               <Icon size={16} strokeWidth={1.75} aria-hidden="true" />
-              <span className={styles.pageLabel}>{t(option === "map" ? "pageMap" : "pageEnergy")}</span>
+              <span className={styles.pageLabel}>{t(PAGE_LABELS[option])}</span>
             </button>
           );
         })}

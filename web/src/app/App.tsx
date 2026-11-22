@@ -115,6 +115,9 @@ import { useTheme } from "./theme";
 const LIVE_REFRESH_MS = 15 * 60_000;
 
 // The energy view brings Chart.js; it is only loaded when someone opens it.
+const CompareView = lazy(() =>
+  import("../reports/CompareView").then((module) => ({ default: module.CompareView })),
+);
 const EnergyView = lazy(() =>
   import("../energy/EnergyView").then((module) => ({ default: module.EnergyView })),
 );
@@ -973,7 +976,18 @@ function Explorer({
         </Suspense>
       </ErrorBoundary>
 
-      {state.page === "energy" ? (
+      {state.page === "compare" ? (
+        <ErrorBoundary area="compare" fallback={panelFallback}>
+          <Suspense fallback={<LoadingScreen label={t("loadingData")} />}>
+            <CompareView
+              dataBaseUrl={config.dataBaseUrl}
+              compare={state.compare}
+              setState={setState}
+              theme={theme}
+            />
+          </Suspense>
+        </ErrorBoundary>
+      ) : state.page === "energy" ? (
         <ErrorBoundary area="energy" fallback={panelFallback}>
           <Suspense fallback={<LoadingScreen label={t("loadingData")} />}>
             <EnergyView

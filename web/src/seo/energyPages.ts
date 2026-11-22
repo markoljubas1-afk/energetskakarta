@@ -4,7 +4,7 @@
  * answer what people and AI assistants ask ("how much electricity does Croatia make from the sun", "price of
  * electricity today") with the figures, the year and the source in one sentence. No data, no page.
  */
-import { series, type Periods } from "../data/energy";
+import { series, type EnergySeries, type Periods } from "../data/energy";
 import { COUNTRY_PRICE_ZONE, type Live } from "../data/live";
 import { isOneOf, SCOPE_COUNTRIES, TECHNOLOGIES, type CountryCode, type Technology } from "../domain";
 import { createI18n } from "../i18n";
@@ -46,7 +46,15 @@ export type YearRow = Omit<PeriodRow, "period"> & { year: string };
 /** One country's years or months, oldest first; null when the release has no energy data for it. */
 export function periodRows(periods: Periods, code: CountryCode, unit: "year" | "month"): PeriodRow[] | null {
   if (!periods.countries[code]) return null;
-  const data = series(periods, code, unit);
+  return seriesRows(series(periods, code, unit));
+}
+
+/**
+ * Every period of a series (one country or the region) as a row: totals, the renewable share and whether it
+ * was reported in full, counted as the static pages count them, so the comparisons (reports/compare.ts)
+ * show the same figures as the monthly reports.
+ */
+export function seriesRows(data: EnergySeries): PeriodRow[] {
   return data.periods.map((period, index) => {
     const byTech: Partial<Record<Technology, number>> = {};
     for (const tech of TECHNOLOGIES) {

@@ -240,3 +240,9 @@
     display: none;
   }
 }
+
+@media (max-width: 480px) {
+  .pages button.widePage:not([aria-pressed="true"]) {
+    display: none;
+  }
+}

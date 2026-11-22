@@ -2946,3 +2946,30 @@ Tekstovi su prepisani bez brojki i uzročnih tvrdnji iz prijedloga (Tesla: više
 izmjeničnu struju”; bez „stotina tisuća lampica”; bez „potrošnje uživo”).
 
 Otvoreno: pregled uživo na prvi dan s porukom (4. prosinca 2026., Dan rudara).
+
+## Faza 49 — Interaktivni izvještaji: usporedbe po mjesecima, godinama, zemljama i izvorima — POTVRĐENO 2026-11-22 („može, ajde napravi novu karticu na koju vode linkovi s izvještaja”), KOD GOTOV
+
+Cilj: posjetitelj sam slaže usporedbe (isti mjesec kroz godine, godina prema godini, zemlje jedna uz
+drugu, po izvorima) i odmah ih dijeli: poveznica, slika, CSV, citat.
+
+Odluke vlasnika: nova stranica aplikacije (ne ugrađeno u statičnu `/izvjestaji/`), na koju vode
+poveznice s izvještaja. „Po proizvođačima” nije posebno odlučeno; uzeto po prijedlogu: izvori i zemlje.
+Pojedine elektrane od 100 MW naviše (ENTSO-E proizvodnja po jedinici) ostaju moguća zasebna faza.
+
+- [x] 49-1 (2026-11-22) **Jedan mjesec kroz godine** (`web/src/reports/CompareView.tsx`, `compare.ts`):
+  stupci po izvoru za odabrani mjesec svake godine, crta potrošnje, tablica s udjelom obnovljivih i CO₂;
+  nepotpun mjesec je blijed i označen „nepotpuno”.
+- [x] 49-2 (2026-11-22) **Godina prema godini**: samo mjeseci potpuni u obje godine („svi mjeseci osim:
+  ožujak”, „siječanj–listopad”), razlika po izvoru i ukupno.
+- [x] 49-3 (2026-11-22) **Zemlje usporedno**: mjesec ili godina; samo zemlje s potpunim podacima, najzelenija
+  prva; udio izvora, udio obnovljivih, CO₂ (izračun), prosječna cijena gdje postoji (zasad samo HR).
+- [x] 49-4 (2026-11-22) Stanje u adresi: `p=compare`, `ca`, `cm`, `cy`, `cu`, `cp` (`web/src/state/url.ts`).
+- [x] 49-5 (2026-11-22) `ChartShare` na svakoj kartici; poveznica na sliku mjeseca (`?pic=GGGG-MM`) i na
+  mjesečni izvještaj. Ugradnja (iframe) pojedine kartice usporedbi nije napravljena.
+- [x] 49-6 (2026-11-22) Vrata „Otvori usporedbe” na `/izvjestaji/` i na svakom mjesečnom izvještaju
+  (postavljeno na taj mjesec); kartica „Usporedbe” u zaglavlju (na mobitelu skrivena, ima mjesta za dvije).
+
+Brojke su iste kao u izvještajima: `seriesRows` (izdvojeno iz `seo/energyPages.ts`) i `rowIntensity`
+(`seo/report.ts`), pravilo potpunosti `COMPLETE_COVERAGE` (0,98).
+
+Otvoreno: pregled uživo s pravim podacima nakon objave.

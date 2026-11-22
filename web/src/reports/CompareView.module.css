@@ -1,0 +1,44 @@
+/* The comparisons page (Faza 49): what the energy page's styles do not already have. */
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 6px 0 0;
+  font-size: 14px;
+}
+
+.links a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 14px;
+  margin: 4px 0 10px;
+}
+
+.controls:empty {
+  display: none;
+}
+
+.note {
+  margin: 8px 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.flag {
+  color: var(--warn-ink);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.total th,
+.total td {
+  font-weight: 600;
+}

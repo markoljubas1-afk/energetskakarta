@@ -72,6 +72,8 @@ interface ReportCopy {
   indexSection: string;
   indexColumns: [string, string, string, string];
   linkText: string;
+  /** the door to the comparisons page (Faza 49), on the list and on every report */
+  compare: { index: string; month: (name: string) => string; label: string };
   latestLink: (name: string) => string;
   title: (name: string) => string;
   description: (name: string) => string;
@@ -138,6 +140,13 @@ export const REPORT_COPY: Record<Lang, ReportCopy> = {
     indexSection: "Svi izvještaji",
     indexColumns: ["Mjesec", "Udio obnovljivih", "CO₂ intenzitet (g/kWh)", "Proizvodnja"],
     linkText: "Mjesečni izvještaji: struja u Hrvatskoj i regiji",
+    compare: {
+      index:
+        "Usporedite sami: isti mjesec kroz godine, godinu prema godini i zemlje jednu uz drugu, s grafovima koje možete podijeliti.",
+      month: (name) =>
+        `Usporedite ${name} s istim mjesecom drugih godina i sa susjednim zemljama, s grafovima koje možete podijeliti.`,
+      label: "Otvori usporedbe",
+    },
     latestLink: (name) => `Zadnji mjesečni izvještaj: ${name}`,
     title: (name) => `Struja u Hrvatskoj i regiji: ${name}`,
     description: (name) =>
@@ -221,6 +230,13 @@ export const REPORT_COPY: Record<Lang, ReportCopy> = {
     indexSection: "All reports",
     indexColumns: ["Month", "Renewable share", "Carbon intensity (g/kWh)", "Generation"],
     linkText: "Monthly reports: electricity in Croatia and the region",
+    compare: {
+      index:
+        "Compare for yourself: the same month across the years, year against year and the countries side by side, with charts you can share.",
+      month: (name) =>
+        `Compare ${name} with the same month of other years and with the neighbouring countries, with charts you can share.`,
+      label: "Open the comparisons",
+    },
     latestLink: (name) => `Latest monthly report: ${name}`,
     title: (name) => `Electricity in Croatia and the region: ${name}`,
     description: (name) =>
