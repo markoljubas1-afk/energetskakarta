@@ -4,7 +4,7 @@
  * opens the same comparison, a picture, the numbers as CSV, a citation). The figures are the monthly
  * reports' own (compare.ts); the monthly reports link here, and this page links back to them.
  */
-import { lazy, Suspense, useMemo, useRef, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, type ReactNode } from "react";
 
 import { useAsync } from "../app/useAsync";
 import { assetUrl, DataError } from "../data/current";
@@ -25,9 +25,10 @@ import {
   change,
   countriesSide,
   countryPeriods,
-  latestUsable,
   monthAcrossYears,
+  resolveChoice,
   rowIntensity,
+  sameChoice,
   yearAgainstYear,
   yearsOf,
   type PeriodRow,
@@ -199,6 +200,13 @@ function Content(props: {
   const area = available.includes(compare.area) ? compare.area : (available[0] ?? ALL);
   const areaName = area === ALL ? t("energyRegion") : i18n.country(area);
   const monthRows = areaRows(periods, area, "month") ?? [];
+  const options = countryPeriods(periods, compare.unit);
+  const shown = resolveChoice(compare, monthRows, options);
+  // what is shown goes into the address (replaced, not added to the history), so the link a card shares
+  // and the citation it gives hold the figures on screen, not "the latest" of whenever they are opened
+  useEffect(() => {
+    if (!sameChoice(shown, compare)) update(shown);
+  });
 
   return (
     <>
@@ -221,9 +229,17 @@ function Content(props: {
         </label>
       </div>
       <p className={styles.muted}>{t("energySource", { date: i18n.date(pointer.updatedAt) })}</p>
-      <MonthCard rows={monthRows} compare={compare} update={update} areaName={areaName} kit={kit} />
-      <YearsCard rows={monthRows} compare={compare} update={update} areaName={areaName} kit={kit} />
-      <CountriesCard periods={periods} prices={prices} compare={compare} update={update} kit={kit} />
+      <MonthCard rows={monthRows} month={shown.month ?? 1} update={update} areaName={areaName} kit={kit} />
+      <YearsCard rows={monthRows} chosen={shown.years} update={update} areaName={areaName} kit={kit} />
+      <CountriesCard
+        periods={periods}
+        prices={prices}
+        unit={compare.unit}
+        options={options}
+        period={shown.period}
+        update={update}
+        kit={kit}
+      />
     </>
   );
 }
@@ -287,16 +303,14 @@ function Chart(props: { children: ReactNode }) {
 
 function MonthCard(props: {
   rows: PeriodRow[];
-  compare: CompareState;
+  month: number;
   update: (patch: Partial<CompareState>) => void;
   areaName: string;
   kit: Kit;
 }) {
-  const { rows, compare, update, areaName, kit } = props;
+  const { rows, month, update, areaName, kit } = props;
   const i18n = useI18n();
   const { t } = i18n;
-  const latest = latestUsable(rows);
-  const month = compare.month ?? (latest ? Number(latest.slice(5, 7)) : 1);
   const years = monthAcrossYears(rows, month);
   const techs = techsOf(years);
   const monthName = kit.names[month - 1] ?? "";
@@ -411,22 +425,15 @@ function co2Text(row: PeriodRow, i18n: I18n): string {
 
 function YearsCard(props: {
   rows: PeriodRow[];
-  compare: CompareState;
+  chosen: readonly [string, string] | null;
   update: (patch: Partial<CompareState>) => void;
   areaName: string;
   kit: Kit;
 }) {
-  const { rows, compare, update, areaName, kit } = props;
+  const { rows, chosen, update, areaName, kit } = props;
   const i18n = useI18n();
   const { t } = i18n;
   const years = yearsOf(rows);
-  const [newest, before] = years;
-  const chosen =
-    compare.years && years.includes(compare.years[0]) && years.includes(compare.years[1])
-      ? compare.years
-      : newest && before
-        ? ([before, newest] as const)
-        : null;
   const pair = chosen ? yearAgainstYear(rows, chosen[0], chosen[1]) : null;
   const span = pair ? monthSpan(pair.months, kit.names, t("compareAnd")) : null;
   const spanText =
@@ -575,17 +582,15 @@ function YearsCard(props: {
 function CountriesCard(props: {
   periods: Periods;
   prices: PriceMonths | null;
-  compare: CompareState;
+  unit: EnergyUnit;
+  options: string[];
+  period: string | null;
   update: (patch: Partial<CompareState>) => void;
   kit: Kit;
 }) {
-  const { periods, prices, compare, update, kit } = props;
+  const { periods, prices, unit, options, period, update, kit } = props;
   const i18n = useI18n();
   const { t, lang } = i18n;
-  const unit = compare.unit;
-  const options = useMemo(() => countryPeriods(periods, unit), [periods, unit]);
-  const period =
-    compare.period !== null && options.includes(compare.period) ? compare.period : (options[0] ?? null);
   const rows = useMemo(
     () => (period ? countriesSide(periods, unit, period, prices) : []),
     [periods, unit, period, prices],

@@ -34,6 +34,46 @@ export const latestUsable = (rows: readonly PeriodRow[]): string | null =>
 
 const monthKey = (year: string, month: number): string => `${year}-${String(month).padStart(2, "0")}`;
 
+// ---------------------------------------------------------------- what is shown
+
+export interface Choice {
+  month: number | null;
+  years: readonly [string, string] | null;
+  period: string | null;
+}
+
+/**
+ * What the page shows for the visitor's choices: each one kept when the data has it, otherwise the latest
+ * (the latest complete month's month, the two latest years, the latest period two countries reported in
+ * full). The page writes the result into its address at once, so a link shared or cited without touching
+ * anything still opens these figures next month, not the next month's.
+ */
+export function resolveChoice(
+  choice: Choice,
+  monthRows: readonly PeriodRow[],
+  periodOptions: readonly string[],
+): Choice {
+  const latest = latestUsable(monthRows);
+  const years = yearsOf(monthRows);
+  const [newest, before] = years;
+  return {
+    month: choice.month ?? (latest ? Number(latest.slice(5, 7)) : null),
+    years:
+      choice.years && years.includes(choice.years[0]) && years.includes(choice.years[1])
+        ? choice.years
+        : newest && before
+          ? [before, newest]
+          : null,
+    period:
+      choice.period !== null && periodOptions.includes(choice.period)
+        ? choice.period
+        : (periodOptions[0] ?? null),
+  };
+}
+
+export const sameChoice = (a: Choice, b: Choice): boolean =>
+  a.month === b.month && a.period === b.period && (a.years?.join() ?? "") === (b.years?.join() ?? "");
+
 // ---------------------------------------------------------------- one month across the years
 
 /**

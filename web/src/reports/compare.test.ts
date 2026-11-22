@@ -11,6 +11,8 @@ import {
   countryPeriods,
   latestUsable,
   monthAcrossYears,
+  resolveChoice,
+  sameChoice,
   yearAgainstYear,
   yearsOf,
 } from "./compare";
@@ -175,6 +177,24 @@ describe("the countries side by side", () => {
     expect(countryPeriods(PERIODS, "year")).toEqual(["2024"]);
     // a yearly comparison has no price
     expect(countriesSide(PERIODS, "year", "2024", PRICES).every((each) => each.price === null)).toBe(true);
+  });
+});
+
+describe("what the page shows", () => {
+  it("is the visitor's choice when the data has it, else the latest", () => {
+    const options = countryPeriods(PERIODS, "month");
+    const latest = resolveChoice({ month: null, years: null, period: null }, hr, options);
+    expect(latest).toEqual({ month: 3, years: ["2024", "2025"], period: "2025-02" });
+    const kept = { month: 7, years: ["2025", "2024"] as const, period: "2024-05" };
+    expect(resolveChoice(kept, hr, options)).toEqual(kept);
+    // a year or a period the data does not have gives way to the latest
+    expect(resolveChoice({ month: 7, years: ["2019", "2024"], period: "2019-01" }, hr, options)).toEqual({
+      month: 7,
+      years: ["2024", "2025"],
+      period: "2025-02",
+    });
+    expect(sameChoice(latest, { month: 3, years: ["2024", "2025"], period: "2025-02" })).toBe(true);
+    expect(sameChoice(latest, { ...latest, years: ["2025", "2024"] })).toBe(false);
   });
 });
 

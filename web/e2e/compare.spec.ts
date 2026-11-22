@@ -79,16 +79,31 @@ test("every comparison is passed on as a link, a citation, a CSV and a picture",
   expect((await png).suggestedFilename()).toMatch(/\.png$/);
 });
 
+test("a link copied without choosing anything still holds what is on screen", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await openCompare(page);
+  // the latest of everything is written into the address as soon as the data is there
+  await expect(page).toHaveURL(/[?&]cm=12&cy=2024%2C2025&cp=2025-12/);
+  const card = page.getByRole("region", { name: "Godina prema godini" });
+  await card.getByText("Podijeli").click();
+  await card.getByRole("button", { name: "Kopiraj poveznicu na graf" }).click();
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  expect(copied).toMatch(/\?p=compare&cm=12&cy=2024%2C2025&cp=2025-12#years$/);
+  // and it did not add a step to the history: back leaves the page
+  await page.goBack();
+  await expect(page).not.toHaveURL(/p=compare/);
+});
+
 test("the reports lead to the comparisons, the list and each month", async ({ page }) => {
   await page.route("https://api.maptiler.com/**", (route) => route.abort());
   await page.goto("/izvjestaji/");
   await page.getByRole("link", { name: "Otvori usporedbe" }).click();
-  await expect(page).toHaveURL(/\/\?p=compare$/);
+  await expect(page).toHaveURL(/\/\?p=compare&/);
   await expect(page.getByRole("heading", { name: "Usporedbe: mjeseci, godine, zemlje" })).toBeVisible();
 
   await page.goto("/izvjestaji/2025-10/");
   await page.getByRole("link", { name: "Otvori usporedbe" }).click();
-  await expect(page).toHaveURL(/\/\?p=compare&cm=10&cp=2025-10$/);
+  await expect(page).toHaveURL(/\/\?p=compare&cm=10&cy=2024%2C2025&cp=2025-10$/);
   await expect(
     page.getByRole("region", { name: "Jedan mjesec kroz godine" }).getByRole("combobox"),
   ).toHaveValue("10");
