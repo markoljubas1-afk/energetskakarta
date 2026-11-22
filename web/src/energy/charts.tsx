@@ -53,6 +53,8 @@ export interface StackedProps extends Common {
   coverage: number[];
   /** extra tooltip line for a label index (e.g. "data for 19 of 31 days") */
   note: (index: number) => string | null;
+  /** the top of the value axis, when it is known (100 for shares that add up to 100 %) */
+  max?: number;
 }
 
 function useChart(config: () => ChartConfiguration, deps: unknown[]) {
@@ -77,7 +79,7 @@ function alpha(hex: string, value: number): string {
 const reducedMotion = (): boolean => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export function StackedChart(props: StackedProps) {
-  const { labels, bars, line, coverage, note, description, format, ink, grid } = props;
+  const { labels, bars, line, coverage, note, description, format, ink, grid, max } = props;
   const canvas = useChart(
     () => ({
       type: "bar",
@@ -129,6 +131,7 @@ export function StackedChart(props: StackedProps) {
           y: {
             stacked: true,
             beginAtZero: true,
+            ...(max === undefined ? {} : { max }),
             grid: { color: grid },
             ticks: { color: ink, callback: (value) => format(Number(value)) },
           },
@@ -150,7 +153,7 @@ export function StackedChart(props: StackedProps) {
         },
       },
     }),
-    [labels, bars, line, coverage, note, format, ink, grid],
+    [labels, bars, line, coverage, note, format, ink, grid, max],
   );
   return <canvas ref={canvas} role="img" aria-label={description} />;
 }

@@ -52,7 +52,8 @@ export function Header({ theme, page, onPage, onToggleTheme, onToggleLang, child
               key={option}
               type="button"
               aria-pressed={page === option}
-              // on a phone the comparisons are reached from the reports; the row has no room for a third
+              // on a phone the comparisons are reached from the reports: the row has no room for a third
+              // button, not even on the comparisons page itself, where it would run into the name
               className={option === "compare" ? styles.widePage : undefined}
               onClick={() => {
                 onPage(option);

@@ -242,7 +242,7 @@
 }
 
 @media (max-width: 480px) {
-  .pages button.widePage:not([aria-pressed="true"]) {
+  .pages button.widePage {
     display: none;
   }
 }

@@ -505,6 +505,7 @@ export const en: Dictionary = {
   compareYearsDescription:
     "Stacked bars of generation by source for {a} and {b}, {area}, with a line for generation from renewable sources.",
   compareChange: "Change",
+  compareNew: "new",
   compareChangeShare: "Change (share)",
   compareCountriesTitle: "Countries side by side",
   compareCountriesDescription:

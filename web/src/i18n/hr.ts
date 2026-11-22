@@ -499,6 +499,7 @@ export const hr = {
   compareYearsDescription:
     "Složeni stupci proizvodnje po izvoru za {a} i {b}, {area}, s crtom proizvodnje iz obnovljivih izvora.",
   compareChange: "Promjena",
+  compareNew: "novo",
   compareChangeShare: "Promjena (udio)",
   compareCountriesTitle: "Zemlje usporedno",
   compareCountriesDescription: "Udio izvora u proizvodnji po zemlji za {period}, s crtom udjela obnovljivih.",

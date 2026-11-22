@@ -446,7 +446,9 @@ function YearsCard(props: {
     value > 0 ? `+${text}` : value < 0 ? `−${text}` : text;
   const changeText = (a: number, b: number): string => {
     const share = change(a, b);
-    return share === null ? t("energyNoValue") : signed(share, i18n.percent(Math.abs(share)));
+    // a source the first year did not have: there is no share to grow by, it is new
+    if (share === null) return b > 0 ? t("compareNew") : t("energyNoValue");
+    return signed(share, i18n.percent(Math.abs(share)));
   };
   const table = (): Table => ({
     header: [
@@ -686,6 +688,7 @@ function CountriesCard(props: {
               }}
               description={t("compareCountriesDescription", { period: periodName })}
               format={(value) => `${i18n.number(value)} %`}
+              max={100}
               ink={kit.ink}
               grid={kit.grid}
             />
