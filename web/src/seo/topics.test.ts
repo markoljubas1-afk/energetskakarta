@@ -180,8 +180,15 @@ describe("internal links", () => {
 });
 
 describe("asset pages", () => {
-  it("carry the key figure in the title and never print empty brackets", () => {
+  it("carry the key figure in the title and never print empty brackets", async () => {
     expect(page("/objekt/osm-way-2/").title).toBe("HE Velika: hidroelektrana 276 MW, Hrvatska");
+    const { assetTitle } = await import("./copy");
+    expect(assetTitle("Hidroelektrana Zakučac", "hidroelektrana", "538 MW", "Hrvatska")).toBe(
+      "Hidroelektrana Zakučac: 538 MW, Hrvatska",
+    );
+    expect(assetTitle("Trafostanica Ernestinovo", "trafostanica", "", "Hrvatska")).toBe(
+      "Trafostanica Ernestinovo, Hrvatska",
+    );
     expect(page("/en/asset/osm-way-2/").title).toBe("HE Velika: hydropower plant 276 MW, Croatia");
     expect(page("/objekt/osm-node-50/").title).toBe("TS Žerjavinec: trafostanica 400 kV, Hrvatska");
     const dc = page("/objekt/dc-primjer/");

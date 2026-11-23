@@ -5,6 +5,9 @@
  */
 import type { Lang } from "../state/url";
 
+/** The size every share picture of the site is drawn at, written next to it in each page's head. */
+export const OG_SIZE = { width: 1200, height: 630 } as const;
+
 export type OgTopic = "gas" | "transition" | "report";
 
 export const OG_TOPIC_IMAGES: Record<OgTopic, Record<Lang, string>> = {

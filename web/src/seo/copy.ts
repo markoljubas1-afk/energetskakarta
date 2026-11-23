@@ -7,6 +7,16 @@ import type { Lang } from "../state/url";
 
 /** A topic page per country: one per plant technology, plus substations, data centres and extraction sites. */
 /** The author's public contact and KEKS Pay tag, shown at their request (2026-11-16). */
+/**
+ * "HE Velika: hidroelektrana 276 MW, Hrvatska"; a name that already says what it is keeps the title from
+ * saying it twice ("Hidroelektrana Zakučac: 538 MW, Hrvatska", Faza 51-4).
+ */
+export function assetTitle(name: string, kind: string, figure: string, country: string): string {
+  const said = kind !== "" && name.toLocaleLowerCase().includes(kind.toLocaleLowerCase());
+  const what = [said ? "" : kind, figure].filter(Boolean).join(" ");
+  return `${name}${what ? `: ${what}` : ""}${country ? `, ${country}` : ""}`;
+}
+
 export const AUTHOR = { email: "marko.ljubas1@gmail.com", keksTag: "#markol363" } as const;
 
 export type HubKey = Technology | "substations" | "datacenters" | "extraction";
@@ -343,8 +353,7 @@ const hr: Copy = {
   asset: {
     description: (kind, name, detail, country) =>
       `${kind} ${name}${detail ? ` (${detail})` : ""}${country ? `, ${country}` : ""}. Podaci, izvori i položaj na GridAtlasu.`,
-    title: (name, kind, figure, country) =>
-      `${name}: ${kind}${figure ? ` ${figure}` : ""}${country ? `, ${country}` : ""}`,
+    title: (name, kind, figure, country) => assetTitle(name, kind, figure, country),
     cityTitle: (name, country) => `${name}: potrošnja struje po namjeni${country ? `, ${country}` : ""}`,
     plant: {
       hydro: "hidroelektrana",
@@ -671,8 +680,7 @@ const en: Copy = {
   asset: {
     description: (kind, name, detail, country) =>
       `${kind} ${name}${detail ? ` (${detail})` : ""}${country ? `, ${country}` : ""}. Data, sources and location on GridAtlas.`,
-    title: (name, kind, figure, country) =>
-      `${name}: ${kind}${figure ? ` ${figure}` : ""}${country ? `, ${country}` : ""}`,
+    title: (name, kind, figure, country) => assetTitle(name, kind, figure, country),
     cityTitle: (name, country) => `${name}: electricity use by purpose${country ? `, ${country}` : ""}`,
     plant: {
       hydro: "hydropower plant",

@@ -69,7 +69,7 @@ export interface CapacityCopy {
 }
 
 const hr: CapacityCopy = {
-  title: "Slobodni kapaciteti za priključenje elektrana i baterija: HEP ODS po trafostanici",
+  title: "Slobodni kapacitet za priključenje: HEP ODS po trafostanici",
   description:
     "Gdje u distribucijskoj mreži HEP ODS-a još ima mjesta za nove elektrane i baterijske spremnike: kategorija prihvata i slobodni kapacitet po trafostanici 110/x i 35/x kV, po distribucijskom području i kroz vrijeme.",
   heading: "Slobodni kapaciteti distribucijske mreže (HEP ODS)",
@@ -150,7 +150,7 @@ const hr: CapacityCopy = {
 };
 
 const en: CapacityCopy = {
-  title: "Grid capacity for new power plants and batteries: HEP ODS by substation",
+  title: "Free grid capacity for new connections: HEP ODS",
   description:
     "Where HEP ODS's distribution grid in Croatia still has room for new power plants and battery storage: acceptance category and free capacity per 110/x and 35/x kV substation, by distribution area and over time.",
   heading: "Free capacity in the distribution grid (HEP ODS)",

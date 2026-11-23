@@ -115,7 +115,7 @@ const hr: EnergyCopy = {
     },
   },
   prices: {
-    title: "Cijena struje danas i sutra: burza dan-unaprijed, Hrvatska i regija",
+    title: "Cijena struje danas i sutra: burza, Hrvatska i regija",
     description:
       "Satne cijene struje na burzi dan-unaprijed za danas i sutra: Hrvatska (CROPEX), Slovenija, Mađarska, Srbija, Austrija i sjeverna Italija, s prosjekom, najnižom i najvišom cijenom dana.",
     heading: (date) => `Cijena struje na burzi, ${date}`,
@@ -140,7 +140,7 @@ const hr: EnergyCopy = {
 
 const en: EnergyCopy = {
   generation: {
-    title: "Electricity generation by country and source: Croatia and the region",
+    title: "Electricity generation by country and source: the region",
     description:
       "How much electricity Croatia, Slovenia, Hungary, Serbia, Bosnia and Herzegovina, Montenegro, Italy and Austria generate and from which sources: yearly totals and the renewable share, from the ENTSO-E Transparency Platform.",
     heading: "Electricity generation by country and source",
@@ -179,7 +179,7 @@ const en: EnergyCopy = {
     },
   },
   prices: {
-    title: "Electricity prices today and tomorrow: day-ahead market, Croatia and the region",
+    title: "Electricity prices today and tomorrow: Croatia and region",
     description:
       "Hourly day-ahead electricity prices for today and tomorrow: Croatia (CROPEX), Slovenia, Hungary, Serbia, Austria and northern Italy, with the day's average, lowest and highest price.",
     heading: (date) => `Electricity prices, ${date}`,

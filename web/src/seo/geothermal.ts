@@ -13,7 +13,7 @@ const other = (lang: Lang): Lang => (lang === "hr" ? "en" : "hr");
 
 const COPY = {
   hr: {
-    title: "Geotermalna energija u Hrvatskoj: elektrane, toplina i potencijal",
+    title: "Geotermalna energija u Hrvatskoj: elektrane i potencijal",
     description:
       "Što od geotermalne energije u Hrvatskoj radi danas, koji se projekti pripremaju, gdje je potvrđen potencijal za grijanje gradova i kako izgleda toplinski tok iz podzemlja, iz otvorenih izvora.",
     heading: "Geotermalna energija u Hrvatskoj",
@@ -55,7 +55,7 @@ const COPY = {
     mapLink: "Otvori sloj na karti",
   },
   en: {
-    title: "Geothermal energy in Croatia: power plants, heat and potential",
+    title: "Geothermal energy in Croatia: plants, heat, potential",
     description:
       "What geothermal energy in Croatia delivers today, which projects are being prepared, where potential for district heating is confirmed and what heat flow from below ground looks like, from open sources.",
     heading: "Geothermal energy in Croatia",

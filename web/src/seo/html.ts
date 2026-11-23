@@ -24,10 +24,11 @@ import { LANGS } from "../state/url";
 import { AUTHOR, COPY } from "./copy";
 import { FEED_PATHS, hasFeed } from "./feed";
 import { jsonLdScript, OG_IMAGE } from "./home";
+import { OG_SIZE } from "./ogImages";
 import { pageCitation } from "./citation";
 import { supportLinks } from "./support";
 import { markdownPath } from "./markdown";
-import { mapLink, PATHS, type SiteData, type StaticPage } from "./site";
+import { mapLink, PATHS, publisher, type SiteData, type StaticPage } from "./site";
 import { doors, escapeHtml as e, sectionsHtml, snippet } from "./markup";
 import { STATIC_STYLE } from "./style";
 
@@ -49,16 +50,23 @@ function head(page: StaticPage, site: SiteData): string {
     `<meta property="og:locale" content="${page.lang === "hr" ? "hr_HR" : "en_GB"}">`,
     ...(canonical ? [`<meta property="og:url" content="${e(canonical)}">`] : []),
     ...(site.siteUrl
-      ? [`<meta property="og:image" content="${e(site.siteUrl + (page.image ?? OG_IMAGE))}">`]
+      ? [
+          `<meta property="og:image" content="${e(site.siteUrl + (page.image ?? OG_IMAGE))}">`,
+          // every picture of the site is drawn at this size (scripts/og-image.mjs, og-topics.mjs)
+          `<meta property="og:image:width" content="${String(OG_SIZE.width)}">`,
+          `<meta property="og:image:height" content="${String(OG_SIZE.height)}">`,
+        ]
       : []),
     `<meta name="twitter:card" content="summary_large_image">`,
   ];
   const breadcrumbLd = breadcrumbJsonLd(page, site);
-  // every data set says when its data is from, unless the page already said so more exactly (Faza 47-5)
   const dated = page.jsonLd.map((each) =>
-    each["@type"] === "Dataset" && !("dateModified" in each)
-      ? { ...each, dateModified: page.lastModified }
-      : each,
+    each["@type"] === "Dataset"
+      ? completeDataset(each, page, site)
+      : // a text is as new as its content, not as the data build that rendered it (Faza 51-2)
+        each["@type"] === "Article" && page.contentModified !== undefined
+        ? { ...each, dateModified: page.contentModified }
+        : each,
   );
   const jsonLd = [...dated, ...(breadcrumbLd ? [breadcrumbLd] : [])].map(jsonLdScript);
   return [
@@ -71,7 +79,10 @@ function head(page: StaticPage, site: SiteData): string {
     ...alternates,
     xDefault,
     ...og,
+    `<link rel="icon" href="/favicon.ico" sizes="32x32">`,
     `<link rel="icon" href="/favicon.svg" type="image/svg+xml">`,
+    `<link rel="apple-touch-icon" href="/apple-touch-icon.png">`,
+    `<link rel="manifest" href="/site.webmanifest">`,
     ...(page.markdownTwin === false
       ? []
       : [`<link rel="alternate" type="text/markdown" href="${e(markdownPath(page.path))}">`]),
@@ -91,6 +102,32 @@ function head(page: StaticPage, site: SiteData): string {
   ]
     .filter(Boolean)
     .join("\n");
+}
+
+/**
+ * What every data set on a page says about itself (Faza 47-5, 51-1), unless the page already said it more
+ * exactly: when its data is from, who put it together, and where it can be taken in a machine's form (the
+ * page's Markdown twin and its JSON in the open API). A licence is left to the pages that state one: the
+ * figures of ENTSO-E, ENTSOG and GIE carry their sources' terms, which the site does not restate.
+ */
+export function completeDataset(
+  dataset: Record<string, unknown>,
+  page: StaticPage,
+  site: SiteData,
+): Record<string, unknown> {
+  const at = (path: string): string | null => (site.siteUrl ? site.siteUrl + path : null);
+  const markdown = page.markdownTwin === false ? null : at(markdownPath(page.path));
+  const json = page.apiPath ? at(page.apiPath) : null;
+  const distribution = [
+    ...(markdown ? [{ "@type": "DataDownload", encodingFormat: "text/markdown", contentUrl: markdown }] : []),
+    ...(json ? [{ "@type": "DataDownload", encodingFormat: "application/json", contentUrl: json }] : []),
+  ];
+  return {
+    ...dataset,
+    ...("dateModified" in dataset ? {} : { dateModified: page.lastModified }),
+    ...("creator" in dataset ? {} : { creator: publisher(site, createI18n(page.lang)) }),
+    ...("distribution" in dataset || distribution.length === 0 ? {} : { distribution }),
+  };
 }
 
 /** schema.org BreadcrumbList for the trail plus the page itself; needs absolute addresses, so a site URL. */

@@ -116,6 +116,11 @@ export interface StaticPage {
   breadcrumbs: Crumb[];
   /** the picture a shared link to the page shows, as a path; absent: the site's own (seo/ogImages.ts) */
   image?: string;
+  /**
+   * The day the page's content last changed ("2026-11-19", the SEO manifest's `lastmod`, set by prerender):
+   * an Article's dateModified, which must not move with every data build (Faza 51-2).
+   */
+  contentModified?: string;
   /** the open JSON twin of this page (seo/api.ts), when there is one */
   apiPath?: string;
   /**

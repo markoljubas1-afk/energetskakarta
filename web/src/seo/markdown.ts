@@ -10,7 +10,8 @@ import { createI18n } from "../i18n";
 import { pageCitation } from "./citation";
 import { COPY } from "./copy";
 import { doors } from "./markup";
-import type { SiteData, StaticPage } from "./site";
+import { reportMonths } from "./report";
+import { PATHS, type SiteData, type StaticPage } from "./site";
 
 const ENTITIES: Record<string, string> = {
   "&amp;": "&",
@@ -121,16 +122,20 @@ export const markdownPath = (path: string): string => `${path}index.md`;
  * largest plants, grid capacity, generation and prices (those that exist in this release).
  */
 export function llmsFull(pages: readonly StaticPage[], site: SiteData): string {
+  // the latest monthly report is the most quotable page there is; the capacity table (a quarter of the file
+  // before Faza 51) stays on its own page, which llms.txt links
+  const latestReport = reportMonths(site).at(-1);
   const wanted = (page: StaticPage): boolean =>
     page.lang === "en" &&
     (page.path === "/en/about/" ||
+      page.path === "/en/learn/" ||
       /^\/en\/country\/[a-z]{2}\/$/.test(page.path) ||
       page.path === "/en/largest-power-plants/" ||
-      page.path === "/en/grid-capacity/" ||
       page.path === "/en/electricity-generation/" ||
       page.path === "/en/electricity-prices/" ||
       page.path === "/en/energy-transition/" ||
-      page.path === "/en/gas/");
+      page.path === "/en/gas/" ||
+      (latestReport !== undefined && page.path === PATHS.en.report(latestReport)));
   const chosen = pages.filter(wanted);
   return [
     `# ${COPY.en.siteTitle}: full text of the main pages`,

@@ -311,8 +311,18 @@ export function staticFiles(
   const pages = buildPages(site);
   const files = new Map<string, string>();
   const relative = (p: string): string => p.replace(/^\/+/, "");
+  // worked out first: a page's text is dated by the day its content changed, not by this build (Faza 51-2)
+  const manifest = seoManifest(
+    pages,
+    options.previous ?? null,
+    site.current.buildId,
+    // a changed page is dated by this build, which runs daily, not by the weekly OSM release (Faza 31)
+    (site.builtAt ?? site.current.createdAt).slice(0, 10),
+  );
   for (const page of pages) {
-    files.set(relative(path.posix.join(page.path, "index.html")), renderPage(page, site));
+    const contentModified = manifest.pages[page.path]?.lastmod;
+    const dated = contentModified === undefined ? page : { ...page, contentModified };
+    files.set(relative(path.posix.join(page.path, "index.html")), renderPage(dated, site));
     if (page.markdownTwin !== false) files.set(relative(markdownPath(page.path)), pageMarkdown(page, site));
   }
   files.set("llms-full.txt", llmsFull(pages, site));
@@ -324,13 +334,6 @@ export function staticFiles(
   files.set("404.html", renderNotFound(site));
   files.set("robots.txt", robotsTxt(site.siteUrl));
   files.set("llms.txt", llmsTxt(site));
-  const manifest = seoManifest(
-    pages,
-    options.previous ?? null,
-    site.current.buildId,
-    // a changed page is dated by this build, which runs daily, not by the weekly OSM release (Faza 31)
-    (site.builtAt ?? site.current.createdAt).slice(0, 10),
-  );
   files.set(SEO_MANIFEST, JSON.stringify(manifest));
   const lastmods = new Map(Object.entries(manifest.pages).map(([key, entry]) => [key, entry.lastmod]));
   if (site.siteUrl) {

@@ -2988,3 +2988,24 @@ MapTilerov list ikona `sprite@2x.png` (340 kB), a slova podloge 240 kB.
   vidljivu promjenu tih natpisa.
 
 Provjera: jedinični testovi stila; mjerenje uživo nakon objave (isti skript).
+
+## Faza 51 — SEO i GEO: lakši popravci iz provjere uživo 2026-11-23 — POTVRĐENO 2026-11-23 („ajde ono što je lakše i što nosi poboljšice”), KOD GOTOV
+
+Nalaz provjere (podagent, uživo): tehnička osnova dobra; stranice se ne vide u pretrazi ni za ime (alat nije
+Google, pravu sliku daje Search Console).
+
+- [x] 51-1 (2026-11-23) Svaki `Dataset` dobiva `creator` (GridAtlas, gdje ga nema) i `distribution` (Markdown inačica
+  stranice i JSON API gdje postoji). Licenca za izvedene brojke ENTSO-E/ENTSOG/GIE NIJE dodana: stranica je
+  nigdje ne navodi, to je odluka vlasnika.
+- [x] 51-2 (2026-11-23) `Article.dateModified` = dan stvarne promjene sadržaja (SEO manifest, isti kao `lastmod` u
+  sitemapu), ne vrijeme svakog builda.
+- [x] 51-3 (2026-11-23) `llms.txt`: Edukacija, „Tko stoji iza”, LNG terminal, skladište, Usporedbe; `llms-full.txt`:
+  sažetak zadnjeg izvještaja, kraća tablica kapaciteta.
+- [x] 51-4 (2026-11-23) Higijena: `favicon.ico`, `apple-touch-icon.png`, `site.webmanifest`; `og:image:width/height/alt`
+  na svim stranicama; naslovi do 60 znakova (cijene, kapaciteti, geotermalna); naslovi elektrana bez
+  ponavljanja vrste. Napravljeno: ikone iz `favicon.svg` (`web/scripts/icons.mjs`), `og:image:width/height`
+  (bez `alt`), naslovi cijena, kapaciteta i geotermalne do 60 znakova, `assetTitle` u `seo/copy.ts`.
+  `llms-full.txt` bez tablice kapaciteta, s Edukacijom i zadnjim izvještajem.
+
+Čeka vlasnika: opis autora (Person), tanke stranice objekata u sitemapu, statične stranice usporedbi;
+`www` DNS i e-mail obfuscation u Cloudflareu.

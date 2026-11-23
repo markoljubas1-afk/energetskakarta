@@ -111,7 +111,12 @@ describe("Markdown twins", () => {
     const full = llmsFull(buildPages(site), site);
     expect(full).toContain("## About the map");
     expect(full).toMatch(/\n## [^\n]*Croatia\n/);
-    expect(full).toContain("## Free capacity in the distribution grid (HEP ODS)");
+    // the capacity table stays on its own page (a quarter of the file before Faza 51); llms.txt links it
+    expect(full).not.toContain("## Free capacity in the distribution grid (HEP ODS)");
+    expect(llmsTxt(site)).toContain("/en/grid-capacity/");
+    // the learning page and the comparisons are announced
+    expect(llmsTxt(site)).toContain("/en/learn/");
+    expect(llmsTxt(site)).toContain("/en/who-is-behind/");
     expect(full).not.toContain("## O karti");
     expect(llmsTxt(site)).toContain("https://karta.example/llms-full.txt");
     expect(llmsTxt(site)).toContain("add index.md to its address");

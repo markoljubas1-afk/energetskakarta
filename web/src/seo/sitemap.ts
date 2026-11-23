@@ -9,10 +9,11 @@ import { groupHubs } from "./countryPages";
 import { hasGenerationOverview, hasPrices } from "./energyPages";
 import { hasGeothermal } from "./geothermal";
 import { hasFeed } from "./feed";
-import { reportMonths } from "./report";
+import { compareLink, reportMonths } from "./report";
 import { monthName } from "./reportCopy";
 import { hasTransition } from "./transition";
 import { hasGasPage } from "./gasPages";
+import { gasPlacePages } from "./gasPlaces";
 
 /** Sitemaps are capped at 50 000 URLs; the pages are split into files of this many, home first. */
 export const SITEMAP_CHUNK = 5000;
@@ -141,6 +142,8 @@ export function llmsTxt(site: SiteData): string {
     "",
     `- [About the map (English)](${base}${PATHS.en.about}): sources, licences, update schedule, FAQ`,
     `- [O karti (hrvatski)](${base}${PATHS.hr.about})`,
+    `- [Learn: how electricity and gas reach a home (English)](${base}${PATHS.en.learn}): the path of electricity and of gas explained step by step, a glossary and questions answered, each fact with its source`,
+    `- [Who is behind GridAtlas (English)](${base}${PATHS.en.author}): who makes the map, why, and how to get in touch`,
     `- [Interactive map](${base}/): every asset; the URL carries the view, filters and the selected asset`,
     `- [Largest power plants in the region](${base}${PATHS.en.largest}): the ${LARGEST_ROWS} largest by recorded capacity`,
     ...(hasGenerationOverview(site)
@@ -163,9 +166,13 @@ export function llmsTxt(site: SiteData): string {
           `- [Gas in Croatia: the day's picture (English)](${base}${PATHS.en.gas}): what entered the gas transmission system on the latest gas day and at which point (the LNG terminal on Krk, domestic fields, storage, the borders), how much was delivered to customers on each of the last gas days, and how full the gas storage facilities are; from the ENTSOG Transparency Platform and GIE AGSI, rebuilt daily`,
         ]
       : []),
+    ...gasPlacePages(site)
+      .filter((page) => page.lang === "en")
+      .map((page) => `- [${page.heading}](${base}${page.path}): ${page.description}`),
     ...(reportMonths(site).length > 0
       ? [
           `- [Monthly reports: electricity in Croatia and the region (English)](${base}${PATHS.en.reports}): one page per complete month with generation by source, the renewable share and carbon intensity in Croatia, compared with the previous month, the same month a year earlier and the neighbours; latest: [${monthName("en", reportMonths(site).at(-1) ?? "")}](${base}${PATHS.en.report(reportMonths(site).at(-1) ?? "")})`,
+          `- [Comparisons (interactive)](${base}${compareLink("en", null)}): the same month across the years, one year against another over the months both reported in full, and the countries side by side, with the monthly reports' figures; every choice is kept in the address, so a comparison can be linked`,
         ]
       : []),
     ...(hasPrices(site)
