@@ -27,17 +27,59 @@ function isStyle(value: unknown): value is StyleSpecification {
   return candidate.version === 8 && Array.isArray(candidate.layers) && typeof candidate.sources === "object";
 }
 
-/** Pick a font the basemap already uses for labels, so our labels need no extra glyph requests. */
+/** A font stack as a list of names, or null for an expression. */
+function fontStack(layer: StyleSpecification["layers"][number]): string[] | null {
+  if (layer.type !== "symbol") return null;
+  const font = layer.layout?.["text-font"];
+  return Array.isArray(font) && font.length > 0 && font.every((f) => typeof f === "string")
+    ? (font as string[])
+    : null;
+}
+
+const italic = (stack: readonly string[]): boolean => stack.some((name) => /italic/i.test(name));
+
+/**
+ * The basemap made lighter for phones (Faza 50). MapTiler's dataviz styles name an icon sheet (`sprite`,
+ * 340 kB at 2×) that none of their layers draw, and set the names of seas and lakes in an italic face that
+ * nothing else uses: the sheet is dropped and the italic names take the upright face of the place names,
+ * whose glyphs are fetched anyway. A style that does draw icons keeps its sheet (`composeStyle` checks ours too).
+ */
+export function trimBasemap(style: StyleSpecification): StyleSpecification {
+  const upright = style.layers.map(fontStack).find((stack) => stack !== null && !italic(stack)) ?? null;
+  if (!upright) return style;
+  return {
+    ...style,
+    layers: style.layers.map((layer) => {
+      const stack = fontStack(layer);
+      if (layer.type !== "symbol" || stack === null || !italic(stack)) return layer;
+      return { ...layer, layout: { ...layer.layout, "text-font": upright } };
+    }),
+  };
+}
+
+/** Whether any layer draws from the icon sheet. */
+export function drawsIcons(layers: StyleSpecification["layers"]): boolean {
+  return layers.some((layer) => {
+    const layout = layer.layout as Record<string, unknown> | undefined;
+    const paint = layer.paint as Record<string, unknown> | undefined;
+    return (
+      layout?.["icon-image"] !== undefined ||
+      paint?.["fill-pattern"] !== undefined ||
+      paint?.["line-pattern"] !== undefined ||
+      paint?.["background-pattern"] !== undefined ||
+      paint?.["fill-extrusion-pattern"] !== undefined
+    );
+  });
+}
+
+/**
+ * Pick a font the basemap already uses for labels, so our labels need no extra glyph requests: an upright one,
+ * since the first label of the style is usually the sea's italic (before Faza 50 our labels were set in it).
+ */
 export function labelFonts(style: StyleSpecification): string[] | null {
   if (!style.glyphs) return null;
-  for (const layer of style.layers) {
-    if (layer.type !== "symbol") continue;
-    const font = layer.layout?.["text-font"];
-    if (Array.isArray(font) && font.length > 0 && font.every((f) => typeof f === "string")) {
-      return font as string[];
-    }
-  }
-  return null;
+  const stacks = style.layers.map(fontStack).filter((stack): stack is string[] => stack !== null);
+  return stacks.find((stack) => !italic(stack)) ?? stacks[0] ?? null;
 }
 
 export function fallbackStyle(palette: Palette): StyleSpecification {
@@ -91,7 +133,8 @@ export async function loadBasemap(
       console.warn("[basemap] MapTiler style has an unexpected shape; using fallback basemap");
       return fallback;
     }
-    return { style: body, kind: "maptiler", fonts: labelFonts(body) };
+    const style = trimBasemap(body);
+    return { style, kind: "maptiler", fonts: labelFonts(style) };
   } catch (error) {
     console.warn("[basemap] MapTiler unavailable; using fallback basemap", error);
     return fallback;
@@ -112,10 +155,13 @@ export function composeStyle(
 ): StyleSpecification {
   const clash = layers.find((layer) => basemap.layers.some((existing) => existing.id === layer.id));
   if (clash) throw new Error(`Layer id collision with basemap: ${clash.id}`);
+  const all = [...basemap.layers, ...layers];
+  // an icon sheet nothing draws from is a download for nothing (Faza 50)
+  const { sprite, ...rest } = basemap;
   return {
-    ...basemap,
+    ...(drawsIcons(all) && sprite !== undefined ? { ...rest, sprite } : rest),
     sources: { ...basemap.sources, ...sources },
-    layers: [...basemap.layers, ...layers],
+    layers: all,
     // paint changes (price colours between hours, the time machine's year) fade unless motion is reduced
     transition: reducedMotion ? { duration: 0, delay: 0 } : { duration: 400, delay: 0 },
   };

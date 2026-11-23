@@ -2973,3 +2973,18 @@ Brojke su iste kao u izvještajima: `seriesRows` (izdvojeno iz `seo/energyPages.
 (`seo/report.ts`), pravilo potpunosti `COMPLETE_COVERAGE` (0,98).
 
 Otvoreno: pregled uživo s pravim podacima nakon objave.
+
+## Faza 50 — Lakša karta na mobitelu — POTVRĐENO 2026-11-23 („može 1 i 2”)
+
+Mjerenje uživo (Pixel 7, 4G, 2026-11-23): karta povuče oko 1,6 MB u 40 zahtjeva; najveća datoteka je
+MapTilerov list ikona `sprite@2x.png` (340 kB), a slova podloge 240 kB.
+
+- [x] 50-1 (2026-11-23) Podloga bez lista ikona i bez kurziva (`web/src/map/basemap.ts`: `trimBasemap`,
+  `drawsIcons`): stil „dataviz” ne crta nijednu ikonu, a kurziv koristi samo za imena mora i jezera.
+  Usput popravljeno: naši natpisi (elektrane, cijene) uzimali su font prvog natpisa podloge, tj. kurziv za
+  more; sada uspravni font gradova. Očekivano oko 400 kB manje.
+- [ ] 50-2 Manje fontova: NIJE napravljeno, čeka vlasnika. Uski Plex koristi se za brojke na dvadesetak
+  mjesta (izbacivanje mijenja izgled i širinu brojki); debljina 500 na 20 mjesta, ušteda oko 40 kB uz
+  vidljivu promjenu tih natpisa.
+
+Provjera: jedinični testovi stila; mjerenje uživo nakon objave (isti skript).

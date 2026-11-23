@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { loadBasemap, maptilerStyleUrl } from "./basemap";
+import { composeStyle, labelFonts, loadBasemap, maptilerStyleUrl, trimBasemap } from "./basemap";
 import { PALETTES } from "./palette";
 
 const palette = PALETTES.light;
@@ -64,5 +64,67 @@ describe("loadBasemap", () => {
 describe("maptilerStyleUrl", () => {
   it("uses the Dataviz styles", () => {
     expect(maptilerStyleUrl("k", "light")).toBe("https://api.maptiler.com/maps/dataviz/style.json?key=k");
+  });
+});
+
+describe("a lighter basemap for phones (Faza 50)", () => {
+  // the shape of MapTiler's dataviz styles: a sheet of icons no layer draws, the seas in italic
+  const dataviz = {
+    version: 8 as const,
+    sprite: "https://api.maptiler.com/sprites/general/sprite",
+    glyphs: "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=k",
+    sources: {},
+    layers: [
+      { id: "bg", type: "background" as const, paint: { "background-color": "#000" } },
+      {
+        id: "Ocean labels",
+        type: "symbol" as const,
+        source: "maptiler",
+        layout: { "text-font": ["Metropolis Semi Bold Italic", "Noto Sans Bold"] },
+      },
+      {
+        id: "City labels",
+        type: "symbol" as const,
+        source: "maptiler",
+        layout: { "text-font": ["Metropolis Semi Bold", "Noto Sans Bold"] },
+      },
+    ],
+  };
+
+  it("sets the seas upright and gives our labels the upright face", () => {
+    const trimmed = trimBasemap(dataviz);
+    const fonts = trimmed.layers.flatMap((layer) =>
+      layer.type === "symbol" ? [JSON.stringify(layer.layout?.["text-font"])] : [],
+    );
+    expect(new Set(fonts)).toEqual(new Set([JSON.stringify(["Metropolis Semi Bold", "Noto Sans Bold"])]));
+    // our labels used to take the first label's face, the sea's italic
+    expect(labelFonts(dataviz)).toEqual(["Metropolis Semi Bold", "Noto Sans Bold"]);
+    expect(labelFonts(trimmed)).toEqual(["Metropolis Semi Bold", "Noto Sans Bold"]);
+  });
+
+  it("leaves a style with only italic labels as it is", () => {
+    const onlyItalic = { ...dataviz, layers: dataviz.layers.slice(0, 2) };
+    expect(trimBasemap(onlyItalic)).toBe(onlyItalic);
+  });
+
+  it("drops the sheet of icons when nothing draws from it, and keeps it when something does", () => {
+    expect(composeStyle(dataviz, {}, []).sprite).toBeUndefined();
+    const icon = {
+      id: "energymap-icon",
+      type: "symbol" as const,
+      source: "maptiler",
+      layout: { "icon-image": "star" },
+    };
+    expect(composeStyle(dataviz, {}, [icon]).sprite).toBe(dataviz.sprite);
+    expect(composeStyle({ ...dataviz, layers: [...dataviz.layers, icon] }, {}, []).sprite).toBe(
+      dataviz.sprite,
+    );
+  });
+
+  it("is what loadBasemap hands over", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(new Response(JSON.stringify(dataviz)));
+    const basemap = await loadBasemap("k", "dark", palette, fetchImpl);
+    expect(basemap.fonts).toEqual(["Metropolis Semi Bold", "Noto Sans Bold"]);
+    expect(JSON.stringify(basemap.style)).not.toContain("Italic");
   });
 });
