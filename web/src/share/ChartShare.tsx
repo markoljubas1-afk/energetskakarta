@@ -259,6 +259,7 @@ export function ChartShare(props: ChartShareProps) {
         <div className={styles.panel}>
           <p className={styles.hint}>{t("chartEmbedNote")}</p>
           <textarea
+            name="chart-embed"
             className={styles.code}
             readOnly
             rows={4}
@@ -295,6 +296,7 @@ export function ChartShare(props: ChartShareProps) {
         <p className={styles.hint} role="alert">
           {t("chartCopyFailed")}
           <textarea
+            name="chart-link"
             className={styles.code}
             readOnly
             rows={3}

@@ -8,6 +8,8 @@
  * fills in numbers and shows the box. Without script, or when the data cannot be read, the box stays hidden
  * and the page is exactly the text it was.
  */
+// before anything parses: no `new Function` probe for the CSP to report
+import "../zodSetup";
 import { ageHours, band, latestGreen, STALE_AFTER_HOURS } from "../data/greenShare";
 import { compare, loadHouseholds } from "../data/households";
 import { loadLive, pricesAt } from "../data/live";

@@ -307,6 +307,7 @@ export function DayCardDialog(props: Props) {
       <label className={styles.country}>
         {t("dayCardKind")}
         <select
+          name="picture-kind"
           value={kind}
           onChange={(event) => {
             const next = CARD_KINDS.find((each) => each === event.currentTarget.value) ?? "figures";
@@ -327,6 +328,7 @@ export function DayCardDialog(props: Props) {
         <label className={styles.country}>
           {t("dayCardCountry")}
           <select
+            name="picture-country"
             value={country}
             onChange={(event) => {
               setChosen(event.currentTarget.value);

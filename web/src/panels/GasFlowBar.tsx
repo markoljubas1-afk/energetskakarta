@@ -109,6 +109,7 @@ function Bar({ flows, onClose, onDay }: { flows: GasFlows } & Pick<Props, "onClo
         <label className={styles.country}>
           {t("dayCardCountry")}
           <select
+            name="gas-flow-country"
             value={country}
             onChange={(event) => {
               setPlaying(false);
@@ -140,6 +141,7 @@ function Bar({ flows, onClose, onDay }: { flows: GasFlows } & Pick<Props, "onClo
             )}
           </button>
           <input
+            name="gas-flow-day"
             type="range"
             min={0}
             max={last}

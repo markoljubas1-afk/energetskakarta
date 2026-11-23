@@ -333,6 +333,7 @@ export function HomeFlow({ shapes, point, yearlyKwh, yieldKwh, kwp, month: openM
       <label className={styles.slider}>
         <span>{t("homeHour")}</span>
         <input
+          name="home-hour"
           type="range"
           min={0}
           max={HOURS - 1}
@@ -349,6 +350,7 @@ export function HomeFlow({ shapes, point, yearlyKwh, yieldKwh, kwp, month: openM
         <label>
           <span>{t("homeMonth")}</span>
           <select
+            name="home-month"
             value={month}
             onChange={(event) => {
               setMonth(Number(event.target.value));
@@ -363,6 +365,7 @@ export function HomeFlow({ shapes, point, yearlyKwh, yieldKwh, kwp, month: openM
         </label>
         <label className={styles.check}>
           <input
+            name="home-battery"
             type="checkbox"
             checked={battery}
             onChange={(event) => {
@@ -375,6 +378,7 @@ export function HomeFlow({ shapes, point, yearlyKwh, yieldKwh, kwp, month: openM
           <label>
             <span>{t("homeBatterySize")}</span>
             <select
+              name="home-battery-size"
               value={size}
               onChange={(event) => {
                 setSize(Number(event.target.value));

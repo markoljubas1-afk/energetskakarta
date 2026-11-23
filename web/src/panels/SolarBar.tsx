@@ -214,6 +214,7 @@ function Roof(props: { yieldKwh: number; point: { lng: number; lat: number }; ho
       <label>
         <span>{t("roofConsumption")}</span>
         <input
+          name="roof-consumption"
           type="range"
           min={CONSUMPTION.min}
           max={CONSUMPTION.max}

@@ -4,6 +4,8 @@ import "@fontsource/ibm-plex-sans/600.css";
 import "@fontsource/ibm-plex-sans-condensed/600.css";
 import "./app/tokens.css";
 
+// before anything parses: no `new Function` probe for the CSP to report
+import "./zodSetup";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 

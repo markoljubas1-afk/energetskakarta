@@ -267,6 +267,7 @@ function Content({ dataBaseUrl, pointer, periods, energy, update, theme, embedde
           <label className={styles.select}>
             <span>{t("energyArea")}</span>
             <select
+              name="energy-area"
               value={area}
               onChange={(event) => {
                 const value = event.target.value;
@@ -489,6 +490,7 @@ function SourceRing(props: {
         <label className={styles.inlineSelect}>
           <span>{t("energyPeriod")}</span>
           <select
+            name="energy-ring-period"
             value={shown.period}
             onChange={(event) => {
               setChosen(event.target.value);
@@ -617,6 +619,7 @@ function YearComparison(props: {
     <label className={styles.select}>
       <span>{t("energyCompareSource")}</span>
       <select
+        name="energy-source"
         value={tech ?? ""}
         onChange={(event) => {
           const value = event.target.value;
@@ -829,6 +832,7 @@ function RangeTotals(props: {
         <label className={styles.select}>
           <span>{t("energyFrom")}</span>
           <input
+            name="energy-from"
             type="date"
             value={draft.from}
             min={`${years[0] ?? ""}-01-01`}
@@ -841,6 +845,7 @@ function RangeTotals(props: {
         <label className={styles.select}>
           <span>{t("energyTo")}</span>
           <input
+            name="energy-to"
             type="date"
             value={draft.to}
             min={`${years[0] ?? ""}-01-01`}

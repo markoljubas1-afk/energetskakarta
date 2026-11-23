@@ -151,6 +151,7 @@ export function ShareMenu({
             <p className={styles.hint} role="alert">
               {t("shareCopyFailed")}
               <input
+                name="share-link"
                 className={styles.linkField}
                 type="text"
                 readOnly
@@ -181,6 +182,7 @@ export function ShareMenu({
             <div className={styles.hint}>
               <p className={styles.hint}>{t("shareEmbedNote")}</p>
               <textarea
+                name="share-embed"
                 className={styles.linkField}
                 readOnly
                 rows={4}

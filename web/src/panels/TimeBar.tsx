@@ -103,6 +103,7 @@ export function TimeBar({ data, year, scope, theme, onYear, onRetry }: Props) {
             <ChevronLeft size={16} strokeWidth={1.75} aria-hidden="true" />
           </button>
           <input
+            name="year"
             className={styles.slider}
             type="range"
             min={timeline.firstYear}

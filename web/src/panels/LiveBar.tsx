@@ -146,6 +146,7 @@ export function LiveBar({
             <ChevronLeft size={16} strokeWidth={1.75} aria-hidden="true" />
           </button>
           <input
+            name="live-hour"
             className={styles.slider}
             type="range"
             min={0}
@@ -380,6 +381,7 @@ function RecordDays({
       <label>
         <span>{t("recordDays")}</span>
         <select
+          name="live-day"
           value={day?.date ?? ""}
           onChange={(event) => {
             onDay(event.target.value === "" ? null : event.target.value);

@@ -110,6 +110,7 @@ export function GreenLight({
         <label className={styles.country}>
           <span className={styles.hidden}>{t("greenCountry")}</span>
           <select
+            name="green-country"
             value={country}
             onChange={(event) => {
               const next = event.target.value;

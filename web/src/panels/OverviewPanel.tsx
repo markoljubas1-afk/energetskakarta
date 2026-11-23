@@ -89,6 +89,7 @@ export function OverviewPanel({
       <label className={styles.area}>
         <span>{t("overviewScope")}</span>
         <select
+          name="overview-area"
           value={area}
           onChange={(event) => {
             const value = event.target.value;

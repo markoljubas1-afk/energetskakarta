@@ -214,6 +214,7 @@ function Content(props: {
         <label className={styles.select}>
           <span>{t("energyArea")}</span>
           <select
+            name="compare-area"
             value={area}
             onChange={(event) => {
               const value = event.target.value;
@@ -341,6 +342,7 @@ function MonthCard(props: {
         <label className={styles.select}>
           <span>{t("compareMonth")}</span>
           <select
+            name="compare-month"
             value={month}
             onChange={(event) => {
               update({ month: Number(event.target.value) });
@@ -481,6 +483,7 @@ function YearsCard(props: {
     <label className={styles.select}>
       <span>{t(index === 0 ? "compareYearA" : "compareYearB")}</span>
       <select
+        name="compare-year"
         value={chosen?.[index] ?? ""}
         onChange={(event) => {
           if (!chosen) return;
@@ -648,6 +651,7 @@ function CountriesCard(props: {
             <label className={styles.select}>
               <span>{t("energyPeriod")}</span>
               <select
+                name="compare-period"
                 value={period ?? ""}
                 onChange={(event) => {
                   update({ period: event.target.value });

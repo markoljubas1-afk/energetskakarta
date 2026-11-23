@@ -185,6 +185,7 @@ export function FiltersPanel({
       <div key={layer} className={styles.layerRow}>
         <label className={styles.toggle}>
           <input
+            name="layers"
             type="checkbox"
             checked={state.layers.has(layer)}
             onChange={() => {
@@ -254,6 +255,7 @@ export function FiltersPanel({
             <h4 className={styles.groupLabel}>{t("layerGroup_live")}</h4>
             <label className={styles.toggle}>
               <input
+                name="live"
                 type="checkbox"
                 checked={state.live}
                 onChange={() => {
@@ -346,6 +348,7 @@ export function FiltersPanel({
 
         <Section title={t("minCapacity")}>
           <select
+            name="min-capacity"
             className={styles.select}
             aria-label={t("minCapacity")}
             value={state.minMw}
