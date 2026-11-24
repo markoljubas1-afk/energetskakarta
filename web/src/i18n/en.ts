@@ -740,7 +740,7 @@ export const en: Dictionary = {
     "Over the year (a calculation): {self}% of what is generated stays in the house, own electricity covers {own}% of consumption. {exported} goes to the grid, {imported} comes from it.",
   homeWithout: "Without a battery: {self}% and {own}%.",
   homeNote:
-    "Calculated for the average day of each month: real days are cloudier or sunnier than the average, so the real shares differ somewhat. A roof of {slope}° facing south. Consumption is the standard curve of the household group for {year}, not of your household. The battery charges only from the panels' surplus, loses {loss}% on charging and has no limit on its power.",
+    "Calculated for the average day of each month: real days are cloudier or sunnier than the average, so generation and use match less well in reality and the real shares are probably somewhat lower, above all with a battery. A roof of {slope}° facing south. Consumption is the standard curve of the household group for {year}, not of your household. The battery charges only from the panels' surplus, loses {loss}% on charging and has no limit on its power.",
   homeSources: "Sources:",
   homeNoSun: "There is no daily course of the sun for this place, so the house is not shown.",
   homeAriaSun: "At {hour}, an average day, {month}: the panels give {pv}, the house uses {load}.",
@@ -752,7 +752,7 @@ export const en: Dictionary = {
   roofConsumption: "Your yearly electricity consumption (it is on the bill)",
   roofResult: "Here that takes about {kwp} kWp, roughly {panels} panels of {watts} W.",
   roofNote:
-    "A yearly balance: that many panels generate in an average year what you use. Summer leaves a surplus and winter a shortfall, so it is not independence from the grid. A roof facing the wrong way or in shade needs more.",
+    "A yearly balance: that many panels generate in an average year what you use. Summer leaves a surplus and winter a shortfall, so it is not independence from the grid. The atlas counts a system facing south at the best tilt, unshaded and never down; a roof facing another way, in shade or with ageing panels needs more.",
   solarStation: "Nearest HEP ODS substation",
   solarStationAway: "{km} km as the crow flies",
   solarStationShow: "Show on the map",

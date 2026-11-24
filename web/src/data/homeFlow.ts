@@ -9,7 +9,8 @@
  *   consumption the reader gave. It is the curve of a group, not of one home.
  *
  * What it is and is not: an average day. Real days are cloudier or sunnier than the average, so a real
- * house uses a somewhat different share of its own electricity; every text that shows these figures says
+ * house uses a lower share of its own electricity (an average day matches sun and use better than real days
+ * do: min(pv, load) of the averages is at least the average of the mins); every text that shows these figures says
  * "an average day" and calls the shares a calculation. The battery charges only from the surplus of the
  * panels, loses a stated share on charging and has no limit on its power: assumptions, printed with it.
  */
