@@ -170,3 +170,78 @@ test("the house under the calculator shows where the electricity goes, hour by h
   expect(drawing.x).toBeGreaterThanOrEqual(around.x);
   expect(drawing.x + drawing.width).toBeLessThanOrEqual(around.x + around.width + 0.5);
 });
+
+/** The roof planes of the home shapes' one point (Faza 52): an east roof makes 80 % of the best, at 10:00. */
+const EAST_DAY = Array.from({ length: 24 }, (_, hour) => Math.max(0, 600 - 100 * Math.abs(hour - 10)));
+const plane = (
+  id: string,
+  facing: string,
+  slopeDeg: number,
+  azimuthDeg: number,
+  yearlyKwh: number,
+  day: number[],
+) => ({
+  id,
+  facing,
+  slopeDeg,
+  azimuthDeg,
+  yearlyKwh,
+  shape: Array.from({ length: 12 }, () => day),
+});
+const PLANES = {
+  version: 1,
+  generatedAt: "2026-11-24T22:00:00+00:00",
+  source: "PVGIS 5.3 (European Commission, Joint Research Centre), database PVGIS-SARAH3",
+  sourceUrl: "https://re.jrc.ec.europa.eu/pvg_tools/en/",
+  license: "CC-BY-4.0",
+  attribution: "PVGIS © European Communities, 2001-2026",
+  systemLossPercent: 14,
+  cell: { col: 0, row: 0, lon: 13, lat: 45 },
+  best: { slopeDeg: 36, azimuthDeg: 0, yearlyKwh: 1200 },
+  planes: [
+    plane("S-15", "S", 15, 0, 1140, DAY_OF_SUN),
+    plane("S-30", "S", 30, 0, 1188, DAY_OF_SUN),
+    plane("S-45", "S", 45, 0, 1182, DAY_OF_SUN),
+    plane("E-30", "E", 30, -90, 960, EAST_DAY),
+    plane("flat", "flat", 10, 0, 1110, DAY_OF_SUN),
+  ],
+};
+
+test("the reader picks the roof's direction and tilt, and the house follows", async ({ page }, testInfo) => {
+  await page.route("**/local-data/solar/home.json", (route) => route.fulfill({ json: HOME }));
+  await page.route("**/local-data/solar/planes/0-0.json", (route) => route.fulfill({ json: PLANES }));
+  await page.route("**/local-data/solar/index.json", (route) => route.fulfill({ json: SOLAR }));
+  await page.route("**/local-data/solar/pvout-*.png", (route) =>
+    route.fulfill({ contentType: "image/png", body: PIXEL }),
+  );
+  await page.goto("/?l=solar&v=44.9,13.2,9&sun=44.9,13.2");
+  await expect(page.locator('[data-map-status="ready"]')).toBeVisible();
+  const bar = page.getByRole("region", { name: "Sunčani potencijal" });
+  const facing = bar.getByRole("combobox", { name: "Strana krova" });
+  await expect(facing).toHaveValue("S");
+  // south at 30°: 99 % of the best, 1,238 kWh/kWp of the atlas's 1,250
+  await expect(bar).toContainText(
+    "Ovaj krov: oko 1.238 kWh po kWp godišnje, 99 % najboljeg krova na ovom mjestu.",
+  );
+  await facing.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: testInfo.outputPath(`roof-south-${testInfo.project.name}.png`) });
+
+  await facing.selectOption("E");
+  await expect(bar).toContainText("80 % najboljeg krova");
+  // 4,000 kWh at 1,000 kWh/kWp
+  await expect(bar).toContainText("Ovdje za to treba oko 4 kWp, otprilike 10 panela od 430 W.");
+  // the east roof's own day: at 08:00 it already makes more than the south roof's day would
+  const house = bar.getByRole("img", { name: /paneli daju/ });
+  await bar.getByRole("slider", { name: "Sat u danu" }).fill("8");
+  await expect(house).toHaveAccessibleName(/^U 08:00, .*paneli daju [\d,]+ kW/);
+  await expect(bar).toContainText("Krov nagiba 30° okrenut istoku.");
+  await facing.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: testInfo.outputPath(`roof-east-${testInfo.project.name}.png`) });
+
+  await facing.selectOption("flat");
+  await expect(bar.getByRole("combobox", { name: "Nagib krova" })).toHaveCount(0);
+  await expect(bar).toContainText("Ravni krov, paneli na nosačima od 10° prema jugu.");
+  // nothing sticks out of the bar on a phone
+  const width = await page.evaluate(() => document.documentElement.scrollWidth);
+  expect(width).toBeLessThanOrEqual(page.viewportSize()?.width ?? 0);
+});
