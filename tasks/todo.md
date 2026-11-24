@@ -3009,3 +3009,41 @@ Google, pravu sliku daje Search Console).
 
 Čeka vlasnika: opis autora (Person), tanke stranice objekata u sitemapu, statične stranice usporedbi;
 `www` DNS i e-mail obfuscation u Cloudflareu.
+
+## Faza 52 — Kalkulator sunca: orijentacija i nagib krova — POTVRĐENO 2026-11-24 („može, kreni s orijentacijom i nagibom krova. Prije deploya trebamo vidjeti gdje ćemo to smjestiti”)
+
+Cilj: kalkulator „Koliko panela treba?” i „Kuća s panelima” računaju za krov kakav čitatelj ima, ne samo za
+idealan (jug, optimalni nagib, kako računa Global Solar Atlas).
+
+Pristup (bez poslužitelja, bez ključa, 0 €):
+- 52-1 Cjevovod: novi `solar/planes.json` (zasebna datoteka, živa stranica je ne čita dok ne objavimo web).
+  Za iste točke mreže 1° kao `solar/home.json` (samo one gdje PVGIS ima podatke) PVGIS 5.3 `PVcalc`
+  (1 kWp, gubici 14 %, slobodnostojeće kao atlas) za ravnine: jug, jugoistok, jugozapad, istok, zapad × nagib
+  15°, 30°, 45°, ravni krov (0°), i optimum (`optimalangles=1`). Sprema se godišnji i mjesečni prinos po ravnini.
+  Ništa se ne procjenjuje: točka bez podataka je `null`; manje od četvrtine točaka zaustavlja objavu.
+- 52-2 Web: prinos krova = prinos atlasa na mjestu × (PVGIS ravnina / PVGIS optimum) u najbližoj točki mreže.
+  Isti omjer, ne miješanje dvaju modela: apsolutni broj ostaje atlasov, PVGIS daje samo koliko krov gubi.
+  „Kuća s panelima” mjesečne zbrojeve uzima iz ravnine (zima/ljeto se mijenjaju s nagibom).
+- 52-3 Sučelje: u bloku kalkulatora dva izbora (strana krova, nagib; ravni krov gasi nagib), ispod rezultata
+  „prinos ovog krova: X kWh/kWp, Y % najboljeg”. Zadano: jug, 30°.
+- 52-4 Provjera prije objave: snimke na računalu i mobitelu, vlasnik odobrava smještaj; tek onda push na main.
+
+Alternative odbačene: poziv PVGIS-a iz preglednika (PVGIS ga ne dopušta, trebao bi posrednik); Google Solar API
+(ključ, uvjeti prikaza, plaćanje); faktori iz formule (to bi bila procjena, a ne izvor).
+
+Rizici: ~3 000 poziva PVGIS-a (ograničenje 30/s; pauza među pozivima, workflow timeout povećan); dnevni oblik
+za istok/zapad ostaje oblik južnog krova (vidi 52-2) — napomena to kaže ako ostane tako.
+
+Datoteke: `pipeline/src/energymap/solar/planes.py` (+test), `cli.py`, `.github/workflows/solar-home.yml`,
+`web/src/data/roofPlanes.ts` (+test), `SolarBar.tsx`, `HomeFlow.tsx`, `homeFlow.ts`, i18n.
+
+Dorada plana nakon savjeta (2026-11-24), prije koda:
+- Dnevni oblik po ravnini, ne južni: za istok/zapad baš se radi o jutru i večeri, pa „Kuća s panelima” s
+  južnim oblikom bila bi kriva po konstrukciji. Uz `PVcalc` i `DRcalc` po ravnini; jedna mala datoteka po
+  ćeliji mreže, `solar/planes/{col}-{row}.json` (~15 kB), čita se tek na klik.
+- PVGIS `aspect`: 0 jug, −90 istok, 90 zapad, −45 jugoistok, 45 jugozapad (konstanta + test: I < J, Z ≈ I).
+- Ravni krov = paneli na nosačima 10° prema jugu (tako se stvarno postavljaju), jedan poziv; tako i piše.
+- `usehorizon=0` za omjere: središte ćelije 1° može biti u dolini i iskriviti istok/zapad za cijelu ćeliju.
+- Ćelija se bira kao `sunShapeAt` (ista logika i isti `null`); gdje nje nema, izbor krova se ne nudi.
+- Rad na grani + pull request: `web.yml` objavljuje granu kao preview na Pages (`--branch`), main tek nakon
+  odobrenja. Cjevovod kao novi korak postojećeg `solar-home.yml` (`gh workflow run --ref <grana>`), timeout veći.

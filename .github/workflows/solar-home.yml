@@ -4,6 +4,10 @@
 # Both change at most once a year, so this runs when a person starts it, not on a schedule. If a source does
 # not say what the pipeline was written against, the run is red and what is published stays as it was.
 # No API key is needed.
+#
+# "planes" (Faza 52) reads instead, for the same grid, what each roof plane (five directions at three tilts
+# and a flat roof) yields and its average day, about 33 PVGIS calls a cell and an hour and a half in all,
+# published as one small file a cell (solar/planes/{col}-{row}.json).
 name: solar-home
 
 on:
@@ -13,6 +17,11 @@ on:
         description: "The year of HEP ODS's household curve (empty: this year)"
         default: ""
         required: false
+      part:
+        description: "What to read: home (sun and household shapes) or planes (roof planes)"
+        type: choice
+        options: [home, planes]
+        default: home
 
 permissions:
   contents: read
@@ -24,7 +33,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 150
     defaults:
       run:
         working-directory: pipeline
@@ -51,9 +60,10 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
           YEAR: ${{ inputs.year }}
+          PART: ${{ inputs.part || 'home' }}
         run: |
           if [ -n "$YEAR" ]; then
-            energymap solar home-r2 --data-dir data --year "$YEAR" >> "$GITHUB_STEP_SUMMARY"
+            energymap solar "$PART-r2" --data-dir data --year "$YEAR" >> "$GITHUB_STEP_SUMMARY"
           else
-            energymap solar home-r2 --data-dir data >> "$GITHUB_STEP_SUMMARY"
+            energymap solar "$PART-r2" --data-dir data >> "$GITHUB_STEP_SUMMARY"
           fi
