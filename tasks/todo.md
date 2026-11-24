@@ -3047,3 +3047,10 @@ Dorada plana nakon savjeta (2026-11-24), prije koda:
 - Ćelija se bira kao `sunShapeAt` (ista logika i isti `null`); gdje nje nema, izbor krova se ne nudi.
 - Rad na grani + pull request: `web.yml` objavljuje granu kao preview na Pages (`--branch`), main tek nakon
   odobrenja. Cjevovod kao novi korak postojećeg `solar-home.yml` (`gh workflow run --ref <grana>`), timeout veći.
+
+Stanje 2026-11-24 (grana `faza-52-krov`, PR #10, main netaknut):
+- [x] 52-1 `pipeline/src/energymap/solar/planes.py` + testovi; ponovni pokušaj PVGIS-a (prvi run pao na
+  `RemoteProtocolError` nakon minute). Ćelija Zagreb uživo: jug 30° 99,6 %, JI 30° 94 %, I 30° 81 %, ravni 92,5 %.
+- [x] 52-2 / 52-3 `data/roofPlanes.ts`, `nearestCell` (zajednički s `sunShapeAt`), izbor strane i nagiba ispod
+  klizača potrošnje, „Ovaj krov: … % najboljeg krova”, kuća s oblikom dana te ravnine; jedinični + e2e testovi.
+- [ ] 52-4 Podaci na R2 (run solar-home, part planes), pregled na preview adresi, odobrenje vlasnika, spajanje.
