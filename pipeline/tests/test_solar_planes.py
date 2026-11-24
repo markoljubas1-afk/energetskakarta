@@ -129,3 +129,26 @@ def test_each_cell_is_a_file_of_its_own_with_its_provenance() -> None:
     assert published["source"] == home.PVGIS_SOURCE
     assert published["cell"] == {"col": 10, "row": 10, "lon": 15.5, "lat": 45.5}
     assert len(published["planes"]) == 16
+
+
+def test_a_dropped_connection_or_an_overload_is_tried_again() -> None:
+    calls: list[int] = []
+
+    def answer(request: httpx.Request) -> httpx.Response:
+        calls.append(1)
+        if len(calls) == 1:
+            raise httpx.RemoteProtocolError("Server disconnected without sending a response.")
+        if len(calls) == 2:
+            return httpx.Response(503)
+        return httpx.Response(200, json=pvcalc(35, 0))
+
+    waits: list[float] = []
+    with httpx.Client(transport=httpx.MockTransport(answer)) as client:
+        document = planes._get(client, planes.PVCALC_URL, {}, wait=waits.append)
+    assert document is not None and len(calls) == 3 and waits == [5.0, 10.0]
+
+    def down(request: httpx.Request) -> httpx.Response:
+        raise httpx.ConnectError("no route")
+
+    with httpx.Client(transport=httpx.MockTransport(down)) as client, pytest.raises(httpx.ConnectError):
+        planes._get(client, planes.PVCALC_URL, {}, wait=waits.append)

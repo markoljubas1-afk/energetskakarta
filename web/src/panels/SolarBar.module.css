@@ -197,8 +197,40 @@
   margin-top: 4px;
 }
 
+/* the roof's direction and tilt, side by side; the slider's label grid does not apply to them */
+.roofPlane {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 6px;
+}
+
+.roof .roofPlane label {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.roof .roofPlane label span {
+  grid-column: auto;
+}
+
+.roofPlane select {
+  padding: 4px 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+.roofYield {
+  margin: 4px 0 0;
+  line-height: 1.4;
+}
+
 @media (pointer: coarse) {
-  .roof input {
+  .roof input,
+  .roofPlane select {
     min-height: 40px;
   }
 }

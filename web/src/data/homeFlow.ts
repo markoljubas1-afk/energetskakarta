@@ -74,22 +74,39 @@ export async function loadHomeShapes(base: URL, signal: AbortSignal): Promise<Ho
 /** A point farther than this many grid steps from the place does not speak for it. */
 export const NEAR_STEPS = 1.5;
 
-/** The sun's shape at the grid point nearest a place that has one; null when none is near enough. */
-export function sunShapeAt(doc: HomeShapes, lng: number, lat: number): number[][] | null {
+/** A point of the grid: its column from the west and its row from the south. */
+export interface GridCell {
+  col: number;
+  row: number;
+}
+
+/**
+ * The grid point nearest a place that has a shape; null when none is near enough. The roof planes
+ * (data/roofPlanes.ts) are read for the same point, so the house and the calculator never use two places.
+ */
+export function nearestCell(doc: HomeShapes, lng: number, lat: number): GridCell | null {
   const { west, south, step, cols } = doc.sun.grid;
-  let best: number[][] | null = null;
+  let best: GridCell | null = null;
   let bestDistance = Infinity;
   doc.sun.points.forEach((shape, index) => {
     if (shape === null) return;
-    const x = west + ((index % cols) + 0.5) * step;
-    const y = south + (Math.floor(index / cols) + 0.5) * step;
+    const col = index % cols;
+    const row = Math.floor(index / cols);
+    const x = west + (col + 0.5) * step;
+    const y = south + (row + 0.5) * step;
     const distance = Math.hypot((x - lng) * Math.cos((lat * Math.PI) / 180), y - lat);
     if (distance < bestDistance) {
       bestDistance = distance;
-      best = shape;
+      best = { col, row };
     }
   });
   return bestDistance <= NEAR_STEPS * step ? best : null;
+}
+
+/** The sun's shape at the grid point nearest a place that has one; null when none is near enough. */
+export function sunShapeAt(doc: HomeShapes, lng: number, lat: number): number[][] | null {
+  const cell = nearestCell(doc, lng, lat);
+  return cell ? (doc.sun.points[cell.row * doc.sun.grid.cols + cell.col] ?? null) : null;
 }
 
 /** Days of each month of a common year: the weights of the twelve average days. */

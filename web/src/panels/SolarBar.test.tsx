@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { HepRelease } from "../data/hep";
 import { RELEASE } from "../data/hep.fixture";
+import { PLANES } from "../data/roofPlanes.fixture";
 import { roofSystem } from "../data/solar";
 import { SOLAR } from "../data/solar.fixture";
 import { renderWithI18n } from "../test/render";
@@ -131,6 +132,40 @@ describe("SolarBar", () => {
         screen.getByText("Ovdje za to treba oko 5,7 kWp, otprilike 14 panela od 430 W."),
       ).toBeInTheDocument();
       expect(screen.getByText(/nije neovisnost o mreži/)).toBeInTheDocument();
+    });
+
+    it("counts the reader's roof: its direction and tilt take what PVGIS says they lose", () => {
+      renderWithI18n(
+        <SolarBar
+          data={ready}
+          point={{ lng: 16.02, lat: 44.93 }}
+          onRetry={vi.fn()}
+          onClose={vi.fn()}
+          planes={PLANES}
+        />,
+      );
+      // south at 30°: 99 % of the best, 1,386 kWh/kWp of the atlas's 1,400
+      expect(screen.getByRole("combobox", { name: "Strana krova" })).toHaveValue("S");
+      expect(screen.getByRole("combobox", { name: "Nagib krova" })).toHaveValue("30");
+      expect(
+        screen.getByText("Ovaj krov: oko 1.386 kWh po kWp godišnje, 99 % najboljeg krova na ovom mjestu."),
+      ).toBeInTheDocument();
+      fireEvent.change(screen.getByRole("combobox", { name: "Strana krova" }), { target: { value: "E" } });
+      expect(
+        screen.getByText("Ovdje za to treba oko 3,6 kWp, otprilike 9 panela od 430 W."),
+      ).toBeInTheDocument();
+      expect(screen.getByText(/80 % najboljeg krova/)).toBeInTheDocument();
+      expect(screen.getByText(/najbližu točku mreže od 1°/)).toBeInTheDocument();
+      // a flat roof has no tilt to choose
+      fireEvent.change(screen.getByRole("combobox", { name: "Strana krova" }), { target: { value: "flat" } });
+      expect(screen.queryByRole("combobox", { name: "Nagib krova" })).not.toBeInTheDocument();
+      expect(screen.getByText(/93 % najboljeg krova/)).toBeInTheDocument();
+    });
+
+    it("without the planes counts the best roof and says so, with no choice of roof", () => {
+      bar({ lng: 16.02, lat: 44.93 });
+      expect(screen.queryByRole("combobox", { name: "Strana krova" })).not.toBeInTheDocument();
+      expect(screen.getByText(/Atlas računa sustav okrenut jugu/)).toBeInTheDocument();
     });
 
     it("is not offered before a place is clicked, or where the atlas has no value", () => {

@@ -56,7 +56,8 @@ import { GreenLight } from "../panels/GreenLight";
 import { GasFlowBar } from "../panels/GasFlowBar";
 import { GasStorageBar } from "../panels/GasStorageBar";
 import { SolarBar } from "../panels/SolarBar";
-import { HOME_KEY, loadHomeShapes } from "../data/homeFlow";
+import { HOME_KEY, loadHomeShapes, nearestCell } from "../data/homeFlow";
+import { loadRoofPlanes, planesKey } from "../data/roofPlanes";
 import { loadSolar, SOLAR_KEY, solarImage, type SolarLoad } from "../data/solar";
 import { loadRoutes } from "../data/routes";
 import { loadRenewables, RENEWABLES_KEY } from "../data/eurostat";
@@ -616,6 +617,13 @@ function Explorer({
   // a door on a static page opens the reading, and the house under it, on a place: "?sun=45.81,15.98", once
   const [solarPoint, setSolarPoint] = useState<{ lng: number; lat: number } | null>(() =>
     askedSunPoint(window.location.search),
+  );
+  // the roof planes of the grid point the house is read for (Faza 52): an extra like the house
+  const homeDoc = homeShapes?.status === "ready" ? homeShapes.value : null;
+  const roofCell = homeDoc && solarPoint ? nearestCell(homeDoc, solarPoint.lng, solarPoint.lat) : null;
+  const roofKey = roofCell ? planesKey(roofCell) : null;
+  const [roofPlanes] = useAsync(roofKey, (signal) =>
+    loadRoofPlanes(config.dataBaseUrl, roofKey ?? "", signal),
   );
   // the map needs the release only; the history is the capacity pages'
   const capOn = state.layers.has("capacity");
@@ -1189,7 +1197,8 @@ function Explorer({
                     onClose={closeSolar}
                     capacity={capData}
                     onStation={showStation}
-                    home={homeShapes?.status === "ready" ? homeShapes.value : null}
+                    home={homeDoc}
+                    planes={roofPlanes?.status === "ready" ? roofPlanes.value : null}
                   />
                 </ErrorBoundary>
               </div>

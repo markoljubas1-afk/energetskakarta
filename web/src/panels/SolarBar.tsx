@@ -4,6 +4,15 @@ import { useState } from "react";
 import type { AsyncState } from "../app/useAsync";
 import { levelOf, NEAR_STATION_KM, nearestStation, stationSlugs, type HepLoad } from "../data/hep";
 import type { HomeShapes } from "../data/homeFlow";
+import {
+  FACINGS,
+  planeOf,
+  planeShare,
+  SLOPES,
+  type Facing,
+  type RoofPlanes,
+  type Slope,
+} from "../data/roofPlanes";
 import { PANEL_W, roofSystem, valueAt, type SolarLoad } from "../data/solar";
 import { useI18n } from "../i18n";
 import { CAPACITY_COPY } from "../seo/capacityCopy";
@@ -24,6 +33,8 @@ interface Props {
   onStation?: (id: string) => void;
   /** the daily shapes of sun and of a household; null while loading or when there are none: no house */
   home?: HomeShapes | null;
+  /** what each roof plane yields at the grid point nearest the click; null while loading or when there are none */
+  planes?: RoofPlanes | null;
 }
 
 /** The European Commission's free calculator for a particular roof or plot (tilt, orientation, shading). */
@@ -35,7 +46,7 @@ export const PVGIS_URL = "https://re.jrc.ec.europa.eu/pvg_tools/en/";
  * Atlas; the bar never lets them stand without that.
  */
 export function SolarBar(props: Props) {
-  const { data, point, onRetry, onClose, capacity = null, onStation, home = null } = props;
+  const { data, point, onRetry, onClose, capacity = null, onStation, home = null, planes = null } = props;
   const i18n = useI18n();
   const { t } = i18n;
   const close = (
@@ -108,7 +119,7 @@ export function SolarBar(props: Props) {
       </div>
       {point !== null && value !== null && (
         <>
-          <Roof yieldKwh={value} point={point} home={home} />
+          <Roof yieldKwh={value} point={point} home={home} planes={planes} />
           <Station capacity={capacity} point={point} {...(onStation ? { onStation } : {})} />
           <p className={styles.next}>
             {t("solarPvgis")}{" "}
@@ -202,11 +213,22 @@ const CONSUMPTION = { min: 1000, max: 15000, step: 250, start: 4000 } as const;
  * Kilowatt-hours rather than euros, because turning a bill into consumption would need a tariff we would
  * have to assume. What the answer is not is said under it: a yearly balance, not independence from the grid.
  */
-function Roof(props: { yieldKwh: number; point: { lng: number; lat: number }; home: HomeShapes | null }) {
-  const { yieldKwh, point, home } = props;
+function Roof(props: {
+  yieldKwh: number;
+  point: { lng: number; lat: number };
+  home: HomeShapes | null;
+  planes: RoofPlanes | null;
+}) {
+  const { yieldKwh: atlasYield, point, home, planes } = props;
   const i18n = useI18n();
   const { t } = i18n;
   const [yearly, setYearly] = useState<number>(CONSUMPTION.start);
+  const [facing, setFacing] = useState<Facing>("S");
+  const [slope, setSlope] = useState<Slope>(30);
+  // the atlas's amount, times what this plane gives of the best plane's at the nearest PVGIS point (Faza 52)
+  const plane = planes ? planeOf(planes, facing, slope) : null;
+  const share = planes && plane ? planeShare(planes, plane) : null;
+  const yieldKwh = share === null ? atlasYield : Math.round(atlasYield * share);
   const system = roofSystem(yearly, yieldKwh);
   const calculator = (
     <div className={styles.roof}>
@@ -227,12 +249,57 @@ function Roof(props: { yieldKwh: number; point: { lng: number; lat: number }; ho
         />
         <output>{i18n.number(yearly, 0)} kWh</output>
       </label>
+      {planes && (
+        <div className={styles.roofPlane}>
+          <label>
+            <span>{t("roofFacing")}</span>
+            <select
+              name="roof-facing"
+              value={facing}
+              onChange={(event) => {
+                setFacing(FACINGS.find((each) => each === event.target.value) ?? "S");
+              }}
+            >
+              {FACINGS.map((each) => (
+                <option key={each} value={each}>
+                  {t(`roofFacing_${each}`)}
+                </option>
+              ))}
+            </select>
+          </label>
+          {facing !== "flat" && (
+            <label>
+              <span>{t("roofSlope")}</span>
+              <select
+                name="roof-slope"
+                value={slope}
+                onChange={(event) => {
+                  setSlope(SLOPES.find((each) => each === Number(event.target.value)) ?? 30);
+                }}
+              >
+                {SLOPES.map((each) => (
+                  <option key={each} value={each}>
+                    {each}°
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+        </div>
+      )}
       {system && (
         <p className={styles.roofResult} aria-live="polite">
           {t("roofResult", { kwp: i18n.number(system.kwp, 1), panels: system.panels, watts: PANEL_W })}
         </p>
       )}
-      <p className={styles.note}>{t("roofNote")}</p>
+      {share !== null && (
+        <p className={styles.roofYield}>
+          {t("roofPlaneYield", { value: i18n.number(yieldKwh, 0), share: i18n.number(share * 100, 0) })}
+        </p>
+      )}
+      <p className={styles.note}>
+        {t("roofNote")} {t(share === null ? "roofNoteIdeal" : "roofNotePlanes")}
+      </p>
     </div>
   );
   // the house is a block of its own beside the calculator: it has its own controls and their own layout
@@ -240,7 +307,14 @@ function Roof(props: { yieldKwh: number; point: { lng: number; lat: number }; ho
     <>
       {calculator}
       {system && home && (
-        <HomeFlow shapes={home} point={point} yearlyKwh={yearly} yieldKwh={yieldKwh} kwp={system.kwp} />
+        <HomeFlow
+          shapes={home}
+          point={point}
+          yearlyKwh={yearly}
+          yieldKwh={yieldKwh}
+          kwp={system.kwp}
+          roof={plane ? { shape: plane.shape, facing: plane.facing, slopeDeg: plane.slopeDeg } : null}
+        />
       )}
     </>
   );

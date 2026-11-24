@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import datetime
@@ -92,14 +93,39 @@ def yearly_output(document: Mapping[str, Any]) -> tuple[float, int, int]:
     return value, slope, azimuth
 
 
-def _get(client: httpx.Client, url: str, params: Mapping[str, str | int]) -> dict[str, Any] | None:
-    response = client.get(url, params=params)
-    if response.status_code == 400:
-        # PVGIS answers 400 with a message for a place it has nothing for; anything else is a failure
-        return None
-    response.raise_for_status()
-    document: dict[str, Any] = response.json()
-    return document
+#: a run makes some 6 000 calls: PVGIS dropping one connection, or a moment of overload, is tried again
+ATTEMPTS = 4
+RETRY_STATUS = frozenset({429, 500, 502, 503, 504})
+
+
+def _get(
+    client: httpx.Client,
+    url: str,
+    params: Mapping[str, str | int],
+    wait: Callable[[float], None] = time.sleep,
+) -> dict[str, Any] | None:
+    for attempt in range(1, ATTEMPTS + 1):
+        try:
+            response = client.get(url, params=params)
+        except httpx.TransportError as error:
+            if attempt == ATTEMPTS:
+                raise
+            log.warning("PVGIS: trying again", extra={"pvgis": {"attempt": attempt, "error": repr(error)}})
+            wait(5.0 * attempt)
+            continue
+        if response.status_code in RETRY_STATUS and attempt < ATTEMPTS:
+            log.warning(
+                "PVGIS: trying again", extra={"pvgis": {"attempt": attempt, "status": response.status_code}}
+            )
+            wait(5.0 * attempt)
+            continue
+        if response.status_code == 400:
+            # PVGIS answers 400 with a message for a place it has nothing for; anything else is a failure
+            return None
+        response.raise_for_status()
+        document: dict[str, Any] = response.json()
+        return document
+    raise AssertionError("unreachable: the last attempt returns or raises")
 
 
 def fetch_cell(

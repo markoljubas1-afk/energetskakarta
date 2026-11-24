@@ -15,6 +15,7 @@ import {
   type HomeShapes,
   type HourFlow,
 } from "../data/homeFlow";
+import type { Facing } from "../data/roofPlanes";
 import { useI18n } from "../i18n";
 import styles from "./HomeFlow.module.css";
 
@@ -29,6 +30,11 @@ interface Props {
   kwp: number;
   /** the month the house opens on, 0 to 11 (the current one) */
   month?: number;
+  /**
+   * The reader's roof (Faza 52): its own average days from PVGIS, so that an east roof makes its electricity
+   * in the morning. Without it, the home shapes' south-facing plane.
+   */
+  roof?: { shape: number[][]; facing: Facing; slopeDeg: number } | null;
 }
 
 /** The battery sizes on offer, in kWh: the range home batteries are mostly sold in. */
@@ -121,7 +127,7 @@ function Ring({
 
 const hourName = (hour: number): string => `${String(hour).padStart(2, "0")}:00`;
 
-export function HomeFlow({ shapes, point, yearlyKwh, yieldKwh, kwp, month: openMonth }: Props) {
+export function HomeFlow({ shapes, point, yearlyKwh, yieldKwh, kwp, month: openMonth, roof = null }: Props) {
   const i18n = useI18n();
   const { t } = i18n;
   const [month, setMonth] = useState(() => openMonth ?? new Date().getMonth());
@@ -130,7 +136,7 @@ export function HomeFlow({ shapes, point, yearlyKwh, yieldKwh, kwp, month: openM
   const [size, setSize] = useState<number>(BATTERY_SIZES[1]);
   const gradients = useId();
 
-  const sun = sunShapeAt(shapes, point.lng, point.lat);
+  const sun = roof?.shape ?? sunShapeAt(shapes, point.lng, point.lat);
   if (!sun) return <p className={styles.note}>{t("homeNoSun")}</p>;
   const inputs = { yearlyKwh, yieldKwhPerKwp: yieldKwh, kwp };
   const house = homeYear(sun, shapes.household.months, { ...inputs, batteryKwh: battery ? size : 0 });
@@ -417,7 +423,13 @@ export function HomeFlow({ shapes, point, yearlyKwh, yieldKwh, kwp, month: openM
       </div>
       <p className={styles.note}>
         {t("homeNote", {
-          slope: shapes.sun.plane.slopeDeg,
+          roof:
+            roof?.facing === "flat"
+              ? t("homeRoofFlat", { slope: roof.slopeDeg })
+              : t("homeRoof", {
+                  slope: roof?.slopeDeg ?? shapes.sun.plane.slopeDeg,
+                  facing: t(`roofTo_${roof?.facing ?? "S"}`),
+                }),
           year: shapes.household.year,
           loss: i18n.number(BATTERY_CHARGE_LOSS * 100, 0),
         })}
