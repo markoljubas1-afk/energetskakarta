@@ -474,7 +474,7 @@ export const hr = {
   pageCompare: "Usporedbe",
   compareTitle: "Usporedbe: mjeseci, godine, zemlje",
   compareIntro:
-    "Odaberite zemlju, mjesec, dvije godine ili razdoblje. Svaki prikaz možete podijeliti kao poveznicu, sliku, tablicu (CSV) ili citat. Brojke su iste kao u mjesečnim izvještajima, iz podataka ENTSO-E.",
+    "Odaberite zemlju, mjesec, dvije godine ili razdoblje. Svaki prikaz možete podijeliti kao poveznicu, sliku, tablicu (CSV) ili citat. Brojke su iste kao u mjesečnim izvještajima, iz podataka ENTSO-E. Sunčana proizvodnja iz ENTSO-E-a većinom ne uključuje krovne elektrane za vlastitu potrošnju, pa je manja od Eurostatove godišnje brojke za istu zemlju.",
   compareReportsLink: "Mjesečni izvještaji",
   compareEnergyLink: "Proizvodnja kroz vrijeme",
   compareMonth: "Mjesec",

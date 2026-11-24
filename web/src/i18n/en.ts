@@ -480,7 +480,7 @@ export const en: Dictionary = {
   pageCompare: "Compare",
   compareTitle: "Comparisons: months, years, countries",
   compareIntro:
-    "Choose a country, a month, two years or a period. Every view can be shared as a link, a picture, a table (CSV) or a citation. The figures are those of the monthly reports, from ENTSO-E data.",
+    "Choose a country, a month, two years or a period. Every view can be shared as a link, a picture, a table (CSV) or a citation. The figures are those of the monthly reports, from ENTSO-E data. Solar generation from ENTSO-E mostly leaves out rooftop systems that power their own building, so it is lower than Eurostat's yearly figure for the same country.",
   compareReportsLink: "Monthly reports",
   compareEnergyLink: "Generation over time",
   compareMonth: "Month",

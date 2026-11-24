@@ -205,6 +205,7 @@ export const REPORT_COPY: Record<Lang, ReportCopy> = {
       items: [
         "Proizvodnja i potrošnja: ENTSO-E Transparency Platform (stvarna proizvodnja po izvorima i opterećenje mreže), mjesečni zbrojevi po hrvatskom vremenu.",
         "Mjesec se prikazuje kad je prijavljeno barem 98 % njegova trajanja. ENTSO-E naknadno ispravlja podatke, pa se brojke još mogu malo promijeniti.",
+        "Sunčana proizvodnja iz ENTSO-E-a većinom ne uključuje krovne elektrane za vlastitu potrošnju, pa je manja od Eurostatove godišnje brojke za istu zemlju.",
         "CO₂ intenzitet: emisijski faktori životnog ciklusa (IPCC AR5), kao na stranici „Zelena tranzicija”; uvoz se ne računa.",
         "Nema projekcija ni procjena: samo zbrojevi, udjeli i usporedbe.",
       ],
@@ -294,6 +295,7 @@ export const REPORT_COPY: Record<Lang, ReportCopy> = {
       items: [
         "Generation and consumption: ENTSO-E Transparency Platform (actual generation by source and grid load), monthly totals in Croatian time.",
         "A month is shown once at least 98% of it has been reported. ENTSO-E corrects data afterwards, so the figures may still change slightly.",
+        "Solar generation from ENTSO-E mostly leaves out rooftop systems that power their own building, so it is lower than Eurostat's yearly figure for the same country.",
         "Carbon intensity: lifecycle emission factors (IPCC AR5), as on the energy transition page; imports are not counted.",
         "No projections or estimates: only totals, shares and comparisons.",
       ],
