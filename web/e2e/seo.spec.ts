@@ -32,7 +32,9 @@ test("the about page is complete HTML with structured data and links back to the
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/About the map/);
 });
 
-test("the static pages fit the screen: a wide table scrolls in its own box, not the page", async ({ page }) => {
+test("the static pages fit the screen: a wide table scrolls in its own box, not the page", async ({
+  page,
+}) => {
   for (const path of ["/o-karti/", "/zemlja/hr/", "/edukacija/", "/najvece-elektrane/", "/en/api/"]) {
     await page.goto(path);
     const wide = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
