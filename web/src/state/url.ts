@@ -2,6 +2,7 @@
  * The URL is the single source of truth for what the map shows, so every view can be shared as a link.
  * Defaults are omitted from the URL to keep links short.
  */
+import { rangeDays } from "../data/energy";
 import { STORY_KEYS, type StoryKey } from "../stories/keys";
 import { useCallback, useSyncExternalStore } from "react";
 
@@ -244,11 +245,10 @@ function pick<T extends string>(allowed: readonly T[], raw: string | null, fallb
   return isOneOf(allowed, raw) ? raw : fallback;
 }
 
-const DATE = /^\d{4}-\d{2}-\d{2}$/;
-
+/** Only a range the energy totals accept: real days, in order, no longer than they allow (Faza 56). */
 function parseRange(raw: string | null): EnergyState["range"] {
   const [from, to, ...rest] = (raw ?? "").split(",");
-  if (!from || !to || rest.length > 0 || !DATE.test(from) || !DATE.test(to) || from > to) return null;
+  if (!from || !to || rest.length > 0 || rangeDays(from, to) === null) return null;
   return { from, to };
 }
 
@@ -343,13 +343,31 @@ function subscribe(listener: () => void): () => void {
 }
 const getLocation = (): string => `${window.location.pathname}${window.location.search}`;
 
+/**
+ * `next` with every set that has the same contents as in `previous` replaced by the previous object. A pan
+ * changes only the view, and the map memoises its style on these sets, so it must see the same objects then.
+ */
+export function keepEqualSets(previous: AppState, next: AppState): AppState {
+  const keep = <T>(before: ReadonlySet<T>, after: ReadonlySet<T>): ReadonlySet<T> =>
+    sameSet(before, after) ? before : after;
+  return {
+    ...next,
+    layers: keep(previous.layers, next.layers),
+    statuses: keep(previous.statuses, next.statuses),
+    technologies: keep(previous.technologies, next.technologies),
+    voltages: keep(previous.voltages, next.voltages),
+    countries: keep(previous.countries, next.countries),
+  };
+}
+
 // Parsed state is memoised per address (path carries the language, query the rest) so React sees a stable
-// object between renders.
+// object between renders, and its sets survive an address change that leaves them alone (keepEqualSets).
 let cache: { key: string; state: AppState } | null = null;
 function stateFor(location: string): AppState {
   if (cache?.key !== location) {
     const url = new URL(location, "http://localhost");
-    cache = { key: location, state: parseState(url.search, langFromPath(url.pathname)) };
+    const parsed = parseState(url.search, langFromPath(url.pathname));
+    cache = { key: location, state: cache ? keepEqualSets(cache.state, parsed) : parsed };
   }
   return cache.state;
 }

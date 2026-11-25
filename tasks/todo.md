@@ -2787,7 +2787,8 @@ morski cjevovodi (EMODnet), izviđanje ENTSOG točaka (`gas/points.py`).
   - Rizici: promjena odgovora API-ja (validacija jedinice i oblika; neuspjeh ostavlja staru objavu); dan
     koji nisu prijavile sve točke (uzima se zadnji dan koji su prijavile sve).
   - Provjera: pytest s lažnim API-jem, vitest, e2e, pa ručno pokretanje posla i pregled uživo.
-- [ ] 44-4 Plinovodi na kopnu (7C): OSM `man_made=pipeline` odmah; GEM tracker traži preuzimanje korisnika.
+- [x] 44-4 Plinovodi na kopnu (7C) — objavljeno buildom 20261123T134649Z (5.080 dionica), provjereno na karti
+  uživo 2026-11-25 (Sisak: plin, 500 mm, 43 km, Plinacro, izvor OSM).: OSM `man_made=pipeline` odmah; GEM tracker traži preuzimanje korisnika.
   **Plan 44-4 (2026-11-19, „može, kreni na korak 4 i dodaj skok potrošnje”).**
   - Cilj: plinovodi i naftovodi na kopnu u postojećem sloju `pipelines` (isti zapis kao EMODnet-ovi morski).
   - Pristup: par `man_made=pipeline` (s prefiksima životnog ciklusa) ide u postojeći prolaz predfiltra
@@ -3184,3 +3185,29 @@ bih je prije izvještaja”; izbor grafa: „Obnovljivo kroz 12 mjeseci”.
   cijene struje, EN zemlja, izvještaji): bez vodoravnog pomicanja stranice, u svakoj širokoj tablici prvi stupac
   ostaje na mjestu (pomak 0 px) s neprozirnom pozadinom, ostali stupci klize ispod njega, desna sjena vidljiva dok
   ima još. Lijeva sjena se ne vidi jer je pokriva zaključani stupac; rub označava tanka crta. Čeka odobrenje vlasnika.
+
+## Faza 56 — Serija 4 iz Faze 31 (aplikacija) — 2026-11-25 (vlasnik: „može, plan je ok, i natrag može, kreni s 4-A”)
+
+Provjera 2026-11-25: nijedan nalaz serije 4 nije bio ispravljen (dokazi u kodu, ne iz sjećanja). Tri PR-a, svaki s previewom.
+
+### 56-A brzi popravci (4.1, 4.4e, 4.4d, 4.3)
+- [ ] 4.1 Pomak karte ne gradi stil: `stateFor` (`state/url.ts`) zadržava prethodne skupove (slojevi, statusi,
+  tehnologije, naponi, zemlje) kad su jednaki, pa `styleState` u `MapView` ostaje isti. Test: promjena `v=` daje
+  iste objekte skupova. Komentar u `MapView.tsx` time postaje istinit.
+- [ ] 4.4e `er=` s nepostojećim datumom (2026-13-01, 2026-02-30) ili rasponom duljim od `MAX_RANGE_DAYS` se
+  odbacuje pri čitanju adrese (`parseRange` koristi `rangeDays`; `rangeDays` provjerava da datum stvarno postoji).
+- [ ] 4.4d `flyTo` iz pretrage, lokacije i klika na ćeliju punionica bez `essential: true`: uz smanjeno kretanje
+  MapLibre skače umjesto leti.
+- [ ] 4.3 Lijeno učitani dijelovi (karta, proizvodnja, usporedbe, grafovi) pri neuspjelom dohvaćanju bacaju
+  `ChunkLoadError`; „Pokušaj ponovno” tada učitava stranicu ponovno (React `lazy` pamti odbijeno učitavanje, a nova
+  objava mijenja imena datoteka), s porukom o vezi umjesto o WebGL-u. Granica greške oko cijele aplikacije
+  (`main.tsx`) s gumbom za ponovno učitavanje.
+- Alternative: automatsko ponovno učitavanje na `vite:preloadError` (odbačeno: bez mreže vrti se u krug);
+  prepoznavanje po tekstu poruke preglednika (odbačeno: razlikuje se po pregledniku).
+- Rizici: skupovi u adresi koriste se i drugdje (isti sadržaj, isti objekt: samo manje renderiranja); poruka
+  greške mora biti na oba jezika.
+- Provjera: vitest (url, energy, ErrorBoundary), tsc, lint, e2e; preview: pomak karte bez treptanja slojeva,
+  `er=2026-13-01,2026-13-02` otvara proizvodnju bez greške.
+
+### 56-B panel objekta i izvori (4.2, 4.4a, 4.4b) — nakon 56-A
+### 56-C povijest i uvod (4.4c „Natrag” zatvara panel / vraća prethodni objekt — odobreno; 4.4f) — nakon 56-B

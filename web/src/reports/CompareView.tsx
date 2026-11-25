@@ -6,6 +6,7 @@
  */
 import { lazy, Suspense, useEffect, useMemo, useRef, type ReactNode } from "react";
 
+import { loadChunk } from "../app/chunks";
 import { useAsync } from "../app/useAsync";
 import { assetUrl, DataError } from "../data/current";
 import { ALL, EnergyPointerSchema, PeriodsSchema, type EnergyPointer, type Periods } from "../data/energy";
@@ -37,7 +38,7 @@ import own from "./CompareView.module.css";
 
 let chartsModule: Promise<typeof import("../energy/charts")> | null = null;
 const loadCharts = (): Promise<typeof import("../energy/charts")> =>
-  (chartsModule ??= import("../energy/charts"));
+  (chartsModule ??= loadChunk(() => import("../energy/charts")));
 const Stacked = lazy(() => loadCharts().then((m) => ({ default: m.StackedChart })));
 
 const SOURCE = "ENTSO-E Transparency Platform";

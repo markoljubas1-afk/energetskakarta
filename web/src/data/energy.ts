@@ -178,11 +178,17 @@ export interface RangeTotals {
 export const MAX_RANGE_DAYS = 3 * 366;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
+/** Midnight UTC of a YYYY-MM-DD day that exists; null otherwise (Date.parse rolls 30 February into March). */
+function dayStart(day: string): number | null {
+  if (!DATE.test(day)) return null;
+  const time = Date.parse(`${day}T00:00:00Z`);
+  return Number.isFinite(time) && new Date(time).toISOString().startsWith(day) ? time : null;
+}
+
 export function rangeDays(from: string, to: string): number | null {
-  if (!DATE.test(from) || !DATE.test(to)) return null;
-  const start = Date.parse(`${from}T00:00:00Z`);
-  const end = Date.parse(`${to}T00:00:00Z`);
-  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return null;
+  const start = dayStart(from);
+  const end = dayStart(to);
+  if (start === null || end === null || end < start) return null;
   const days = Math.round((end - start) / 86_400_000) + 1;
   return days > MAX_RANGE_DAYS ? null : days;
 }

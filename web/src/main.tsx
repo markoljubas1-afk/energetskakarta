@@ -10,7 +10,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import { App } from "./app/App";
-import { ConfigErrorScreen } from "./app/Screens";
+import { ErrorBoundary } from "./app/ErrorBoundary";
+import { AppErrorScreen, ConfigErrorScreen } from "./app/Screens";
 import { ConfigError, readConfig, type AppConfig } from "./config";
 import { canonicalUrl } from "./state/url";
 
@@ -29,4 +30,11 @@ try {
   console.error("[config]", error.message);
 }
 
-createRoot(root).render(<StrictMode>{config ? <App config={config} /> : <ConfigErrorScreen />}</StrictMode>);
+// each part of the page has its own boundary (App.tsx); this one catches what fails outside them (Faza 56, 4.3)
+createRoot(root).render(
+  <StrictMode>
+    <ErrorBoundary area="app" fallback={() => <AppErrorScreen />}>
+      {config ? <App config={config} /> : <ConfigErrorScreen />}
+    </ErrorBoundary>
+  </StrictMode>,
+);

@@ -1,6 +1,7 @@
 import { ExternalLink } from "lucide-react";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
+import { loadChunk } from "../app/chunks";
 import { useAsync } from "../app/useAsync";
 import { assetUrl, DataError, fetchJson } from "../data/current";
 import {
@@ -31,7 +32,8 @@ import { RingChart } from "./RingChart";
 
 // One shared import for both charts: a single request, and a single module instance.
 let chartsModule: Promise<typeof import("./charts")> | null = null;
-const loadCharts = (): Promise<typeof import("./charts")> => (chartsModule ??= import("./charts"));
+const loadCharts = (): Promise<typeof import("./charts")> =>
+  (chartsModule ??= loadChunk(() => import("./charts")));
 const Charts = {
   Stacked: lazy(() => loadCharts().then((m) => ({ default: m.StackedChart }))),
   Lines: lazy(() => loadCharts().then((m) => ({ default: m.LinesChart }))),

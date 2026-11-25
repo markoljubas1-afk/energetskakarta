@@ -128,6 +128,9 @@ describe("rangeTotals", () => {
     expect(rangeDays("2025-02-01", "2025-01-31")).toBeNull();
     expect(rangeDays("2020-01-01", "2025-01-01")).toBeNull(); // more than three years
     expect(rangeDays("yesterday", "2025-01-01")).toBeNull();
+    expect(rangeDays("2026-13-01", "2026-13-02")).toBeNull(); // no 13th month
+    expect(rangeDays("2026-02-30", "2026-03-02")).toBeNull(); // Date.parse would roll it into March
+    expect(rangeDays("2024-02-29", "2024-03-01")).toBe(2); // a leap day exists
     expect(() => rangeTotals([], "HR", [], "b", "a")).toThrow(/invalid range/);
   });
 });
