@@ -3180,3 +3180,7 @@ bih je prije izvještaja”; izbor grafa: „Obnovljivo kroz 12 mjeseci”.
 
 - [x] Do 640 px: prvi stupac ostaje na mjestu pri vodoravnom pomicanju, sjena na rubu pokazuje da tablica ide
   dalje, ćelije malo gušće (14 px). Samo CSS (`style.ts`), sadržaj i datumi stranica se ne mijenjaju.
+- [x] PR #15, preview provjeren 2026-11-25 (375 px, svijetla/tamna; zemlja HR, plin, zelena tranzicija,
+  cijene struje, EN zemlja, izvještaji): bez vodoravnog pomicanja stranice, u svakoj širokoj tablici prvi stupac
+  ostaje na mjestu (pomak 0 px) s neprozirnom pozadinom, ostali stupci klize ispod njega, desna sjena vidljiva dok
+  ima još. Lijeva sjena se ne vidi jer je pokriva zaključani stupac; rub označava tanka crta. Čeka odobrenje vlasnika.
