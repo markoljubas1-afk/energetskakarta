@@ -116,6 +116,28 @@ interface ReportCopy {
     note: string;
     missing: (names: string) => string;
   };
+  /** the tiles under the lead and the charts (Faza 54-2) */
+  figures: {
+    label: string;
+    share: string;
+    generation: string;
+    co2: string;
+    load: string;
+    /** what a change is against: the same month a year earlier (no month name, so no declension) */
+    against: (year: string) => string;
+    /** percentage points */
+    points: string;
+    /** how much of the month's consumption generation in Croatia covered */
+    covered: (share: string) => string;
+    /** a source that had no generation in the month compared with */
+    new: string;
+    table: string;
+    trendHeading: string;
+    trendText: (now: string, then: string) => string;
+    trendColumns: [string, string];
+    /** short month names for the chart's labels */
+    shortMonths: readonly string[];
+  };
   hep: {
     heading: string;
     sentence: (published: string, dataDate: string, free: string, total: string) => string;
@@ -188,6 +210,23 @@ export const REPORT_COPY: Record<Lang, ReportCopy> = {
       columns: ["Zemlja", "Proizvodnja", "Udio obnovljivih", "CO₂ intenzitet (g/kWh)", "Najveći izvor"],
       note: "Samo zemlje s potpunim podacima za taj mjesec, po udjelu obnovljivih izvora.",
       missing: (names) => `Bez potpunih podataka: ${names}.`,
+    },
+    figures: {
+      label: "Ključne brojke",
+      share: "Udio obnovljivih",
+      generation: "Proizvodnja",
+      co2: "CO₂ intenzitet",
+      load: "Potrošnja",
+      against: (year) => `prema istom mjesecu ${year}.`,
+      points: "p. b.",
+      covered: (share) => `Proizvodnja u Hrvatskoj pokrila je ${share} potrošnje.`,
+      new: "novo",
+      table: "Tablica s brojkama",
+      trendHeading: "Udio obnovljivih kroz dvije godine",
+      trendText: (now, then) =>
+        `Udio obnovljivih izvora u proizvodnji struje u Hrvatskoj, mjesec po mjesec. Tamniji stupci: ${now} i ${then}. Mjesec bez potpunih podataka ostaje prazan.`,
+      trendColumns: ["Mjesec", "Udio obnovljivih"],
+      shortMonths: ["sij", "velj", "ožu", "tra", "svi", "lip", "srp", "kol", "ruj", "lis", "stu", "pro"],
     },
     hep: {
       heading: "Slobodni kapacitet distribucijske mreže (HEP ODS)",
@@ -278,6 +317,23 @@ export const REPORT_COPY: Record<Lang, ReportCopy> = {
       columns: ["Country", "Generation", "Renewable share", "Carbon intensity (g/kWh)", "Largest source"],
       note: "Only countries with complete data for the month, by renewable share.",
       missing: (names) => `Without complete data: ${names}.`,
+    },
+    figures: {
+      label: "Key figures",
+      share: "Renewable share",
+      generation: "Generation",
+      co2: "Carbon intensity",
+      load: "Consumption",
+      against: (year) => `vs the same month of ${year}`,
+      points: "pp",
+      covered: (share) => `Generation in Croatia covered ${share} of it.`,
+      new: "new",
+      table: "The figures as a table",
+      trendHeading: "Renewable share over two years",
+      trendText: (now, then) =>
+        `The renewable share of electricity generation in Croatia, month by month. Darker columns: ${now} and ${then}. A month without complete data stays empty.`,
+      trendColumns: ["Month", "Renewable share"],
+      shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
     },
     hep: {
       heading: "Free capacity in the distribution grid (HEP ODS)",

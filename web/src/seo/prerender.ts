@@ -234,6 +234,8 @@ export function pageHash(page: StaticPage): string {
     page.description,
     page.heading,
     page.lead,
+    // only pages with tiles: an empty entry would change the hash, and the date, of every other page
+    ...(page.figures ? [page.figures] : []),
     page.sections,
     page.breadcrumbs,
   ]);

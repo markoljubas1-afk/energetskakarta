@@ -170,15 +170,53 @@ describe("monthly reports", () => {
     expect(sources.indexOf("Hidro")).toBeLessThan(sources.indexOf("Plin"));
     expect(sources).toContain(`<td class="num">60 %</td>`);
     expect(sources).toContain("<td>Udio obnovljivih</td>");
-    const region = plain(page.sections[2]?.html ?? "");
-    expect(page.sections[2]?.heading).toBe("Regija: rujan 2026.");
+    const regionOf = (p: StaticPage) => p.sections.find((s) => s.heading.startsWith("Regija"));
+    const region = plain(regionOf(page)?.html ?? "");
+    expect(regionOf(page)?.heading).toBe("Regija: rujan 2026.");
     expect(region.indexOf("Hrvatska")).toBeLessThan(region.indexOf("Slovenija"));
     expect(region).toContain(`<a href="/zemlja/si/">Slovenija</a></td>`);
     expect(region).toContain(
       "Bez potpunih podataka: Mađarska, Srbija, Bosna i Hercegovina, Crna Gora, Italija, Austrija.",
     );
     // Slovenia has no other complete month: in August only Croatia
-    expect(plain(report("/izvjestaji/2026-08/").sections[2]?.html ?? "")).not.toContain("Slovenija</a>");
+    expect(plain(regionOf(report("/izvjestaji/2026-08/"))?.html ?? "")).not.toContain("Slovenija</a>");
+  });
+
+  it("put the key figures in tiles, each against the same month a year earlier (Faza 54-2)", () => {
+    const figures = plain(report("/izvjestaji/2026-09/").figures ?? "");
+    // 90 % against 55 %: 35 points up, good news
+    expect(figures).toContain('<p class="big">90<small>%</small></p>');
+    expect(figures).toMatch(
+      /delta good"><b aria-hidden="true">▲<\/b> 35 p\. b\.<\/span> prema istom mjesecu 2025\./,
+    );
+    // the same total both years: no change; CO₂ 70.4 against 233.6 g/kWh: 69.9 % down, good news
+    expect(figures).toMatch(/delta neutral"><b aria-hidden="true">=<\/b> 0 %/);
+    expect(figures).toContain('<p class="big">70<small>g/kWh</small></p>');
+    expect(figures).toMatch(/delta good"><b aria-hidden="true">▼<\/b> 69,9 %/);
+    // consumption 1 200 MWh, of which generation in Croatia covered 1 000
+    expect(figures).toContain("Proizvodnja u Hrvatskoj pokrila je 83,3 % potrošnje.");
+    // the first report has no complete month a year earlier: tiles without a change
+    const first = plain(report("/izvjestaji/2024-11/").figures ?? "");
+    expect(first).toContain('class="kpis"');
+    expect(first).not.toContain("delta");
+  });
+
+  it("chart the sources and two years of the renewable share, keeping the tables behind a click", () => {
+    const page = report("/izvjestaji/2026-09/");
+    const sources = page.sections.find((s) => s.heading === "Proizvodnja po izvorima")?.html ?? "";
+    expect(sources).toContain('<div class="mix" aria-hidden="true">');
+    expect(sources).toContain('<div class="sources" aria-hidden="true">');
+    expect(sources).toContain('<details class="data"><summary>Tablica s brojkama</summary>');
+    // wind had 100 MWh in September 2025 and 200 now
+    expect(plain(sources)).toContain('<span class="schg">▲ 100 %</span>');
+    const trend = page.sections.find((s) => s.heading === "Udio obnovljivih kroz dvije godine");
+    expect(trend?.html).toContain('class="col now"');
+    expect(trend?.html).toContain('class="col then"');
+    expect(trend?.html).toContain('<span class="now">ruj 26</span>');
+    // no style attribute anywhere: the pages' content security policy allows none
+    for (const each of reportPages(site)) {
+      expect(each.sections.map((s) => s.html).join("") + (each.figures ?? "")).not.toMatch(/\sstyle=/);
+    }
   });
 
   it("say on how many days the exchange price was zero or below, for a month that is fully priced", () => {

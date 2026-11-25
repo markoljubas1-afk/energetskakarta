@@ -3120,3 +3120,20 @@ Skica izvještaja odobrena 2026-11-25 („može, kreni sa zaglavljem i osnovnim 
 
 Koraci: 54-1 zaglavlje + osnovni izgled (sve stranice) → preview; 54-2 pločice i grafovi na izvještajima;
 54-3 zemlje, plin, tranzicija; 54-4 Edukacija i O karti; 54-5 mobilne tablice.
+
+### 54-2 Izvještaji: pločice i grafovi — PLAN 2026-11-25 (vlasnik: „može, spoji i kreni s 54-2”, prema odobrenoj skici)
+
+- Pločice s ključnim brojkama ispod uvoda (novo polje `StaticPage.figures`, crta ih `html.ts`): udio obnovljivih
+  (promjena u p. b. prema istom mjesecu godinu ranije, zeleno/crveno), proizvodnja (promjena u %, neutralno),
+  CO₂ intenzitet (promjena u %, zeleno kad pada), potrošnja (i koliki je dio pokrila proizvodnja u Hrvatskoj).
+  Promjene se računaju iz neokruglih vrijednosti; bez potpunog mjeseca godinu ranije nema promjene. Markdown
+  inačica ih ne ponavlja (brojke su već u uvodu).
+- Grafovi kao HTML + SVG bez skripte i bez `style` atributa (CSP ih ne dopušta): širine su atributi `<rect>`,
+  boje klase izvora (boje karte, svijetla/tamna). U SVG-u nema `<path>`/`<polyline>` (Markdown pretvarač bi ih
+  zamijenio za `<p>`). Graf je `aria-hidden`; tablica s istim brojkama ostaje ispod (otvara se klikom).
+  - Proizvodnja po izvorima: traka udjela + stupac po izvoru prema istom mjesecu godinu ranije.
+  - Udio obnovljivih kroz 24 mjeseca do mjeseca izvještaja (nepotpuni mjeseci su praznina, ne nula).
+  - Regija: rang-lista s trakom udjela obnovljivih.
+- Stranice izvještaja dobivaju novi datum izmjene jednom (sadržaj se mijenja).
+- Provjera: jedinični testovi (pločice, promjene, praznine, nema `style=`, Markdown bez ostataka), e2e širina,
+  snimke na preview adresi; vlasnik odobrava prije spajanja.

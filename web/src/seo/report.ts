@@ -14,6 +14,17 @@ import { SCOPE_COUNTRIES, TECHNOLOGIES, type CountryCode } from "../domain";
 import { createI18n } from "../i18n";
 import { LANGS, type Lang } from "../state/url";
 import { SOURCE_TERMS } from "./license";
+import {
+  keyFigures,
+  mixBar,
+  rankBars,
+  shareColumns,
+  sourceBars,
+  splitUnit,
+  tableBehind,
+  type Change,
+  type KeyFigure,
+} from "./charts";
 import { COMPLETE_COVERAGE, largestSource, periodRows, type PeriodRow } from "./energyPages";
 import type { FeedEntry } from "./feed";
 import { callout, escapeHtml as e, linkedTable, list, stationsOf } from "./markup";
@@ -152,6 +163,109 @@ function leadSentence(lang: Lang, ctx: Context, month: string): string {
   );
 }
 
+/** Croatia's row for a month, when that month is complete. */
+const croatia = (ctx: Context, month: string): PeriodRow | null => {
+  const row = ctx.byCountry.get("HR")?.get(month);
+  return usable(row) ? row : null;
+};
+
+/** The relative change from `before` to `now` (0.147 = 14.7 %), or null without a base to compare with. */
+const relative = (now: number | null, before: number | null): number | null =>
+  now === null || before === null || before <= 0 ? null : (now - before) / before;
+
+/**
+ * The tiles under the lead (Faza 54-2): the renewable share, generation, carbon intensity and consumption,
+ * each against the same month a year earlier when that month is complete. The changes come from the
+ * unrounded figures, so a tile and the table below never disagree by more than their rounding.
+ */
+function reportFigures(lang: Lang, ctx: Context, month: string): string {
+  const copy = REPORT_COPY[lang].figures;
+  const i18n = createI18n(lang);
+  const row = croatia(ctx, month);
+  if (row?.total == null) return "";
+  const yearAgoMonth = shiftMonth(month, -12);
+  const before = croatia(ctx, yearAgoMonth);
+  const against = copy.against(yearAgoMonth.slice(0, 4));
+  const percentChange = (change: number | null, rise: Change["rise"]): Change | undefined =>
+    change === null ? undefined : { value: change, text: i18n.percent(Math.abs(change)), against, rise };
+  const figures: KeyFigure[] = [];
+  if (row.share !== null) {
+    const points = before?.share == null ? null : (row.share - before.share) * 100;
+    figures.push({
+      label: copy.share,
+      value: i18n.number(row.share * 100, 1),
+      unit: "%",
+      ...(points === null
+        ? {}
+        : {
+            change: {
+              value: points,
+              text: `${i18n.number(Math.abs(points), 1)} ${copy.points}`,
+              against,
+              rise: "good",
+            },
+          }),
+    });
+  }
+  const [total, totalUnit] = splitUnit(i18n.energy(row.total));
+  const generationChange = percentChange(relative(row.total, before?.total ?? null), "neutral");
+  figures.push({
+    label: copy.generation,
+    value: total,
+    unit: totalUnit,
+    ...(generationChange ? { change: generationChange } : {}),
+  });
+  const co2 = rowIntensity(row);
+  if (co2 !== null) {
+    const co2Change = percentChange(relative(co2, before ? rowIntensity(before) : null), "bad");
+    figures.push({
+      label: copy.co2,
+      value: i18n.number(Math.round(co2)),
+      unit: "g/kWh",
+      ...(co2Change ? { change: co2Change } : {}),
+    });
+  }
+  if (row.load !== null && row.load > 0 && row.loadCoverage >= COMPLETE_COVERAGE) {
+    const [load, loadUnit] = splitUnit(i18n.energy(row.load));
+    figures.push({
+      label: copy.load,
+      value: load,
+      unit: loadUnit,
+      note: copy.covered(i18n.percent(row.total / row.load)),
+    });
+  }
+  return keyFigures(figures, copy.label);
+}
+
+/** The renewable share of the 24 months up to the report's month, as columns; a month not complete is a gap. */
+function trendSection(lang: Lang, ctx: Context, month: string): Section | null {
+  const copy = REPORT_COPY[lang].figures;
+  const i18n = createI18n(lang);
+  const months = Array.from({ length: 24 }, (_, index) => shiftMonth(month, index - 23));
+  const shares = months.map((each) => croatia(ctx, each)?.share ?? null);
+  if (shares.filter((share) => share !== null).length < 2) return null;
+  const short = (each: string): string =>
+    `${copy.shortMonths[Number(each.slice(5, 7)) - 1] ?? ""} ${each.slice(2, 4)}`;
+  const columns = months.map((each, index) => ({
+    // every third month from the report's own backwards, so the report's month is always named
+    label: (23 - index) % 3 === 0 ? short(each) : "",
+    value: shares[index] ?? null,
+    ...(index === 23 ? { mark: "now" as const } : index === 11 ? { mark: "then" as const } : {}),
+  }));
+  const rows: Row[] = months.flatMap((each, index) => {
+    const share = shares[index];
+    return share == null ? [] : [[e(monthName(lang, each)), i18n.percent(share)] as Row];
+  });
+  const [c0, c1] = copy.trendColumns;
+  return {
+    heading: copy.trendHeading,
+    html:
+      `<p>${e(copy.trendText(monthName(lang, month), monthName(lang, shiftMonth(month, -12))))}</p>` +
+      shareColumns(columns, "") +
+      tableBehind(copy.table, linkedTable([c0, c1], rows)),
+  };
+}
+
 /** The month in a few points, each one a figure from the tables below, and the line that invites sharing. */
 function briefSection(site: SiteData, lang: Lang, ctx: Context, month: string): Section | null {
   const copy = REPORT_COPY[lang].brief;
@@ -255,9 +369,41 @@ function sourcesSection(lang: Lang, ctx: Context, month: string): Section {
     monthName(lang, shiftMonth(month, -1)),
     monthName(lang, shiftMonth(month, -12)),
   );
+  // the chart: this month's mix, then each source against the same month a year earlier (Faza 54-2)
+  const shown = techs.filter((tech) => (row?.byTech[tech] ?? 0) > 0 || (yearAgo?.byTech[tech] ?? 0) > 0);
+  const bars = shown.map((tech) => {
+    const value = row?.byTech[tech] ?? 0;
+    const before = yearAgo ? (yearAgo.byTech[tech] ?? 0) : null;
+    const change = relative(value, before);
+    return {
+      tech,
+      name: i18n.technology(tech),
+      amount: value > 0 ? i18n.energy(value) : "",
+      share: total > 0 && value > 0 ? i18n.percent(value / total) : "",
+      value,
+      before,
+      change:
+        before === null
+          ? ""
+          : before === 0
+            ? copy.figures.new
+            : change === null
+              ? ""
+              : `${change > 0 ? "▲" : change < 0 ? "▼" : "="} ${i18n.percent(Math.abs(change))}`,
+    };
+  });
+  const chart =
+    row && total > 0
+      ? mixBar(shown.map((tech) => ({ tech, value: row.byTech[tech] ?? 0 }))) +
+        sourceBars(bars, {
+          now: monthName(lang, month),
+          before: yearAgo ? monthName(lang, shiftMonth(month, -12)) : "",
+        })
+      : "";
+  const table = linkedTable([c0, c1, c2, c3, c4], rows);
   return {
     heading: copy.sources.heading,
-    html: linkedTable([c0, c1, c2, c3, c4], rows) + `<p>${e(copy.sources.note)}</p>`,
+    html: (chart ? chart + tableBehind(copy.figures.table, table) : table) + `<p>${e(copy.sources.note)}</p>`,
   };
 }
 
@@ -281,10 +427,30 @@ function regionSection(lang: Lang, ctx: Context, month: string): Section {
     ];
   });
   const [c0, c1, c2, c3, c4] = copy.region.columns;
+  // the ranking as bars of the renewable share, Croatia marked; the table keeps the exact figures (Faza 54-2)
+  const ranking = rankBars(
+    present.map(({ code, row }) => {
+      const co2 = rowIntensity(row);
+      const largest = largestSource(row);
+      return {
+        name: `<a href="${PATHS[lang].country(code.toLowerCase())}">${e(i18n.country(code))}</a>`,
+        value: row.share ?? 0,
+        text: row.share === null ? "" : i18n.percent(row.share),
+        detail: [
+          co2 === null ? "" : `${i18n.number(Math.round(co2))} g/kWh`,
+          largest ? i18n.technology(largest) : "",
+        ]
+          .filter(Boolean)
+          .join(" · "),
+        own: code === "HR",
+      };
+    }),
+  );
   return {
     heading: copy.region.heading(monthName(lang, month)),
     html:
-      linkedTable([c0, c1, c2, c3, c4], rows) +
+      ranking +
+      tableBehind(copy.figures.table, linkedTable([c0, c1, c2, c3, c4], rows)) +
       `<p>${e(copy.region.note)}</p>` +
       (missing.length > 0
         ? `<p>${e(copy.region.missing(missing.map((code) => i18n.country(code)).join(", ")))}</p>`
@@ -300,11 +466,14 @@ function reportPage(site: SiteData, lang: Lang, ctx: Context, month: string): St
   const load =
     row && row.load !== null && row.loadCoverage >= COMPLETE_COVERAGE ? i18n.energy(row.load) : null;
   const brief = briefSection(site, lang, ctx, month);
+  const trendOf = trendSection(lang, ctx, month);
   const sections: Section[] = [
     ...(brief ? [brief] : []),
     sourcesSection(lang, ctx, month),
+    ...(trendOf ? [trendOf] : []),
     regionSection(lang, ctx, month),
   ];
+  const figures = reportFigures(lang, ctx, month);
 
   const hep = hepRelease(site, month);
   if (hep) {
@@ -348,6 +517,7 @@ function reportPage(site: SiteData, lang: Lang, ctx: Context, month: string): St
       `<p>${e(leadSentence(lang, ctx, month))}</p>` +
       (row?.total != null ? `<p>${e(copy.totals(i18n.energy(row.total), load))}</p>` : "") +
       callout(copy.compare.month(name), { href: compareLink(lang, month), label: copy.compare.label }),
+    ...(figures ? { figures } : {}),
     sections,
     nav,
     jsonLd: [

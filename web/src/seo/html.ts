@@ -309,6 +309,7 @@ ${breadcrumbNav(page)}
 <h1>${e(page.heading)}</h1>
 <div class="lead">${page.lead}</div>
 </div>
+${page.figures ?? ""}
 <div class="body${contents ? " with-side" : ""}">
 <div class="content">
 ${page.doors && page.doors.length > 0 ? doors(page.doors) : ""}

@@ -108,6 +108,11 @@ export interface StaticPage {
   lead: string;
   /** where the page leads, as cards under the lead (pageDoors.ts): mostly views of the map */
   doors?: Door[];
+  /**
+   * The key figures as tiles across the page under its head (charts.ts `keyFigures`, Faza 54-2), as HTML.
+   * They repeat figures of the lead and the sections, so the Markdown copy leaves them out.
+   */
+  figures?: string;
   sections: Section[];
   jsonLd: Record<string, unknown>[];
   /** ISO instant of the data release the page was made from */
