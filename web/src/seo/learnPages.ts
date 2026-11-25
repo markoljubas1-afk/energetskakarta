@@ -11,7 +11,7 @@ import { SOLAR_PICTURE } from "../share/solarCapitaCard";
 import { TIME_MACHINE_START, type Lang } from "../state/url";
 import type { StoryKey } from "../stories/keys";
 import { STORIES, STORY_KEYS } from "../stories/stories";
-import { callout, doors, e, glossary, list, type Door } from "./markup";
+import { callout, doors, e, glossary, list, steps, type Door } from "./markup";
 import { homeDoor, icon } from "./pageDoors";
 import { home, mapLink, other, PATHS, publisher, type SiteData, type StaticPage } from "./site";
 import { topPlantsSection } from "./topPlants";
@@ -708,12 +708,12 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
       { heading: copy.storiesHeading, html: `<p>${e(copy.storiesIntro)}</p>${doors(stories)}` },
       {
         heading: copy.journeyHeading,
-        html: `<ol>${copy.journey.map((step) => `<li>${e(step)}</li>`).join("")}</ol>`,
+        html: steps(copy.journey.map(e)),
       },
-      { heading: copy.unitsHeading, html: list(copy.units.map(e)) },
+      { heading: copy.unitsHeading, html: list(copy.units.map(e), "facts") },
       {
         heading: copy.solarHeading,
-        html: `${list(copy.solar.map(e))}${callout(copy.roof, { href: mapLink(lang, { l: "lines,solar" }), label: copy.roofAction }, SUN_ICON)}${doors(
+        html: `${list(copy.solar.map(e), "facts")}${callout(copy.roof, { href: mapLink(lang, { l: "lines,solar" }), label: copy.roofAction }, SUN_ICON)}${doors(
           [
             homeDoor(lang),
             ...(site.solarCapita
@@ -746,7 +746,7 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
       },
       {
         heading: copy.gasHeading,
-        html: `${list(copy.gas.map(e))}<p>${e(copy.gasSourcesLabel)}: ${copy.gasSources
+        html: `${list(copy.gas.map(e), "facts")}<p>${e(copy.gasSourcesLabel)}: ${copy.gasSources
           .map(([name, url]) => `<a href="${e(url)}" rel="noopener">${e(name)}</a>`)
           .join("; ")}.</p>${doors([
           {
@@ -765,7 +765,7 @@ export function learnPage(site: SiteData, lang: Lang): StaticPage {
       },
       {
         heading: copy.gasPathHeading,
-        html: `${list(copy.gasPath.map(e))}<p>${e(copy.gasSourcesLabel)}: ${copy.gasPathSources
+        html: `${list(copy.gasPath.map(e), "facts")}<p>${e(copy.gasSourcesLabel)}: ${copy.gasPathSources
           .map(([name, url]) => `<a href="${e(url)}" rel="noopener">${e(name)}</a>`)
           .join("; ")}.</p>${doors([
           {

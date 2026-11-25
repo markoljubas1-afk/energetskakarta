@@ -193,6 +193,8 @@ describe("renderPage", () => {
     if (!long || !short) throw new Error("the fixture needs a long and a short page");
     const html = renderPage(long, site);
     expect(html).toContain('<div class="body with-side">');
+    // and at the top of the content for a phone, which has no side column (Faza 54-4)
+    expect(html).toContain('<details class="toc-here"><summary>Na ovoj stranici</summary><nav class="toc"');
     const toc = /<nav class="toc"[^>]*>([\s\S]*?)<\/nav>/.exec(html)?.[1] ?? "";
     const links = [...toc.matchAll(/href="#([^"]+)"/g)].map((m) => m[1]);
     const headings = [...html.matchAll(/<h2 id="([^"]+)">/g)].map((m) => m[1]);

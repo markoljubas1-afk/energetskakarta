@@ -6,7 +6,7 @@ import { createI18n } from "../i18n";
 import { DOWNLOAD_LABELS } from "../i18n/labels";
 import type { Lang } from "../state/url";
 import { AUTHOR, COPY } from "./copy";
-import { definitions, e, list } from "./markup";
+import { definitions, e, list, steps } from "./markup";
 import { countryJsonDoor, learnDoor, mapDoor } from "./pageDoors";
 import { API_PATHS } from "./paths";
 import {
@@ -51,12 +51,15 @@ export function aboutPage(site: SiteData, lang: Lang): StaticPage {
       { heading: about.purposeHeading, html: list(about.purpose.map(e)) },
       { heading: about.whatHeading, html: list(about.what.map(e)) },
       { heading: about.readingHeading, html: list(about.reading.map(e)) },
-      { heading: about.methodHeading, html: list(about.method.map(e)) },
+      { heading: about.methodHeading, html: steps(about.method.map(e)) },
       { heading: about.sourcesHeading, html: list(sources.map((s) => e(i18n.t(`attr_${s}`)))) },
-      { heading: copy.nav.countries, html: list(countries) },
+      { heading: copy.nav.countries, html: list(countries, "links") },
       { heading: about.updatesHeading, html: `<p>${e(about.updates)}</p>` },
       { heading: about.limitsHeading, html: list(about.limits.map(e)) },
-      { heading: about.downloadsHeading, html: `<p>${e(about.downloadsNote)}</p>${list(downloads)}` },
+      {
+        heading: about.downloadsHeading,
+        html: `<p>${e(about.downloadsNote)}</p>${list(downloads, "links")}`,
+      },
       { heading: about.fixHeading, html: `<p>${e(about.fix)}</p>` },
 
       {

@@ -58,6 +58,13 @@ describe("Markdown twins", () => {
     ).toBe(
       'Uvod\n\n| A | B |\n| --- | --- |\n| 1\\|2 | 3 |\n\n- x\n- y\n\n- **Status**: U pogonu\n\n```\ncurl "a"\n```',
     );
+    // numbered steps keep their numbers, and a list with a look of its own is still a list (Faza 54-4)
+    expect(
+      blocks(
+        '<ol class="steps"><li>Proizvodnja</li><li>Prijenos</li></ol><ul class="facts"><li>z</li></ul>',
+        null,
+      ),
+    ).toBe("1. Proizvodnja\n2. Prijenos\n\n- z");
   });
 
   it("exist for every page, leave no HTML behind and name the page, date and licence", () => {

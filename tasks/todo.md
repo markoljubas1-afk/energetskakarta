@@ -3165,3 +3165,13 @@ bih je prije izvještaja”; izbor grafa: „Obnovljivo kroz 12 mjeseci”.
   ostalo (reverzibilne, baterije, ostalo). Nepotpuna razdoblja bljeđa, kao na glavnom grafu. Ispod 1100 px graf
   ide ispod pite. U prikazu „Tablica” se ne crta. `StackedChart` dobiva neobaveznu crtu.
 - [x] 55-2 Zaglavlje karte: „GridAtlas” prije „Izvještaji”.
+
+### 54-4 Edukacija i O karti — 2026-11-25 (vlasnik: „može, spoji i kreni s 54-4”)
+
+- [x] „Na ovoj stranici” i na mobitelu: otvara se s vrha sadržaja (`details.toc-here`), jer bočnog stupca tamo nema.
+- [x] Edukacija: „… u šest rečenica”, „Snaga i energija”, „Put plina” kao kartice činjenica (`list(…, "facts")`);
+  „Put struje u četiri koraka” kao numerirani koraci (`steps`); pojmovnik i pitanja u dva stupca na širokom ekranu.
+- [x] O karti: „Kako karta nastaje” kao numerirani koraci; zemlje i preuzimanja kao mreža poveznica.
+- [x] Usput: Markdown inačica nije čitala `<ol>`, pa je „Put struje u četiri koraka” izostajao; sada ide kao
+  numerirani popis.
+- Tekst se ne mijenja; Edukacija i O karti jednom dobivaju novi datum izmjene (promijenio se HTML odjeljaka).

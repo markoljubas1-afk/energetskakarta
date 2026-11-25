@@ -3,7 +3,7 @@
  * (`rel="alternate" type="text/markdown"`), plus `llms-full.txt` with the main English pages in one file.
  * AI assistants and agents read Markdown more cheaply and more reliably than HTML with styles and navigation.
  *
- * The converter handles exactly the HTML the page generators emit (p, a, ul/li, table, h3, dl, pre/code);
+ * The converter handles exactly the HTML the page generators emit (p, a, ul/ol/li, table, h3, dl, pre/code);
  * a test renders every page and fails if any tag is left over.
  */
 import { createI18n } from "../i18n";
@@ -59,13 +59,20 @@ function table(html: string, base: string | null): string {
 export function blocks(html: string, base: string | null): string {
   const parts: string[] = [];
   const pattern =
-    /<table>[\s\S]*?<\/table>|<ul[^>]*>[\s\S]*?<\/ul>|<dl>[\s\S]*?<\/dl>|<details>[\s\S]*?<\/details>|<pre><code>[\s\S]*?<\/code><\/pre>|<h3>[\s\S]*?<\/h3>|<p[^>]*>[\s\S]*?<\/p>/g;
+    /<table>[\s\S]*?<\/table>|<ul[^>]*>[\s\S]*?<\/ul>|<ol[^>]*>[\s\S]*?<\/ol>|<dl>[\s\S]*?<\/dl>|<details>[\s\S]*?<\/details>|<pre><code>[\s\S]*?<\/code><\/pre>|<h3>[\s\S]*?<\/h3>|<p[^>]*>[\s\S]*?<\/p>/g;
   for (const [block] of html.matchAll(pattern)) {
     if (block.startsWith("<table")) parts.push(table(block, base));
     else if (block.startsWith("<ul"))
       parts.push(
         [...block.matchAll(/<li>([\s\S]*?)<\/li>/g)]
           .map(([, item = ""]) => `- ${inline(item, base)}`)
+          .join("\n"),
+      );
+    else if (block.startsWith("<ol"))
+      // numbered steps (Faza 54-4: until then the twin left them out)
+      parts.push(
+        [...block.matchAll(/<li>([\s\S]*?)<\/li>/g)]
+          .map(([, item = ""], index) => `${String(index + 1)}. ${inline(item, base)}`)
           .join("\n"),
       );
     else if (block.startsWith("<dl"))

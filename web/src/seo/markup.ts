@@ -138,8 +138,14 @@ export function scrollable(tableHtml: string, columns: readonly string[]): strin
   return `<div class="scroll" role="region" tabindex="0" aria-label="${e(columns.join(", "))}">${tableHtml}</div>`;
 }
 
-export function list(items: string[]): string {
-  return `<ul>${items.map((item) => `<li>${item}</li>`).join("")}</ul>`;
+/** A list; `kind` gives it a look of its own in style.ts ("facts": cards of sentences, "links": a grid of links). */
+export function list(items: string[], kind?: "facts" | "links"): string {
+  return `<ul${kind ? ` class="${kind}"` : ""}>${items.map((item) => `<li>${item}</li>`).join("")}</ul>`;
+}
+
+/** Steps in their order, numbered on the page and in the Markdown copy. */
+export function steps(items: string[]): string {
+  return `<ol class="steps">${items.map((item) => `<li>${item}</li>`).join("")}</ol>`;
 }
 
 export interface Door {

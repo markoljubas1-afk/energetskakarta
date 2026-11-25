@@ -296,6 +296,10 @@ export function renderPage(page: StaticPage, site: SiteData): string {
     page.sections.length >= CONTENTS_MIN_SECTIONS
       ? `<aside class="side">${contentsNav(page.sections, SHELL_COPY[page.lang].contents)}</aside>`
       : "";
+  // a phone has no side column: there the same contents open from the top of the page (Faza 54-4)
+  const contentsHere = contents
+    ? `<details class="toc-here"><summary>${e(SHELL_COPY[page.lang].contents)}</summary>${contentsNav(page.sections, SHELL_COPY[page.lang].contents)}</details>`
+    : "";
   return `<!doctype html>
 <html lang="${page.lang}">
 <head>
@@ -312,6 +316,7 @@ ${breadcrumbNav(page)}
 ${page.figures ?? ""}
 <div class="body${contents ? " with-side" : ""}">
 <div class="content">
+${contentsHere}
 ${page.doors && page.doors.length > 0 ? doors(page.doors) : ""}
 ${sections}
 ${page.citable === false ? "" : citeSection(page, site)}
