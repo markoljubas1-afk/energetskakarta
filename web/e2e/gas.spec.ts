@@ -58,7 +58,8 @@ test("a shared link opens a country's production with a bar per gas day and a ga
 test("a country without a production point has no disc to select", async ({ page }) => {
   await open(page, "l=gas&v=46.2,14.5,6&sel=gas%3ASI");
   const details = page.getByRole("complementary", { name: "Detalji objekta" });
-  await expect(details).toContainText("Objekt je izvan trenutnog prikaza");
+  // the map settles, the search index does not know it either: a clear answer, not endless loading (Faza 56)
+  await expect(details.getByRole("heading", { name: "Objekt nije pronađen" })).toBeVisible();
 });
 
 test("the legend names the layer and the attribution names ENTSOG", async ({ page }) => {

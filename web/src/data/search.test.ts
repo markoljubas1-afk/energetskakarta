@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { normalize, prepareIndex, search, SearchIndexSchema, toHit, type SearchIndex } from "./search";
+import {
+  normalize,
+  placeOf,
+  prepareIndex,
+  search,
+  SearchIndexSchema,
+  toHit,
+  type SearchIndex,
+} from "./search";
 
 const index: SearchIndex = SearchIndexSchema.parse({
   version: 1,
@@ -77,5 +85,15 @@ describe("search", () => {
 
   it("respects the limit", () => {
     expect(search(prepared, "ts", 1)).toHaveLength(1);
+  });
+});
+
+describe("placeOf (Faza 56, 4.4a)", () => {
+  it("finds where an object is by its id", () => {
+    expect(placeOf(prepared, "osm:node/2")).toEqual({ lon: 15.95, lat: 45.55 });
+  });
+
+  it("is null for an id the index does not have (lines, pipelines, chargers)", () => {
+    expect(placeOf(prepared, "osm:way/999")).toBeNull();
   });
 });

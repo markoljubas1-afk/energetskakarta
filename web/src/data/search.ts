@@ -12,6 +12,7 @@ import {
   type Substance,
   type Technology,
 } from "../domain";
+import { fetchJson } from "./current";
 
 const Row = z.tuple([
   z.string(),
@@ -170,6 +171,27 @@ export interface PreparedIndex {
 
 export function prepareIndex(index: SearchIndex): PreparedIndex {
   return { rows: index.rows, keys: index.rows.map((row) => normalize(row[1])) };
+}
+
+/** Where an object of the index is; null for anything the index does not hold. */
+export function placeOf(index: PreparedIndex, id: string): { lon: number; lat: number } | null {
+  const row = index.rows.find(([rowId]) => rowId === id);
+  return row ? { lon: row[4], lat: row[5] } : null;
+}
+
+// One download per index address, shared by the search box and the map's look-up of a linked object
+// (Faza 56, 4.4a); a failed download is forgotten so the next use tries again.
+const indexes = new Map<string, Promise<PreparedIndex>>();
+
+/** The prepared search index at `url`, downloaded once. */
+export function loadSearchIndex(url: string): Promise<PreparedIndex> {
+  let loading = indexes.get(url);
+  if (!loading) {
+    loading = fetchJson(url, SearchIndexSchema).then(prepareIndex);
+    loading.catch(() => indexes.delete(url));
+    indexes.set(url, loading);
+  }
+  return loading;
 }
 
 /** Names starting with the query rank first, then names containing it; ties keep index order. */

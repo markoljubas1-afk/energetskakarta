@@ -53,7 +53,8 @@ describe("SearchBox", () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("", { status: 500 })));
     const user = userEvent.setup();
-    renderWithI18n(<SearchBox indexUrl="https://d.test/search.json" onPick={vi.fn()} />, "en");
+    // its own address: an index that loaded once is shared for the rest of the page's life (data/search.ts)
+    renderWithI18n(<SearchBox indexUrl="https://d.test/broken/search.json" onPick={vi.fn()} />, "en");
     await user.type(screen.getByRole("combobox"), "rhe");
     await waitFor(() => {
       expect(screen.getByRole("status")).toHaveTextContent("Search is unavailable right now.");

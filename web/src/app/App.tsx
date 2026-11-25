@@ -44,7 +44,7 @@ import {
 } from "../domain";
 import { PATHS } from "../seo/pages";
 import { assetUrl, loadCurrent, type Current } from "../data/current";
-import type { SearchHit } from "../data/search";
+import { loadSearchIndex, placeOf, type SearchHit } from "../data/search";
 import { I18nProvider, useI18n } from "../i18n";
 import type { Basemap } from "../map/basemap";
 import type { InView } from "../map/inView";
@@ -104,6 +104,7 @@ import {
 import styles from "./App.module.css";
 import { ChunkLoadError, loadChunk } from "./chunks";
 import { ErrorBoundary } from "./ErrorBoundary";
+import { useMissingSelection } from "./useMissingSelection";
 import { Intro } from "./Intro";
 import { ErrorScreen, LoadingScreen } from "./Screens";
 import { useShortcuts, type Shortcut } from "./shortcuts";
@@ -136,6 +137,8 @@ function fullSiteHref(state: AppState): string {
 
 /** Zoom used when jumping to a search result; every point asset is visible from here (tiles.py rules). */
 const SEARCH_ZOOM = 11;
+/** How close the map goes to a linked object it had to look for: the zoom the site's own links use. */
+const SELECTION_ZOOM = 12;
 
 const LAYER_OF_HIT = {
   plant: "plants",
@@ -727,6 +730,19 @@ function Explorer({
   // Details belong to one id; a stale object is never shown for a different selection.
   const shownDetails = details?.id === state.selected ? details : null;
 
+  // A linked object that is not in the loaded tiles: found through the search index and flown to once,
+  // or reported as not found (Faza 56, 4.4a).
+  const searchIndexUrl = assetUrl(config.dataBaseUrl, current.search);
+  const locateSelected = useCallback(
+    async (id: string) => placeOf(await loadSearchIndex(searchIndexUrl), id),
+    [searchIndexUrl],
+  );
+  const flyToSelected = useMemo(
+    () => (mapApi ? (lon: number, lat: number) => mapApi.flyTo(lon, lat, SELECTION_ZOOM) : null),
+    [mapApi],
+  );
+  const missing = useMissingSelection(state.selected, locateSelected, flyToSelected);
+
   const onSelect = useCallback(
     (selection: Selection | null) => {
       setDetails(selection);
@@ -988,6 +1004,7 @@ function Explorer({
             onViewChange={onViewChange}
             onInView={setSeen}
             onSelect={onSelect}
+            onSelectionMissing={missing.onMissing}
             onBasemap={setBasemap}
             onReady={onReady}
             intro={intro.map}
@@ -1136,6 +1153,7 @@ function Explorer({
                 <DetailsPanel
                   id={state.selected}
                   selection={shownDetails}
+                  notFound={missing.notFound}
                   onClose={closeDetails}
                   around={around}
                   mix={
