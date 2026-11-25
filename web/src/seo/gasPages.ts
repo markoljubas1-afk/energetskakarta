@@ -16,6 +16,7 @@ import { LANGS, type Lang } from "../state/url";
 import { SOURCE_TERMS } from "./license";
 import { gasPlaceLinks } from "./gasPlaces";
 import { e, list, table } from "./markup";
+import { CHART_COPY, keyFigures, rankBars, roundUp, tableBehind, valueColumns } from "./charts";
 import { ogImage } from "./ogImages";
 import { home, mapLink, other, PATHS, publisher, type Section, type SiteData, type StaticPage } from "./site";
 
@@ -187,6 +188,29 @@ export const GAS_COPY: Record<Lang, GasCopy> = {
   },
 };
 
+/** The tiles under the lead (Faza 54-3). */
+const GAS_FIGURES = {
+  hr: {
+    entered: "Ušlo u sustav",
+    delivered: "Isporučeno kupcima",
+    usual: "prema prosjeku 7 dana",
+    stored: (name: string) => `Skladište ${name}`,
+  },
+  en: {
+    entered: "Entered the system",
+    delivered: "Delivered to customers",
+    usual: "vs the 7-day average",
+    stored: (name: string) => `${name} storage`,
+  },
+} as const;
+
+/** A gas day under its column: "23. 11." in Croatian, "23/11" in English. */
+const shortDay = (day: string, lang: Lang): string => {
+  const date = String(Number(day.slice(8, 10)));
+  const month = String(Number(day.slice(5, 7)));
+  return lang === "hr" ? `${date}. ${month}.` : `${date}/${month}`;
+};
+
 /** Whether the build has what the page is about: Croatia's balance for a gas day. */
 export function hasGasPage(site: SiteData): boolean {
   return Boolean(site.gasFlows && balance(site.gasFlows, HOME));
@@ -265,16 +289,69 @@ function gasPage(site: SiteData, flows: GasFlows, storage: GasStorage | null, la
       `${i18n.number(Math.round(row.share * 100))} %`,
     ]);
   const note = day.provisional ? ` ${copy.provisional}` : "";
+  const chartWords = CHART_COPY[lang];
+  const figureWords = GAS_FIGURES[lang];
+  // Faza 54-3: a side of the balance as bars of its shares, with the table behind a click
+  const shares = (side: Balance["entries"]): string =>
+    rankBars(
+      side.map((row) => ({
+        name: e(flowName(row, i18n)),
+        value: row.share,
+        text: `${gwh(row.kwh, i18n)} GWh`,
+        detail: `${i18n.number(Math.round(row.share * 100))} %`,
+      })),
+    ) + tableBehind(chartWords.table, table([...copy.whereFrom.columns], rows(side)));
   const sections: Section[] = [
     {
       heading: copy.whereFrom.heading,
-      html: `<p>${e(said.entered + note)}</p>` + table([...copy.whereFrom.columns], rows(day.entries)),
+      html: `<p>${e(said.entered + note)}</p>` + shares(day.entries),
     },
     {
       heading: copy.whereTo.heading,
-      html: `<p>${e(said.left)}</p>` + table([...copy.whereFrom.columns], rows(day.exits)),
+      html: `<p>${e(said.left)}</p>` + shares(day.exits),
     },
   ];
+  // the tiles: what entered, what customers got against their usual week, how full Okoli is
+  const okoli = all.find((reading) => reading.facility.country === HOME);
+  const usual =
+    day.consumersKwh !== null && day.usualConsumersKwh !== null && day.usualConsumersKwh > 0
+      ? day.consumersKwh / day.usualConsumersKwh - 1
+      : null;
+  const figures = keyFigures(
+    [
+      { label: figureWords.entered, value: gwh(day.enteredKwh, i18n), unit: "GWh", note: i18n.date(day.day) },
+      ...(day.consumersKwh === null
+        ? []
+        : [
+            {
+              label: figureWords.delivered,
+              value: gwh(day.consumersKwh, i18n),
+              unit: "GWh",
+              ...(usual === null
+                ? {}
+                : {
+                    change: {
+                      value: usual,
+                      text: i18n.percent(Math.abs(usual)),
+                      against: figureWords.usual,
+                      rise: "neutral" as const,
+                    },
+                  }),
+            },
+          ]),
+      ...(okoli
+        ? [
+            {
+              label: figureWords.stored(okoli.facility.name),
+              value: i18n.number(okoli.full, 1),
+              unit: "%",
+              note: i18n.date(okoli.day),
+            },
+          ]
+        : []),
+    ],
+    chartWords.figures,
+  );
   const faq: [string, string][] = [
     [copy.whereFrom.heading, said.entered],
     [copy.whereTo.heading, said.left],
@@ -284,17 +361,36 @@ function gasPage(site: SiteData, flows: GasFlows, storage: GasStorage | null, la
       .filter((each) => each.consumersKwh !== null)
       .slice(-DAYS_SHOWN)
       .reverse();
+    // the days as columns, oldest first, the page's own day marked; the axis tops at a round number of GWh
+    const oldestFirst = [...days].reverse();
+    const top = roundUp(Math.max(...oldestFirst.map((each) => (each.consumersKwh ?? 0) / 1e6)));
+    const perDay = valueColumns(
+      oldestFirst.map((each, index) => ({
+        label: index % 2 === (oldestFirst.length - 1) % 2 ? shortDay(each.day, lang) : "",
+        minor: (oldestFirst.length - 1 - index) % 4 !== 0,
+        value: each.consumersKwh === null ? null : each.consumersKwh / 1e6,
+        ...(index === oldestFirst.length - 1 ? { mark: "now" as const } : {}),
+      })),
+      top,
+      [`${i18n.number(top)} GWh`, i18n.number(top / 2), "0"],
+      "",
+      "neutral",
+    );
     sections.push({
       heading: copy.perDay.heading,
       html:
         `<p>${e(said.delivered)}</p>` +
-        table(
-          [...copy.perDay.columns],
-          days.map((each) => [
-            i18n.date(each.day),
-            gwh(each.consumersKwh ?? 0, i18n),
-            gwh(each.enteredKwh, i18n),
-          ]),
+        perDay +
+        tableBehind(
+          chartWords.table,
+          table(
+            [...copy.perDay.columns],
+            days.map((each) => [
+              i18n.date(each.day),
+              gwh(each.consumersKwh ?? 0, i18n),
+              gwh(each.enteredKwh, i18n),
+            ]),
+          ),
         ) +
         `<p>${e(copy.perDay.note)}</p>`,
     });
@@ -306,14 +402,26 @@ function gasPage(site: SiteData, flows: GasFlows, storage: GasStorage | null, la
       html:
         `<p>${e(said.stored ?? copy.storage.none)}</p>` +
         (all.length > 0
-          ? table(
-              [...copy.storage.columns],
-              all.map((reading) => [
-                reading.facility.name,
-                i18n.country(reading.facility.country),
-                `${i18n.number(reading.full, 1)} %`,
-                i18n.date(reading.day),
-              ]),
+          ? rankBars(
+              all.map((reading) => ({
+                name: e(reading.facility.name),
+                value: reading.full / 100,
+                text: `${i18n.number(reading.full, 1)} %`,
+                detail: `${i18n.country(reading.facility.country)} · ${i18n.date(reading.day)}`,
+                own: reading.facility.country === HOME,
+              })),
+            ) +
+            tableBehind(
+              chartWords.table,
+              table(
+                [...copy.storage.columns],
+                all.map((reading) => [
+                  reading.facility.name,
+                  i18n.country(reading.facility.country),
+                  `${i18n.number(reading.full, 1)} %`,
+                  i18n.date(reading.day),
+                ]),
+              ),
             )
           : "") +
         `<p>${e(copy.storage.note)}</p>`,
@@ -349,6 +457,7 @@ function gasPage(site: SiteData, flows: GasFlows, storage: GasStorage | null, la
     description: copy.description,
     heading: copy.heading,
     lead: `<p>${e([said.entered, said.delivered, said.stored].filter(Boolean).join(" ") + note)}</p>`,
+    figures,
     sections,
     jsonLd: [
       {

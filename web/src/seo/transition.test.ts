@@ -110,6 +110,21 @@ describe("energy transition page", () => {
     expect(plain(page("hr").lead)).toContain("(rujan 2026.): oko 304 g/kWh");
   });
 
+  it("repeats the lead's figures as tiles, and draws the yearly share and the CO₂ (Faza 54-3)", () => {
+    const hr = page("hr");
+    const figures = plain(hr.figures ?? "");
+    expect(figures).toContain("Obnovljivi u proizvodnji struje");
+    expect(figures).toContain('<p class="big">90<small>%</small></p>');
+    // 90 % in 2025 against 80 % in 2024: ten points up, good news
+    expect(figures).toMatch(/delta good"><b aria-hidden="true">▲<\/b> 10 p\. b\.<\/span> prema 2024\./);
+    expect(figures).toContain('<p class="big">304<small>g/kWh</small></p>');
+    const share = hr.sections.find((s) => s.heading.startsWith("Udio obnovljivih"))?.html ?? "";
+    expect(share).toContain('<div class="columns" aria-hidden="true">');
+    expect(share).toContain('<details class="data">');
+    const co2 = hr.sections.find((s) => s.heading.startsWith("CO₂"))?.html ?? "";
+    expect(co2).toContain('<div class="columns neutral" aria-hidden="true">');
+  });
+
   it("counts only complete months and leaves storage out of the carbon intensity", () => {
     expect(monthlyIntensity(site).map((m) => [m.month, Math.round(m.value)])).toEqual([
       ["2026-08", 257],

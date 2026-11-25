@@ -45,6 +45,9 @@ test("the static pages fit the screen: a wide table scrolls in its own box, not 
 test("a country page carries that country's figures", async ({ page }) => {
   await page.goto("/zemlja/hr/");
   await expect(page).toHaveTitle("Hrvatska: elektrane, dalekovodi i trafostanice");
+  // the capacity is a chart, with its table behind a click (Faza 54-3)
+  await expect(page.locator(".kpis")).toContainText("Snaga u pogonu");
+  await page.getByText("Tablica s brojkama").first().click();
   await expect(page.getByRole("cell", { name: "Reverzibilna hidro" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Otvori na karti" })).toHaveAttribute("href", "/?c=HR");
 });

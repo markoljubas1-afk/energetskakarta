@@ -159,6 +159,24 @@ describe("the gas page", () => {
     expect(more).toContain("pic=gasflow");
   });
 
+  it("shows the day as tiles and charts, with the tables behind a click (Faza 54-3)", () => {
+    const hr = page("hr");
+    const figures = hr.figures ?? "";
+    expect(figures).toContain('<p class="big">121,2<small>GWh</small></p>');
+    // the customers' day against their usual week: neither good nor bad news
+    expect(figures).toMatch(
+      /delta neutral"><b aria-hidden="true">▼<\/b> [\d,]+ %<\/span> prema prosjeku 7 dana/,
+    );
+    expect(figures).toContain("Skladište PSP Okoli");
+    expect(figures).toContain('<p class="big">82,5<small>%</small></p>');
+    const [from, , perDay, storage] = hr.sections.map((section) => section.html);
+    expect(from).toContain('<div class="ranking">');
+    expect(from).toContain('<details class="data"><summary>Tablica s brojkama</summary>');
+    expect(perDay).toContain('<div class="columns neutral" aria-hidden="true">');
+    expect(perDay).toContain('<span class="cur">17. 11.</span>');
+    expect(storage).toContain('<div class="rrow own">');
+  });
+
   it("carries the same sentences as FAQ structured data, and a dated dataset", () => {
     const hr = page("hr");
     const faq = hr.jsonLd.find((each) => each["@type"] === "FAQPage") as {

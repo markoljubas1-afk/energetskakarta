@@ -26,6 +26,17 @@ import { createI18n } from "../i18n";
 import { kwhEach, SOLAR_PICTURE } from "../share/solarCapitaCard";
 import { LANGS, type Lang } from "../state/url";
 import { SOURCE_TERMS } from "./license";
+import {
+  CHART_COPY,
+  keyFigures,
+  rankBars,
+  roundUp,
+  shareColumns,
+  splitUnit,
+  tableBehind,
+  valueColumns,
+  type KeyFigure,
+} from "./charts";
 import { COMPLETE_COVERAGE, lastComplete, RENEWABLE, yearRows } from "./energyPages";
 import {
   homeCrumb,
@@ -183,6 +194,32 @@ export function officialSections(
   const missing = areas.filter((area) => !present.includes(area)).map((area) => area.label);
   const c = copy.official.columns;
   const k = copy.compare.columns;
+  const tableWord = CHART_COPY[lang].table;
+  // Faza 54-3: the overall share by year as columns, the latest marked, and the region as a ranking
+  const overall = years.map((y, i) => ({ year: y, share: history[i]?.[0] ?? null }));
+  const historyChart = shareColumns(
+    overall.map((each, index) => ({
+      label: String(each.year),
+      minor: (overall.length - 1 - index) % 2 !== 0,
+      value: each.share === null ? null : each.share.value / 100,
+      ...(index === overall.length - 1 ? { mark: "now" as const } : {}),
+    })),
+    "",
+  );
+  const ranking = rankBars(
+    compared
+      .filter((area) => area.shares[0] != null)
+      .map((area) => ({
+        name: area.name,
+        value: (area.shares[0]?.value ?? 0) / 100,
+        text: pct(area.shares[0]?.value ?? 0),
+        detail:
+          area.shares[0] && area.shares[0].year !== year
+            ? copy.compare.earlier(String(area.shares[0].year))
+            : "",
+        own: area.code === "HR",
+      })),
+  );
 
   return {
     year,
@@ -192,7 +229,8 @@ export function officialSections(
         heading: copy.official.heading,
         html:
           `<p>${e(opening)}</p>` +
-          linkedTable([c[0], c[1], c[2], c[3], c[4]], historyRows) +
+          historyChart +
+          tableBehind(tableWord, linkedTable([c[0], c[1], c[2], c[3], c[4]], historyRows)) +
           flagLegend(doc, lang, history.flat()) +
           `<p>${e(copy.official.electricity)}</p>` +
           source,
@@ -200,12 +238,16 @@ export function officialSections(
       {
         heading: copy.compare.heading(String(year)),
         html:
-          linkedTable(
-            [k[0], k[1], k[2], k[3], k[4]],
-            compared.map((area): Row => [
-              area.name,
-              ...area.shares.map((share) => shareCell(lang, share, year)),
-            ]),
+          ranking +
+          tableBehind(
+            tableWord,
+            linkedTable(
+              [k[0], k[1], k[2], k[3], k[4]],
+              compared.map((area): Row => [
+                area.name,
+                ...area.shares.map((share) => shareCell(lang, share, year)),
+              ]),
+            ),
           ) +
           flagLegend(
             doc,
@@ -304,10 +346,44 @@ export function solarCapitaSection(doc: SolarCapita, lang: Lang): StaticPage["se
   };
 }
 
+/** The tiles of the transition page (Faza 54-3): each is a figure of its lead. */
+const TRANSITION_FIGURES = {
+  hr: {
+    official: "Obnovljivi u potrošnji energije",
+    target: (target: string) => `Eurostat; cilj za 2030.: ${target}`,
+    electricity: "Obnovljivi u proizvodnji struje",
+    against: (year: string) => `prema ${year}.`,
+    points: "p. b.",
+    co2: "CO₂ intenzitet struje",
+    capacity: "Snaga obnovljivih izvora",
+  },
+  en: {
+    official: "Renewables in energy use",
+    target: (target: string) => `Eurostat; 2030 target: ${target}`,
+    electricity: "Renewables in electricity",
+    against: (year: string) => `vs ${year}`,
+    points: "pp",
+    co2: "Carbon intensity of electricity",
+    capacity: "Renewable capacity",
+  },
+} as const;
+
 function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
   if (!hasTransition(site)) return null;
   const copy = TRANSITION_COPY[lang];
   const i18n = createI18n(lang);
+  const tableWord = CHART_COPY[lang].table;
+  const words = TRANSITION_FIGURES[lang];
+  const tiles: KeyFigure[] = [];
+  const officialShare = site.renewables ? latestShare(site.renewables, "HR", "REN") : null;
+  if (officialShare) {
+    tiles.push({
+      label: words.official,
+      value: i18n.number(officialShare.value, 1),
+      unit: "%",
+      note: `${String(officialShare.year)} · ${words.target(i18n.percent(RES_TARGET_2030 / 100))}`,
+    });
+  }
   const official = site.renewables ? officialSections(site.renewables, lang) : null;
   const sections: StaticPage["sections"] = [...(official?.sections ?? [])];
   const lead: string[] = official ? [official.lead] : [];
@@ -323,23 +399,52 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
         ? copy.leadShare(last.year, i18n.percent(last.share), prev.year, i18n.percent(prev.share))
         : copy.leadShareOnly(last.year, i18n.percent(last.share)),
     );
+    const points = prev?.share != null ? (last.share - prev.share) * 100 : null;
+    tiles.push({
+      label: words.electricity,
+      value: i18n.number(last.share * 100, 1),
+      unit: "%",
+      note: last.year,
+      ...(points === null || !prev
+        ? {}
+        : {
+            change: {
+              value: points,
+              text: `${i18n.number(Math.abs(points), 1)} ${words.points}`,
+              against: words.against(prev.year),
+              rise: "good" as const,
+            },
+          }),
+    });
   }
   if (complete.length > 0) {
     const c = copy.share.columns;
+    const shown = complete.slice(-SHARE_YEARS);
     sections.push({
       heading: copy.share.heading,
       html:
-        linkedTable(
-          [c[0], c[1], c[2], c[3]],
-          complete
-            .slice(-SHARE_YEARS)
-            .map((y): Row => [
+        shareColumns(
+          shown.map((y, index) => ({
+            label: y.year,
+            minor: (shown.length - 1 - index) % 2 !== 0,
+            value: y.share,
+            ...(index === shown.length - 1 ? { mark: "now" as const } : {}),
+          })),
+          "",
+        ) +
+        tableBehind(
+          tableWord,
+          linkedTable(
+            [c[0], c[1], c[2], c[3]],
+            shown.map((y): Row => [
               y.year,
               i18n.energy(y.total ?? 0),
               i18n.energy(y.renewable ?? 0),
               y.share === null ? "" : i18n.percent(y.share),
             ]),
-        ) + `<p>${e(copy.share.note)}</p>`,
+          ),
+        ) +
+        `<p>${e(copy.share.note)}</p>`,
     });
   }
 
@@ -348,15 +453,41 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
   const lastMonth = months.at(-1);
   if (lastMonth) {
     lead.push(copy.leadCo2(monthName(lang, lastMonth.month), i18n.number(Math.round(lastMonth.value))));
+    tiles.push({
+      label: words.co2,
+      value: i18n.number(Math.round(lastMonth.value)),
+      unit: "g/kWh",
+      note: monthName(lang, lastMonth.month),
+    });
+    const shown = months.slice(-CO2_MONTHS);
+    const top = roundUp(Math.max(...shown.map((m) => m.value)));
+    const short = REPORT_COPY[lang].figures.shortMonths;
     sections.push({
       heading: copy.co2.heading,
       html:
-        linkedTable(
-          [copy.co2.columns[0], copy.co2.columns[1]],
-          months
-            .slice(-CO2_MONTHS)
-            .map((m): Row => [monthName(lang, m.month), i18n.number(Math.round(m.value))]),
-        ) + `<p>${e(copy.co2.note)}</p>`,
+        valueColumns(
+          shown.map((m, index) => ({
+            label:
+              (shown.length - 1 - index) % 3 === 0
+                ? `${short[Number(m.month.slice(5, 7)) - 1] ?? ""} ${m.month.slice(2, 4)}`
+                : "",
+            minor: (shown.length - 1 - index) % 6 !== 0,
+            value: m.value,
+            ...(index === shown.length - 1 ? { mark: "now" as const } : {}),
+          })),
+          top,
+          [`${i18n.number(top)} g/kWh`, i18n.number(top / 2), "0"],
+          "",
+          "neutral",
+        ) +
+        tableBehind(
+          tableWord,
+          linkedTable(
+            [copy.co2.columns[0], copy.co2.columns[1]],
+            shown.map((m): Row => [monthName(lang, m.month), i18n.number(Math.round(m.value))]),
+          ),
+        ) +
+        `<p>${e(copy.co2.note)}</p>`,
     });
   }
 
@@ -377,7 +508,11 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
       return { year, mw, total };
     });
     const now = table.at(-1);
-    if (now && now.total > 0) lead.push(copy.leadCapacity(String(now.year), i18n.power(now.total)));
+    if (now && now.total > 0) {
+      lead.push(copy.leadCapacity(String(now.year), i18n.power(now.total)));
+      const [capacity, unit] = splitUnit(i18n.power(now.total));
+      tiles.push({ label: words.capacity, value: capacity, unit, note: String(now.year) });
+    }
     const c = copy.capacity.columns;
     sections.push({
       heading: copy.capacity.heading,
@@ -469,6 +604,7 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
     description: official ? copy.descriptionOfficial : copy.description,
     heading: copy.heading,
     lead: lead.map((sentence) => `<p>${e(sentence)}</p>`).join(""),
+    ...(tiles.length > 0 ? { figures: keyFigures(tiles, CHART_COPY[lang].figures) } : {}),
     sections,
     jsonLd: [
       {

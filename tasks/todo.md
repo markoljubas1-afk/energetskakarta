@@ -3140,3 +3140,15 @@ Koraci: 54-1 zaglavlje + osnovni izgled (sve stranice) → preview; 54-2 pločic
   hrvatskog mjeseca, preklapanje oznaka mjeseci na mobitelu. Čeka odobrenje vlasnika.
 - Provjera: jedinični testovi (pločice, promjene, praznine, nema `style=`, Markdown bez ostataka), e2e širina,
   snimke na preview adresi; vlasnik odobrava prije spajanja.
+
+### 54-3 Zemlje, plin, zelena tranzicija: pločice i grafovi — PLAN 2026-11-25 (vlasnik: „može, spoji i kreni s 54-3”)
+
+Isti dijelovi kao u 54-2 (`charts.ts`), tablice ostaju iza „Tablica s brojkama” i u Markdownu:
+- Zemlja (8 × 2): pločice (snaga u pogonu, km dalekovoda, elektrane u pogonu, trafostanice); snaga po
+  tehnologiji kao traka udjela + stupac u pogonu i tanka crta „u izgradnji i planirano”; dalekovodi po naponu
+  kao trake.
+- Plin: pločice (ušlo u sustav, isporučeno kupcima prema prosjeku 7 dana, popunjenost Okolija); ulazi i izlazi
+  kao trake udjela; isporuka po danima kao stupci (14 dana, privremeni dan označen); skladišta kao trake popunjenosti.
+- Zelena tranzicija: pločice (udio prema Eurostatu i cilj 2030., udio u proizvodnji struje, CO₂, snaga
+  obnovljivih); Eurostatov udio po godinama i udio u proizvodnji po godinama kao stupci; susjedi kao rang-lista.
+- Nema novih brojki: pločice i grafovi prikazuju samo ono što stranica već ima.

@@ -114,6 +114,12 @@ describe("buildPages", () => {
     expect(hr?.sections[0]?.html).toContain("Hidro");
     expect(hr?.sections[1]?.html).toContain("39 km");
     expect(hr?.sections[2]?.html).toContain('href="/?c=HR"');
+    // Faza 54-3: the figures as tiles, the capacity as a chart with its table behind a click
+    expect(hr?.figures).toContain('<p class="big">276<small>MW</small></p>');
+    expect(hr?.figures).toContain("Elektrane u pogonu");
+    expect(hr?.sections[0]?.html).toContain('<div class="mix" aria-hidden="true">');
+    expect(hr?.sections[0]?.html).toContain('<details class="data"><summary>Tablica s brojkama</summary>');
+    expect(hr?.sections[1]?.html).toContain('<div class="ranking">');
     const en = buildPages(site).find((page) => page.path === "/en/country/hr/");
     expect(en?.sections[2]?.html).toContain('href="/en/?c=HR"');
   });

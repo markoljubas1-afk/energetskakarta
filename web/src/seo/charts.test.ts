@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
 
-import { keyFigures, mixBar, rankBars, shareColumns, sourceBars, splitUnit, tableBehind } from "./charts";
+import {
+  keyFigures,
+  mixBar,
+  rankBars,
+  roundUp,
+  shareColumns,
+  sourceBars,
+  splitUnit,
+  tableBehind,
+  valueColumns,
+} from "./charts";
 import { blocks } from "./markdown";
 
 describe("key figures", () => {
@@ -103,6 +113,29 @@ describe("charts", () => {
     expect(html.match(/<rect class="col/g)).toHaveLength(2);
     expect(html).toContain('class="col cur"');
     expect(html).toContain('<span class="cur">lis 26</span>');
+  });
+
+  it("tops an axis at a round number, and draws an amount that is no news in neutral colours", () => {
+    expect(roundUp(73.4)).toBe(100);
+    expect(roundUp(121.2)).toBe(200);
+    expect(roundUp(304)).toBe(500);
+    expect(roundUp(0.42)).toBe(0.5);
+    expect(roundUp(0)).toBe(1);
+    const html = valueColumns(
+      [
+        { label: "a", value: 50 },
+        { label: "b", value: 100, mark: "now" },
+      ],
+      200,
+      ["200 GWh", "100", "0"],
+      "",
+      "neutral",
+    );
+    expect(html).toContain('<div class="columns neutral" aria-hidden="true">');
+    expect(html).toContain("<span>200 GWh</span>");
+    // 100 of 200 is half the height of 200 units
+    expect(html).toContain('y="100.0" width="360.0" height="100.0"');
+    expect(valueColumns([], 1, ["", "", ""])).toBe("");
   });
 
   it("marks the page's own row of a ranking", () => {

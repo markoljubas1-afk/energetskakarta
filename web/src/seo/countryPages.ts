@@ -8,7 +8,8 @@ import { createI18n, type I18n } from "../i18n";
 import type { Lang } from "../state/url";
 import { hubKeyOf, pageWorthy } from "./assetPages";
 import { COPY, type HubKey } from "./copy";
-import { definitions, e, linkedTable, list, table } from "./markup";
+import { counted, definitions, e, type Forms, linkedTable, list, table } from "./markup";
+import { CHART_COPY, keyFigures, mixBar, rankBars, sourceBars, splitUnit, tableBehind } from "./charts";
 import { API_PATHS } from "./paths";
 import {
   absolute,
@@ -29,17 +30,87 @@ import { gasLinks } from "./gasPages";
 import { energyLinks } from "./energyPages";
 import { DATASET_LICENSE } from "./license";
 
+const COUNTRY_FIGURES = {
+  hr: {
+    operating: "Snaga u pogonu",
+    lines: "Dalekovodi u pogonu",
+    plants: "Elektrane u pogonu",
+    substations: "Trafostanice",
+    floor: "zbroj upisanog u izvorima",
+    planned: "u izgradnji i planirano",
+    plantForms: ["elektrana", "elektrane", "elektrana"] as Forms,
+  },
+  en: {
+    operating: "Operating capacity",
+    lines: "Lines in operation",
+    plants: "Plants in operation",
+    substations: "Substations",
+    floor: "the sum of what the sources list",
+    planned: "under construction and planned",
+    plantForms: ["plant", "plants", "plants"] as Forms,
+  },
+} as const;
+
 export function countryPage(site: SiteData, lang: Lang, code: CountryCode, hubs: CountryHubs): StaticPage {
   const copy = COPY[lang];
   const i18n = createI18n(lang);
   const name = i18n.country(code);
   const summary = summarize(site.stats, code, SCOPE_COUNTRIES);
   // the sentence pairs the count with the operating capacity, so it counts operating plants only (Faza 31)
-  const plants = i18n.number(summary.technologies.reduce((sum, row) => sum + row.operatingPlants, 0));
+  const plantCount = summary.technologies.reduce((sum, row) => sum + row.operatingPlants, 0);
+  const plants = i18n.number(plantCount);
   const totalKm = summary.lineKm.reduce((sum, row) => sum + row.km, 0);
   const operating = i18n.power(summary.operatingMw);
   const labels = copy.labels;
   const path = PATHS[lang].country(code.toLowerCase());
+  const words = COUNTRY_FIGURES[lang];
+  const chartWords = CHART_COPY[lang];
+  // Faza 54-3: the page's own figures as tiles, the tables as charts with the tables behind a click
+  const [operatingValue, operatingUnit] = splitUnit(operating);
+  const [kmValue, kmUnit] = splitUnit(i18n.km(totalKm));
+  const figures = keyFigures(
+    [
+      { label: words.operating, value: operatingValue, unit: operatingUnit, note: words.floor },
+      { label: words.lines, value: kmValue, unit: kmUnit },
+      { label: words.plants, value: plants, unit: "" },
+      { label: words.substations, value: i18n.number(summary.substations), unit: "" },
+    ],
+    chartWords.figures,
+  );
+  const techRows = summary.technologies.filter((row) => row.operatingMw > 0 || row.pipelineMw > 0);
+  const capacityChart =
+    summary.operatingMw > 0
+      ? mixBar(techRows.map((row) => ({ tech: row.technology, value: row.operatingMw }))) +
+        sourceBars(
+          techRows.map((row) => ({
+            tech: row.technology,
+            name: i18n.technology(row.technology),
+            amount:
+              row.operatingMw === 0 && row.operatingPlants > 0
+                ? labels.notStated
+                : i18n.power(row.operatingMw),
+            share: row.operatingMw > 0 ? i18n.percent(row.operatingMw / summary.operatingMw) : "",
+            value: row.operatingMw,
+            before: row.pipelineMw,
+            change: counted(lang, row.plants, words.plantForms),
+          })),
+          { now: labels.operating, before: words.planned },
+        )
+      : "";
+  // a chart with its table behind a click, or the table alone when there is nothing to draw
+  const behind = (chart: string, tableHtml: string): string =>
+    chart ? chart + tableBehind(chartWords.table, tableHtml) : tableHtml;
+  const linesChart =
+    totalKm > 0
+      ? rankBars(
+          summary.lineKm.map((row) => ({
+            name: e(i18n.voltage(row.voltage)),
+            value: row.km / totalKm,
+            text: i18n.km(row.km),
+            detail: i18n.percent(row.km / totalKm),
+          })),
+        )
+      : "";
   return {
     path,
     lang,
@@ -50,26 +121,35 @@ export function countryPage(site: SiteData, lang: Lang, code: CountryCode, hubs:
     lead:
       `<p>${e(copy.country.intro(name, operating, plants, i18n.km(totalKm)))}</p>` +
       solarCapitaSentence(site, lang, code),
+    figures,
     sections: [
       {
         heading: copy.country.capacityHeading,
-        html: table(
-          [labels.technology, labels.operating, labels.pipeline, labels.plants],
-          summary.technologies.map((row) => [
-            i18n.technology(row.technology),
-            // plants are there but none has a figure in the sources: "0 MW" would read as "no wind power"
-            row.operatingMw === 0 && row.operatingPlants > 0 ? labels.notStated : i18n.power(row.operatingMw),
-            i18n.power(row.pipelineMw),
-            i18n.number(row.plants),
-          ]),
+        html: behind(
+          capacityChart,
+          table(
+            [labels.technology, labels.operating, labels.pipeline, labels.plants],
+            summary.technologies.map((row) => [
+              i18n.technology(row.technology),
+              // plants are there but none has a figure in the sources: "0 MW" would read as "no wind power"
+              row.operatingMw === 0 && row.operatingPlants > 0
+                ? labels.notStated
+                : i18n.power(row.operatingMw),
+              i18n.power(row.pipelineMw),
+              i18n.number(row.plants),
+            ]),
+          ),
         ),
       },
       {
         heading: copy.country.linesHeading,
         html:
-          table(
-            [labels.voltage, labels.km],
-            summary.lineKm.map((row) => [i18n.voltage(row.voltage), i18n.km(row.km)]),
+          behind(
+            linesChart,
+            table(
+              [labels.voltage, labels.km],
+              summary.lineKm.map((row) => [i18n.voltage(row.voltage), i18n.km(row.km)]),
+            ),
           ) +
           definitions([
             [labels.substations, e(i18n.number(summary.substations))],

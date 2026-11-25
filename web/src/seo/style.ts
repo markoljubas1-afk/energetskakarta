@@ -86,7 +86,7 @@ rect[class^=t-]{fill:var(--c)}i[class^=t-]{background:var(--c)}
 .columns{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;margin:12px 0 4px}
 .columns .axis{display:flex;flex-direction:column;justify-content:space-between;color:var(--muted);font-size:12px;line-height:1;text-align:right}
 .columns svg{height:200px}.columns .grid line{stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke}
-.columns .col{fill:color-mix(in srgb,var(--good) 42%,var(--surface-2))}.columns .col.prev{fill:color-mix(in srgb,var(--good) 72%,var(--surface-2))}.columns .col.cur{fill:var(--good)}
+.columns .col{fill:color-mix(in srgb,var(--good) 42%,var(--surface-2))}.columns .col.prev{fill:color-mix(in srgb,var(--good) 72%,var(--surface-2))}.columns .col.cur{fill:var(--good)}.columns.neutral .col{fill:color-mix(in srgb,var(--accent) 38%,var(--surface-2))}.columns.neutral .col.cur{fill:var(--accent)}
 .ticks{grid-column:2;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;color:var(--muted);font-size:12px;text-align:center;white-space:nowrap}.ticks span{overflow:visible}.ticks .cur{color:var(--ink);font-weight:600}
 .ranking{display:grid;gap:4px}.rrow{display:grid;grid-template-columns:minmax(120px,190px) minmax(0,1fr) 160px;gap:14px;align-items:center;padding:7px 10px;border-radius:10px}.rrow.own{background:var(--accent-soft)}
 .rname a{color:var(--ink);font-weight:600;text-decoration:none}.rname a:hover{color:var(--accent)}.rbar svg{height:10px}.rbar .track{fill:var(--surface-2)}.rbar .fill{fill:var(--good)}

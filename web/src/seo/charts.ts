@@ -134,8 +134,45 @@ const MARK_CLASS = { now: "cur", then: "prev" } as const;
 
 /** Columns of a share (0–100 %), with grid lines at every quarter and the labels in HTML under them. */
 export function shareColumns(columns: readonly Column[], gap: string): string {
+  return valueColumns(columns, 1, ["100 %", "50 %", "0 %"], gap);
+}
+
+/** The smallest "round" number (1, 2 or 5 times a power of ten) not below `value`: the top of an axis. */
+export function roundUp(value: number): number {
+  if (!(value > 0)) return 1;
+  const power = 10 ** Math.floor(Math.log10(value));
+  const step = [1, 2, 5, 10].find((each) => each * power >= value) ?? 10;
+  return step * power;
+}
+
+/**
+ * Columns of any amount from 0 to `max`, with grid lines at every quarter; `axis` names the top, the middle
+ * and the bottom ("200 GWh", "100", "0"). A column's `value` is in the same unit as `max`.
+ */
+export function valueColumns(
+  columns: readonly Column[],
+  max: number,
+  axis: readonly [string, string, string],
+  gap = "",
+  /** "neutral" for an amount that is neither good nor bad news (gas delivered, CO₂ as a level) */
+  tone: "good" | "neutral" = "good",
+): string {
   const count = columns.length;
-  if (count === 0) return "";
+  if (count === 0 || !(max > 0)) return "";
+  const scaled = columns.map((column) => ({
+    ...column,
+    value: column.value === null ? null : column.value / max,
+  }));
+  return drawColumns(scaled, axis, gap, tone);
+}
+
+function drawColumns(
+  columns: readonly Column[],
+  axis: readonly [string, string, string],
+  gap: string,
+  tone: "good" | "neutral" = "good",
+): string {
+  const count = columns.length;
   const width = 1000 / count;
   const grid = [0, 25, 50, 75, 100]
     .map(
@@ -155,7 +192,8 @@ export function shareColumns(columns: readonly Column[], gap: string): string {
         `<span${column.mark === "now" ? ' class="cur"' : column.minor ? ' class="minor"' : ""}>${e(column.label)}${column.value === null && column.label ? ` <small>${e(gap)}</small>` : ""}</span>`,
     )
     .join("");
-  return `<div class="columns" aria-hidden="true"><div class="axis"><span>100 %</span><span>50 %</span><span>0 %</span></div>${svg(`<g class="grid">${grid}</g>${rects}`, 200)}<div class="ticks">${labels}</div></div>`;
+  const [top, middle, bottom] = axis;
+  return `<div class="columns${tone === "neutral" ? " neutral" : ""}" aria-hidden="true"><div class="axis"><span>${e(top)}</span><span>${e(middle)}</span><span>${e(bottom)}</span></div>${svg(`<g class="grid">${grid}</g>${rects}`, 200)}<div class="ticks">${labels}</div></div>`;
 }
 
 export interface RankRow {
@@ -182,6 +220,12 @@ export function rankBars(rows: readonly RankRow[]): string {
   );
   return `<div class="ranking">${items.join("")}</div>`;
 }
+
+/** Words every page's charts share. */
+export const CHART_COPY = {
+  hr: { table: "Tablica s brojkama", figures: "Ključne brojke" },
+  en: { table: "The figures as a table", figures: "Key figures" },
+} as const;
 
 /** A table behind a summary line, for the reader who wants the exact figures under a chart. */
 export function tableBehind(summary: string, table: string): string {
