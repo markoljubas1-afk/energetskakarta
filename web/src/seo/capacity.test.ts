@@ -1,3 +1,4 @@
+import { SOURCE_TERMS } from "./license";
 import { describe, expect, it } from "vitest";
 
 import type { Current } from "../data/current";
@@ -120,6 +121,7 @@ describe("grid capacity pages", () => {
     expect(page("/kapaciteti/").jsonLd[0]).toMatchObject({
       "@type": "Dataset",
       creator: { name: "HEP ODS" },
+      license: SOURCE_TERMS.hepOds,
       temporalCoverage: "2026-10-01/2026-11-01",
       distribution: [{ contentUrl: "https://podaci.example/hep/current.json" }],
     });

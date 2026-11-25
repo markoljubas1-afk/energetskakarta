@@ -1,3 +1,4 @@
+import { SOURCE_TERMS } from "./license";
 import { describe, expect, it } from "vitest";
 
 import type { Current } from "../data/current";
@@ -130,6 +131,12 @@ describe("energy transition page", () => {
     const dataset = page("en").jsonLd[0] as { "@type": string; variableMeasured: unknown[] };
     expect(dataset["@type"]).toBe("Dataset");
     expect(dataset.variableMeasured).toHaveLength(5);
+    expect((dataset as { license?: unknown }).license).toEqual([
+      SOURCE_TERMS.entsoe,
+      SOURCE_TERMS.osm,
+      SOURCE_TERMS.ccBy,
+      SOURCE_TERMS.hepOds,
+    ]);
   });
 
   it("is linked from the home page, Croatia's page and llms.txt, and converts cleanly to Markdown", () => {

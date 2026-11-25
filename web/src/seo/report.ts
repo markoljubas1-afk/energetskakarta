@@ -13,6 +13,7 @@ import { trend } from "../data/hep";
 import { SCOPE_COUNTRIES, TECHNOLOGIES, type CountryCode } from "../domain";
 import { createI18n } from "../i18n";
 import { LANGS, type Lang } from "../state/url";
+import { SOURCE_TERMS } from "./license";
 import { COMPLETE_COVERAGE, largestSource, periodRows, type PeriodRow } from "./energyPages";
 import type { FeedEntry } from "./feed";
 import { callout, escapeHtml as e, linkedTable, list, stationsOf } from "./markup";
@@ -361,6 +362,7 @@ function reportPage(site: SiteData, lang: Lang, ctx: Context, month: string): St
         spatialCoverage: { "@type": "Place", name: i18n.country("HR") },
         variableMeasured: copy.variables.map((variable) => ({ "@type": "PropertyValue", name: variable })),
         isBasedOn: [ENTSOE_URL, ...(hep ? ["https://kapaciteti.hep.hr/"] : [])],
+        license: [SOURCE_TERMS.entsoe, ...(hep ? [SOURCE_TERMS.hepOds] : [])],
         publisher: publisher(site, i18n),
         ...(site.siteUrl ? { url: site.siteUrl + path } : {}),
       },
@@ -432,6 +434,7 @@ function indexPage(site: SiteData, lang: Lang, ctx: Context): StaticPage {
         spatialCoverage: { "@type": "Place", name: i18n.country("HR") },
         variableMeasured: copy.variables.map((variable) => ({ "@type": "PropertyValue", name: variable })),
         isBasedOn: [ENTSOE_URL],
+        license: SOURCE_TERMS.entsoe,
         publisher: publisher(site, i18n),
         ...(site.siteUrl ? { url: site.siteUrl + path } : {}),
       },

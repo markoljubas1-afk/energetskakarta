@@ -13,6 +13,7 @@ import { readings, type GasStorage, type Reading } from "../data/gasStorage";
 import { createI18n, type I18n } from "../i18n";
 import { flowName, gwh } from "../share/gasFlowCard";
 import { LANGS, type Lang } from "../state/url";
+import { SOURCE_TERMS } from "./license";
 import { gasPlaceLinks } from "./gasPlaces";
 import { e, list, table } from "./markup";
 import { ogImage } from "./ogImages";
@@ -362,6 +363,7 @@ function gasPage(site: SiteData, flows: GasFlows, storage: GasStorage | null, la
         spatialCoverage: { "@type": "Place", name: i18n.country(HOME) },
         variableMeasured: copy.variables.map((name) => ({ "@type": "PropertyValue", name })),
         isBasedOn: sources,
+        license: [SOURCE_TERMS.entsog, ...(storage ? [SOURCE_TERMS.gieAgsi] : [])],
         publisher: publisher(site, i18n),
         ...(site.siteUrl ? { url: site.siteUrl + path } : {}),
       },

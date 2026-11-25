@@ -107,8 +107,8 @@ function head(page: StaticPage, site: SiteData): string {
 /**
  * What every data set on a page says about itself (Faza 47-5, 51-1), unless the page already said it more
  * exactly: when its data is from, who put it together, and where it can be taken in a machine's form (the
- * page's Markdown twin and its JSON in the open API). A licence is left to the pages that state one: the
- * figures of ENTSO-E, ENTSOG and GIE carry their sources' terms, which the site does not restate.
+ * page's Markdown twin and its JSON in the open API). A licence is left to the pages: each points at its
+ * sources' own terms (SOURCE_TERMS in ./license), as the site states no licence of its own for their figures.
  */
 export function completeDataset(
   dataset: Record<string, unknown>,

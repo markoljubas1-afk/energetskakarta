@@ -3056,3 +3056,24 @@ Stanje 2026-11-24 (grana `faza-52-krov`, PR #10, main netaknut):
 - [x] 52-4 Podaci na R2 (run solar-home part planes, 2026-11-24, uspješan; ćelije na moru bez datoteke), pregled
   na preview adresi provjeren s pravim podacima (Zagreb: jug 30° 99,5 %, istok 30° 80 % najboljeg), vlasnik
   odobrio smještaj ispod klizača 2026-11-25 („dobro je ovako idemo deploy”), spojeno na main.
+
+## Faza 53 — Licenca u strukturiranim podacima (Search Console) — POTVRĐENO 2026-11-25 („može B, nađi uvjete izvora”; „može, ostavi hep impressum s hep d.d.”)
+
+Search Console (Skupovi podataka): „Nevažeća vrsta objekta za polje spatialCoverage” i „Nedostaje polje license”.
+
+- [x] 53-1 `spatialCoverage` je `Place`, ne `Country` (Google ne prihvaća `Country`); test u `seo.test.ts`.
+- [x] 53-2 `license` svakog skupa podataka pokazuje na uvjete samog izvora (`SOURCE_TERMS` u `web/src/seo/license.ts`),
+  stranica ne izriče vlastitu licencu za tuđe brojke:
+  - ENTSO-E: Terms of Use Transparency Platforme (2023.); izvještaji, proizvodnja, cijene, zelena tranzicija;
+  - ENTSOG: Terms and Conditions of Use (TRA0394, Rev_3, 2018.); plin, LNG terminal;
+  - GIE: agsi.gie.eu/data-usage; plin, skladište;
+  - HEP ODS: nema stranice s uvjetima ni „Pravnih napomena” (u podnožju hep.hr i hep.hr/ods samo Impressum,
+    provjereno 2026-11-25), pa `license` pokazuje na impressum (© HEP d.d.); kapaciteti, izvještaji s kapacitetima;
+  - zelena tranzicija još OSM (ODbL) i CC BY 4.0 (Eurostat, GEM).
+- [ ] 53-3 Geotermalna: više izvora (toplinski tok i popis lokacija), licenca nije upisana dok se svaki izvor ne provjeri.
+
+**Otvoreno, odluka vlasnika (pravna):** ENTSO-E stavlja pod CC BY 4.0 samo podatke s popisa „List of Data available
+for free re-use” (18. 10. 2023.). Prekogranični tokovi su na popisu; proizvodnja (14.x/16.1), stvarna potrošnja
+(6.1.a) i cijene dan unaprijed (12.1.d) nisu. Za njih uvjeti (3.1) traže navođenje izvora i da se ne krše
+autorska prava operatera prijenosnih mreža. Treba li za objavu mjesečnih zbrojeva i udjela pitati HOPS i ostale
+operatere, procjena je vlasnika.

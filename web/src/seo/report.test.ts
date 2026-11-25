@@ -1,3 +1,4 @@
+import { SOURCE_TERMS } from "./license";
 import { describe, expect, it } from "vitest";
 
 import type { Periods } from "../data/energy";
@@ -292,6 +293,8 @@ describe("monthly reports", () => {
     };
     expect(dataset.temporalCoverage).toBe("2026-09");
     expect(dataset.isBasedOn).toContain("https://kapaciteti.hep.hr/");
+    // the sources' own terms: ENTSO-E's and, with the capacities, HEP ODS's impressum
+    expect(dataset).toMatchObject({ license: [SOURCE_TERMS.entsoe, SOURCE_TERMS.hepOds] });
     expect(report("/izvjestaji/2026-09/").breadcrumbs.map((c) => c.path)).toContain("/izvjestaji/");
   });
 

@@ -24,6 +24,7 @@ import {
 import { toHit } from "../data/search";
 import { createI18n, type I18n } from "../i18n";
 import { LANGS, type Lang } from "../state/url";
+import { SOURCE_TERMS } from "./license";
 import { CAPACITY_COPY, type CapacityCopy } from "./capacityCopy";
 import {
   downloadUrl,
@@ -270,6 +271,7 @@ function overviewPage(
         inLanguage: lang,
         isAccessibleForFree: true,
         isBasedOn: HEP_SOURCE_URL,
+        license: SOURCE_TERMS.hepOds,
         creator: HEP_ODS,
         publisher: publisher(site, i18n),
         dateModified: release.publishedAt,

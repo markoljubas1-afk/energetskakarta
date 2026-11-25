@@ -1,3 +1,4 @@
+import { SOURCE_TERMS } from "./license";
 import { describe, expect, it } from "vitest";
 
 import { GasFlowsSchema, type GasFlows } from "../data/gasFlows";
@@ -174,6 +175,7 @@ describe("the gas page", () => {
       temporalCoverage: "2026-11-17",
       dateModified: "2026-11-19T10:00:00+00:00",
       isBasedOn: ["https://transparency.entsog.eu/", "https://agsi.gie.eu/"],
+      license: [SOURCE_TERMS.entsog, SOURCE_TERMS.gieAgsi],
     });
   });
 

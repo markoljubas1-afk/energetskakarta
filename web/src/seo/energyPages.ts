@@ -9,6 +9,7 @@ import { COUNTRY_PRICE_ZONE, type Live } from "../data/live";
 import { isOneOf, SCOPE_COUNTRIES, TECHNOLOGIES, type CountryCode, type Technology } from "../domain";
 import { createI18n } from "../i18n";
 import { LANGS, type Lang } from "../state/url";
+import { SOURCE_TERMS } from "./license";
 import { ENERGY_COPY } from "./energyCopy";
 import { homeCrumb, PATHS, publisher, type SiteData, type StaticPage } from "./site";
 import { escapeHtml as e, linkedTable, list } from "./markup";
@@ -185,6 +186,7 @@ function generationDataset(
     inLanguage: lang,
     isAccessibleForFree: true,
     isBasedOn: ENTSOE_URL,
+    license: SOURCE_TERMS.entsoe,
     creator: { "@type": "Organization", name: "ENTSO-E", url: "https://www.entsoe.eu/" },
     publisher: publisher(site, createI18n(lang)),
     variableMeasured: ["electricity generation by source (MWh)", "total load (MWh)"],
@@ -450,6 +452,7 @@ function pricesPage(site: SiteData, lang: Lang, live: Live): StaticPage | null {
         inLanguage: lang,
         isAccessibleForFree: true,
         isBasedOn: ENTSOE_URL,
+        license: SOURCE_TERMS.entsoe,
         creator: { "@type": "Organization", name: "ENTSO-E", url: "https://www.entsoe.eu/" },
         publisher: publisher(site, i18n),
         temporalCoverage: tomorrow ? `${today.date}/${tomorrow.date}` : today.date,

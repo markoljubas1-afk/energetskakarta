@@ -12,6 +12,7 @@ import { readings, type GasStorage, type Reading } from "../data/gasStorage";
 import { createI18n } from "../i18n";
 import { gwh } from "../share/gasFlowCard";
 import { LANGS, type Lang } from "../state/url";
+import { SOURCE_TERMS } from "./license";
 import { LEARN_COPY } from "./learnPages";
 import { e, list, table } from "./markup";
 import { ogImage } from "./ogImages";
@@ -233,6 +234,7 @@ function terminalPage(site: SiteData, flows: GasFlows, lang: Lang): StaticPage |
         dateModified: flows.generatedAt,
         spatialCoverage: { "@type": "Place", name: copy.heading },
         isBasedOn: [flows.sourceUrl],
+        license: SOURCE_TERMS.entsog,
         publisher: publisher(site, i18n),
         ...(site.siteUrl ? { url: site.siteUrl + path } : {}),
       },
@@ -323,6 +325,7 @@ function storagePage(site: SiteData, storage: GasStorage, reading: Reading, lang
         dateModified: storage.generatedAt,
         spatialCoverage: { "@type": "Place", name: copy.heading(facility.name) },
         isBasedOn: [storage.sourceUrl],
+        license: SOURCE_TERMS.gieAgsi,
         publisher: publisher(site, i18n),
         ...(site.siteUrl ? { url: site.siteUrl + path } : {}),
       },

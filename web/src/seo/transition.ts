@@ -25,6 +25,7 @@ import { isOneOf, SCOPE_COUNTRIES, TECHNOLOGIES, type Technology } from "../doma
 import { createI18n } from "../i18n";
 import { kwhEach, SOLAR_PICTURE } from "../share/solarCapitaCard";
 import { LANGS, type Lang } from "../state/url";
+import { SOURCE_TERMS } from "./license";
 import { COMPLETE_COVERAGE, lastComplete, RENEWABLE, yearRows } from "./energyPages";
 import {
   homeCrumb,
@@ -490,6 +491,8 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
           "https://globalenergymonitor.org/",
           "https://kapaciteti.hep.hr/",
         ],
+        // Eurostat and Global Energy Monitor: CC BY 4.0; OpenStreetMap: ODbL
+        license: [SOURCE_TERMS.entsoe, SOURCE_TERMS.osm, SOURCE_TERMS.ccBy, SOURCE_TERMS.hepOds],
         publisher: publisher(site, i18n),
         ...(site.siteUrl ? { url: site.siteUrl + path } : {}),
       },
