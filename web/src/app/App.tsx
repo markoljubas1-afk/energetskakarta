@@ -102,6 +102,7 @@ import {
   type View,
 } from "../state/url";
 import styles from "./App.module.css";
+import { ChunkLoadError, loadChunk } from "./chunks";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { Intro } from "./Intro";
 import { ErrorScreen, LoadingScreen } from "./Screens";
@@ -117,14 +118,16 @@ const LIVE_REFRESH_MS = 15 * 60_000;
 
 // The energy view brings Chart.js; it is only loaded when someone opens it.
 const CompareView = lazy(() =>
-  import("../reports/CompareView").then((module) => ({ default: module.CompareView })),
+  loadChunk(() => import("../reports/CompareView")).then((module) => ({ default: module.CompareView })),
 );
 const EnergyView = lazy(() =>
-  import("../energy/EnergyView").then((module) => ({ default: module.EnergyView })),
+  loadChunk(() => import("../energy/EnergyView")).then((module) => ({ default: module.EnergyView })),
 );
 
 // MapLibre is by far the largest dependency; the shell and search render before it arrives.
-const MapView = lazy(() => import("../map/MapView").then((module) => ({ default: module.MapView })));
+const MapView = lazy(() =>
+  loadChunk(() => import("../map/MapView")).then((module) => ({ default: module.MapView })),
+);
 
 /** The same view on the full site: what an embedded map links to, and what a host page's readers open. */
 function fullSiteHref(state: AppState): string {
@@ -945,9 +948,19 @@ function Explorer({
     <>
       <ErrorBoundary
         area="map"
-        fallback={(reset) => (
-          <ErrorScreen title={t("mapFailedTitle")} body={t("mapFailedBody")} onRetry={reset} />
-        )}
+        fallback={(reset, error) =>
+          // the map's code did not arrive: a connection problem, not the browser's WebGL (Faza 56)
+          error instanceof ChunkLoadError ? (
+            <ErrorScreen
+              title={t("chunkFailedTitle")}
+              body={t("chunkFailedBody")}
+              onRetry={reset}
+              retryLabel={t("reload")}
+            />
+          ) : (
+            <ErrorScreen title={t("mapFailedTitle")} body={t("mapFailedBody")} onRetry={reset} />
+          )
+        }
       >
         <Suspense fallback={<LoadingScreen label={t("mapLoading")} />}>
           <MapView

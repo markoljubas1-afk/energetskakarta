@@ -2,6 +2,7 @@
 import { RotateCcw, TriangleAlert } from "lucide-react";
 
 import { I18nProvider, useI18n } from "../i18n";
+import { reloadPage } from "./chunks";
 import { langFromPath } from "../state/url";
 import styles from "./Screens.module.css";
 
@@ -14,7 +15,17 @@ export function LoadingScreen({ label }: { label: string }) {
   );
 }
 
-export function ErrorScreen({ title, body, onRetry }: { title: string; body: string; onRetry?: () => void }) {
+export function ErrorScreen({
+  title,
+  body,
+  onRetry,
+  retryLabel,
+}: {
+  title: string;
+  body: string;
+  onRetry?: () => void;
+  retryLabel?: string;
+}) {
   const { t } = useI18n();
   return (
     <div className={styles.screen} role="alert">
@@ -24,7 +35,7 @@ export function ErrorScreen({ title, body, onRetry }: { title: string; body: str
       {onRetry && (
         <button type="button" className={styles.button} onClick={onRetry}>
           <RotateCcw size={16} strokeWidth={1.75} aria-hidden="true" />
-          {t("retry")}
+          {retryLabel ?? t("retry")}
         </button>
       )}
     </div>
@@ -37,6 +48,27 @@ export function ConfigErrorScreen() {
     <I18nProvider lang={langFromPath(window.location.pathname)}>
       <ConfigError />
     </I18nProvider>
+  );
+}
+
+/** The last line of defence around the whole app (main.tsx): outside the app's own language context too. */
+export function AppErrorScreen() {
+  return (
+    <I18nProvider lang={langFromPath(window.location.pathname)}>
+      <AppError />
+    </I18nProvider>
+  );
+}
+
+function AppError() {
+  const { t } = useI18n();
+  return (
+    <ErrorScreen
+      title={t("appFailedTitle")}
+      body={t("appFailedBody")}
+      onRetry={reloadPage}
+      retryLabel={t("reload")}
+    />
   );
 }
 

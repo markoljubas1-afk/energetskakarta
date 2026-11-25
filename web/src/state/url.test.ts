@@ -5,6 +5,7 @@ import {
   browserLang,
   canonicalUrl,
   defaultState,
+  keepEqualSets,
   langFromPath,
   parseState,
   pathForLang,
@@ -160,6 +161,14 @@ describe("energy view state", () => {
     expect(state.energy).toEqual(parseState("", "hr").energy);
     expect(parseState("?er=2025-01-01", "hr").energy.range).toBeNull();
     expect(parseState("?er=2025-01-01,2025-02-01,x", "hr").energy.range).toBeNull();
+    // a date that does not exist, or a range the totals refuse, never reaches the page (Faza 56, 4.4e)
+    expect(parseState("?er=2026-13-01,2026-13-02", "hr").energy.range).toBeNull();
+    expect(parseState("?er=2026-02-30,2026-03-02", "hr").energy.range).toBeNull();
+    expect(parseState("?er=2020-01-01,2025-01-01", "hr").energy.range).toBeNull();
+    expect(parseState("?er=2024-02-29,2024-03-01", "hr").energy.range).toEqual({
+      from: "2024-02-29",
+      to: "2024-03-01",
+    });
   });
 });
 
@@ -184,5 +193,26 @@ describe("live layer state", () => {
     expect(defaultState("hr").year).toBeNull();
     for (const bad of ["?y=70", "?y=1700", "?y=2200", "?y=19x0", "?y="])
       expect(parseState(bad, "hr").year).toBeNull();
+  });
+});
+
+describe("parsed state between addresses (Faza 56, 4.1)", () => {
+  it("keeps the previous set objects when only the view changes, so the map style is not rebuilt", () => {
+    const before = parseState("?v=45,16,7&l=lines,pipelines&kv=400", "hr");
+    const after = keepEqualSets(before, parseState("?v=45.1,16.2,8&l=lines,pipelines&kv=400", "hr"));
+    expect(after.view).toEqual({ lat: 45.1, lng: 16.2, zoom: 8 });
+    expect(after.layers).toBe(before.layers);
+    expect(after.statuses).toBe(before.statuses);
+    expect(after.technologies).toBe(before.technologies);
+    expect(after.voltages).toBe(before.voltages);
+    expect(after.countries).toBe(before.countries);
+  });
+
+  it("takes the new set when its contents change", () => {
+    const before = parseState("?l=lines", "hr");
+    const after = keepEqualSets(before, parseState("?l=lines,pipelines", "hr"));
+    expect(after.layers).not.toBe(before.layers);
+    expect([...after.layers].sort()).toEqual(["lines", "pipelines"]);
+    expect(after.voltages).toBe(before.voltages);
   });
 });

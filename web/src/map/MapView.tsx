@@ -386,7 +386,8 @@ export function MapView(props: Props) {
       const feature = hit(event.point);
       const cell = feature ? null : chargerCell(event.point);
       if (cell) {
-        map.flyTo({ center: cell.center, zoom: cell.zoom, essential: true });
+        // not `essential`: under prefers-reduced-motion MapLibre jumps instead of flying (Faza 56)
+        map.flyTo({ center: cell.center, zoom: cell.zoom });
         return;
       }
       const selection = feature ? toSelection(feature) : null;
@@ -522,7 +523,8 @@ export function MapView(props: Props) {
     mapRef.current = map;
     onReady({
       flyTo: (lng, lat, zoom) => {
-        map.flyTo({ center: [lng, lat], zoom, essential: true });
+        // search and locate: not `essential` either, so reduced motion jumps (Faza 56)
+        map.flyTo({ center: [lng, lat], zoom });
       },
       showTraveller: (traveller) => {
         const source = map.getSource(TRAVEL_SOURCE);
