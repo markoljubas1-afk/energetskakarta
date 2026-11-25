@@ -545,7 +545,7 @@ export const en: Dictionary = {
   energyRingLoad: "Consumption: {load}.",
   energyGroupsHeading: "Renewable, fossil and nuclear: the last {count} periods",
   energyGroupsDescription:
-    "Stacked columns of the share of renewable, fossil and nuclear sources, and of storage and other, in generation for {area}, {count} periods up to {period}.",
+    "The share of renewable, fossil and nuclear sources, and of storage and other, in generation, in 100% columns, for {area}, {count} periods up to {period}.",
   energyGroupRenewable: "Renewable",
   energyGroupFossil: "Fossil",
   energyGroupNuclear: "Nuclear",

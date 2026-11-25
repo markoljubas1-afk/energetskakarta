@@ -146,7 +146,7 @@ describe("EnergyView", () => {
     const card = screen.getByRole("region", { name: "Udio izvora u proizvodnji" });
     expect(card).toHaveTextContent(/Proizvedeno: 11,9 GWh\. Potrošnja: 19 GWh\./);
     // beside the ring (Faza 55-1): the groups of the periods up to the ring's own, oldest first
-    const groups = await within(card).findByRole("img", { name: /^Složeni stupci udjela obnovljivih/ });
+    const groups = await within(card).findByRole("img", { name: /^Udio obnovljivih, fosilnih i nuklearnih/ });
     expect(groups).toHaveAccessibleName(/za Sve zemlje s podacima, 2 razdoblja do velj 2025\.\.?$/);
     expect(groups).toHaveAttribute("data-labels", "sij 2025.|velj 2025.");
     // an incomplete month can be looked at, and says that it is incomplete; its load is not shown

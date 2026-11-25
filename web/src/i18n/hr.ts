@@ -538,7 +538,7 @@ export const hr = {
   energyRingLoad: "Potrošnja: {load}.",
   energyGroupsHeading: "Obnovljivo, fosilno i nuklearno: zadnjih {count} razdoblja",
   energyGroupsDescription:
-    "Složeni stupci udjela obnovljivih, fosilnih i nuklearnih izvora te skladištenja i ostalog u proizvodnji za {area}, {count} razdoblja do {period}.",
+    "Udio obnovljivih, fosilnih i nuklearnih izvora te skladištenja i ostalog u proizvodnji, u stupcima od 100 %, za {area}, {count} razdoblja do {period}.",
   energyGroupRenewable: "Obnovljivo",
   energyGroupFossil: "Fosilno",
   energyGroupNuclear: "Nuklearno",
