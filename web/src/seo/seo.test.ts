@@ -163,6 +163,38 @@ describe("renderPage", () => {
     expect(bare).not.toContain("og:url");
   });
 
+  it("has the map's bar on top: main pages, the rest under More, the way back to the map (Faza 54-1)", () => {
+    const pages = buildPages(site);
+    const about = pages.find((p) => p.path === "/o-karti/");
+    if (!about) throw new Error("no about page");
+    const html = renderPage(about, site);
+    const nav = /<nav class="primary" aria-label="Glavna navigacija">([\s\S]*?)<\/nav>/.exec(html)?.[1] ?? "";
+    // the open page is marked; Edukacija is a main link, API sits under More (and in the phone's row)
+    expect(nav).toMatch(/<a href="\/o-karti\/" aria-current="page">/);
+    expect(nav).toMatch(/<a href="\/edukacija\/">/);
+    expect(nav).toMatch(/<details class="more"><summary>Više<\/summary><div>[\s\S]*href="\/api\/"/);
+    expect(nav).toContain('<a href="/api/" class="phone">');
+    expect(html).toMatch(/<a class="open-map" href="\/"[^>]*>[\s\S]*?Otvori kartu/);
+    expect(html).toContain('href="/en/about/" lang="en" hreflang="en"');
+    // the font every page asks for is the one in public/fonts
+    expect(html).toContain('<link rel="preload" href="/fonts/ibm-plex-sans-latin-400-normal.woff2"');
+  });
+
+  it("puts 'On this page' beside a page with enough sections, linking each heading", () => {
+    const pages = buildPages(site);
+    const long = pages.find((p) => p.sections.length >= 4);
+    const short = pages.find((p) => p.sections.length < 4);
+    if (!long || !short) throw new Error("the fixture needs a long and a short page");
+    const html = renderPage(long, site);
+    expect(html).toContain('<div class="body with-side">');
+    const toc = /<nav class="toc"[^>]*>([\s\S]*?)<\/nav>/.exec(html)?.[1] ?? "";
+    const links = [...toc.matchAll(/href="#([^"]+)"/g)].map((m) => m[1]);
+    const headings = [...html.matchAll(/<h2 id="([^"]+)">/g)].map((m) => m[1]);
+    // every section of the page, in order, each to its own heading
+    expect(links).toEqual(headings.slice(0, long.sections.length));
+    expect(renderPage(short, site)).not.toContain('class="toc"');
+  });
+
   it("ends JSON-LD safely even when a name contains a closing script tag", () => {
     const evil: SiteData = {
       ...site,

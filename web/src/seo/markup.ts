@@ -86,17 +86,37 @@ export function anchor(heading: string): string {
  * The page's sections, each heading with an `id` so a single fact has an address of its own (Faza 47-2).
  * Two sections with the same heading get "-2", "-3"; a heading with no letters gets no id.
  */
-export function sectionsHtml(sections: readonly { heading: string; html: string }[]): string {
+/** The anchor of each section's heading, numbered when a heading repeats; "" when it has no letters. */
+export function sectionIds(sections: readonly { heading: string }[]): string[] {
   const used = new Map<string, number>();
+  return sections.map((section) => {
+    const base = anchor(section.heading);
+    const count = (used.get(base) ?? 0) + 1;
+    used.set(base, count);
+    return base === "" ? "" : count === 1 ? base : `${base}-${String(count)}`;
+  });
+}
+
+export function sectionsHtml(sections: readonly { heading: string; html: string }[]): string {
+  const ids = sectionIds(sections);
   return sections
-    .map((section) => {
-      const base = anchor(section.heading);
-      const count = (used.get(base) ?? 0) + 1;
-      used.set(base, count);
-      const id = base === "" ? "" : ` id="${count === 1 ? base : `${base}-${String(count)}`}"`;
+    .map((section, index) => {
+      const id = ids[index] ? ` id="${ids[index]}"` : "";
       return `<section><h2${id}>${e(section.heading)}</h2>${section.html}</section>`;
     })
     .join("\n");
+}
+
+/** "On this page": the sections' headings as links, for the side column of a long page. */
+export function contentsNav(sections: readonly { heading: string }[], label: string): string {
+  const ids = sectionIds(sections);
+  const items = sections
+    .map((section, index) =>
+      ids[index] ? `<li><a href="#${ids[index]}">${e(section.heading)}</a></li>` : "",
+    )
+    .join("");
+  // a label, not a heading: the page's outline stays the page's own sections
+  return `<nav class="toc" aria-label="${e(label)}"><p>${e(label)}</p><ol>${items}</ol></nav>`;
 }
 
 export function table(head: string[], rows: string[][]): string {

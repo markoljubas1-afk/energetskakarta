@@ -55,7 +55,10 @@ describe("where the static pages lead", () => {
     const site = bareSite();
     const author = authorPage(site, "hr");
     const html = renderPage(author, site);
-    expect(html).toMatch(/<div class="lead">[\s\S]*?<\/div>\s*<ul class="doors">/);
+    // the lead closes the page's head; the cards open its content
+    expect(html).toMatch(
+      /<div class="lead">[\s\S]*?<\/div>\s*<\/div>\s*<div class="body[^"]*">\s*<div class="content">\s*<ul class="doors">/,
+    );
     expect(html).toContain(">Otvori kartu</a>");
     expect(html).toContain(`<a href="${PATHS.hr.learn}">Edukacija</a>`);
     // the support box keeps the tag and the contact as paragraphs, so the Markdown copy still has them

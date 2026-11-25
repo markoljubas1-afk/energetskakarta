@@ -3079,3 +3079,39 @@ for free re-use” (18. 10. 2023.). Prekogranični tokovi su na popisu; proizvod
 (6.1.a) i cijene dan unaprijed (12.1.d) nisu. Za njih uvjeti (3.1) traže navođenje izvora i da se ne krše
 autorska prava operatera prijenosnih mreža. Treba li za objavu mjesečnih zbrojeva i udjela pitati HOPS i ostale
 operatere, procjena je vlasnika.
+
+## Faza 54 — Moderniji izgled statičnih stranica (Edukacija, O karti, Izvještaji, zemlje, objekti…) — PRIJEDLOG 2026-11-25, čeka potvrdu
+
+Vlasnik: „imam top kartu ali onda kad ovdje otvorim sve je nekako bezveze… možemo taj UX znatno unaprijediti i
+modernizirati?”
+
+Stanje (snimke 2026-11-25, računalo i mobitel): zaglavlje s 9 gumba u 2 reda (mobitel 4 reda, pola ekrana);
+izvještaji i zemlje samo tekst, popisi i tablice, bez istaknutih brojki i grafova; uski stupac 820 px; sistemski
+font umjesto IBM Plexa s karte, druge boje; tablice se na mobitelu režu.
+
+Cilj: stranice izgledaju kao dio istog proizvoda kao karta, a brojke se vide na prvi pogled; SEO, brzina i
+pristupačnost ostaju jednaki ili bolji.
+
+Pristup (sve u jednom predlošku i jednom stilu, `web/src/seo/html.ts` + `style.ts`, pa vrijedi za sve stranice):
+1. Zaglavlje kao na karti: jedan red (logo, Karta, Izvještaji, Edukacija, Usporedbe, „Više” s ostalim), na
+   mobitelu logo + izbornik (`<details>`, bez JavaScripta).
+2. Izgled: IBM Plex (isti font kao karta, iz istih datoteka), boje i kartice iz `app/tokens.css`, širi raspored
+   (do ~1120 px) s bočnim sadržajem stranice na računalu.
+3. Ključne brojke kao pločice na vrhu izvještaja, zemalja, plina i zelene tranzicije (npr. 65,7 % obnovljivo,
+   879 GWh, 198 g/kWh, promjena prema godini ranije), iz istih podataka kao tekst.
+4. Grafovi kao SVG nacrtan pri izgradnji (bez JavaScripta, čitljivi tražilicama uz tablicu): proizvodnja po
+   izvorima, udio obnovljivih kroz mjesece. Tablica ostaje ispod (pristupačnost, SEO).
+5. Tablice na mobitelu: prvi stupac zaključan pri vodoravnom pomicanju ili prikaz u karticama.
+6. Edukacija i O karti: veće kartice priča s ikonom, jasniji ritam naslova, sadržaj sa strane.
+
+Alternative: (a) samo osvježiti boje i zaglavlje (brzo, ali stranice ostaju „tekst”); (b) prebaciti stranice u
+React aplikaciju (gubi brzinu i SEO statičnog HTML-a, odbačeno).
+
+Rizici: CSP hash stila (računa se sam pri izgradnji); veličina stranice (font se predmemorira s karte, SVG mali);
+e2e i SEO testovi koji gledaju markup; 8.400 stranica dobiva novi datum izmjene samo ako se mijenja sadržaj, ne stil.
+
+Provjera: snimke prije/poslije (računalo, mobitel, svijetla i tamna tema) na preview adresi; Lighthouse
+(performanse, pristupačnost, SEO) ne smije pasti; vlasnik odobrava preview prije spajanja.
+
+Koraci: 54-1 zaglavlje + osnovni izgled (sve stranice) → preview; 54-2 pločice i grafovi na izvještajima;
+54-3 zemlje, plin, tranzicija; 54-4 Edukacija i O karti; 54-5 mobilne tablice.

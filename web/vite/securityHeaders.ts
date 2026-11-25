@@ -72,6 +72,9 @@ export function headersFile(dataBaseUrl: string): string {
     "  Cross-Origin-Opener-Policy: same-origin",
     "/assets/*",
     "  Cache-Control: public, max-age=31536000, immutable",
+    // the static pages' font (Faza 54-1): fixed names, so kept a month rather than for ever
+    "/fonts/*",
+    "  Cache-Control: public, max-age=2592000",
     // the open JSON files: any site may read them, and they change once per data build
     "/api/*",
     "  Access-Control-Allow-Origin: *",

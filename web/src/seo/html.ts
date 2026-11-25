@@ -2,9 +2,10 @@
  * Renders a static page model as a complete HTML document: no script, one small inline stylesheet, and
  * everything a crawler wants in <head>. The look follows the app's tokens so the two feel like one site.
  */
-import { reportMonths } from "./report";
+import { compareLink, reportMonths } from "./report";
 import {
   Braces,
+  GitCompareArrows,
   Building2,
   Gauge,
   FileText,
@@ -29,7 +30,7 @@ import { pageCitation } from "./citation";
 import { supportLinks } from "./support";
 import { markdownPath } from "./markdown";
 import { mapLink, PATHS, publisher, type SiteData, type StaticPage } from "./site";
-import { doors, escapeHtml as e, sectionsHtml, snippet } from "./markup";
+import { contentsNav, doors, escapeHtml as e, sectionsHtml, snippet } from "./markup";
 import { STATIC_STYLE } from "./style";
 
 function head(page: StaticPage, site: SiteData): string {
@@ -97,6 +98,11 @@ function head(page: StaticPage, site: SiteData): string {
         ]
       : []),
     `<meta name="theme-color" content="#1f6f8b">`,
+    // the map's font, the two weights every page uses (style.ts): fetched at once, not after the stylesheet
+    ...["400", "600"].map(
+      (weight) =>
+        `<link rel="preload" href="/fonts/ibm-plex-sans-latin-${weight}-normal.woff2" as="font" type="font/woff2" crossorigin>`,
+    ),
     `<style>${STATIC_STYLE}</style>`,
     ...jsonLd,
   ]
@@ -180,8 +186,103 @@ const ICONS = {
   cities: icon(Building2),
   capacity: icon(Gauge),
   api: icon(Braces),
+  compare: icon(GitCompareArrows),
   language: icon(Globe),
 };
+
+const SHELL_COPY = {
+  hr: {
+    nav: "Glavna navigacija",
+    compare: "Usporedbe",
+    more: "Više",
+    openMap: "Otvori kartu",
+    contents: "Na ovoj stranici",
+  },
+  en: {
+    nav: "Main navigation",
+    compare: "Comparisons",
+    more: "More",
+    openMap: "Open the map",
+    contents: "On this page",
+  },
+} as const;
+
+/** A page has a side column with its contents once it is long enough to need one. */
+const CONTENTS_MIN_SECTIONS = 4;
+
+interface NavLink {
+  href: string;
+  label: string;
+  icon: string;
+  /** the page or one under it is open: the link is marked as where the reader is */
+  current: boolean;
+  extra?: string;
+}
+
+const navLink = (link: NavLink, cls = ""): string =>
+  `<a href="${link.href}"${cls ? ` class="${cls}"` : ""}${link.current ? ' aria-current="page"' : ""}${link.extra ?? ""}>${link.icon}${e(link.label)}</a>`;
+
+/**
+ * The bar at the top of every static page (Faza 54-1), in one row like the map's: the main pages, the rest
+ * under "More", and the way back to the map. On a phone the links scroll sideways in a row of their own, all
+ * of them visible, so nothing needs a script or a menu that hides them.
+ */
+function headerHtml(page: StaticPage, site: SiteData): string {
+  const lang = page.lang;
+  const copy = COPY[lang];
+  const shell = SHELL_COPY[lang];
+  const i18n = createI18n(lang);
+  const paths = PATHS[lang];
+  const under = (path: string): boolean => page.path === path || page.path.startsWith(path);
+  const hasReports = reportMonths(site).length > 0;
+  const main: NavLink[] = [
+    ...(hasReports
+      ? [{ href: paths.reports, label: copy.nav.reports, icon: ICONS.reports, current: under(paths.reports) }]
+      : []),
+    { href: paths.learn, label: copy.nav.learn, icon: ICONS.learn, current: under(paths.learn) },
+    ...(hasReports
+      ? [{ href: compareLink(lang, null), label: shell.compare, icon: ICONS.compare, current: false }]
+      : []),
+    { href: paths.about, label: copy.nav.about, icon: ICONS.about, current: under(paths.about) },
+  ];
+  const more: NavLink[] = [
+    {
+      href: paths.author,
+      label: copy.nav.author,
+      icon: ICONS.author,
+      current: under(paths.author),
+      extra: ` title="${e(copy.about.authorHeading)}"`,
+    },
+    ...(site.cities
+      ? [{ href: paths.cities, label: copy.nav.cities, icon: ICONS.cities, current: under(paths.cities) }]
+      : []),
+    ...(site.capacity
+      ? [
+          {
+            href: paths.capacity,
+            label: lang === "hr" ? "Kapaciteti" : "Grid capacity",
+            icon: ICONS.capacity,
+            current: under(paths.capacity),
+          },
+        ]
+      : []),
+    { href: paths.api, label: copy.nav.api, icon: ICONS.api, current: under(paths.api) },
+  ];
+  const other = lang === "hr" ? "en" : "hr";
+  const language = `<a class="lang" href="${page.alternatePath}" lang="${other}" hreflang="${other}">${ICONS.language}<span>${e(copy.nav.otherLang)}</span></a>`;
+  return `<header class="top"><div class="bar">
+<a class="logo" href="${mapLink(lang, {})}"><b>${e(copy.siteTitle)}</b><span>${e(i18n.t("appTagline"))}</span></a>
+<nav class="primary" aria-label="${shell.nav}">
+${main.map((link) => navLink(link)).join("\n")}
+${more.map((link) => navLink(link, "phone")).join("\n")}
+<details class="more"><summary>${e(shell.more)}</summary><div>
+${more.map((link) => navLink(link)).join("\n")}
+</div></details>
+</nav>
+${language}
+<a class="open-map" href="${mapLink(lang, {})}">${ICONS.map}<span>${e(shell.openMap)}</span></a>
+</div></header>`;
+}
 
 export function renderPage(page: StaticPage, site: SiteData): string {
   const copy = COPY[page.lang];
@@ -189,45 +290,42 @@ export function renderPage(page: StaticPage, site: SiteData): string {
   const countries = SCOPE_COUNTRIES.map(
     (code) => `<a href="${PATHS[page.lang].country(code.toLowerCase())}">${e(i18n.country(code))}</a>`,
   ).join(" · ");
-  const sections = sectionsHtml([...page.sections, ...(page.nav ? [page.nav] : [])]);
-  const mapHref = mapLink(page.lang, {});
+  const all = [...page.sections, ...(page.nav ? [page.nav] : [])];
+  const sections = sectionsHtml(all);
+  const contents =
+    page.sections.length >= CONTENTS_MIN_SECTIONS
+      ? `<aside class="side">${contentsNav(page.sections, SHELL_COPY[page.lang].contents)}</aside>`
+      : "";
   return `<!doctype html>
 <html lang="${page.lang}">
 <head>
 ${head(page, site)}
 </head>
 <body>
-<header>
-<strong>${e(copy.siteTitle)}</strong>
-<span class="tagline">${e(i18n.t("appTagline"))}</span>
-<nav aria-label="${page.lang === "hr" ? "Glavna navigacija" : "Main navigation"}">
-<a href="${mapHref}">${ICONS.map}${e(copy.nav.map)}</a>
-<a href="${PATHS[page.lang].about}">${ICONS.about}${e(copy.nav.about)}</a>
-<a href="${PATHS[page.lang].learn}">${ICONS.learn}${e(copy.nav.learn)}</a>
-${reportMonths(site).length > 0 ? `<a href="${PATHS[page.lang].reports}">${ICONS.reports}${e(copy.nav.reports)}</a>` : ""}
-<a href="${PATHS[page.lang].author}" title="${e(copy.about.authorHeading)}" aria-label="${e(copy.about.authorHeading)}">${ICONS.author}${e(copy.nav.author)}</a>
-${site.cities ? `<a href="${PATHS[page.lang].cities}">${ICONS.cities}${e(copy.nav.cities)}</a>` : ""}
-${site.capacity ? `<a href="${PATHS[page.lang].capacity}">${ICONS.capacity}${e(page.lang === "hr" ? "Kapaciteti" : "Grid capacity")}</a>` : ""}
-<a href="${PATHS[page.lang].api}">${ICONS.api}${e(copy.nav.api)}</a>
-<a href="${page.alternatePath}" lang="${page.lang === "hr" ? "en" : "hr"}" hreflang="${page.lang === "hr" ? "en" : "hr"}">${ICONS.language}${e(copy.nav.otherLang)}</a>
-</nav>
-</header>
+${headerHtml(page, site)}
 <main>
+<div class="hero">
 ${breadcrumbNav(page)}
 <h1>${e(page.heading)}</h1>
 <div class="lead">${page.lead}</div>
+</div>
+<div class="body${contents ? " with-side" : ""}">
+<div class="content">
 ${page.doors && page.doors.length > 0 ? doors(page.doors) : ""}
 ${sections}
 ${page.citable === false ? "" : citeSection(page, site)}
+</div>
+${contents}
+</div>
 </main>
-<footer>
+<footer><div class="bar">
 <p>${e(copy.nav.countries)}: ${countries}</p>
 <p>${e(copy.footer)} · ${e(i18n.t("dataVersion", { date: i18n.date(page.lastModified) }))}</p>
 <p><a href="${PATHS[page.lang].author}">${e(copy.about.authorHeading)}</a> · ${e(copy.about.authorContact)}: <a href="mailto:${e(AUTHOR.email)}">${e(AUTHOR.email)}</a></p>
 ${supportLinks(site, page.lang)
   .map((link) => `<p>${link}</p>`)
   .join("")}
-</footer>
+</div></footer>
 </body>
 </html>
 `;
@@ -263,19 +361,24 @@ export function renderNotFound(site: SiteData): string {
 <style>${STATIC_STYLE}</style>
 </head>
 <body>
-<header>
-<strong>${e(hr.siteTitle)}</strong>
-</header>
+<header class="top"><div class="bar">
+<a class="logo" href="${mapLink("hr", {})}"><b>${e(hr.siteTitle)}</b></a>
+<a class="open-map" href="${mapLink("hr", {})}">${ICONS.map}<span>${e(SHELL_COPY.hr.openMap)}</span></a>
+</div></header>
 <main>
+<div class="hero">
 <h1>${e(hr.notFound.heading)}</h1>
 <p class="lead">${e(hr.notFound.text)}</p>
 <p lang="en">${e(en.notFound.text)}</p>
-<h2>${e(hr.notFound.linksHeading)}</h2>
-<ul>${links.map((link) => `<li>${link}</li>`).join("")}</ul>
+</div>
+<div class="body"><div class="content">
+<section><h2>${e(hr.notFound.linksHeading)}</h2>
+<ul>${links.map((link) => `<li>${link}</li>`).join("")}</ul></section>
+</div></div>
 </main>
-<footer>
+<footer><div class="bar">
 <p>${e(hr.footer)}${site.siteUrl ? ` · <a href="${e(site.siteUrl)}/">${e(site.siteUrl.replace(/^https?:\/\//, ""))}</a>` : ""}</p>
-</footer>
+</div></footer>
 </body>
 </html>
 `;
