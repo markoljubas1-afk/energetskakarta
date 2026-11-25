@@ -1,3 +1,4 @@
+import { SOURCE_TERMS } from "./license";
 import { describe, expect, it } from "vitest";
 
 import type { GeoSite } from "../data/geothermal";
@@ -77,6 +78,8 @@ describe("geothermal page", () => {
     const dataset = page("en").jsonLd[0] as { "@type": string; isBasedOn: string[] };
     expect(dataset["@type"]).toBe("Dataset");
     expect(dataset.isBasedOn).toContain("https://doi.org/x");
+    expect((dataset as { license?: unknown }).license).toBe(SOURCE_TERMS.ccBy);
+    expect(all).toContain("CC BY 4.0, uz navođenje GridAtlasa");
   });
 
   it("is linked from the home page, the transition page and llms.txt, and converts cleanly to Markdown", () => {

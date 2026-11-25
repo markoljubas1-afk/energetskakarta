@@ -3070,7 +3070,9 @@ Search Console (Skupovi podataka): „Nevažeća vrsta objekta za polje spatialC
   - HEP ODS: nema stranice s uvjetima ni „Pravnih napomena” (u podnožju hep.hr i hep.hr/ods samo Impressum,
     provjereno 2026-11-25), pa `license` pokazuje na impressum (© HEP d.d.); kapaciteti, izvještaji s kapacitetima;
   - zelena tranzicija još OSM (ODbL) i CC BY 4.0 (Eurostat, GEM).
-- [ ] 53-3 Geotermalna: više izvora (toplinski tok i popis lokacija), licenca nije upisana dok se svaki izvor ne provjeri.
+- [x] 53-3 Geotermalna: toplinski tok IHFC (CC BY 4.0), članak MDPI o Topuskom (CC BY 4.0); ostali izvori lokacija su
+  vijesti iz kojih se uzimaju samo činjenice. Vlasnik 2026-11-25: ručno složeni popis lokacija objavljuje se pod
+  CC BY 4.0 („može, CC BY 4.0 za geotermalnu”); piše i na stranici, pod Izvorima.
 
 **Otvoreno, odluka vlasnika (pravna):** ENTSO-E stavlja pod CC BY 4.0 samo podatke s popisa „List of Data available
 for free re-use” (18. 10. 2023.). Prekogranični tokovi su na popisu; proizvodnja (14.x/16.1), stvarna potrošnja

@@ -6,6 +6,7 @@
 import { CASCADE, PHASES, totals, type Geothermal, type GeoSite, type Phase } from "../data/geothermal";
 import { createI18n } from "../i18n";
 import { LANGS, type Lang } from "../state/url";
+import { SOURCE_TERMS } from "./license";
 import { homeCrumb, PATHS, publisher, type SiteData, type StaticPage } from "./site";
 import { counted, escapeHtml as e, list, type Forms } from "./markup";
 
@@ -51,7 +52,7 @@ const COPY = {
     sourcesHeading: "Izvori",
     // a Croatian date already ends in a full stop ("15. studenoga 2026.")
     reviewed: (date: string) =>
-      `Popis lokacija provjeren: ${date}${date.endsWith(".") ? "" : "."} Svaka lokacija ima vlastiti izvor.`,
+      `Popis lokacija provjeren: ${date}${date.endsWith(".") ? "" : "."} Svaka lokacija ima vlastiti izvor. Popis je dostupan pod licencom CC BY 4.0, uz navođenje GridAtlasa.`,
     mapLink: "Otvori sloj na karti",
   },
   en: {
@@ -91,7 +92,7 @@ const COPY = {
       return: "the cooled water returns underground",
     },
     sourcesHeading: "Sources",
-    reviewed: (date: string) => `Site list reviewed: ${date}. Every site has its own source.`,
+    reviewed: (date: string) => `Site list reviewed: ${date}. Every site has its own source. The list is available under CC BY 4.0, crediting GridAtlas.`,
     mapLink: "Open the layer on the map",
   },
 };
@@ -181,6 +182,8 @@ function page(site: SiteData, doc: Geothermal, lang: Lang): StaticPage {
           { "@type": "PropertyValue", name: "heat flow", unitText: "mW/m2" },
         ],
         isBasedOn: [...(doc.heatFlow ? [doc.heatFlow.url] : []), ...sources],
+        // IHFC heat flow and the hand-kept sites (decision 2026-11-25): CC BY 4.0
+        license: SOURCE_TERMS.ccBy,
         publisher: publisher(site, i18n),
         ...(site.siteUrl ? { url: site.siteUrl + path } : {}),
       },
