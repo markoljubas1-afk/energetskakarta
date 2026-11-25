@@ -249,6 +249,7 @@ function trendSection(lang: Lang, ctx: Context, month: string): Section | null {
   const columns = months.map((each, index) => ({
     // every third month from the report's own backwards, so the report's month is always named
     label: (23 - index) % 3 === 0 ? short(each) : "",
+    minor: (23 - index) % 6 !== 0,
     value: shares[index] ?? null,
     ...(index === 23 ? { mark: "now" as const } : index === 11 ? { mark: "then" as const } : {}),
   }));

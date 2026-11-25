@@ -224,7 +224,7 @@ export const REPORT_COPY: Record<Lang, ReportCopy> = {
       table: "Tablica s brojkama",
       trendHeading: "Udio obnovljivih kroz dvije godine",
       trendText: (now, then) =>
-        `Udio obnovljivih izvora u proizvodnji struje u Hrvatskoj, mjesec po mjesec. Tamniji stupci: ${now} i ${then}. Mjesec bez potpunih podataka ostaje prazan.`,
+        `Udio obnovljivih izvora u proizvodnji struje u Hrvatskoj, mjesec po mjesec. Tamniji stupci: ${now} i ${then}${then.endsWith(".") ? "" : "."} Mjesec bez potpunih podataka ostaje prazan.`,
       trendColumns: ["Mjesec", "Udio obnovljivih"],
       shortMonths: ["sij", "velj", "ožu", "tra", "svi", "lip", "srp", "kol", "ruj", "lis", "stu", "pro"],
     },

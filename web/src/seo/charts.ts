@@ -113,7 +113,7 @@ export function sourceBars(rows: readonly SourceBar[], legend: { now: string; be
       )}</span><span class="sval"><b>${e(row.amount)}</b> <small>${e(row.share)}</small></span><span class="schg">${e(row.change)}</span></div>`,
   );
   const was = legend.before && rows.some((row) => row.before !== null);
-  return `<div class="sources" aria-hidden="true">${items.join("")}<div class="key"><span><i class="now"></i>${e(legend.now)}</span>${
+  return `<div class="sources" aria-hidden="true">${items.join("")}<div class="key"><span><i class="cur"></i>${e(legend.now)}</span>${
     was ? `<span><i class="was"></i>${e(legend.before)}</span>` : ""
   }</div></div>`;
 }
@@ -125,7 +125,12 @@ export interface Column {
   value: number | null;
   /** the period the page is about, and the one it is compared with: drawn darker */
   mark?: "now" | "then";
+  /** a label that a phone leaves out, so the ones it keeps do not run into each other */
+  minor?: boolean;
 }
+
+/** Class names of the marked columns ("now" is taken by the live box of the home page, style.ts). */
+const MARK_CLASS = { now: "cur", then: "prev" } as const;
 
 /** Columns of a share (0–100 %), with grid lines at every quarter and the labels in HTML under them. */
 export function shareColumns(columns: readonly Column[], gap: string): string {
@@ -141,13 +146,13 @@ export function shareColumns(columns: readonly Column[], gap: string): string {
     .map((column, index) => {
       if (column.value === null) return "";
       const height = Math.max(1, Math.min(1, column.value) * 200);
-      return `<rect class="col${column.mark ? ` ${column.mark}` : ""}" x="${(index * width + width * 0.14).toFixed(1)}" y="${(200 - height).toFixed(1)}" width="${(width * 0.72).toFixed(1)}" height="${height.toFixed(1)}" rx="3"/>`;
+      return `<rect class="col${column.mark ? ` ${MARK_CLASS[column.mark]}` : ""}" x="${(index * width + width * 0.14).toFixed(1)}" y="${(200 - height).toFixed(1)}" width="${(width * 0.72).toFixed(1)}" height="${height.toFixed(1)}" rx="3"/>`;
     })
     .join("");
   const labels = columns
     .map(
       (column) =>
-        `<span${column.mark === "now" ? ' class="now"' : ""}>${e(column.label)}${column.value === null && column.label ? ` <small>${e(gap)}</small>` : ""}</span>`,
+        `<span${column.mark === "now" ? ' class="cur"' : column.minor ? ' class="minor"' : ""}>${e(column.label)}${column.value === null && column.label ? ` <small>${e(gap)}</small>` : ""}</span>`,
     )
     .join("");
   return `<div class="columns" aria-hidden="true"><div class="axis"><span>100 %</span><span>50 %</span><span>0 %</span></div>${svg(`<g class="grid">${grid}</g>${rects}`, 200)}<div class="ticks">${labels}</div></div>`;

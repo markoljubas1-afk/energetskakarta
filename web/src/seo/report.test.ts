@@ -210,9 +210,11 @@ describe("monthly reports", () => {
     // wind had 100 MWh in September 2025 and 200 now
     expect(plain(sources)).toContain('<span class="schg">▲ 100 %</span>');
     const trend = page.sections.find((s) => s.heading === "Udio obnovljivih kroz dvije godine");
-    expect(trend?.html).toContain('class="col now"');
-    expect(trend?.html).toContain('class="col then"');
-    expect(trend?.html).toContain('<span class="now">ruj 26</span>');
+    expect(trend?.html).toContain('class="col cur"');
+    expect(trend?.html).toContain('class="col prev"');
+    expect(trend?.html).toContain('<span class="cur">ruj 26</span>');
+    // a Croatian month name ends in a full stop already
+    expect(trend?.html).toContain("rujan 2026. i rujan 2025. Mjesec");
     // no style attribute anywhere: the pages' content security policy allows none
     for (const each of reportPages(site)) {
       expect(each.sections.map((s) => s.html).join("") + (each.figures ?? "")).not.toMatch(/\sstyle=/);

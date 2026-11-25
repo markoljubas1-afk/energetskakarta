@@ -101,8 +101,8 @@ describe("charts", () => {
       "",
     );
     expect(html.match(/<rect class="col/g)).toHaveLength(2);
-    expect(html).toContain('class="col now"');
-    expect(html).toContain('<span class="now">lis 26</span>');
+    expect(html).toContain('class="col cur"');
+    expect(html).toContain('<span class="cur">lis 26</span>');
   });
 
   it("marks the page's own row of a ranking", () => {
