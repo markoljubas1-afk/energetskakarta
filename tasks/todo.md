@@ -3191,14 +3191,14 @@ bih je prije izvještaja”; izbor grafa: „Obnovljivo kroz 12 mjeseci”.
 Provjera 2026-11-25: nijedan nalaz serije 4 nije bio ispravljen (dokazi u kodu, ne iz sjećanja). Tri PR-a, svaki s previewom.
 
 ### 56-A brzi popravci (4.1, 4.4e, 4.4d, 4.3)
-- [ ] 4.1 Pomak karte ne gradi stil: `stateFor` (`state/url.ts`) zadržava prethodne skupove (slojevi, statusi,
+- [x] 4.1 Pomak karte ne gradi stil: `stateFor` (`state/url.ts`) zadržava prethodne skupove (slojevi, statusi,
   tehnologije, naponi, zemlje) kad su jednaki, pa `styleState` u `MapView` ostaje isti. Test: promjena `v=` daje
   iste objekte skupova. Komentar u `MapView.tsx` time postaje istinit.
-- [ ] 4.4e `er=` s nepostojećim datumom (2026-13-01, 2026-02-30) ili rasponom duljim od `MAX_RANGE_DAYS` se
+- [x] 4.4e `er=` s nepostojećim datumom (2026-13-01, 2026-02-30) ili rasponom duljim od `MAX_RANGE_DAYS` se
   odbacuje pri čitanju adrese (`parseRange` koristi `rangeDays`; `rangeDays` provjerava da datum stvarno postoji).
-- [ ] 4.4d `flyTo` iz pretrage, lokacije i klika na ćeliju punionica bez `essential: true`: uz smanjeno kretanje
+- [x] 4.4d `flyTo` iz pretrage, lokacije i klika na ćeliju punionica bez `essential: true`: uz smanjeno kretanje
   MapLibre skače umjesto leti.
-- [ ] 4.3 Lijeno učitani dijelovi (karta, proizvodnja, usporedbe, grafovi) pri neuspjelom dohvaćanju bacaju
+- [x] 4.3 Lijeno učitani dijelovi (karta, proizvodnja, usporedbe, grafovi) pri neuspjelom dohvaćanju bacaju
   `ChunkLoadError`; „Pokušaj ponovno” tada učitava stranicu ponovno (React `lazy` pamti odbijeno učitavanje, a nova
   objava mijenja imena datoteka), s porukom o vezi umjesto o WebGL-u. Granica greške oko cijele aplikacije
   (`main.tsx`) s gumbom za ponovno učitavanje.
@@ -3208,6 +3208,11 @@ Provjera 2026-11-25: nijedan nalaz serije 4 nije bio ispravljen (dokazi u kodu, 
   greške mora biti na oba jezika.
 - Provjera: vitest (url, energy, ErrorBoundary), tsc, lint, e2e; preview: pomak karte bez treptanja slojeva,
   `er=2026-13-01,2026-13-02` otvara proizvodnju bez greške.
+
+- [x] PR #16, preview provjeren 2026-11-25: `er=2026-13-01,2026-13-02` otvara proizvodnju bez greške; pomak karte
+  bez greške u konzoli; blokiran kod karte daje „Dio stranice se nije učitao” i „Učitaj ponovno”; pretraga
+  (Plomin) uz smanjeno kretanje skače odmah, bez njega leti. 403 na MapTileru je ograničenje ključa na domenu
+  (preview), ne ova promjena.
 
 ### 56-B panel objekta i izvori (4.2, 4.4a, 4.4b) — nakon 56-A
 ### 56-C povijest i uvod (4.4c „Natrag” zatvara panel / vraća prethodni objekt — odobreno; 4.4f) — nakon 56-B
