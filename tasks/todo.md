@@ -3152,6 +3152,8 @@ Isti dijelovi kao u 54-2 (`charts.ts`), tablice ostaju iza „Tablica s brojkama
 - Zelena tranzicija: pločice (udio prema Eurostatu i cilj 2030., udio u proizvodnji struje, CO₂, snaga
   obnovljivih); Eurostatov udio po godinama i udio u proizvodnji po godinama kao stupci; susjedi kao rang-lista.
 - Nema novih brojki: pločice i grafovi prikazuju samo ono što stranica već ima.
+- [x] 54-3 napravljeno, PR #13 (zajedno s Fazom 55), preview provjeren (računalo/mobitel, bez vodoravnog pomicanja);
+  čeka odobrenje vlasnika.
 
 ## Faza 55 — „Proizvodnja kroz vrijeme”: graf uz pitu; GridAtlas prije Izvještaja — 2026-11-25
 
