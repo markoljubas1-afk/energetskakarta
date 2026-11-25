@@ -92,7 +92,8 @@ const COPY = {
       return: "the cooled water returns underground",
     },
     sourcesHeading: "Sources",
-    reviewed: (date: string) => `Site list reviewed: ${date}. Every site has its own source. The list is available under CC BY 4.0, crediting GridAtlas.`,
+    reviewed: (date: string) =>
+      `Site list reviewed: ${date}. Every site has its own source. The list is available under CC BY 4.0, crediting GridAtlas.`,
     mapLink: "Open the layer on the map",
   },
 };
