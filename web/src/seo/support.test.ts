@@ -60,7 +60,7 @@ describe("the support page", () => {
 
   it("is linked quietly from every page's footer and from the about page when on", () => {
     const html = renderPage(about(on), on);
-    expect(html).toContain('<p><a href="/podrska/">Podržite projekt</a></p>\n</footer>');
+    expect(html).toContain('<p><a href="/podrska/">Podržite projekt</a></p>\n</div></footer>');
     expect(about(on).sections.at(-1)?.heading).toBe("Podrška i partneri");
   });
 
