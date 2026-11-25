@@ -13,7 +13,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { osmUrl, SECTORS } from "../domain";
 import { useI18n, type I18n } from "../i18n";
@@ -39,6 +39,8 @@ interface Props {
   around?: Around | null;
   /** a charging station: what its country's plants are generating right now (data/greenShare.ts) */
   mix?: NowMix | null;
+  /** the map settled and could not find the selected object, even after flying to it (Faza 56, 4.4a) */
+  notFound?: boolean;
 }
 
 const percent = (share: number): number => Math.round(share * 100);
@@ -270,7 +272,15 @@ function CityDetails({ city, i18n }: { city: CitySelection; i18n: I18n }) {
   );
 }
 
-export function DetailsPanel({ id, selection, onClose, photo = null, around = null, mix = null }: Props) {
+export function DetailsPanel({
+  id,
+  selection,
+  onClose,
+  photo = null,
+  around = null,
+  mix = null,
+  notFound = false,
+}: Props) {
   const i18n = useI18n();
   const { t } = i18n;
   // Folded down to its title, the card gives the map back (on a phone it covers half of it). Kept per
@@ -290,12 +300,26 @@ export function DetailsPanel({ id, selection, onClose, photo = null, around = nu
     };
   }, [onClose]);
 
+  // Keyboard and screen reader users land on the card that just opened, and go back where they were when it
+  // closes (Faza 56, 4.4b). A new object moves the focus again but keeps the place to go back to.
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    const before = document.activeElement;
+    headingRef.current?.focus({ preventScroll: true });
+    return () => {
+      if (before instanceof HTMLElement && before.isConnected) before.focus({ preventScroll: true });
+    };
+  }, [id]);
+
   const kv = (values: number[]): string =>
     values.length > 0 ? `${values.map((v) => i18n.number(v, 1)).join(" / ")} ${t("unitKv")}` : t("unknown");
   const link = osmUrl(id);
 
-  let title: string = t("detailsLoading");
-  let body: ReactNode = <p className={styles.muted}>{t("detailsNotLoaded")}</p>;
+  // until the map finds the object: loading, then (useMissingSelection) either its details or "not found"
+  let title: string = notFound ? t("detailsNotFound") : t("detailsLoading");
+  let body: ReactNode = (
+    <p className={styles.muted}>{notFound ? t("detailsNotLoaded") : t("detailsLocating")}</p>
+  );
   let Icon: typeof Cable | null = null;
   let kind: string | null = null;
 
@@ -483,7 +507,9 @@ export function DetailsPanel({ id, selection, onClose, photo = null, around = nu
         )}
         <div className={styles.titles}>
           {kind && <p className={styles.kind}>{kind}</p>}
-          <h2 aria-live="polite">{title}</h2>
+          <h2 ref={headingRef} tabIndex={-1} aria-live="polite">
+            {title}
+          </h2>
         </div>
         <button
           type="button"

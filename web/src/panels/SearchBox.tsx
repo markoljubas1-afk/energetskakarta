@@ -2,8 +2,7 @@ import { Search } from "lucide-react";
 import { useId, useMemo, useState } from "react";
 
 import { useAsync } from "../app/useAsync";
-import { fetchJson } from "../data/current";
-import { prepareIndex, search, SearchIndexSchema, type SearchHit } from "../data/search";
+import { loadSearchIndex, search, type SearchHit } from "../data/search";
 import { useI18n } from "../i18n";
 import styles from "./SearchBox.module.css";
 
@@ -21,9 +20,8 @@ export function SearchBox({ indexUrl, onPick }: Props) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
-  const [index] = useAsync(wanted ? indexUrl : null, async (signal) =>
-    prepareIndex(await fetchJson(indexUrl, SearchIndexSchema, signal)),
-  );
+  // shared with the map's look-up of a linked object, so it is downloaded once (data/search.ts)
+  const [index] = useAsync(wanted ? indexUrl : null, () => loadSearchIndex(indexUrl));
 
   const hits = useMemo(() => (index?.status === "ready" ? search(index.value, query) : []), [index, query]);
   const showList = open && query.trim().length >= 2;

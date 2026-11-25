@@ -117,7 +117,10 @@ export const hr = {
   detailsAroundValue: "{distance} od elektrane; u njoj završava vodova: {lines}",
   detailsAroundNote:
     "Istaknuto na karti. Prema položaju u podacima; izvori ne bilježe na što je elektrana priključena.",
-  detailsNotLoaded: "Objekt je izvan trenutnog prikaza. Približite kartu da biste vidjeli detalje.",
+  detailsNotLoaded:
+    "Nije u dijelu karte koji je učitan. Pomaknite ili približite kartu do njega da biste vidjeli detalje.",
+  detailsNotFound: "Objekt nije pronađen",
+  detailsLocating: "Tražim objekt na karti…",
   kind_line: "Dalekovod",
   kind_cable: "Kabel",
   kind_substation: "Trafostanica",

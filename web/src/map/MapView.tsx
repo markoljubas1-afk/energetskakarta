@@ -6,7 +6,6 @@ import {
   Marker,
   NavigationControl,
   GeoJSONSource,
-  ScaleControl,
   setWorkerUrl,
   type LngLatBoundsLike,
   type MapGeoJSONFeature,
@@ -27,6 +26,7 @@ import { SCOPE_COUNTRIES, type CountryCode } from "../domain";
 import { useI18n } from "../i18n";
 import { DEFAULT_VIEW, type AppState } from "../state/url";
 import { composeStyle, loadBasemap, type Basemap } from "./basemap";
+import { foldCreditsWhenNarrow, showCredits } from "./credits";
 import {
   dataLayers,
   dataSources,
@@ -167,6 +167,8 @@ interface Props {
   chargerBands?: Record<string, Band> | null;
   onViewChange: (view: { lng: number; lat: number; zoom: number }) => void;
   onSelect: (selection: Selection | null) => void;
+  /** the selected object is in none of the tiles loaded once the map has settled (Faza 56, 4.4a) */
+  onSelectionMissing?: (id: string) => void;
   onBasemap: (kind: Basemap["kind"]) => void;
   onReady: (api: MapApi) => void;
   /** what kinds of things are on screen, after every settle; the legend plays down the rest */
@@ -184,8 +186,6 @@ interface Props {
 }
 
 const HIT_TOLERANCE_PX = 6;
-/** Below this map width the credits start collapsed (MapLibre's own compact threshold). */
-const COMPACT_ATTRIBUTION_MAX_WIDTH = 640;
 /** Gap between the pointer and the tooltip, so the cursor never covers the first letters. */
 const TOOLTIP_OFFSET_PX = 14;
 
@@ -208,7 +208,7 @@ export function MapView(props: Props) {
   const { onGasStorage } = props;
   const solar = props.solar ?? null;
   const { onViewChange, onSelect, onBasemap, onReady, onInView, onGeothermalSite, onCapacityStation } = props;
-  const { onPoint } = props;
+  const { onPoint, onSelectionMissing } = props;
   const intro = props.intro ?? null;
   const { onIntroReady, onIntroDone } = props;
   const i18n = useI18n();
@@ -230,6 +230,7 @@ export function MapView(props: Props) {
   const callbacks = useRef({
     onViewChange,
     onSelect,
+    onSelectionMissing,
     onInView,
     onGeothermalSite,
     onCapacityStation,
@@ -246,6 +247,7 @@ export function MapView(props: Props) {
     callbacks.current = {
       onViewChange,
       onSelect,
+      onSelectionMissing,
       onInView,
       onGeothermalSite,
       onCapacityStation,
@@ -288,22 +290,13 @@ export function MapView(props: Props) {
       minZoom: MIN_ZOOM,
       maxZoom: 17,
       maxBounds: regionMaxBounds(regionBounds),
-      attributionControl: { compact: true, customAttribution: attribution },
+      // the credits and the scale are added by their own effect below, which follows the shown sources
+      attributionControl: false,
       dragRotate: false,
       pitchWithRotate: false,
     });
     map.touchZoomRotate.disableRotation();
     map.addControl(new NavigationControl({ showCompass: false }), "top-right");
-    map.addControl(new ScaleControl({ unit: "metric" }), "bottom-right");
-    // On a phone the credits run to four lines and eat a map that is already short. MapLibre opens its
-    // compact attribution and collapses it on the first drag; here it starts collapsed behind the (i)
-    // button when the map is narrow, which is what the licences allow and what phone users expect.
-    map.once("load", () => {
-      if (map.getContainer().clientWidth > COMPACT_ATTRIBUTION_MAX_WIDTH) return;
-      const attribution = map.getContainer().querySelector(".maplibregl-ctrl-attrib.maplibregl-compact-show");
-      const toggle = attribution?.querySelector<HTMLElement>(".maplibregl-ctrl-attrib-button");
-      toggle?.click();
-    });
     // The attribution line grows with every data source and wraps on narrow windows, so its height is
     // measured and published as a CSS variable. Everything that sits along the bottom edge keeps clear
     // of it by that number instead of a guess (e2e/layout.spec.ts checks the result).
@@ -498,6 +491,8 @@ export function MapView(props: Props) {
           return;
         }
       }
+      // settled with every tile in view loaded, and the object is not among them
+      callbacks.current.onSelectionMissing?.(selected);
     });
 
     // The drawing buffer is only readable while MapLibre paints, so the copy is taken in the render
@@ -597,6 +592,23 @@ export function MapView(props: Props) {
     // The map is created once; later changes are applied by the effects below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // The credits name the sources of what is shown and are in the page's language, so they follow both
+  // (Faza 56, 4.2). On a phone they run to four lines, so a narrow map starts with them folded.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const remove = showCredits(map, attribution);
+    const fold = (): void => {
+      foldCreditsWhenNarrow(map);
+    };
+    if (map.loaded()) fold();
+    else map.once("load", fold);
+    return () => {
+      map.off("load", fold);
+      remove();
+    };
+  }, [attribution]);
 
   // Load the basemap for the current theme.
   useEffect(() => {

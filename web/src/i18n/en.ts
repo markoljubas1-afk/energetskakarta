@@ -119,7 +119,10 @@ export const en: Dictionary = {
   detailsAroundValue: "{distance} from the plant; lines ending there: {lines}",
   detailsAroundNote:
     "Lit on the map. By position in the data; the sources do not record what a plant is connected to.",
-  detailsNotLoaded: "This asset is outside the current view. Zoom in to see its details.",
+  detailsNotLoaded:
+    "It is not in the part of the map that has loaded. Move or zoom the map to it to see its details.",
+  detailsNotFound: "Asset not found",
+  detailsLocating: "Finding the asset on the map…",
   kind_line: "Power line",
   kind_cable: "Cable",
   kind_substation: "Substation",

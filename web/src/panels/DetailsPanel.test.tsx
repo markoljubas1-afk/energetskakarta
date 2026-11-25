@@ -1,4 +1,4 @@
-import { fireEvent, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -125,10 +125,47 @@ describe("DetailsPanel", () => {
     expect(screen.getByText("Under construction")).toBeInTheDocument();
   });
 
-  it("explains a selection whose details are not loaded yet", () => {
+  it("says it is finding a selection whose details are not loaded yet", () => {
     renderWithI18n(<DetailsPanel id="osm:node/1" selection={null} onClose={vi.fn()} />);
     expect(screen.getByRole("heading", { name: "Učitavanje detalja…" })).toBeInTheDocument();
-    expect(screen.getByText(/Približite kartu/)).toBeInTheDocument();
+    expect(screen.getByText("Tražim objekt na karti…")).toBeInTheDocument();
+  });
+
+  it("says when the map could not find it, instead of loading forever (Faza 56, 4.4a)", () => {
+    renderWithI18n(<DetailsPanel id="osm:node/1" selection={null} onClose={vi.fn()} notFound />);
+    expect(screen.getByRole("heading", { name: "Objekt nije pronađen" })).toBeInTheDocument();
+    expect(screen.getByText(/približite kartu do njega/)).toBeInTheDocument();
+  });
+
+  it("takes the focus to its title when it opens and gives it back when it closes (Faza 56, 4.4b)", () => {
+    const { rerender } = render(
+      <I18nProvider lang="hr">
+        <input aria-label="search" />
+      </I18nProvider>,
+    );
+    const search = screen.getByRole("textbox", { name: "search" });
+    search.focus();
+    rerender(
+      <I18nProvider lang="hr">
+        <input aria-label="search" />
+        <DetailsPanel id="osm:node/1" selection={null} onClose={vi.fn()} />
+      </I18nProvider>,
+    );
+    expect(document.activeElement).toBe(screen.getByRole("heading", { name: "Učitavanje detalja…" }));
+    // another object: the focus moves to the new title, and still goes back to the search box at the end
+    rerender(
+      <I18nProvider lang="hr">
+        <input aria-label="search" />
+        <DetailsPanel id="osm:node/2" selection={null} onClose={vi.fn()} />
+      </I18nProvider>,
+    );
+    expect(document.activeElement?.tagName).toBe("H2");
+    rerender(
+      <I18nProvider lang="hr">
+        <input aria-label="search" />
+      </I18nProvider>,
+    );
+    expect(document.activeElement).toBe(screen.getByRole("textbox", { name: "search" }));
   });
 
   it("closes with the button and with Escape, but not while typing", async () => {

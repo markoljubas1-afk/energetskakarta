@@ -3214,5 +3214,21 @@ Provjera 2026-11-25: nijedan nalaz serije 4 nije bio ispravljen (dokazi u kodu, 
   (Plomin) uz smanjeno kretanje skače odmah, bez njega leti. 403 na MapTileru je ograničenje ključa na domenu
   (preview), ne ova promjena.
 
-### 56-B panel objekta i izvori (4.2, 4.4a, 4.4b) — nakon 56-A
+### 56-B panel objekta i izvori (4.2, 4.4a, 4.4b) — 2026-11-25 (vlasnik: „nakon toga kreni s 56-B”)
+- [ ] 4.2 Izvori u kutu karte prate uključene slojeve i jezik: kad se tekst promijeni, `MapView` mijenja
+  MapLibreov `AttributionControl` (javnog načina za promjenu teksta nema) i ponovno dodaje mjerilo da redoslijed
+  u kutu ostane isti; na uskom ekranu novi popis opet počinje skupljen. Visinu kuta i dalje mjeri ResizeObserver.
+- [ ] 4.4a Objekt iz poveznice koji nije u učitanim pločicama: nakon prvog mirovanja karte s učitanom mrežom
+  `MapView` javlja da ga nema. Aplikacija ga traži u indeksu pretrage (isti predmemorirani dohvat kao tražilica) i
+  jednom odleti do njega (zoom 12), pa se detalji učitaju sami. Ako ga u indeksu nema (vodovi, cjevovodi,
+  punionice) ili ga ni nakon leta nema, panel umjesto „Učitavanje detalja…” kaže da objekt nije pronađen u ovom
+  dijelu karte. Bez petlje: najviše jedan let po objektu.
+- [ ] 4.4b Fokus: otvaranjem panela fokus ide na njegov naslov (čitač zaslona ga pročita), zatvaranjem se vraća
+  gdje je bio (tražilica, karta), ako taj element još postoji.
+- Alternative: za 4.2 pisanje u MapLibreove privatne opcije (odbačeno: lomi se s nadogradnjom); za 4.4a
+  zasebni indeks lokacija za sve objekte (odbačeno: veća datoteka za rijedak slučaj).
+- Rizici: indeks pretrage je ~1,6 MB (dohvaća se samo u tom rijetkom slučaju i dijeli s tražilicom); fokus na
+  naslov ne smije otvoriti tipkovnicu na mobitelu (naslov nije polje za unos).
+- Provjera: vitest (izvori nakon promjene, stanje „nije pronađen”, fokus), e2e; preview: uključiti plin → ENTSOG
+  i GIE u kutu, EN → izvori na engleskom; `?sel=<elektrana>` bez `v=` → let do nje i detalji.
 ### 56-C povijest i uvod (4.4c „Natrag” zatvara panel / vraća prethodni objekt — odobreno; 4.4f) — nakon 56-B
