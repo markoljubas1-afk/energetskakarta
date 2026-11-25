@@ -48,7 +48,7 @@ h1{margin:0;font-size:clamp(28px,3.6vw,40px);font-weight:600;line-height:1.12;le
 .lead{margin-top:14px;color:var(--muted);font-size:17.5px;line-height:1.6}.lead p{margin:.5em 0 0}.lead p:first-child{margin-top:0}
 .body{display:grid;grid-template-columns:minmax(0,1fr);gap:28px;align-items:start}
 .body.with-side{grid-template-columns:minmax(0,1fr) 260px}
-.content{min-width:0;display:grid;gap:18px}.content>*{margin:0}
+.content{min-width:0;display:grid;grid-template-columns:minmax(0,1fr);gap:18px}.content>*{margin:0}
 .content>section{padding:22px 26px;border:1px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:var(--shadow);overflow-wrap:break-word}
 .content>section>:last-child{margin-bottom:0}
 section p,section li{max-width:72ch}
