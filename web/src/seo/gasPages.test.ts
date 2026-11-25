@@ -165,7 +165,7 @@ describe("the gas page", () => {
     expect(figures).toContain('<p class="big">121,2<small>GWh</small></p>');
     // the customers' day against their usual week: neither good nor bad news
     expect(figures).toMatch(
-      /delta neutral"><b aria-hidden="true">▼<\/b> [\d,]+ %<\/span> prema prosjeku 7 dana/,
+      /delta neutral"><b aria-hidden="true">▼<\/b> [\d,]+\s%<\/span> prema prosjeku 7 dana/,
     );
     expect(figures).toContain("Skladište PSP Okoli");
     expect(figures).toContain('<p class="big">82,5<small>%</small></p>');
