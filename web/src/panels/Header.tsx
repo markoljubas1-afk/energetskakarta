@@ -70,11 +70,7 @@ export function Header({ theme, page, onPage, onToggleTheme, onToggleLang, child
           <GraduationCap size={16} strokeWidth={1.75} aria-hidden="true" />
           <span className={styles.buttonLabel}>{t("learnLink")}</span>
         </a>
-        {/* the monthly reports exist wherever generation data is published, as on the live site */}
-        <a className={`${styles.textButton} ${styles.optional}`} href={PATHS[lang].reports}>
-          <FileText size={16} strokeWidth={1.75} aria-hidden="true" />
-          <span className={styles.buttonLabel}>{t("reportsLink")}</span>
-        </a>
+        {/* who is behind the site comes before the reports (owner, 2026-11-25) */}
         <a
           className={`${styles.textButton} ${styles.optional}`}
           href={PATHS[lang].author}
@@ -83,6 +79,11 @@ export function Header({ theme, page, onPage, onToggleTheme, onToggleLang, child
         >
           <UserRound size={16} strokeWidth={1.75} aria-hidden="true" />
           <span className={styles.buttonLabel}>{t("authorLink")}</span>
+        </a>
+        {/* the monthly reports exist wherever generation data is published, as on the live site */}
+        <a className={`${styles.textButton} ${styles.optional}`} href={PATHS[lang].reports}>
+          <FileText size={16} strokeWidth={1.75} aria-hidden="true" />
+          <span className={styles.buttonLabel}>{t("reportsLink")}</span>
         </a>
         <a className={styles.textButton} href={PATHS[lang].about}>
           <Info size={16} strokeWidth={1.75} aria-hidden="true" />

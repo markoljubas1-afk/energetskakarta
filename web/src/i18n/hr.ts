@@ -536,6 +536,13 @@ export const hr = {
   energyRingDescription: "Prstenasti grafikon udjela izvora u proizvodnji za {area}, {period}: {list}.",
   energyRingTotals: "Proizvedeno: {total}.",
   energyRingLoad: "Potrošnja: {load}.",
+  energyGroupsHeading: "Obnovljivo, fosilno i nuklearno: zadnjih {count} razdoblja",
+  energyGroupsDescription:
+    "Složeni stupci udjela obnovljivih, fosilnih i nuklearnih izvora te skladištenja i ostalog u proizvodnji za {area}, {count} razdoblja do {period}.",
+  energyGroupRenewable: "Obnovljivo",
+  energyGroupFossil: "Fosilno",
+  energyGroupNuclear: "Nuklearno",
+  energyGroupOther: "Skladištenje i ostalo",
   energyCompareTitle: "Isti mjesec kroz godine",
   energyCompareSource: "Izvor",
   energyCompareDescription: "Crte po godinama: mjesečna proizvodnja iz izvora {tech} za {area}.",

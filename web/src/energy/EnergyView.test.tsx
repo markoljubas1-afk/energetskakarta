@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { defaultState, type AppState } from "../state/url";
 import { renderWithI18n, routeFetch } from "../test/render";
-import { EnergyView } from "./EnergyView";
+import { EnergyView, groupOf } from "./EnergyView";
 
 // Chart.js needs a real canvas; the charts only receive props here
 vi.mock("./charts", () => ({
@@ -89,6 +89,19 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+describe("source groups", () => {
+  it("puts every source in exactly one group: renewable, fossil, nuclear, or storage and other", () => {
+    expect(groupOf("wind")).toBe("renewable");
+    expect(groupOf("hydro")).toBe("renewable");
+    expect(groupOf("lignite")).toBe("fossil");
+    expect(groupOf("gas")).toBe("fossil");
+    expect(groupOf("nuclear")).toBe("nuclear");
+    // pumped storage returns electricity it took, so it is not counted as renewable
+    expect(groupOf("pumped_storage")).toBe("other");
+    expect(groupOf("battery")).toBe("other");
+  });
+});
+
 describe("EnergyView", () => {
   it("says so when nothing is published yet", async () => {
     vi.stubGlobal("fetch", vi.fn(routeFetch({})));
@@ -132,6 +145,10 @@ describe("EnergyView", () => {
     );
     const card = screen.getByRole("region", { name: "Udio izvora u proizvodnji" });
     expect(card).toHaveTextContent(/Proizvedeno: 11,9 GWh\. Potrošnja: 19 GWh\./);
+    // beside the ring (Faza 55-1): the groups of the periods up to the ring's own, oldest first
+    const groups = await within(card).findByRole("img", { name: /^Složeni stupci udjela obnovljivih/ });
+    expect(groups).toHaveAccessibleName(/za Sve zemlje s podacima, 2 razdoblja do velj 2025\.\.?$/);
+    expect(groups).toHaveAttribute("data-labels", "sij 2025.|velj 2025.");
     // an incomplete month can be looked at, and says that it is incomplete; its load is not shown
     await userEvent.selectOptions(within(card).getByLabelText("Razdoblje"), "2025-03");
     expect(screen.getByRole("img", { name: /Prstenasti grafikon/ })).toHaveAccessibleName(

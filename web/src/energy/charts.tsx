@@ -48,7 +48,8 @@ interface Common {
 
 export interface StackedProps extends Common {
   bars: BarSeries[];
-  line: BarSeries;
+  /** a line over the bars (total consumption); left out when the bars say it all */
+  line?: BarSeries;
   /** 0–1 per label; incomplete periods are drawn lighter */
   coverage: number[];
   /** extra tooltip line for a label index (e.g. "data for 19 of 31 days") */
@@ -96,25 +97,29 @@ export function StackedChart(props: StackedProps) {
             borderColor: bar.color,
             borderWidth: coverage.map((c) => (c >= 1 ? 0 : 1)),
           })),
-          {
-            type: "line" as const,
-            label: line.label,
-            data: line.values,
-            borderColor: line.color,
-            backgroundColor: line.color,
-            borderWidth: 2,
-            pointRadius: coverage.map((c) => (c >= 1 ? 2 : 4)),
-            // incomplete periods: hollow point, dashed segments, like the paler bars
-            pointBackgroundColor: coverage.map((c) => (c >= 1 ? line.color : "rgba(0,0,0,0)")),
-            segment: {
-              borderDash: (ctx: { p0DataIndex: number; p1DataIndex: number }) =>
-                (coverage[ctx.p0DataIndex] ?? 0) < 1 || (coverage[ctx.p1DataIndex] ?? 0) < 1
-                  ? [5, 4]
-                  : undefined,
-            },
-            spanGaps: false,
-            tension: 0.25,
-          },
+          ...(line
+            ? [
+                {
+                  type: "line" as const,
+                  label: line.label,
+                  data: line.values,
+                  borderColor: line.color,
+                  backgroundColor: line.color,
+                  borderWidth: 2,
+                  pointRadius: coverage.map((c) => (c >= 1 ? 2 : 4)),
+                  // incomplete periods: hollow point, dashed segments, like the paler bars
+                  pointBackgroundColor: coverage.map((c) => (c >= 1 ? line.color : "rgba(0,0,0,0)")),
+                  segment: {
+                    borderDash: (ctx: { p0DataIndex: number; p1DataIndex: number }) =>
+                      (coverage[ctx.p0DataIndex] ?? 0) < 1 || (coverage[ctx.p1DataIndex] ?? 0) < 1
+                        ? [5, 4]
+                        : undefined,
+                  },
+                  spanGaps: false,
+                  tension: 0.25,
+                },
+              ]
+            : []),
         ],
       },
       options: {

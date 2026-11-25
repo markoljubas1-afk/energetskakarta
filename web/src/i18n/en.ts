@@ -543,6 +543,13 @@ export const en: Dictionary = {
   energyRingDescription: "Ring chart of the share of each source in generation for {area}, {period}: {list}.",
   energyRingTotals: "Generated: {total}.",
   energyRingLoad: "Consumption: {load}.",
+  energyGroupsHeading: "Renewable, fossil and nuclear: the last {count} periods",
+  energyGroupsDescription:
+    "Stacked columns of the share of renewable, fossil and nuclear sources, and of storage and other, in generation for {area}, {count} periods up to {period}.",
+  energyGroupRenewable: "Renewable",
+  energyGroupFossil: "Fossil",
+  energyGroupNuclear: "Nuclear",
+  energyGroupOther: "Storage and other",
   energyCompareTitle: "The same month across years",
   energyCompareSource: "Source",
   energyCompareDescription: "One line per year: monthly generation from {tech} for {area}.",

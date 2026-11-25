@@ -247,6 +247,36 @@
   max-width: 100%;
 }
 
+/* the ring and, beside it on a wide screen, the groups over twelve periods (Faza 55-1); below it otherwise */
+.ringSplit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px 28px;
+  align-items: start;
+}
+
+@media (min-width: 1100px) {
+  .ringSplit {
+    grid-template-columns: minmax(0, 720px) minmax(0, 1fr);
+  }
+}
+
+.groups {
+  min-width: 0;
+}
+
+.groupsHeading {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.groupsChart {
+  position: relative;
+  height: 300px;
+}
+
 /* a card's own choice, beside its share menu */
 .inlineSelect {
   display: inline-flex;

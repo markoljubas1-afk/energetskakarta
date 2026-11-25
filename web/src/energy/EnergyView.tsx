@@ -364,6 +364,8 @@ function Content({ dataBaseUrl, pointer, periods, energy, update, theme, embedde
           palette={palette}
           theme={theme}
           kit={kit}
+          ink={ink}
+          grid={grid}
         />
       )}
 
@@ -437,9 +439,63 @@ export function ringPeriod(
   };
 }
 
+/** The groups of sources beside the ring (Faza 55-1); together they are all of generation. */
+export const SOURCE_GROUPS = ["renewable", "fossil", "nuclear", "other"] as const;
+export type SourceGroup = (typeof SOURCE_GROUPS)[number];
+const FOSSIL: readonly Technology[] = ["gas", "coal", "lignite", "oil"];
+
+export const groupOf = (tech: Technology): SourceGroup =>
+  RENEWABLE.includes(tech)
+    ? "renewable"
+    : FOSSIL.includes(tech)
+      ? "fossil"
+      : tech === "nuclear"
+        ? "nuclear"
+        : "other";
+
+/** How many periods the groups chart shows, ending with the ring's own. */
+export const GROUP_PERIODS = 12;
+
+export interface GroupShares {
+  periods: string[];
+  coverage: number[];
+  /** per group, its percentage of each period's generation; null for a period with no generation */
+  shares: Record<SourceGroup, (number | null)[]>;
+}
+
+/** The share of each group in the `count` periods up to `endIndex` of a series, oldest first. */
+export function groupShares(
+  data: EnergySeries,
+  techs: readonly Technology[],
+  endIndex: number,
+  count = GROUP_PERIODS,
+): GroupShares {
+  const from = Math.max(0, endIndex - count + 1);
+  const indices = Array.from({ length: endIndex - from + 1 }, (_, i) => from + i);
+  const shares = Object.fromEntries(SOURCE_GROUPS.map((group) => [group, [] as (number | null)[]])) as Record<
+    SourceGroup,
+    (number | null)[]
+  >;
+  for (const index of indices) {
+    const sums: Record<SourceGroup, number> = { renewable: 0, fossil: 0, nuclear: 0, other: 0 };
+    for (const tech of techs) {
+      const mwh = data.generation[tech]?.[index];
+      if (mwh != null && mwh > 0) sums[groupOf(tech)] += mwh;
+    }
+    const total = SOURCE_GROUPS.reduce((sum, group) => sum + sums[group], 0);
+    for (const group of SOURCE_GROUPS) shares[group].push(total > 0 ? (sums[group] / total) * 100 : null);
+  }
+  return {
+    periods: indices.map((index) => data.periods[index] ?? ""),
+    coverage: indices.map((index) => data.coverage[index] ?? 0),
+    shares,
+  };
+}
+
 /**
  * The share of each source in one month or year, as a ring (Faza 41-2). It opens on the latest period that
- * was reported in full; an incomplete one can be chosen and says that it is incomplete.
+ * was reported in full; an incomplete one can be chosen and says that it is incomplete. Beside it (Faza 55-1),
+ * the renewable, fossil and nuclear shares of the twelve periods up to the chosen one.
  */
 function SourceRing(props: {
   data: EnergySeries;
@@ -449,8 +505,10 @@ function SourceRing(props: {
   palette: (typeof PALETTES)[Theme];
   theme: Theme;
   kit: ShareKit;
+  ink: string;
+  grid: string;
 }) {
-  const { data, techs, areaName, energy, palette, theme, kit } = props;
+  const { data, techs, areaName, energy, palette, theme, kit, ink, grid } = props;
   const i18n = useI18n();
   const { t } = i18n;
   const [chosen, setChosen] = useState<string | null>(null);
@@ -511,16 +569,28 @@ function SourceRing(props: {
       }}
     >
       {energy.show === "chart" ? (
-        <RingChart
-          rows={rows}
-          centre={{ value: i18n.percent(shown.renewableShare), label: t("sourcesRenewable") }}
-          description={t("energyRingDescription", {
-            area: areaName,
-            period: periodName,
-            list: rows.map((row) => `${row.label} ${row.percent}`).join(", "),
-          })}
-          theme={theme}
-        />
+        <div className={styles.ringSplit}>
+          <RingChart
+            rows={rows}
+            centre={{ value: i18n.percent(shown.renewableShare), label: t("sourcesRenewable") }}
+            description={t("energyRingDescription", {
+              area: areaName,
+              period: periodName,
+              list: rows.map((row) => `${row.label} ${row.percent}`).join(", "),
+            })}
+            theme={theme}
+          />
+          <GroupsChart
+            data={data}
+            techs={techs}
+            endIndex={data.periods.indexOf(shown.period)}
+            areaName={areaName}
+            periodName={periodName}
+            palette={palette}
+            ink={ink}
+            grid={grid}
+          />
+        </div>
       ) : (
         <div className={styles.tableWrap}>
           <table className={styles.table}>
@@ -557,6 +627,67 @@ function SourceRing(props: {
           ` ${t("energyIncomplete", { share: i18n.number(shown.coverage * 100) })}.`}
       </p>
     </Card>
+  );
+}
+
+/** The colour of each group: a source of the group in the map's palette, so one colour keeps one meaning. */
+const GROUP_COLOUR: Record<SourceGroup, Technology> = {
+  renewable: "biomass",
+  fossil: "gas",
+  nuclear: "nuclear",
+  other: "other",
+};
+const GROUP_LABEL = {
+  renewable: "energyGroupRenewable",
+  fossil: "energyGroupFossil",
+  nuclear: "energyGroupNuclear",
+  other: "energyGroupOther",
+} as const;
+
+/** 100 % columns of the groups for the periods up to the ring's; a group with nothing in them is left out. */
+function GroupsChart(props: {
+  data: EnergySeries;
+  techs: Technology[];
+  endIndex: number;
+  areaName: string;
+  periodName: string;
+  palette: (typeof PALETTES)[Theme];
+  ink: string;
+  grid: string;
+}) {
+  const { data, techs, endIndex, areaName, periodName, palette, ink, grid } = props;
+  const i18n = useI18n();
+  const { t } = i18n;
+  const groups = useMemo(() => groupShares(data, techs, endIndex), [data, techs, endIndex]);
+  if (endIndex < 0 || groups.periods.length === 0) return null;
+  const count = String(groups.periods.length);
+  const present = SOURCE_GROUPS.filter((group) => groups.shares[group].some((value) => (value ?? 0) > 0));
+  return (
+    <div className={styles.groups}>
+      <h3 className={styles.groupsHeading}>{t("energyGroupsHeading", { count })}</h3>
+      <div className={styles.groupsChart}>
+        <Suspense fallback={<p className={styles.muted}>{t("loadingData")}</p>}>
+          <Charts.Stacked
+            labels={groups.periods.map(i18n.period)}
+            bars={present.map((group) => ({
+              label: t(GROUP_LABEL[group]),
+              color: palette.technology[GROUP_COLOUR[group]],
+              values: groups.shares[group],
+            }))}
+            coverage={groups.coverage}
+            note={(index) => {
+              const share = groups.coverage[index] ?? 0;
+              return share < 1 ? t("energyIncomplete", { share: i18n.number(share * 100) }) : null;
+            }}
+            max={100}
+            format={(value) => `${i18n.number(value)} %`}
+            description={t("energyGroupsDescription", { area: areaName, count, period: periodName })}
+            ink={ink}
+            grid={grid}
+          />
+        </Suspense>
+      </div>
+    </div>
   );
 }
 

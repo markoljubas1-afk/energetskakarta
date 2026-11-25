@@ -3152,3 +3152,14 @@ Isti dijelovi kao u 54-2 (`charts.ts`), tablice ostaju iza „Tablica s brojkama
 - Zelena tranzicija: pločice (udio prema Eurostatu i cilj 2030., udio u proizvodnji struje, CO₂, snaga
   obnovljivih); Eurostatov udio po godinama i udio u proizvodnji po godinama kao stupci; susjedi kao rang-lista.
 - Nema novih brojki: pločice i grafovi prikazuju samo ono što stranica već ima.
+
+## Faza 55 — „Proizvodnja kroz vrijeme”: graf uz pitu; GridAtlas prije Izvještaja — 2026-11-25
+
+Vlasnik: „pored ‚pite’ možemo postaviti još neki grafikon da imamo popunjen prostor? grid atlas kartica, stavio
+bih je prije izvještaja”; izbor grafa: „Obnovljivo kroz 12 mjeseci”.
+
+- [x] 55-1 Kartica „Udio izvora u proizvodnji”: desno od pite složeni stupci od 100 % za 12 razdoblja do
+  odabranog (mjeseci ili godine): obnovljivo, fosilno (plin, ugljen, lignit, nafta), nuklearno, skladištenje i
+  ostalo (reverzibilne, baterije, ostalo). Nepotpuna razdoblja bljeđa, kao na glavnom grafu. Ispod 1100 px graf
+  ide ispod pite. U prikazu „Tablica” se ne crta. `StackedChart` dobiva neobaveznu crtu.
+- [x] 55-2 Zaglavlje karte: „GridAtlas” prije „Izvještaji”.
