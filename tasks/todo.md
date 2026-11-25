@@ -3175,3 +3175,8 @@ bih je prije izvještaja”; izbor grafa: „Obnovljivo kroz 12 mjeseci”.
 - [x] Usput: Markdown inačica nije čitala `<ol>`, pa je „Put struje u četiri koraka” izostajao; sada ide kao
   numerirani popis.
 - Tekst se ne mijenja; Edukacija i O karti jednom dobivaju novi datum izmjene (promijenio se HTML odjeljaka).
+
+### 54-5 Tablice na mobitelu — 2026-11-25 (vlasnik: „može, spoji i kreni s 54-5”)
+
+- [x] Do 640 px: prvi stupac ostaje na mjestu pri vodoravnom pomicanju, sjena na rubu pokazuje da tablica ide
+  dalje, ćelije malo gušće (14 px). Samo CSS (`style.ts`), sadržaj i datumi stranica se ne mijenjaju.
