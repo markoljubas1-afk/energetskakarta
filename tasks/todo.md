@@ -3135,5 +3135,8 @@ Koraci: 54-1 zaglavlje + osnovni izgled (sve stranice) → preview; 54-2 pločic
   - Udio obnovljivih kroz 24 mjeseca do mjeseca izvještaja (nepotpuni mjeseci su praznina, ne nula).
   - Regija: rang-lista s trakom udjela obnovljivih.
 - Stranice izvještaja dobivaju novi datum izmjene jednom (sadržaj se mijenja).
+- [x] 54-2 napravljeno, PR #12, preview provjeren (računalo/mobitel, svijetla/tamna, HR/EN, bez vodoravnog
+  pomicanja); ispravljeno nakon prvih snimki: klasa `now` sudarala se s okvirom „uživo”, dvostruka točka iza
+  hrvatskog mjeseca, preklapanje oznaka mjeseci na mobitelu. Čeka odobrenje vlasnika.
 - Provjera: jedinični testovi (pločice, promjene, praznine, nema `style=`, Markdown bez ostataka), e2e širina,
   snimke na preview adresi; vlasnik odobrava prije spajanja.
