@@ -175,7 +175,7 @@ function page(site: SiteData, doc: Geothermal, lang: Lang): StaticPage {
         description: copy.description,
         inLanguage: lang,
         isAccessibleForFree: true,
-        spatialCoverage: { "@type": "Country", name: i18n.country("HR") },
+        spatialCoverage: { "@type": "Place", name: i18n.country("HR") },
         variableMeasured: [
           { "@type": "PropertyValue", name: "geothermal electric capacity", unitText: "MW" },
           { "@type": "PropertyValue", name: "heat flow", unitText: "mW/m2" },

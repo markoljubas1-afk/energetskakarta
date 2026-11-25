@@ -477,7 +477,7 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
         description: official ? copy.descriptionOfficial : copy.description,
         inLanguage: lang,
         isAccessibleForFree: true,
-        spatialCoverage: { "@type": "Country", name: i18n.country("HR") },
+        spatialCoverage: { "@type": "Place", name: i18n.country("HR") },
         variableMeasured: [...(official ? [copy.variableOfficial] : []), ...copy.variables].map((name) => ({
           "@type": "PropertyValue",
           name,

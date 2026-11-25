@@ -97,6 +97,16 @@ describe("buildPages", () => {
     }
   });
 
+  it("names a data set's area as a Place, the type Google takes for spatialCoverage", () => {
+    const datasets = buildPages(site)
+      .flatMap((page) => page.jsonLd)
+      .filter((each) => each["@type"] === "Dataset" && "spatialCoverage" in each);
+    expect(datasets.length).toBeGreaterThan(0);
+    for (const dataset of datasets) {
+      expect(dataset.spatialCoverage).toMatchObject({ "@type": "Place" });
+    }
+  });
+
   it("fills a country page with the numbers of that country", () => {
     const hr = buildPages(site).find((page) => page.path === "/zemlja/hr/");
     expect(hr?.title).toBe("Hrvatska: elektrane, dalekovodi i trafostanice");

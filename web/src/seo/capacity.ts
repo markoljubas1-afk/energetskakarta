@@ -274,7 +274,7 @@ function overviewPage(
         publisher: publisher(site, i18n),
         dateModified: release.publishedAt,
         temporalCoverage: `${first}/${release.dataDate}`,
-        spatialCoverage: { "@type": "Country", name: i18n.country("HR") },
+        spatialCoverage: { "@type": "Place", name: i18n.country("HR") },
         distribution: [
           {
             "@type": "DataDownload",

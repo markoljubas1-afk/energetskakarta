@@ -359,7 +359,7 @@ function gasPage(site: SiteData, flows: GasFlows, storage: GasStorage | null, la
         isAccessibleForFree: true,
         temporalCoverage: day.day,
         dateModified: flows.generatedAt,
-        spatialCoverage: { "@type": "Country", name: i18n.country(HOME) },
+        spatialCoverage: { "@type": "Place", name: i18n.country(HOME) },
         variableMeasured: copy.variables.map((name) => ({ "@type": "PropertyValue", name })),
         isBasedOn: sources,
         publisher: publisher(site, i18n),

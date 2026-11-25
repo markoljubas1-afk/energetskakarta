@@ -188,7 +188,7 @@ function generationDataset(
     creator: { "@type": "Organization", name: "ENTSO-E", url: "https://www.entsoe.eu/" },
     publisher: publisher(site, createI18n(lang)),
     variableMeasured: ["electricity generation by source (MWh)", "total load (MWh)"],
-    ...(country ? { spatialCoverage: { "@type": "Country", name: country } } : {}),
+    ...(country ? { spatialCoverage: { "@type": "Place", name: country } } : {}),
     ...(site.siteUrl ? { url: site.siteUrl + path } : {}),
   };
 }

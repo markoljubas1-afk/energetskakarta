@@ -119,7 +119,7 @@ export function countryPage(site: SiteData, lang: Lang, code: CountryCode, hubs:
         isAccessibleForFree: true,
         dateModified: site.current.createdAt,
         creator: publisher(site, i18n),
-        spatialCoverage: { "@type": "Country", name },
+        spatialCoverage: { "@type": "Place", name },
         distribution: [
           {
             "@type": "DataDownload",
