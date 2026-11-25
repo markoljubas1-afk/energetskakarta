@@ -3113,5 +3113,10 @@ e2e i SEO testovi koji gledaju markup; 8.400 stranica dobiva novi datum izmjene 
 Provjera: snimke prije/poslije (računalo, mobitel, svijetla i tamna tema) na preview adresi; Lighthouse
 (performanse, pristupačnost, SEO) ne smije pasti; vlasnik odobrava preview prije spajanja.
 
+Skica izvještaja odobrena 2026-11-25 („može, kreni sa zaglavljem i osnovnim izgledom”).
+
+- [x] 54-1 Zaglavlje + osnovni izgled (sve stranice), PR #11, preview provjeren (računalo/mobitel, svijetla/tamna,
+  bez vodoravnog pomicanja, IBM Plex se učitava); čeka odobrenje vlasnika prije spajanja.
+
 Koraci: 54-1 zaglavlje + osnovni izgled (sve stranice) → preview; 54-2 pločice i grafovi na izvještajima;
 54-3 zemlje, plin, tranzicija; 54-4 Edukacija i O karti; 54-5 mobilne tablice.
