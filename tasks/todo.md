@@ -3053,4 +3053,6 @@ Stanje 2026-11-24 (grana `faza-52-krov`, PR #10, main netaknut):
   `RemoteProtocolError` nakon minute). Ćelija Zagreb uživo: jug 30° 99,6 %, JI 30° 94 %, I 30° 81 %, ravni 92,5 %.
 - [x] 52-2 / 52-3 `data/roofPlanes.ts`, `nearestCell` (zajednički s `sunShapeAt`), izbor strane i nagiba ispod
   klizača potrošnje, „Ovaj krov: … % najboljeg krova”, kuća s oblikom dana te ravnine; jedinični + e2e testovi.
-- [ ] 52-4 Podaci na R2 (run solar-home, part planes), pregled na preview adresi, odobrenje vlasnika, spajanje.
+- [x] 52-4 Podaci na R2 (run solar-home part planes, 2026-11-24, uspješan; ćelije na moru bez datoteke), pregled
+  na preview adresi provjeren s pravim podacima (Zagreb: jug 30° 99,5 %, istok 30° 80 % najboljeg), vlasnik
+  odobrio smještaj ispod klizača 2026-11-25 („dobro je ovako idemo deploy”), spojeno na main.
