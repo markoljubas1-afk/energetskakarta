@@ -503,3 +503,8 @@
   uzrok, odbijanje na IPv4, ostao skriven. Čekanja i ponavljanja ne pomažu kad poslužitelj odbija adresu.
 - Rule going forward: kad dohvat s vanjskog izvora padne više puta zaredom, prije novog pokušaja ispisati
   što se vidi po protokolu i adresi; poruku transportne greške ne uzimati kao uzrok dok to nije potvrđeno.
+
+### L-083 — Objava pala na Prettieru nakon izmjene teksta sedom (2026-11-25)
+- What happened: rečenica o licenci dodana je u `geothermal.ts` naredbom `sed`; lokalno su prošli testovi, tipovi i lint, ali CI `npm run check` pao je na `prettier --check` (predugi red), pa se objava nije dogodila.
+- Root cause: prije pusha nisam pokrenuo Prettier; lokalni `prettier --check .` uz to javlja i datoteke koje se razlikuju samo po CRLF-u, pa nije jasan signal.
+- Rule going forward: prije pusha na main pokrenuti `npx prettier --check <izmijenjene datoteke>` (ili `--write` na njima), uz testove, `tsc` i lint.
