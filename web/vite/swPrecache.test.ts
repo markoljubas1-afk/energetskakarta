@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { precacheList, type BundleItem } from "./swPrecache";
+import { importsAChunk, precacheList, type BundleItem } from "./swPrecache";
 
 const chunk = (
   fileName: string,
@@ -56,5 +56,15 @@ describe("what the service worker keeps at install (Faza 59)", () => {
         "/assets/maplibre-gl-worker-i9.js",
       ].sort(),
     );
+  });
+});
+
+describe("the worker stands alone (Faza 59)", () => {
+  it("is caught when the build made it import a chunk shared with the page", () => {
+    expect(importsAChunk('import{t as e}from"./assets/dataSource-x.js";function t(){}')).toBe(true);
+    expect(importsAChunk('var a=1;import*as b from"./c.js"')).toBe(true);
+    expect(
+      importsAChunk("function t(e){return e.method!==`GET`}var r=self;r.addEventListener(`install`,()=>{})"),
+    ).toBe(false);
   });
 });
