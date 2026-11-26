@@ -20,6 +20,12 @@ describe("tooltipFor", () => {
     expect(tooltipFor(plant, en).detail).toBe("Hydro · 276 MW");
   });
 
+  it("says a plant known by GEM's English name in Croatian, and leaves it as it is in English", () => {
+    const plant = selection("plants", { name: "Apelovac solar farm", technology: "solar", capacityMw: 9 });
+    expect(tooltipFor(plant, i18n).title).toBe("Sunčana elektrana Apelovac");
+    expect(tooltipFor(plant, en).title).toBe("Apelovac solar farm");
+  });
+
   it("says when a plant record is a new part of a running plant, which the source names alike", () => {
     const props = { name: "NE Primjer", technology: "nuclear", expansionOf: "osm:way/2" };
     expect(tooltipFor(selection("plants", { ...props, status: "planned" }), i18n).title).toBe(

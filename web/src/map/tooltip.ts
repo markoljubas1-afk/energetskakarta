@@ -59,7 +59,7 @@ export function tooltipFor(selection: Selection, i18n: I18n): Tooltip {
       return { title: selection.name ?? kind, detail: join(kind, kv(i18n, selection.voltagesKv), status) };
     case "plant": {
       const note = expansionNote(selection, i18n.t);
-      const name = selection.name ?? kind;
+      const name = selection.name ? i18n.plantName(selection.name, selection.technology) : kind;
       return {
         title: note ? `${name} (${note})` : name,
         detail: join(

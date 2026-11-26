@@ -26,9 +26,13 @@ export function SearchBox({ indexUrl, onPick }: Props) {
   const hits = useMemo(() => (index?.status === "ready" ? search(index.value, query) : []), [index, query]);
   const showList = open && query.trim().length >= 2;
 
+  // a plant known only by GEM's English name reads in the page's language (i18n/plantName.ts)
+  const shownName = (hit: SearchHit): string =>
+    hit.kind === "plant" ? i18n.plantName(hit.name, hit.technology) : hit.name;
+
   const pick = (hit: SearchHit): void => {
     onPick(hit);
-    setQuery(hit.name);
+    setQuery(shownName(hit));
     setOpen(false);
   };
 
@@ -134,7 +138,7 @@ export function SearchBox({ indexUrl, onPick }: Props) {
               setActive(i);
             }}
           >
-            <span className={styles.name}>{hit.name}</span>
+            <span className={styles.name}>{shownName(hit)}</span>
             <span className={styles.meta}>{describe(hit)}</span>
           </li>
         ))}

@@ -137,6 +137,31 @@ describe("topic pages", () => {
     expect(substations.sections[0]?.html).not.toContain('<div class="ranking">');
   });
 
+  it("say a plant known by GEM's English name in Croatian on the Croatian pages, as the source on the English", () => {
+    const gem: SiteData = {
+      ...site,
+      index: {
+        ...index,
+        rows: [
+          ...index.rows,
+          ["gem:L9:operating", "Senj II hydroelectric plant", "plants", "HR", 15, 45, "hydro|412"],
+        ],
+      },
+    };
+    const hr = page("/zemlja/hr/hidroelektrane/", gem);
+    expect(hr.sections[0]?.html).toContain(">Hidroelektrana Senj II</a>");
+    expect(hr.sections[0]?.html).not.toContain("hydroelectric plant");
+    expect(page("/en/country/hr/hydropower-plants/", gem).sections[0]?.html).toContain(
+      ">Senj II hydroelectric plant</a>",
+    );
+    const asset = page("/objekt/gem-L9-operating/", gem);
+    expect(asset.heading).toBe("Hidroelektrana Senj II");
+    expect(asset.jsonLd[0]).toMatchObject({
+      name: "Hidroelektrana Senj II",
+      alternateName: "Senj II hydroelectric plant",
+    });
+  });
+
   it("say when the list is cut at the row limit", () => {
     const many: SiteData = {
       ...site,

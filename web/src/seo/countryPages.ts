@@ -6,7 +6,7 @@ import { summarize } from "../data/stats";
 import { type CountryCode, SCOPE_COUNTRIES } from "../domain";
 import { createI18n, type I18n } from "../i18n";
 import type { Lang } from "../state/url";
-import { hubKeyOf, pageWorthy } from "./assetPages";
+import { displayName, hubKeyOf, pageWorthy } from "./assetPages";
 import { COPY, type HubKey } from "./copy";
 import { counted, definitions, e, type Forms, linkedTable, list, table } from "./markup";
 import {
@@ -274,9 +274,8 @@ function byWeight(a: SearchHit, b: SearchHit): number {
 
 /** A name cell: linked to the asset's own page when it has one, plain text otherwise. */
 function nameCell(hit: SearchHit, lang: Lang): string {
-  return pageWorthy(hit)
-    ? `<a href="${PATHS[lang].asset(assetSlug(hit.id))}">${e(hit.name)}</a>`
-    : e(hit.name);
+  const name = displayName(hit, createI18n(lang));
+  return pageWorthy(hit) ? `<a href="${PATHS[lang].asset(assetSlug(hit.id))}">${e(name)}</a>` : e(name);
 }
 
 function hubRows(
@@ -345,7 +344,7 @@ function hubFigures(
     const [value, unit] = splitUnit(i18n.power(total));
     tiles.push({ label: words.total, value, unit });
     const [big, bigUnit] = splitUnit(i18n.power(largest.mw));
-    tiles.push({ label: words.largest, value: big, unit: bigUnit, note: largest.hit.name });
+    tiles.push({ label: words.largest, value: big, unit: bigUnit, note: displayName(largest.hit, i18n) });
   }
   const ranked = withPower.slice(0, RANKED);
   const ranking =
@@ -424,7 +423,7 @@ export function hubPage(
         itemListElement: shown.slice(0, 100).map((hit, index) => ({
           "@type": "ListItem",
           position: index + 1,
-          name: hit.name,
+          name: displayName(hit, i18n),
           ...(pageWorthy(hit) && absolute(site, PATHS[lang].asset(assetSlug(hit.id)))
             ? { url: absolute(site, PATHS[lang].asset(assetSlug(hit.id))) }
             : {}),
@@ -485,7 +484,7 @@ export function largestPage(site: SiteData, lang: Lang): StaticPage {
         itemListElement: plants.map((hit, index) => ({
           "@type": "ListItem",
           position: index + 1,
-          name: hit.name,
+          name: displayName(hit, i18n),
           ...(absolute(site, PATHS[lang].asset(assetSlug(hit.id)))
             ? { url: absolute(site, PATHS[lang].asset(assetSlug(hit.id))) }
             : {}),

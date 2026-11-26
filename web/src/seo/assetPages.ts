@@ -32,6 +32,14 @@ import {
 } from "./site";
 
 /** The assets that earn a page of their own: large enough to be looked up by name. */
+/**
+ * An asset's name as the page's language says it: a plant known only by GEM's English name ("Apelovac solar
+ * farm") reads "Sunčana elektrana Apelovac" on the Croatian pages (i18n/plantName.ts); every other name as it is.
+ */
+export function displayName(hit: SearchHit, i18n: I18n): string {
+  return hit.kind === "plant" ? i18n.plantName(hit.name, hit.technology) : hit.name;
+}
+
 export function pageWorthy(hit: SearchHit): boolean {
   if (hit.kind === "plant") return (hit.capacityMw ?? 0) >= ASSET_PAGE_MIN_MW;
   if (hit.kind === "substation") return (hit.maxVoltageKv ?? 0) >= ASSET_PAGE_MIN_KV;
@@ -170,7 +178,8 @@ export function assetPage(
   const kv = (value: number): string => `${i18n.number(value)} ${i18n.t("unitKv")}`;
   // a new part of a running plant carries the plant's own name in the source: the page says which it is
   const expansion = hit.kind === "plant" && hit.expansion ? i18n.t(`expansion_${hit.expansion}`) : null;
-  const named = expansion ? `${hit.name} (${expansion})` : hit.name;
+  const own = displayName(hit, i18n);
+  const named = expansion ? `${own} (${expansion})` : own;
   const detail =
     hit.kind === "plant"
       ? [
@@ -241,7 +250,7 @@ export function assetPage(
   const title =
     hit.kind === "city"
       ? copy.asset.cityTitle(hit.name, country)
-      : copy.asset.title(hit.name, singularKind(hit, lang, i18n), keyFigure(hit, i18n), country);
+      : copy.asset.title(own, singularKind(hit, lang, i18n), keyFigure(hit, i18n), country);
   const breadcrumbs: Crumb[] = [
     home(lang),
     ...(hit.kind === "city" && site.cities ? [{ name: copy.cities.title, path: PATHS[lang].cities }] : []),
@@ -253,7 +262,7 @@ export function assetPage(
     lang,
     alternatePath: PATHS[other(lang)].asset(slug),
     title,
-    description: copy.asset.description(kind, hit.name, detailText, country),
+    description: copy.asset.description(kind, own, detailText, country),
     heading: named,
     lead: `<p>${e(kind)}${detailText ? ` · ${e(detailText)}` : ""}${country ? ` · ${e(country)}` : ""}</p>${extras.lead}`,
     sections: [
@@ -277,8 +286,10 @@ export function assetPage(
       {
         "@context": "https://schema.org",
         "@type": "Place",
-        name: hit.name,
-        description: copy.asset.description(kind, hit.name, detailText, country),
+        name: own,
+        // the name the source gives, when the page says it in its own language
+        ...(own !== hit.name ? { alternateName: hit.name } : {}),
+        description: copy.asset.description(kind, own, detailText, country),
         geo: { "@type": "GeoCoordinates", latitude: hit.lat, longitude: hit.lon },
         ...(country ? { address: { "@type": "PostalAddress", addressCountry: hit.country } } : {}),
         additionalProperty: [
