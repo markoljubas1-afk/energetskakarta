@@ -38,6 +38,7 @@ import { reportFeedEntries } from "./report";
 import { homeHtml } from "./home";
 import { llmsFull, markdownPath, pageMarkdown } from "./markdown";
 import { renderNotFound, renderPage } from "./html";
+import { movedPages, redirectsFile, type Moved } from "./moved";
 import { isValidKey, keyFileName } from "./indexnow";
 import { APP_FILE_ALLOWANCE, PAGES_FILE_LIMIT, type SiteData, type StaticPage } from "./site";
 import { buildPages } from "./pages";
@@ -228,6 +229,8 @@ export interface SeoManifest {
   /** the day of this release: a page whose lastmod is this day changed in it (IndexNow announces those, 58-B) */
   releasedOn?: string;
   pages: Record<string, { hash: string; lastmod: string }>;
+  /** pages that moved, old path → new path, carried to the next release (moved.ts) */
+  moved?: Moved;
 }
 
 /** What a page says, without the date of the data release (which changes with every build). */
@@ -281,12 +284,19 @@ export function parseSeoManifest(body: unknown): SeoManifest | null {
       valid[key] = { hash: entry.hash, lastmod: entry.lastmod };
     }
   }
-  const { releasedOn } = body as Record<string, unknown>;
+  const { releasedOn, moved } = body as Record<string, unknown>;
+  const redirects: Moved = {};
+  if (typeof moved === "object" && moved !== null) {
+    for (const [from, to] of Object.entries(moved as Record<string, unknown>)) {
+      if (from.startsWith("/") && typeof to === "string" && to.startsWith("/")) redirects[from] = to;
+    }
+  }
   return {
     version: 1,
     buildId,
     ...(typeof releasedOn === "string" && /^\d{4}-\d{2}-\d{2}$/.test(releasedOn) ? { releasedOn } : {}),
     pages: valid,
+    ...(Object.keys(redirects).length > 0 ? { moved: redirects } : {}),
   };
 }
 
@@ -345,6 +355,16 @@ export function staticFiles(
   files.set("404.html", renderNotFound(site));
   files.set("robots.txt", robotsTxt(site.siteUrl));
   files.set("llms.txt", llmsTxt(site));
+  // a merged GEM record's page sends its visitors on to the plant it is now part of (provjera spajanja)
+  const moved = movedPages(
+    site.records ?? new Map(),
+    new Set(pages.map((p) => p.path)),
+    options.previous ?? null,
+  );
+  if (Object.keys(moved).length > 0) {
+    files.set("_redirects", redirectsFile(moved));
+    manifest.moved = moved;
+  }
   files.set(SEO_MANIFEST, JSON.stringify(manifest));
   const lastmods = new Map(Object.entries(manifest.pages).map(([key, entry]) => [key, entry.lastmod]));
   if (site.siteUrl) {

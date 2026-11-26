@@ -4,6 +4,7 @@ import type { Current } from "../data/current";
 import type { SearchIndex } from "../data/search";
 import { NEARBY } from "./assetFacts";
 import { buildPages, type SiteData, type StaticPage } from "./pages";
+import { parseSeoManifest, SEO_MANIFEST, staticFiles } from "./prerender";
 import { MAX_BROKEN_SHARE, parseRecords, wikipediaUrl, type AssetRecord } from "./records";
 import { SAMPLE_CURRENT } from "./site.fixture";
 
@@ -52,8 +53,13 @@ describe("parseRecords", () => {
       wikidata: "Q12345",
       wikipedia: "hr:HE Velika",
       sources: [
-        { source: "openstreetmap", license: "ODbL-1.0", url: null },
-        { source: "gem", license: "CC-BY-4.0", url: "https://www.gem.wiki/HE_Velika" },
+        { source: "openstreetmap", sourceId: "way/2", license: "ODbL-1.0", url: null },
+        {
+          source: "gem",
+          sourceId: "L100000000002",
+          license: "CC-BY-4.0",
+          url: "https://www.gem.wiki/HE_Velika",
+        },
       ],
     } satisfies AssetRecord);
   });
@@ -126,8 +132,13 @@ const site: SiteData = {
         wikidata: "Q12345",
         wikipedia: "hr:HE Velika",
         sources: [
-          { source: "openstreetmap", license: "ODbL-1.0", url: null },
-          { source: "gem", license: "CC-BY-4.0", url: "https://www.gem.wiki/HE_Velika" },
+          { source: "openstreetmap", sourceId: "way/2", license: "ODbL-1.0", url: null },
+          {
+            source: "gem",
+            sourceId: "L100000000002",
+            license: "CC-BY-4.0",
+            url: "https://www.gem.wiki/HE_Velika",
+          },
         ],
       },
     ],
@@ -219,5 +230,37 @@ describe("asset pages with the complete record", () => {
     expect(near).toContain('<a href="/objekt/osm-way-3/">HE Mala</a> (elektrana, 1,4 km)');
     expect(near).not.toContain("Baterija");
     expect((near.match(/<li>/g) ?? []).length).toBeLessThanOrEqual(NEARBY);
+  });
+});
+
+describe("a GEM record merged into an OSM plant (provjera spajanja)", () => {
+  // HE Velika (osm:way/2) carries GEM's L100000000002, which had a page of its own before the merge
+  const previous = {
+    version: 1 as const,
+    buildId: "before",
+    pages: {
+      "/objekt/gem-L100000000002/": { hash: "h", lastmod: "2026-11-23" },
+      "/en/asset/gem-L100000000002/": { hash: "h", lastmod: "2026-11-23" },
+    },
+  };
+
+  it("sends the old page on to the plant's and remembers it for the next release", () => {
+    const files = staticFiles(site, undefined, { previous });
+    expect(files.get("_redirects")).toBe(
+      [
+        "/en/asset/gem-L100000000002/ /en/asset/osm-way-2/ 301",
+        "/objekt/gem-L100000000002/ /objekt/osm-way-2/ 301",
+        "",
+      ].join("\n"),
+    );
+    const manifest = parseSeoManifest(JSON.parse(files.get(SEO_MANIFEST) ?? "null"));
+    expect(manifest?.moved?.["/objekt/gem-L100000000002/"]).toBe("/objekt/osm-way-2/");
+    // a later release still redirects, from the manifest alone
+    const later = staticFiles(site, undefined, { previous: manifest });
+    expect(later.get("_redirects")).toContain("/objekt/gem-L100000000002/ /objekt/osm-way-2/ 301");
+  });
+
+  it("writes no _redirects when nothing moved", () => {
+    expect(staticFiles(site).has("_redirects")).toBe(false);
   });
 });

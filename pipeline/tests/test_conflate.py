@@ -208,3 +208,70 @@ def test_the_search_index_tells_an_expansion_from_the_plant_it_extends(index: Co
 
     details = {row[0]: row[6] for row in search_index(result.plants.values(), [])["rows"]}
     assert details == {"osm:way/1": "nuclear|700", "gem:L100000000007:planned": "nuclear|1100|planned"}
+
+
+def test_a_plant_on_the_same_spot_with_the_same_capacity_matches_whatever_its_name() -> None:
+    # Paks: GEM "Paks nuclear power plant" 2027 MW, OSM "Paksi Atomerőmű" 2000 MW, 0.35 km apart
+    plant = osm("osm:way/5", 16.0, 45.5, name="Paksi Atomerőmű", tech=Technology.NUCLEAR, mw=2000)
+    paks = gem(5, 16.0 + 0.35 * KM, 45.5, name="Paks", tech=Technology.NUCLEAR, mw=2027)
+    candidate = evaluate(plant, paks)
+    assert candidate is not None and candidate.accepted and candidate.by_capacity
+    # a name match always ranks above a match by capacity alone
+    named = evaluate(osm("osm:way/6", 16.0, 45.5, name="Paks", tech=Technology.NUCLEAR, mw=500), paks)
+    assert named is not None and named.accepted and not named.by_capacity
+    assert named.score > candidate.score
+
+
+@pytest.mark.parametrize(
+    ("km", "osm_mw", "gem_mw", "status", "tech"),
+    [(0.7, 2000, 2027, Status.OPERATING, Technology.NUCLEAR),  # beyond the same spot
+     (0.1, 1500, 2027, Status.OPERATING, Technology.NUCLEAR),  # capacities differ by more than 10 %
+     (0.1, None, 2027, Status.OPERATING, Technology.NUCLEAR),  # one capacity unknown
+     (0.1, 2000, 2027, Status.PLANNED, Technology.NUCLEAR),  # statuses differ
+     (0.1, 2000, 2027, Status.OPERATING, Technology.OTHER)],  # technology unknown
+)  # fmt: skip
+def test_capacity_alone_needs_the_same_spot_capacity_status_and_family(
+    km: float, osm_mw: float | None, gem_mw: float, status: Status, tech: Technology
+) -> None:
+    plant = osm("osm:way/5", 16.0, 45.5, name="Paksi Atomerőmű", tech=tech, mw=osm_mw, status=status)
+    candidate = evaluate(plant, gem(5, 16.0 + km * KM, 45.5, name="Paks", tech=Technology.NUCLEAR, mw=gem_mw))
+    assert candidate is None or not candidate.accepted
+
+
+def test_a_match_by_capacity_merges_and_is_counted(index: CountryIndex) -> None:
+    plants = {"osm:way/7": osm("osm:way/7", 16.0, 45.5, name="Hidroelektrana Piva", mw=342)}
+    mratinje = gem(7, 16.0 + 0.07 * KM, 45.5, name="Mratinje hydroelectric plant", mw=342)
+    result = conflate(plants, [mratinje], index=index, scope=SCOPE, retrieved_at=NOW)
+    assert [p.source for p in result.plants["osm:way/7"].provenance] == ["openstreetmap", "gem"]
+    assert "gem:L100000000007:operating" not in result.plants
+    assert result.stats["matched_by_capacity"] == 1
+
+
+def test_two_neighbouring_parks_of_the_same_size_are_left_for_review(index: CountryIndex) -> None:
+    # two solar parks of ~5 MW side by side: capacity and position cannot tell which GEM record is which
+    plants = {
+        "osm:way/8": osm("osm:way/8", 16.0, 45.5, name="SE Brdo", tech=Technology.SOLAR, mw=5.0),
+        "osm:way/9": osm("osm:way/9", 16.0 + 0.3 * KM, 45.5, name="SE Polje", tech=Technology.SOLAR, mw=5.2),
+    }
+    county = gem(8, 16.0 + 0.15 * KM, 45.5, name="Zadar County solar I", tech=Technology.SOLAR, mw=5.1)
+    result = conflate(plants, [county], index=index, scope=SCOPE, retrieved_at=NOW)
+    assert "gem:L100000000008:operating" in result.plants
+    assert {c.osm_id for c in result.review} == {"osm:way/8", "osm:way/9"}
+    assert result.stats["matched_by_capacity"] == 0
+
+    # the same from the other side: one OSM park, two GEM records that both fit
+    one = {"osm:way/8": plants["osm:way/8"]}
+    other = gem(9, 16.0 - 0.15 * KM, 45.5, name="Zadar County solar II", tech=Technology.SOLAR, mw=4.9)
+    result = conflate(one, [county, other], index=index, scope=SCOPE, retrieved_at=NOW)
+    assert result.plants["osm:way/8"].provenance[-1].source == "openstreetmap"
+    assert result.stats["matched_by_capacity"] == 0
+
+
+def test_a_name_match_takes_its_plant_before_a_match_by_capacity_can(index: CountryIndex) -> None:
+    # the OSM plant goes to the GEM record that names it; the other, matching only by capacity, stays apart
+    plants = {"osm:way/10": osm("osm:way/10", 16.0, 45.5, name="HE Primjer", mw=100)}
+    named = gem(10, 16.0 + 0.4 * KM, 45.5, name="Primjer", mw=100)
+    sized = gem(11, 16.0 + 0.05 * KM, 45.5, name="Nesto drugo", mw=100)
+    result = conflate(plants, [sized, named], index=index, scope=SCOPE, retrieved_at=NOW)
+    assert result.plants["osm:way/10"].provenance[1].source_id == "L100000000010:operating"
+    assert "gem:L100000000011:operating" in result.plants

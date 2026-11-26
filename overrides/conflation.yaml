@@ -6,7 +6,17 @@
 #
 # Candidates worth a decision are listed in builds/<id>/conflation.json under "review".
 
-force: []
+force:
+  # the same plant just outside the automatic rules (provjera spajanja, 2026-11-26): same capacity, a
+  # different name, a little farther than 0.5 km, or (Jablanica) GEM at the dam and OSM at the powerhouse
+  - osm: osm:way/1290371943 # Powerhouse HE Jablanica, 180 MW, 4.3 km
+    gem: L100000600199:operating # Jablanica hydroelectric plant, 180 MW
+  - osm: osm:way/941164389 # Centrale Sarlux, 590 MW, 0.55 km
+    gem: L100000408790:operating # Sarroch power station, 636 MW
+  - osm: osm:way/146016366 # Thermisches Kraftwerk Laakirchen CMOÖ, 61 MW, 0.57 km
+    gem: L100000400002:operating # Laakirchen Paper Mill power station, 60 MW
+  - osm: osm:way/1093758738 # Beleolico, 30 MW, 1.6 km
+    gem: L100000913380:operating # Taranto Offshore wind farm, 30 MW
 #  - osm: osm:way/123456
 #    gem: L100000123456:operating
 

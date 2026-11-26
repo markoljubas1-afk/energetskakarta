@@ -177,6 +177,11 @@
     <nd ref="30"/><nd ref="31"/>
     <tag k="highway" v="primary"/>
   </way>
+  <!-- 302: an open tunnel used as the "outer" ring of relation 202, which cannot close (HE Dubrovnik) -->
+  <way id="302" version="1">
+    <nd ref="21"/><nd ref="22"/><nd ref="23"/>
+    <tag k="waterway" v="canal"/><tag k="tunnel" v="flooded"/>
+  </way>
   <relation id="200" version="1">
     <member type="way" ref="110" role="outer"/>
     <tag k="type" v="multipolygon"/><tag k="power" v="plant"/><tag k="plant:source" v="wind"/><tag k="plant:output:electricity" v="1.2 GW"/><tag k="name" v="VE Relacija"/>
@@ -184,5 +189,9 @@
   <relation id="201" version="1">
     <member type="node" ref="63" role=""/>
     <tag k="type" v="site"/><tag k="power" v="plant"/><tag k="name" v="Site relation"/>
+  </relation>
+  <relation id="202" version="1">
+    <member type="way" ref="302" role="outer"/>
+    <tag k="type" v="multipolygon"/><tag k="power" v="plant"/><tag k="plant:source" v="hydro"/><tag k="name" v="HE Tunel"/>
   </relation>
 </osm>
