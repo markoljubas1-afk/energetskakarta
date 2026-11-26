@@ -3363,6 +3363,9 @@ Izmjereno na produkciji 2026-11-26 (Plomin iz poveznice, traka uživo otvorena, 
 - Rizici: `:has` nema u starim preglednicima (Firefox < 121): ondje ostaje današnje preklapanje, ništa ne puca.
 - Provjera: e2e `layout.spec.ts` na 800 px (detalji ne preklapaju traku ni legendu, filtri skriveni) i zaglavlje
   bez preklapanja na 1200/1280/1400 px; preview 760/800/900/1000/1100/1280 px.
+- [x] PR #22, preview provjeren 2026-11-26 (Plomin iz poveznice, traka uživo): 760–1000 px detalji lijevo na
+  mjestu filtara, filtri skriveni, traka uživo i „Legenda” slobodni; 1100 i 1280 px traka završava prije detalja,
+  detalji iznad legende; ime u zaglavlju nigdje pod tražilicom. Spojeno uz odobrenje vlasnika.
 
 #### 57-C2 mobitel i ugradnja (sljedeći PR)
 - [ ] Legenda na mobitelu i u ugradnji (gumb „Legenda”).
