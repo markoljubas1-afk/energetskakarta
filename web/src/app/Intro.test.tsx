@@ -20,6 +20,13 @@ describe("Intro", () => {
     expect(onSkip).toHaveBeenCalledTimes(3);
   });
 
+  it("skips when a finger drags across it, which never becomes a click (Faza 56, 4.4f)", () => {
+    const onSkip = vi.fn();
+    renderWithI18n(<Intro mode="full" phase="play" onSkip={onSkip} />);
+    fireEvent.touchMove(window);
+    expect(onSkip).toHaveBeenCalledOnce();
+  });
+
   it("lets Tab move focus without skipping", () => {
     const onSkip = vi.fn();
     renderWithI18n(<Intro mode="full" phase="play" onSkip={onSkip} />);
@@ -32,6 +39,7 @@ describe("Intro", () => {
     const onSkip = vi.fn();
     renderWithI18n(<Intro mode="still" phase="handoff" onSkip={onSkip} />);
     fireEvent.keyDown(window, { key: "Escape" });
+    fireEvent.touchMove(window);
     expect(onSkip).not.toHaveBeenCalled();
   });
 });

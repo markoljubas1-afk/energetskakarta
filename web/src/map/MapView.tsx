@@ -55,7 +55,14 @@ import { firstViewBounds } from "./firstView";
 import { BREATH_EVERY_MS, BREATH_FADE_MS, BREATH_STEP_MS, breathes, breathPeak } from "./glowBreath";
 import type { Spotlight } from "./spotlight";
 import { inView, sameInView, NOTHING_IN_VIEW, type InView } from "./inView";
-import { flightPlan, INTRO_STAGE_AT, SETTLE_DELAY_MS, type Camera, type Flight } from "./introFlight";
+import {
+  flightPlan,
+  INTRO_STAGE_AT,
+  introEnd,
+  SETTLE_DELAY_MS,
+  type Camera,
+  type Flight,
+} from "./introFlight";
 import { INTRO_SETTLE, introLayers, introStyle, type IntroStage } from "./introStyle";
 import { pulseWidth, SELECTION_PULSE_MS } from "./selectionPulse";
 import { PALETTES, type Theme } from "./palette";
@@ -272,6 +279,8 @@ export function MapView(props: Props) {
   const introReadyRef = useRef(false);
   // where the intro lands, known as soon as the map exists (the plan reaches the style once it has loaded)
   const introFinalRef = useRef<Camera | null>(null);
+  // the flight reached the landing on its own: the end of the intro leaves the camera to the reader
+  const introLandedRef = useRef(false);
   const [flight, setFlight] = useState<{ plan: Flight } | null>(null);
   const [introStage, setIntroStage] = useState<IntroStage>(0);
   const stage: IntroStage | null = intro === null ? null : introStage;
@@ -742,6 +751,7 @@ export function MapView(props: Props) {
         await fly(leg, index === 0);
         if (cancelled) return;
       }
+      introLandedRef.current = true;
       timers.push(
         window.setTimeout(() => {
           setIntroStage(INTRO_SETTLE);
@@ -758,16 +768,30 @@ export function MapView(props: Props) {
     };
   }, [intro, flight]);
 
-  // The intro ends (done, skipped, or given up on): the camera is put on the usual first view if it is not
-  // there yet, the limits come back, and the next style is the ordinary one.
+  // The intro ends (done, skipped, or given up on): a flight cut short is put on the usual first view, one
+  // that landed is left to the reader (introEnd), the limits come back, and the next style is the ordinary one.
   useEffect(() => {
     const map = mapRef.current;
     if (intro !== null || !map || !introActiveRef.current) return;
-    map.stop();
-    if (introFinalRef.current) map.jumpTo(introFinalRef.current);
+    const [lng, lat] = map.getCenter().toArray();
+    const now: Camera = {
+      center: [lng, lat],
+      zoom: map.getZoom(),
+      pitch: map.getPitch(),
+      bearing: map.getBearing(),
+    };
+    const end = introEnd(introLandedRef.current, introFinalRef.current, now);
+    if (end.jumpTo) {
+      map.stop();
+      map.jumpTo(end.jumpTo);
+    }
     map.setMaxBounds(regionMaxBounds(regionBounds));
     map.setMinZoom(MIN_ZOOM);
     introActiveRef.current = false;
+    if (end.moved) {
+      const center = map.getCenter();
+      callbacks.current.onViewChange({ lng: center.lng, lat: center.lat, zoom: map.getZoom() });
+    }
   }, [intro, regionBounds]);
 
   // One code path for every change: MapLibre diffs the style and only applies what changed.

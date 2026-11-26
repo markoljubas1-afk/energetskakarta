@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { flightPlan, INTRO_STAGE_AT } from "./introFlight";
+import { flightPlan, INTRO_STAGE_AT, introEnd, type Camera } from "./introFlight";
 
 const final = { center: [16.2, 44.6] as [number, number], zoom: 5.6 };
 
@@ -40,5 +40,21 @@ describe("the intro's flight", () => {
   it("lights the grid up in stages, in order, within the flight", () => {
     expect([...INTRO_STAGE_AT]).toEqual([...INTRO_STAGE_AT].sort((a, b) => a - b));
     expect(INTRO_STAGE_AT.every((share) => share >= 0 && share < 1)).toBe(true);
+  });
+});
+
+describe("the end of the intro (Faza 56, 4.4f)", () => {
+  const landing: Camera = { center: [16.2, 44.6], zoom: 5.6, pitch: 0, bearing: 0 };
+
+  it("puts the camera on the first view when the flight did not get there (skipped, given up)", () => {
+    const halfway: Camera = { center: [10, 40], zoom: 2, pitch: 40, bearing: 0 };
+    expect(introEnd(false, landing, halfway)).toEqual({ jumpTo: landing, moved: false });
+  });
+
+  it("leaves a camera that landed alone, so a pan made while the title fades is not undone", () => {
+    expect(introEnd(true, landing, landing)).toEqual({ jumpTo: null, moved: false });
+    const panned: Camera = { ...landing, center: [16.9, 45.1] };
+    expect(introEnd(true, landing, panned)).toEqual({ jumpTo: null, moved: true });
+    expect(introEnd(true, landing, { ...landing, zoom: 6.4 })).toEqual({ jumpTo: null, moved: true });
   });
 });

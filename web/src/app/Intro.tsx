@@ -1,7 +1,8 @@
 /**
  * The intro's overlay (Faza 22): the title over the night while the map loads, then over the map as it flies
- * in. A click, a key or the wheel skips it; Tab still moves focus, so the skip button can be reached. A
- * click rather than a press: the whole click lands on the overlay, never on the map beneath it.
+ * in. A click, a key, the wheel or a finger dragging across it skips it; Tab still moves focus, so the skip
+ * button can be reached. A click rather than a press: the whole click lands on the overlay, never on the map
+ * beneath it. A drag never becomes a click, so on a touch screen the first move of the finger skips.
  */
 import { useEffect } from "react";
 
@@ -35,9 +36,11 @@ export function Intro({ mode, phase, onSkip }: Props) {
     };
     window.addEventListener("keydown", onKey);
     window.addEventListener("wheel", onSkip, { passive: true });
+    window.addEventListener("touchmove", onSkip, { passive: true });
     return () => {
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("wheel", onSkip);
+      window.removeEventListener("touchmove", onSkip);
     };
   }, [phase, onSkip]);
 

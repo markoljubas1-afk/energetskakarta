@@ -3238,3 +3238,23 @@ Provjera 2026-11-25: nijedan nalaz serije 4 nije bio ispravljen (dokazi u kodu, 
   Fokus: naslov panela nakon odabira iz tražilice, Escape vraća fokus u tražilicu. Čeka odobrenje vlasnika.
 
 ### 56-C povijest i uvod (4.4c „Natrag” zatvara panel / vraća prethodni objekt — odobreno; 4.4f) — nakon 56-B
+2026-11-26 (vlasnik: „može, spoji i kreni s 56-C”). PR #17 spojen.
+- [x] 4.4c „Natrag” u pregledniku: odabir novog objekta (`sel=` se mijenja u drugi objekt) dodaje unos u povijest
+  (`pushState`), sve ostalo i dalje zamjenjuje trenutni (`replaceState`: pomak karte, filtri, slojevi, zatvaranje
+  panela). Natrag tako zatvara panel ili vraća prethodni objekt, a tek onda izlazi sa stranice. Bez novih unosa u
+  ugradnji (`embed`: povijest je od stranice domaćina) i dok traje priča (koraci biraju objekte sami). Odluka u
+  čistoj funkciji `historyMode(prev, next)` u `state/url.ts`; `popstate` je već spojen.
+- [x] 4.4f Uvod, predaja: kad je let stigao sam, korisnik može pomaknuti kartu dok se veo gasi (350 ms); na kraju
+  uvoda `MapView` kameru više ne vraća na završni prikaz (vraća samo ako uvod nije stigao: preskočen, odustao),
+  a pomaknuti prikaz upisuje u adresu (`introEnd` u `map/introFlight.ts`). „Ponovni povratak” iz pregleda je taj
+  skok kamere natrag; zastavica „viđeno” već se sprema pri predaji, i nakon preskakanja, pa uvod ne dolazi opet.
+- [x] 4.4f Uvod, dodir: povlačenje prstom po velu (bez klika) sada ga preskače, kao kotačić i tipka (`touchmove`);
+  dodir je i dalje klik.
+- Alternative: zatvaranje panela kao `history.back()` (odbačeno: izgubile bi se promjene filtara i prikaza napravljene
+  dok je panel bio otvoren); unos u povijest i za stranice proizvodnje/usporedbi (izvan dogovora, ostaje kako je).
+- Rizici: nakon Natrag adresa ima prikaz iz trenutka odabira dok se karta ne pomakne (karta ne skače natrag); nakon
+  zatvaranja panela X-om Natrag ide na unos prije tog objekta: nakon jednog objekta to ne mijenja ništa vidljivo, nakon
+  dva (A, B, X) ponovno otvara A. Natrag na prethodni objekt učitava detalje jer odabir mijenja stil karte (novo
+  mirovanje karte), a `shownDetails` u `App` ne pokazuje stare detalje.
+- Provjera: vitest (`historyMode`, `useUrlState` push/replace, Intro dodir, uvod bez skoka), e2e; preview: odaberi
+  dva objekta → Natrag vraća prvi → Natrag zatvara panel; pomak karte ne dodaje unose.

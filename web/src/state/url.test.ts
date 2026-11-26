@@ -5,6 +5,7 @@ import {
   browserLang,
   canonicalUrl,
   defaultState,
+  historyMode,
   keepEqualSets,
   langFromPath,
   parseState,
@@ -214,5 +215,25 @@ describe("parsed state between addresses (Faza 56, 4.1)", () => {
     expect(after.layers).not.toBe(before.layers);
     expect([...after.layers].sort()).toEqual(["lines", "pipelines"]);
     expect(after.voltages).toBe(before.voltages);
+  });
+});
+
+describe("the back button (Faza 56, 4.4c)", () => {
+  const at = (search: string) => parseState(search, "hr");
+
+  it("adds a step when another object is picked, so Back returns to the previous one or closes the panel", () => {
+    expect(historyMode(at("?v=45,16,7"), at("?v=45,16,7&sel=osm:node/1"))).toBe("push");
+    expect(historyMode(at("?sel=osm:node/1"), at("?sel=osm:node/2"))).toBe("push");
+  });
+
+  it("replaces the current step for everything else: panning, filters, closing the panel", () => {
+    expect(historyMode(at("?v=45,16,7"), at("?v=45.1,16.2,8"))).toBe("replace");
+    expect(historyMode(at("?sel=osm:node/1"), at("?sel=osm:node/1&l=lines,gas"))).toBe("replace");
+    expect(historyMode(at("?sel=osm:node/1"), at(""))).toBe("replace");
+  });
+
+  it("leaves the history alone inside someone else's page and while a story picks its own objects", () => {
+    expect(historyMode(at("?embed=1"), at("?embed=1&sel=osm:node/1"))).toBe("replace");
+    expect(historyMode(at("?story=granice"), at("?story=granice&sel=osm:node/1"))).toBe("replace");
   });
 });
