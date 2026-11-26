@@ -146,7 +146,7 @@ describe("the gas storage card", () => {
     const card = gasCard(STORAGE, "HR");
     if (!card) throw new Error("no card");
     const text = gasCardText(card, createI18n("hr"));
-    expect(text.title).toBe("GridAtlas: Zalihe plina");
+    expect(text.title).toBe("GridAtlas: zalihe plina");
     expect(text.subtitle).toBe("Hrvatska · 17. studenoga 2026.");
     expect(text.figures.map((f) => `${f.value} ${f.unit}`)).toEqual(["72 %", "3,6 TWh", "−7 p. b."]);
     expect(text.figures[1]).toMatchObject({ label: "plina u skladištu", note: "stane 5 TWh" });

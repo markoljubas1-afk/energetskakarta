@@ -3296,12 +3296,21 @@ grupama uglavnom riješeni, imena gumba postoje (čitač ih ima), samo bez opisa
   „Približi”, na engleskom „Zoom in”; (i) „Prikaži ili sakrij izvore karte”; čip 44 px s kvačicom i obrubom u
   naglasnoj boji, ime gumba nepromijenjeno („220–379 kV”). Spojeno uz odobrenje vlasnika.
 
-### 57-B tekstovi (Vi, nazivlje, prečaci)
-- [ ] „Vi” svugdje (Zalijepite, Koristite, Možete, Vaša lokacija); kratke oznake gumba ostaju (Zatvori).
-- [ ] Nazivlje: „Prikaži” (ne „Pokaži”), „Dalekovodi i kabeli” u nazivu sloja i „vodovi” u tekstu, jedno ime
-  sloja uživo („Tokovi i cijene uživo”), „Filtri i pregled” za postavke; malo slovo iza dvotočke u naslovima.
-- [ ] Prečaci jednom tipkom (`t`, `l`, `/`, `?`) mogu se isključiti u pomoći za prečace (pamti preglednik), WCAG 2.1.4.
-- Provjera: vitest (prečaci isključeni), e2e tekstovi.
+### 57-B tekstovi (Vi, nazivlje, prečaci) — 2026-11-26 (vlasnik: „nakon toga kreni s 57-B”)
+- [x] „Vi” u rečenicama koje se obraćaju čitatelju: Zalijepite (ugradnja karte i grafa), Možete koristiti, Vaša
+  lokacija, Kliknite trafostanicu, Odaberite… pogledajte. Kratke oznake gumba ostaju u zapovjednom obliku
+  (Preuzmi, Kopiraj, Zatvori), kao u ostalim hrvatskim sučeljima.
+- [x] Nazivlje: „Prikaži” svugdje (bilo je i „Pokaži”); ploča s filtrima zove se „Filtri i pregled” i za čitač
+  zaslona (bilo „Postavke karte”), pa i u opisu tipke Esc; sloj uživo jednim imenom „Tokovi i cijene uživo” (sloj,
+  kartica dobrodošlice, gumb za zatvaranje, prečac, obavijest); u rečenicama ostaje kraće „sloj uživo”. „Dalekovodi
+  i kabeli” kao ime sloja i „vodovi” u tekstu su namjerno različiti (ime sloja i opći pojam), ne mijenja se.
+- [x] Naslovi kartica za dijeljenje malim slovom iza dvotočke („GridAtlas: zalihe plina”), kao naslov stranice i
+  engleski. Naslovi statičnih stranica idu u 5.3.
+- [x] Prečaci jednom tipkom (`/`, `?`, `t`, `l`) mogu se isključiti u popisu prečaca (pamti preglednik; bez
+  pohrane vrijedi za posjet), Esc radi uvijek. Popis se otvara i gumbom s tipkovnicom u donjoj traci (inače samo
+  `?`, koji se može isključiti); na dodirnim ekranima bez miša gumba nema.
+- Provjera: vitest (prečaci isključeni, prekidač u popisu, gumb u traci; testovi s tekstovima prilagođeni), e2e
+  tekstovi; preview: isključi prečace → `t` ne mijenja temu, Esc zatvara; ponovno učitavanje pamti.
 
 ### 57-C raspored (legenda, 721–1000 px, traka uživo, prazna karta)
 - [ ] Legenda na mobitelu i u ugradnji (gumb „Legenda”).

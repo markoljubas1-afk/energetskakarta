@@ -104,7 +104,7 @@ describe("AlertBanner", () => {
       /Hrvatska: sutra cijena na burzi pada na nulu ili ispod nje, najniže −50,5 €\/MWh u \d\d:00\./,
     );
     expect(banner).toHaveTextContent("račun kućanstva je ne prati");
-    await userEvent.click(screen.getByRole("button", { name: "Pokaži taj sat na karti" }));
+    await userEvent.click(screen.getByRole("button", { name: "Prikaži taj sat na karti" }));
     expect(onShow).toHaveBeenCalledWith(alert);
     await userEvent.click(screen.getByRole("button", { name: "Zatvori obavijest" }));
     expect(onClose).toHaveBeenCalledWith(alert);
@@ -117,7 +117,7 @@ describe("AlertBanner", () => {
     expect(screen.getByRole("status")).toHaveTextContent(
       "Novi rekord. Hrvatska, 11. studenoga 2026.: najviše struje iz vjetra u jednom danu u podacima od 2015. (25,1 GWh).",
     );
-    expect(screen.getByRole("button", { name: "Pokaži taj dan na karti" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Prikaži taj dan na karti" })).toBeInTheDocument();
   });
 });
 
@@ -158,7 +158,7 @@ describe("the day's occasion", () => {
     const onShow = vi.fn();
     renderWithI18n(<AlertBanner alert={alert} onShow={onShow} onClose={vi.fn()} />);
     expect(screen.getByRole("status")).toHaveTextContent("Svjetski dan vjetra.");
-    await userEvent.click(screen.getByRole("button", { name: "Otvori sloj uživo" }));
+    await userEvent.click(screen.getByRole("button", { name: "Otvori tokove i cijene uživo" }));
     expect(onShow).toHaveBeenCalledWith(alert);
   });
 });

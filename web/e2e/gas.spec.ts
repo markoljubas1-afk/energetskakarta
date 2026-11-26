@@ -245,7 +245,7 @@ test("the gas layer shows what entered the system and where it went, and a pictu
   await expect(dialog.getByLabel("Što je na slici")).toHaveValue("gasflow");
   const picture = dialog.getByRole("img");
   await expect(picture).toHaveAccessibleName(
-    "GridAtlas: Odakle je plin ušao. Hrvatska · plinski dan 17. studenoga 2026. · privremeni podaci: 81 % LNG terminal (98,4 GWh od 121,2 GWh ušlih u transportni sustav); 16 % domaća polja (19,5 GWh); 3 % iz skladišta (3,3 GWh). Kupcima u zemlji isporučeno 71,9 GWh · Izvor: ENTSOG Transparency Platform · gridatlas.eu",
+    "GridAtlas: odakle je plin ušao. Hrvatska · plinski dan 17. studenoga 2026. · privremeni podaci: 81 % LNG terminal (98,4 GWh od 121,2 GWh ušlih u transportni sustav); 16 % domaća polja (19,5 GWh); 3 % iz skladišta (3,3 GWh). Kupcima u zemlji isporučeno 71,9 GWh · Izvor: ENTSOG Transparency Platform · gridatlas.eu",
   );
   const downloading = page.waitForEvent("download");
   await dialog.getByRole("button", { name: "Preuzmi sliku (PNG)" }).click();
@@ -262,7 +262,7 @@ test("the gas layer shows what entered the system and where it went, and a pictu
   await page.goto("/?pic=gasuse");
   await expect(dialog.getByLabel("Što je na slici")).toHaveValue("gasuse");
   await expect(picture).toHaveAccessibleName(
-    "GridAtlas: Plin isporučen kupcima. Hrvatska · plinski dan 17. studenoga 2026. · privremeni podaci: 71,9 GWh isporučeno kupcima i distribuciji u zemlji (izlaz iz transportnog sustava (Plinacro Ltd)); −13 % prema prosjeku prethodnih sedam dana (prosjek tih dana: 83,1 GWh na dan). Izvor: ENTSOG Transparency Platform · gridatlas.eu",
+    "GridAtlas: plin isporučen kupcima. Hrvatska · plinski dan 17. studenoga 2026. · privremeni podaci: 71,9 GWh isporučeno kupcima i distribuciji u zemlji (izlaz iz transportnog sustava (Plinacro Ltd)); −13 % prema prosjeku prethodnih sedam dana (prosjek tih dana: 83,1 GWh na dan). Izvor: ENTSOG Transparency Platform · gridatlas.eu",
   );
   const use = page.waitForEvent("download");
   await dialog.getByRole("button", { name: "Preuzmi sliku (PNG)" }).click();

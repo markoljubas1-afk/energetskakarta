@@ -26,7 +26,7 @@ describe("CapacityBar", () => {
       "href",
       "/kapaciteti/",
     );
-    expect(screen.getByText(/Klikni trafostanicu na karti/)).toBeInTheDocument();
+    expect(screen.getByText(/Kliknite trafostanicu na karti/)).toBeInTheDocument();
   });
 
   it("shows a clicked substation: category now and with an upgrade, and a link to its page", async () => {

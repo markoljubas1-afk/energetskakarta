@@ -42,14 +42,14 @@ describe("GreenLight", () => {
     const onShow = vi.fn();
     show(SOON_AFTER, onShow);
     await userEvent.click(screen.getByRole("button", { name: /Hrvatska: 69 %/ }));
-    await userEvent.click(screen.getByRole("button", { name: "Pokaži na karti: hidro" }));
+    await userEvent.click(screen.getByRole("button", { name: "Prikaži na karti: hidro" }));
     expect(onShow).toHaveBeenCalledWith("HR", "hydro");
 
     await userEvent.selectOptions(screen.getByRole("combobox", { name: "Zemlja" }), "SI");
     // Slovenia: 100 MW of hydro out of 800, the rest nuclear
     expect(screen.getByRole("button", { name: /Slovenija: 13 %/ })).toHaveTextContent("SI 13 %");
     expect(document.querySelector("[data-green]")).toHaveAttribute("data-green", "low");
-    await userEvent.click(screen.getByRole("button", { name: "Pokaži na karti: nuklearna" }));
+    await userEvent.click(screen.getByRole("button", { name: "Prikaži na karti: nuklearna" }));
     expect(onShow).toHaveBeenLastCalledWith("SI", "nuclear");
   });
 
@@ -263,7 +263,7 @@ describe("GreenLight", () => {
         "href",
         expect.stringContaining("ipcc.ch"),
       );
-      await userEvent.click(within(card).getByRole("button", { name: "Pokaži elektrane u pogonu: plin" }));
+      await userEvent.click(within(card).getByRole("button", { name: "Prikaži elektrane u pogonu: plin" }));
       expect(onShowFossil).toHaveBeenCalledWith("HR", ["gas"]);
     });
 
@@ -283,7 +283,7 @@ describe("GreenLight", () => {
       if (!(card instanceof HTMLElement)) throw new Error("the card is in the document");
       // nuclear 700 and hydro 100 MW: (700 × 12 + 100 × 24) / 800 = 13.5 g
       expect(card).toHaveTextContent("oko 10 g CO₂/kWh");
-      expect(within(card).queryByRole("button", { name: /Pokaži elektrane u pogonu/ })).toBeNull();
+      expect(within(card).queryByRole("button", { name: /Prikaži elektrane u pogonu/ })).toBeNull();
     });
   });
 });

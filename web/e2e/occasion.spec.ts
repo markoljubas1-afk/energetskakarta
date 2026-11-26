@@ -50,7 +50,7 @@ test("World Wind Day leads to the live layer", async ({ page }) => {
   await page.goto("/");
   const banner = page.locator('[data-alert="occasion"]');
   await expect(banner).toContainText("Svjetski dan vjetra.");
-  await banner.getByRole("button", { name: "Otvori sloj uživo" }).click();
+  await banner.getByRole("button", { name: "Otvori tokove i cijene uživo" }).click();
   await expect(page).toHaveURL(/[?&]live=1/);
   await expect(banner).toBeHidden();
 });

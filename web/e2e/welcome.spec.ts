@@ -20,7 +20,7 @@ test("a first visit gets three doors into the map, and the card does not come ba
   await open(page);
   const card = page.locator("[data-welcome]");
   await expect(card.getByRole("heading", { name: "Dobro došli na GridAtlas" })).toBeVisible();
-  await card.getByRole("button", { name: /Tokovi struje uživo/ }).click();
+  await card.getByRole("button", { name: /Tokovi i cijene uživo/ }).click();
   await expect(page).toHaveURL(/live=1/);
   await expect(card).toHaveCount(0);
   await page.reload();

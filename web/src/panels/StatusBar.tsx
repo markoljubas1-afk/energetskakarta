@@ -1,4 +1,4 @@
-import { Download, TriangleAlert } from "lucide-react";
+import { Download, Keyboard, TriangleAlert } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { assetUrl, type Current } from "../data/current";
@@ -35,6 +35,8 @@ interface Props {
   onDayCard?: (() => void) | undefined;
   /** Injected in tests; defaults to the current time. */
   now?: Date;
+  /** open the keyboard shortcuts list (Faza 57: the only other way in is "?", which can be turned off) */
+  onShortcuts?: (() => void) | undefined;
   /** one more item after the data's date: how green the electricity is right now (GreenLight.tsx) */
   children?: ReactNode;
 }
@@ -46,6 +48,7 @@ export function StatusBar({
   basemapExpected,
   map,
   onDayCard,
+  onShortcuts,
   now = new Date(),
   children,
 }: Props) {
@@ -104,6 +107,17 @@ export function StatusBar({
         </ul>
       </PopoverMenu>
       <ShareMenu map={map} onDayCard={onDayCard} />
+      {onShortcuts && (
+        <button
+          type="button"
+          className={`${styles.trigger} ${styles.keys}`}
+          onClick={onShortcuts}
+          aria-label={t("shortcutsOpen")}
+          title={t("shortcutsOpen")}
+        >
+          <Keyboard size={14} strokeWidth={1.75} aria-hidden="true" />
+        </button>
+      )}
       {basemapExpected && basemap === "fallback" && (
         <span className={styles.notice} role="status">
           <TriangleAlert size={14} strokeWidth={1.75} aria-hidden="true" />

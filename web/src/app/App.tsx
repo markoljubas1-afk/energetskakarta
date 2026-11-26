@@ -263,6 +263,9 @@ function Shell({ config, state, setState }: ShellProps) {
   const closeHelp = useCallback(() => {
     setHelpOpen(false);
   }, []);
+  const openHelp = useCallback(() => {
+    setHelpOpen(true);
+  }, []);
   const onMap = state.page === "map";
   // inside someone else's page the host owns the keyboard; only Escape (in Explorer) stays
   const shortcuts = useMemo<Partial<Record<Shortcut, () => void>>>(
@@ -329,6 +332,7 @@ function Shell({ config, state, setState }: ShellProps) {
             onMapZoom={onMapZoom}
             onLocate={onLocate}
             intro={intro}
+            onShortcuts={openHelp}
           />
         )}
       </main>
@@ -351,6 +355,8 @@ interface ExplorerProps extends ShellProps {
   onMapZoom: (zoom: number) => void;
   onLocate: (target: Locate) => void;
   intro: IntroControl;
+  /** open the keyboard shortcuts list */
+  onShortcuts: () => void;
 }
 
 function Explorer({
@@ -363,6 +369,7 @@ function Explorer({
   onMapZoom,
   onLocate,
   intro,
+  onShortcuts,
 }: ExplorerProps) {
   const i18n = useI18n();
   const { t } = i18n;
@@ -1333,6 +1340,7 @@ function Explorer({
               basemap={basemap}
               basemapExpected={config.maptilerKey !== null}
               map={mapApi}
+              onShortcuts={state.embed ? undefined : onShortcuts}
               onDayCard={
                 liveDoc && !state.embed
                   ? () => {

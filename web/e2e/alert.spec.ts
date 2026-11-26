@@ -59,7 +59,7 @@ test("a price below zero tomorrow is announced above the map and leads to that h
   expect(apart).toBe(true);
   await page.screenshot({ path: testInfo.outputPath("alert.png") });
 
-  await banner.getByRole("button", { name: "Pokaži taj sat na karti" }).click();
+  await banner.getByRole("button", { name: "Prikaži taj sat na karti" }).click();
   await expect(page).toHaveURL(/[?&]live=1/);
   await expect(page.getByRole("region", { name: "Tokovi preko granica i cijene po satu" })).toBeVisible();
   // the live bar says the same thing in full: the line above the map steps aside
