@@ -50,3 +50,28 @@ export const yearX = (year: number, first: number, last: number): number =>
  * most plants were built) slowly enough to see them appear.
  */
 export const stepMs = (year: number): number => (year < 1950 ? 90 : year < 2000 ? 200 : 380);
+
+/**
+ * The power the chart's lines mark (D3): half the top and the top. The top is 1, 2 or 5 times a power of ten
+ * (niceMax), so its half is round too; two lines are enough to read the curve without crowding a short chart.
+ */
+export const yTicks = (max: number): number[] => [max / 2, max];
+
+/** Labels closer to an end than this share of the axis would touch the end's own label. */
+const END_GAP = 0.08;
+
+/**
+ * Round years between the ends of the axis (D3): every 50 years over a century, every 25 over four decades,
+ * otherwise every 10; none so close to an end that its label would run into the end's.
+ */
+export function yearTicks(first: number, last: number): number[] {
+  const span = last - first;
+  if (span <= 0) return [];
+  const step = span > 100 ? 50 : span > 40 ? 25 : 10;
+  const ticks: number[] = [];
+  for (let year = Math.ceil(first / step) * step; year < last; year += step) {
+    const at = (year - first) / span;
+    if (at >= END_GAP && at <= 1 - END_GAP) ticks.push(year);
+  }
+  return ticks;
+}

@@ -5,7 +5,7 @@ import type { AsyncState } from "../app/useAsync";
 import { clampYear, stackedSeries, summarize, type Timeline, type TimelineScope } from "../data/timeline";
 import { useI18n } from "../i18n";
 import { PALETTES, type Theme } from "../map/palette";
-import { CHART_H, CHART_W, stackAreas, stepMs, yearX } from "./timeChart";
+import { CHART_H, CHART_W, stackAreas, stepMs, yearTicks, yearX, yTicks } from "./timeChart";
 import { ChartShare } from "../share/ChartShare";
 import { timelineTable } from "../share/tables";
 import styles from "./TimeBar.module.css";
@@ -134,36 +134,75 @@ export function TimeBar({ data, year, scope, theme, onYear, onRetry }: Props) {
             {playing ? t("timePause") : t("timePlay")}
           </button>
         </div>
-        <svg
-          className={styles.chart}
-          viewBox={`0 0 ${CHART_W} ${CHART_H}`}
-          preserveAspectRatio="none"
-          role="img"
-          aria-label={t("timeChart", { max: i18n.power(chart.max) })}
-        >
-          {chart.areas.map((area) => (
-            <path key={area.technology} d={area.d} fill={palette.technology[area.technology]} />
+        {/* a chart that can be read (D3): power lines with their values, round years under the slider's track */}
+        <div className={styles.plot}>
+          <svg
+            className={styles.chart}
+            viewBox={`0 0 ${CHART_W} ${CHART_H}`}
+            preserveAspectRatio="none"
+            role="img"
+            aria-label={t("timeChart", { max: i18n.power(chart.max) })}
+          >
+            {chart.areas.map((area) => (
+              <path key={area.technology} d={area.d} fill={palette.technology[area.technology]} />
+            ))}
+            {yTicks(chart.max).map((value) => {
+              const y = CHART_H - (value / chart.max) * CHART_H;
+              return (
+                <line
+                  key={value}
+                  className={styles.grid}
+                  x1={0}
+                  x2={CHART_W}
+                  y1={y}
+                  y2={y}
+                  vectorEffect="non-scaling-stroke"
+                />
+              );
+            })}
+            <rect
+              className={styles.future}
+              x={cursor}
+              y={0}
+              width={Math.max(0, CHART_W - cursor)}
+              height={CHART_H}
+            />
+            <line
+              className={styles.cursor}
+              x1={cursor}
+              x2={cursor}
+              y1={0}
+              y2={CHART_H}
+              vectorEffect="non-scaling-stroke"
+            />
+          </svg>
+          {yTicks(chart.max).map((value) => (
+            <span
+              key={value}
+              data-y-tick=""
+              className={styles.yTick}
+              style={{ top: `${String((1 - value / chart.max) * 100)}%` }}
+              aria-hidden="true"
+            >
+              {i18n.power(value)}
+            </span>
           ))}
-          <rect
-            className={styles.future}
-            x={cursor}
-            y={0}
-            width={Math.max(0, CHART_W - cursor)}
-            height={CHART_H}
-          />
-          <line
-            className={styles.cursor}
-            x1={cursor}
-            x2={cursor}
-            y1={0}
-            y2={CHART_H}
-            vectorEffect="non-scaling-stroke"
-          />
-        </svg>
+        </div>
         <div className={styles.axis} aria-hidden="true">
-          <span>{timeline.firstYear}.</span>
-          <span>{t("timeAxisMax", { max: i18n.power(chart.max) })}</span>
-          <span>{timeline.lastYear}.</span>
+          {[timeline.firstYear, ...yearTicks(timeline.firstYear, timeline.lastYear), timeline.lastYear].map(
+            (tick, index, all) => (
+              <span
+                key={tick}
+                data-x-tick=""
+                data-end={index === 0 ? "first" : index === all.length - 1 ? "last" : undefined}
+                style={{
+                  left: `${String((yearX(tick, timeline.firstYear, timeline.lastYear) / CHART_W) * 100)}%`,
+                }}
+              >
+                {tick}.
+              </span>
+            ),
+          )}
         </div>
         <p className={styles.figure}>
           {t("timeOperating", { year: String(shown), mw: i18n.power(summary.operatingMw) })}

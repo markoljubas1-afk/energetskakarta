@@ -651,7 +651,6 @@ export const hr = {
   timePlay: "Pusti",
   timePause: "Zaustavi",
   timeChart: "Snaga u pogonu po izvoru kroz godine, do {max}",
-  timeAxisMax: "vrh grafikona: {max}",
   timeOperating: "U pogonu {year}.: {mw}",
   timeClosed: "Zatvorene do tada (sivi obrisi): {count}, ukupno {mw}.",
   timeLastClosure: "Posljednja: {name}, {year}.",
