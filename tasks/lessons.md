@@ -526,3 +526,14 @@
   stranice, novo izdanje dok je stranica otvorena) nije prođen korak po korak.
 - Pravilo: test rada bez mreže ide točno putem korisnika (jedan posjet, pa bez mreže), i prije PR-a za SW proći
   instalaciju i nadogradnju na papiru: što je u kojoj predmemoriji u svakom koraku.
+
+### L-086 — Playwright ne može oduzeti mrežu service workeru (2026-11-26)
+- Što se dogodilo: e2e i provjere previewa za PWA (Faza 59) koristili su `context.setOffline`; zahtjevi koje šalje
+  sam SW i dalje su išli na mrežu, pa su testovi „bez mreže” prolazili i kad posluživanje kopija nije radilo
+  (dokazano mutacijom). Ni `context.route` ni `PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS` to ne mijenjaju.
+  Pravi test (Chrome preko lokalnog proxyja koji se ugasi) odmah je našao grešku koju lažni nisu: prva poruka SW-a
+  stigla je prije nego što ju je itko slušao, pa obavijest bez mreže nije bilo.
+- Uzrok: pretpostavka da emulacija mreže u alatu vrijedi za sve zahtjeve stranice, i provjera bez mutacije.
+- Pravilo: rad bez mreže sa SW-om provjerava se pravim prekidom (proxy koji se ugasi, ili DevTools u pravom
+  pregledniku); u e2e se provjerava ono što se može dokazati (što je spremljeno, i da se čita iz predmemorije), uz
+  mutaciju koja pokaže da test pada kad funkcija ne radi.
