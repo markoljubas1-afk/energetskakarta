@@ -3531,3 +3531,14 @@ zaglavlju; Cache API ne sprema odgovor 206.
 - Rizici: veličina (dijelovi su mali; 2000 × do nekoliko desetaka kB); ETag mora ostati isti kao u zaglavlju.
 - Provjera: vitest (`strategyFor`, `tileKey`, pretvorba 206 ↔ spremljeno), e2e (gore), preview: posjet, pa bez mreže
   ista karta s vodovima.
+
+## D3 — graf vremeplova čitljiv — 2026-11-26 (vlasnik: „spoji i kreni s D3”)
+Stanje na produkciji (1280 i 390 px, `?y=1990`): graf je visok 56 px; okomite osi nema, samo natpis „vrh grafikona:
+200 GW” u sredini ispod; na vodoravnoj su samo 1888. i 2026., pa se ne vidi kada je mreža rasla.
+- [ ] Graf viši: 96 px (72 px kad je traka uska, container query).
+- [ ] Okomita os: vodoravne crte na okruglim vrijednostima (`yTicks`: 1, 2 ili 5 × 10ⁿ, dvije do četiri crte) s
+  oznakom snage uz svaku; natpis „vrh grafikona” odlazi.
+- [ ] Vodoravna os: okrugle godine između krajeva (`yearTicks`: korak 25 ili 50 godina prema rasponu), na mjestu
+  koje odgovara klizaču (`yearX`); krajevi ostaju.
+- Alternative: graf s knjižnicom grafikona (odbačeno: traka je lagana i crta se sama, bez lijenog učitavanja).
+- Provjera: vitest (`yTicks`, `yearTicks`, TimeBar: oznake osi), preview 1280 i 390 px.
