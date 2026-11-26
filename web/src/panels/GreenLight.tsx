@@ -16,7 +16,7 @@ import { pricesAt, type Live } from "../data/live";
 import { usualFor, type Usual } from "../data/usual";
 import { isOneOf, SCOPE_COUNTRIES, type CountryCode, type Technology } from "../domain";
 import { useI18n } from "../i18n";
-import { PopoverMenu } from "../share/PopoverMenu";
+import { closeMenuOf, PopoverMenu } from "../share/PopoverMenu";
 import { Goal2030 } from "./Goal2030";
 import styles from "./GreenLight.module.css";
 
@@ -181,7 +181,8 @@ export function GreenLight({
         <button
           type="button"
           className={styles.show}
-          onClick={() => {
+          onClick={(event) => {
+            closeMenuOf(event.currentTarget);
             onShow(country, green.top.technology);
           }}
         >
@@ -191,7 +192,8 @@ export function GreenLight({
           <button
             type="button"
             className={styles.show}
-            onClick={() => {
+            onClick={(event) => {
+              closeMenuOf(event.currentTarget);
               onShowFossil(country, fossil);
             }}
           >

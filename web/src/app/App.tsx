@@ -113,6 +113,7 @@ import { useOverlay } from "./useOverlay";
 import { useHourClock } from "./useHourClock";
 import { useIntro, type IntroControl } from "./useIntro";
 import { useTheme } from "./theme";
+import { COUNTRY_CENTER, SHOW_PLANTS_ZOOM } from "../map/countryView";
 
 /** How often an open map reloads the live layer (the pipeline publishes hourly, at :12). */
 const LIVE_REFRESH_MS = 15 * 60_000;
@@ -815,6 +816,12 @@ function Explorer({
     if (!story && mapApi) mapApi.level();
   }, [story, mapApi]);
   // from the green light: the plants of that country on the map, with what generates the most lit
+  // The three "show on the map" buttons of the green-light card filter the map to a country; the map then goes
+  // there, close enough for the filtered plants to be drawn (map/countryView.ts, Faza 57-D).
+  const goToCountry = (country: CountryCode): void => {
+    const { lng, lat } = COUNTRY_CENTER[country];
+    mapApi?.flyTo(lng, lat, SHOW_PLANTS_ZOOM);
+  };
   const showGenerating = (country: CountryCode, technology: Technology): void => {
     setState((s) => ({
       ...s,
@@ -823,6 +830,7 @@ function Explorer({
       countries: new Set([country]),
     }));
     setSpotlight({ kind: "technology", value: technology });
+    goToCountry(country);
   };
   // The fossil plants behind the hour's carbon footprint: the country's operating plants on those fuels,
   // as a filter the reader can see and undo. Which of them ran in that hour is not known, and not claimed.
@@ -836,6 +844,7 @@ function Explorer({
       statuses: new Set(["operating"]),
       technologies: new Set(technologies),
     }));
+    goToCountry(country);
   };
   // What is on its way towards the 2030 target: the country's wind and solar plants under construction
   // and planned. A filter the reader can see and undo ("Poništi filtre"), not a hidden state.
@@ -849,6 +858,7 @@ function Explorer({
       statuses: new Set(["construction", "planned"]),
       technologies: new Set(["wind", "solar"]),
     }));
+    goToCountry(country);
   };
   const leaveStory = (): void => {
     setState((s) => leave(s, beforeStory));

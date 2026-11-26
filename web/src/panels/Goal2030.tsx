@@ -2,6 +2,7 @@ import { latestShare, type Renewables } from "../data/eurostat";
 import { progress, target2030, TARGETS_2030, type Target2030 } from "../data/targets";
 import { useI18n } from "../i18n";
 import styles from "./Goal2030.module.css";
+import { closeMenuOf } from "../share/PopoverMenu";
 
 interface Props {
   country: string;
@@ -59,7 +60,15 @@ export function Goal2030({ country, renewables, moreHref, onShowComing, targets 
         </p>
       </div>
       {onShowComing && (
-        <button type="button" className={styles.show} onClick={onShowComing}>
+        <button
+          type="button"
+          className={styles.show}
+          onClick={(event) => {
+            // inside the green-light card: it would cover the plants it asks the map to show (Faza 57-D)
+            closeMenuOf(event.currentTarget);
+            onShowComing();
+          }}
+        >
           {t("goalShowComing")}
         </button>
       )}

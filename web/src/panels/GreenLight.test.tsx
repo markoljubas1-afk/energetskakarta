@@ -44,7 +44,10 @@ describe("GreenLight", () => {
     await userEvent.click(screen.getByRole("button", { name: /Hrvatska: 69 %/ }));
     await userEvent.click(screen.getByRole("button", { name: "Prikaži na karti: hidro" }));
     expect(onShow).toHaveBeenCalledWith("HR", "hydro");
+    // the card gets out of the way of what it asked the map to show (Faza 57-D)
+    expect(document.querySelector("[popover]")?.matches(":popover-open")).toBe(false);
 
+    await userEvent.click(screen.getByRole("button", { name: /Hrvatska: 69 %/ }));
     await userEvent.selectOptions(screen.getByRole("combobox", { name: "Zemlja" }), "SI");
     // Slovenia: 100 MW of hydro out of 800, the rest nuclear
     expect(screen.getByRole("button", { name: /Slovenija: 13 %/ })).toHaveTextContent("SI 13 %");
@@ -265,6 +268,7 @@ describe("GreenLight", () => {
       );
       await userEvent.click(within(card).getByRole("button", { name: "Prikaži elektrane u pogonu: plin" }));
       expect(onShowFossil).toHaveBeenCalledWith("HR", ["gas"]);
+      expect(document.querySelector("[popover]")?.matches(":popover-open")).toBe(false);
     });
 
     it("offers no fossil plants where none generated", async () => {
