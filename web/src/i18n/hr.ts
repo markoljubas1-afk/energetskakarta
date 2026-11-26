@@ -74,6 +74,8 @@ export const hr = {
   selectAll: "Sve",
   selectNone: "Ništa",
   resetFilters: "Poništi filtre",
+  offlineNotice:
+    "Nema veze s mrežom: prikazani su zadnji spremljeni podaci. Dijelovi karte koji nisu bili otvoreni ostaju prazni.",
   emptyMap:
     "Na ovom dijelu karte nema ničega od uključenoga. Približite ili pomaknite kartu, ili promijenite filtre.",
   legendOpen: "Legenda",

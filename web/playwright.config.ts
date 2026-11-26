@@ -15,6 +15,9 @@ export default defineConfig({
   expect: { timeout: 15_000 },
   use: {
     baseURL: `http://localhost:${PORT}`,
+    // the tests stand in for data with page.route, which never sees what a service worker fetches itself;
+    // e2e/pwa.spec.ts lets the worker run (Faza 59)
+    serviceWorkers: "block",
     locale: "hr-HR",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",

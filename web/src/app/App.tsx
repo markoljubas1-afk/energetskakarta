@@ -118,6 +118,8 @@ import { COUNTRY_CENTER, SHOW_PLANTS_ZOOM } from "../map/countryView";
 import { useMediaQuery } from "./useMediaQuery";
 import { EmptyMapNotice } from "../panels/EmptyMapNotice";
 import { filtersAreDefault, resetFilters } from "../panels/FiltersPanel";
+import { OfflineNotice } from "../panels/OfflineNotice";
+import { useOnline } from "../pwa/useOnline";
 
 /** How often an open map reloads the live layer (the pipeline publishes hourly, at :12). */
 const LIVE_REFRESH_MS = 15 * 60_000;
@@ -386,6 +388,8 @@ function Explorer({
     ...(state.layers.has("gas") ? (["entsog", "gie"] as const) : []),
   ];
   const [details, setDetails] = useState<Selection | null>(null);
+  // without a network the map shows the last data kept (Faza 59) and says so in the notice slot
+  const online = useOnline();
   // up to 1000 px the open legend would sit under the bars (App.module.css, Faza 57-C1): it starts folded
   const narrowWindow = useMediaQuery("(max-width: 1000px)");
   const [basemap, setBasemap] = useState<Basemap["kind"] | null>(null);
@@ -1188,7 +1192,13 @@ function Explorer({
             </aside>
           )}
 
-          {!alert && !story && !state.live && nothingShown(state.layers, seen.emptyLayers) && (
+          {!online && (
+            <div className={styles.alert}>
+              <OfflineNotice />
+            </div>
+          )}
+
+          {online && !alert && !story && !state.live && nothingShown(state.layers, seen.emptyLayers) && (
             <div className={styles.alert}>
               <EmptyMapNotice
                 onReset={
@@ -1202,7 +1212,7 @@ function Explorer({
             </div>
           )}
 
-          {alert && !story && (
+          {online && alert && !story && (
             <div className={styles.alert}>
               <ErrorBoundary area="alert" fallback={() => null}>
                 <AlertBanner alert={alert} onShow={showAlert} onClose={closeAlert} />

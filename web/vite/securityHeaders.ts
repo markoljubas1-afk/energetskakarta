@@ -72,6 +72,9 @@ export function headersFile(dataBaseUrl: string): string {
     "  Cross-Origin-Opener-Policy: same-origin",
     "/assets/*",
     "  Cache-Control: public, max-age=31536000, immutable",
+    // the service worker (Faza 59): its fixed name must never be served from a cache, or a release waits
+    "/sw.js",
+    "  Cache-Control: no-cache",
     // the static pages' font (Faza 54-1): fixed names, so kept a month rather than for ever
     "/fonts/*",
     "  Cache-Control: public, max-age=2592000",

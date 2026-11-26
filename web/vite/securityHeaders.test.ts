@@ -40,6 +40,10 @@ describe("content security policy", () => {
     );
   });
 
+  it("has browsers ask for the service worker every time, so a release reaches them (Faza 59)", () => {
+    expect(headersFile("/d/")).toContain(["/sw.js", "  Cache-Control: no-cache"].join("\n"));
+  });
+
   it("allows the static pages' own stylesheet by its hash, and no other inline style", () => {
     const csp = contentSecurityPolicy("/d/");
     expect(csp).toContain(`style-src 'self' ${STATIC_STYLE_HASH};`);
