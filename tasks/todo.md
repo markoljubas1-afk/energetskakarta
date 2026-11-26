@@ -3560,6 +3560,10 @@ podaci, zasebno.
   cijela (sadržaj za tražilice, poveznice na objekte).
 - Provjera: vitest (`seo/topics.test.ts`: brojke i graf na stranici hidroelektrana, bez grafa za trafostanice),
   preview 1280 i 390 px.
+- [x] PR #30, preview provjeren 2026-11-26 (1280 i 390 px): hidroelektrane u Hrvatskoj — „Na karti 34”, „Zbroj
+  upisane snage 2,27 GW”, „Najveći objekt 538 MW, Hidroelektrana Zakučac”, deset traka pa cijeli popis;
+  trafostanice samo broj (619), bez grafa; bez vodoravnog pomicanja. E2e je prvi put pao na vlastitom lokatoru
+  (ista poveznica sada i u grafu), ne na stranici. Spojeno uz odobrenje vlasnika.
 
 ### D4-B slika karte (prijedlog, čeka odluku)
 - Statična slika položaja objekata (točke po snazi) na stranici zemlje i teme; bez obrisa obale u podacima stranice
