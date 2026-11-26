@@ -3546,3 +3546,21 @@ Stanje na produkciji (1280 i 390 px, `?y=1990`): graf je visok 56 px; okomite os
 - Provjera: vitest (`yTicks`, `yearTicks`, TimeBar: oznake osi), preview 1280 i 390 px.
 - [x] PR #29, preview provjeren 2026-11-26 (1280, 390 i 360 px; svijetlo i tamno): graf viši, crte 100 i 200 GW
   s oznakama, godine 1888., 1950., 2000., 2026. bez preklapanja (izmjereno). Spojeno uz odobrenje vlasnika.
+
+## D4 — statične stranice: brojke i graf — 2026-11-26 (vlasnik: „nakon toga kreni s D4”)
+Stanje na produkciji: stranica zemlje već ima ključne brojke i grafove (Faza 54-3), samo nema sliku karte (odjeljak
+„Karta” je poveznica). Stranice tema (npr. „Hidroelektrane u Hrvatskoj”) su gola tablica; registar gradova su
+tablice po zemljama. Usput: neke hrvatske elektrane nose engleska imena iz GEM-a („Senj II hydroelectric plant”) —
+podaci, zasebno.
+
+### D4-A stranice tema (ovaj PR)
+- [ ] Ključne brojke na vrhu (`keyFigures`): broj na karti; uz elektrane i podatkovne centre i zbroj upisane snage
+  te najveći (snaga, ime ispod).
+- [ ] Graf deset najvećih (`rankBars`, traka u odnosu na najveći, ime s poveznicom) iznad tablice; tablica ostaje
+  cijela (sadržaj za tražilice, poveznice na objekte).
+- Provjera: vitest (`seo/topics.test.ts`: brojke i graf na stranici hidroelektrana, bez grafa za trafostanice),
+  preview 1280 i 390 px.
+
+### D4-B slika karte (prijedlog, čeka odluku)
+- Statična slika položaja objekata (točke po snazi) na stranici zemlje i teme; bez obrisa obale u podacima stranice
+  to traži ili crtanje u pipelineu (slika iz pločica) ili obris zemlje iz `boundaries`. Procjena: dan.
