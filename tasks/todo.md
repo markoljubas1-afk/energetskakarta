@@ -3554,9 +3554,9 @@ tablice po zemljama. Usput: neke hrvatske elektrane nose engleska imena iz GEM-a
 podaci, zasebno.
 
 ### D4-A stranice tema (ovaj PR)
-- [ ] Ključne brojke na vrhu (`keyFigures`): broj na karti; uz elektrane i podatkovne centre i zbroj upisane snage
+- [x] Ključne brojke na vrhu (`keyFigures`): broj na karti; uz elektrane i podatkovne centre i zbroj upisane snage
   te najveći (snaga, ime ispod).
-- [ ] Graf deset najvećih (`rankBars`, traka u odnosu na najveći, ime s poveznicom) iznad tablice; tablica ostaje
+- [x] Graf deset najvećih (`rankBars`, traka u odnosu na najveći, ime s poveznicom) iznad tablice; tablica ostaje
   cijela (sadržaj za tražilice, poveznice na objekte).
 - Provjera: vitest (`seo/topics.test.ts`: brojke i graf na stranici hidroelektrana, bez grafa za trafostanice),
   preview 1280 i 390 px.

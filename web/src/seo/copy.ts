@@ -166,6 +166,8 @@ export interface Copy {
     /** the citable line on top of the list; total is the summed capacity, when the kind has one */
     lead: (count: string, total: string | null) => string;
     truncated: (shown: string, total: string) => string;
+    /** the tiles on top of a topic page (D4) */
+    figures: { count: string; total: string; largest: string };
     /** the section of the country page that links its topic pages */
     sectionHeading: string;
     columns: {
@@ -489,6 +491,7 @@ const hr: Copy = {
     lead: (count, total) =>
       `Ukupno na karti: ${count}${total ? ` · zbroj upisane snage (svi statusi): ${total}` : ""}. Brojke su ono što je upisano u izvorima, pa su donja granica stvarnog stanja.`,
     truncated: (shown, total) => `Prikazano je ${shown} najvećih od ${total}; svi su na karti.`,
+    figures: { count: "Na karti", total: "Zbroj upisane snage", largest: "Najveći objekt" },
     sectionHeading: "Po vrstama objekata",
     columns: {
       name: "Naziv",
@@ -818,6 +821,7 @@ const en: Copy = {
     lead: (count, total) =>
       `On the map: ${count}${total ? ` · recorded capacity, all statuses: ${total}` : ""}. The figures are what the sources record, so they are a lower bound.`,
     truncated: (shown, total) => `Showing the ${shown} largest of ${total}; all of them are on the map.`,
+    figures: { count: "On the map", total: "Capacity recorded", largest: "Largest" },
     sectionHeading: "By kind of asset",
     columns: {
       name: "Name",
