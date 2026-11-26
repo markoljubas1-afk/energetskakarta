@@ -3350,6 +3350,8 @@ Izmjereno na produkciji 2026-11-26 (Plomin iz poveznice, traka uživo otvorena, 
   zatvaranjem detalja vraćaju se. Desna strana ostaje karti, legendi i zumu.
 - [x] 721–1000 px: traka uživo ostavlja mjesta sklopljenoj legendi (gumb „Legenda” desno dolje).
 - [x] 1001–1199 px: traka uživo završava gdje počinju detalji (kao od 1200 px).
+- [x] Od 1001 px: visoki detalji (elektrana s fotografijom) završavaju iznad sklopljene legende u istom kutu
+  (nađeno na previewu: Plomin na 1100 px prekrivao je gumb „Legenda”; isto je bilo i prije).
 - [x] Zaglavlje: opis uz ime skriva se do 1480 px, riječi na gumbima do 1300 px (izmjereno: tada nema preklapanja
   ni na jednoj širini 1000–1500 px).
 - [x] Naslov detalja bez okvira fokusa kad fokus dođe iz programa (`:focus:not(:focus-visible)` i
