@@ -61,6 +61,29 @@ test("search finds an asset, flies there and shows its details", async ({ page }
   );
 });
 
+test("Back returns to the previous object, then closes the details, before it leaves the map", async ({
+  page,
+}) => {
+  await openMap(page);
+  const search = page.getByRole("combobox", { name: "Pretraga" });
+  const details = page.getByRole("complementary", { name: "Detalji objekta" });
+  await search.fill("rhe");
+  await page.getByRole("option", { name: /RHE Primjer.*276 MW/ }).click();
+  await expect(details.getByRole("heading", { name: "RHE Primjer" })).toBeVisible();
+  await search.fill("daleko");
+  await page.getByRole("option", { name: /Vjetroelektrana Daleko/ }).click();
+  await expect(details.getByRole("heading", { name: "Vjetroelektrana Daleko" })).toBeVisible();
+
+  await page.goBack();
+  await expect(page).toHaveURL(new RegExp(`sel=${encodeURIComponent(RHE.id)}`));
+  await expect(details.getByRole("heading", { name: "RHE Primjer" })).toBeVisible();
+  await page.goBack();
+  await expect(page).not.toHaveURL(/sel=/);
+  await expect(page.getByRole("heading", { name: "RHE Primjer" })).toHaveCount(0);
+  // still on the map: the flights and pans in between added no steps of their own
+  await expect(page.locator('[data-map-status="ready"]')).toBeVisible();
+});
+
 test("a plant known only to Global Energy Monitor is searchable, shareable and credited", async ({
   page,
 }) => {

@@ -67,3 +67,25 @@ export const INTRO_STAGE_AT = [0, 0.28, 0.4, 0.52, 0.64, 0.72] as const;
 
 /** After the camera arrives the flows run for a moment before everything settles. */
 export const SETTLE_DELAY_MS = 150;
+
+/** Closer than this (degrees, zoom levels) is the landing itself, not a move of the reader's. */
+const SAME_CAMERA = 1e-6;
+
+/**
+ * What the end of the intro does with the camera (Faza 56, 4.4f). A flight cut short is put on the first view;
+ * one that landed is left where it is, because the reader may already be panning while the title fades, and
+ * `moved` says whether that view must now go into the link (the map does not write it while the intro runs).
+ */
+export function introEnd(
+  landed: boolean,
+  final: Camera | null,
+  now: Camera,
+): { jumpTo: Camera | null; moved: boolean } {
+  if (!landed) return { jumpTo: final, moved: false };
+  if (!final) return { jumpTo: null, moved: false };
+  const moved =
+    Math.abs(now.center[0] - final.center[0]) > SAME_CAMERA ||
+    Math.abs(now.center[1] - final.center[1]) > SAME_CAMERA ||
+    Math.abs(now.zoom - final.zoom) > SAME_CAMERA;
+  return { jumpTo: null, moved };
+}

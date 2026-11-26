@@ -360,6 +360,19 @@ export function keepEqualSets(previous: AppState, next: AppState): AppState {
   };
 }
 
+/**
+ * How a change of state goes into the browser's history (Faza 56, 4.4c). Picking another object is a step,
+ * so Back returns to the previous object or closes the panel before it leaves the site. Everything else
+ * replaces the current step: panning must not flood the back button, and closing the panel keeps what was
+ * changed while it was open. Inside someone else's page the history is theirs, and a story picks its own
+ * objects as it plays.
+ */
+export function historyMode(previous: AppState, next: AppState): "push" | "replace" {
+  const picked = next.selected !== null && next.selected !== previous.selected;
+  const quiet = next.embed || next.story !== null || previous.story !== null;
+  return picked && !quiet ? "push" : "replace";
+}
+
 // Parsed state is memoised per address (path carries the language, query the rest) so React sees a stable
 // object between renders, and its sets survive an address change that leaves them alone (keepEqualSets).
 let cache: { key: string; state: AppState } | null = null;
@@ -377,13 +390,15 @@ export function useUrlState(): [AppState, (update: (state: AppState) => AppState
   const state = stateFor(location);
   const setState = useCallback((update: (state: AppState) => AppState) => {
     const { pathname, search, hash } = window.location;
-    const next = update(parseState(search, langFromPath(pathname)));
+    const previous = parseState(search, langFromPath(pathname));
+    const next = update(previous);
     // the language lives in the path, so switching it moves between / and /en/
     const nextPath = pathForLang(next.lang);
     const nextSearch = serializeState(next, next.lang);
     if (nextPath === pathname && nextSearch === search) return;
-    // replaceState: panning must not flood the back button with history entries
-    window.history.replaceState(null, "", `${nextPath}${nextSearch}${hash}`);
+    const address = `${nextPath}${nextSearch}${hash}`;
+    if (historyMode(previous, next) === "push") window.history.pushState(null, "", address);
+    else window.history.replaceState(null, "", address);
     listeners.forEach((listener) => listener());
   }, []);
   return [state, setState];
