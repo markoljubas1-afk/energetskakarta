@@ -3452,7 +3452,9 @@ aplikacije i zadnje dohvaćene podatke, uz jasnu obavijest. Dijelovi karte koji 
   `current.json` i popis datoteka koji build upiše u `sw.js` (`vite/swPrecache.ts`): ulaz i njegovi uvozi, dio s
   kartom, MapLibreov worker, njihovi stilovi i fontovi. Bez toga prvi posjet bez mreže ima stranicu, ali ne i kod.
 - [x] Registracija u `main.tsx` samo u produkcijskom buildu; `_headers`: `/sw.js` bez dugog predmemoriranja.
-- [x] Obavijest bez mreže: `useOnline` (`navigator.onLine` i događaji) → „Nema veze s mrežom: prikazani su zadnji
+- [x] Obavijest bez mreže: `useOnline` (`navigator.onLine` i događaji, i poruka SW-a: na previewu je bez mreže
+  `navigator.onLine` ostao `true`, kao i na Wi-Fiju bez interneta, pa SW javlja stranici je li podatke dao s mreže
+  ili iz kopije, `src/pwa/dataSource.ts`; `/sw.js` iz toga uvozi samo tip, a build pada ako `sw.js` ikad uveze dio) → „Nema veze s mrežom: prikazani su zadnji
   spremljeni podaci.” na mjestu obavijesti na karti; nestaje kad se veza vrati.
 - [x] e2e: Playwrightov `page.route` ne vidi zahtjeve koje šalje service worker, a 27 e2e datoteka podmeće podatke;
   zato `serviceWorkers: "block"` u `playwright.config.ts`, a `e2e/pwa.spec.ts` ga dopušta i provjerava baš prvi

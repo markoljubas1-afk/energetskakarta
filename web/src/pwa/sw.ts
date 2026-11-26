@@ -7,6 +7,8 @@
  * never collide with an old one's; and a worker that deleted the cache of the release before would delete the
  * files the page it is serving is made of (a newer worker activates while that page is still open).
  */
+// a type only: a value shared with the page would become a chunk both import, and /sw.js must import nothing
+import type { DataSourceMessage } from "./dataSource";
 import { cacheKey, shellFor, strategyFor } from "./strategy";
 
 /** Only what this worker uses of ServiceWorkerGlobalScope (the WebWorker lib cannot share a program with DOM). */
@@ -15,12 +17,17 @@ interface ExtendableEvent extends Event {
 }
 interface FetchEvent extends ExtendableEvent {
   request: Request;
+  /** the page that asked; empty for a navigation */
+  clientId: string;
   respondWith: (response: Promise<Response>) => void;
 }
 interface WorkerScope {
   location: Location;
   skipWaiting: () => Promise<void>;
-  clients: { claim: () => Promise<void> };
+  clients: {
+    claim: () => Promise<void>;
+    get: (id: string) => Promise<{ postMessage: (message: DataSourceMessage) => void } | undefined>;
+  };
   addEventListener: ((type: "install" | "activate", listener: (event: ExtendableEvent) => void) => void) &
     ((type: "fetch", listener: (event: FetchEvent) => void) => void);
 }
@@ -73,7 +80,7 @@ worker.addEventListener("fetch", (event) => {
   const strategy = strategyFor(event.request, SITE, DATA_BASE);
   if (strategy === "bypass") return;
   if (strategy === "cache-first") event.respondWith(cacheFirst(event.request));
-  else event.respondWith(networkFirst(event.request, strategy === "page" ? PAGES : DATA));
+  else event.respondWith(networkFirst(event.request, strategy === "page" ? PAGES : DATA, event.clientId));
 });
 
 /** Each file on its own: one that fails (a moment without network) must not leave the others unkept. */
@@ -92,7 +99,7 @@ async function keep(name: string, urls: readonly string[]): Promise<void> {
   });
 }
 
-async function networkFirst(request: Request, name: string): Promise<Response> {
+async function networkFirst(request: Request, name: string, clientId: string): Promise<Response> {
   const cache = await caches.open(name);
   const key = cacheKey(request.url);
   try {
@@ -101,14 +108,27 @@ async function networkFirst(request: Request, name: string): Promise<Response> {
       await cache.put(key, response.clone());
       await trim(cache, name);
     }
+    if (name === DATA) tell(clientId, "network");
     return response;
   } catch (error) {
     const kept =
       (await cache.match(key)) ??
       (name === PAGES ? await cache.match(shellFor(request.url, SITE)) : undefined);
-    if (kept) return kept;
-    throw error;
+    if (!kept) throw error;
+    if (name === DATA) tell(clientId, "cache");
+    return kept;
   }
+}
+
+/**
+ * Tells the page where its data came from (dataSource.ts): the browser may call itself online on a network that
+ * reaches nothing, and only the worker knows that it served a kept copy.
+ */
+function tell(clientId: string, source: DataSourceMessage["source"]): void {
+  if (!clientId) return;
+  void worker.clients.get(clientId).then((client) => {
+    client?.postMessage({ type: "gridatlas:data-source", source } satisfies DataSourceMessage);
+  });
 }
 
 async function cacheFirst(request: Request): Promise<Response> {
