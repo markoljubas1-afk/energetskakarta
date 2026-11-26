@@ -61,7 +61,8 @@
   top: 12px;
   right: 56px;
   width: 320px;
-  max-height: calc(100% - 100px);
+  /* ends above the folded legend's button in the same corner (its bottom: chrome + 8, its height 44) */
+  max-height: calc(100% - var(--map-chrome, 40px) - 76px);
   overflow: auto;
   border-radius: var(--radius-lg);
 }
