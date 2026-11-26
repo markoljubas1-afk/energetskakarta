@@ -2699,7 +2699,7 @@ Serija 3 napravljeno (2026-11-15):
   `flyTo` ignorira smanjeno kretanje; `er=` ruši analitiku; uvod (predaja, ponovni povratak, dodir)
 
 **Serija 5 — UX i pristupačnost (P1/P2), dio traži tvoju odluku**
-- [ ] 5.1 kontrast tokena; aktivni čipovi; dodirne mete 44 px; 16 px polja (iOS); legenda na mobitelu i u
+- [x] 5.1 kontrast tokena; aktivni čipovi; dodirne mete 44 px; 16 px polja (iOS); legenda na mobitelu i u
   ugradnji; raspored 721–1000 px; gusta traka uživo; imena gumba na mobitelu; MapLibre na hrvatskom;
   „Vi” umjesto „ti”; nazivlje; velika slova u grupama; prazna stanja; prečaci koji se mogu isključiti; h1
 - [ ] 5.2 boje slojeva za daltoniste (380 kV crvena / 220 kV zelena, plin~biomasa) — **odluka:** zadržati
@@ -3385,3 +3385,9 @@ strelicama, pa kontrole i karta ostaju s malo mjesta; kad filtri sakriju sve, to
   statusa na vrhu karte, a raširena prekriva trake ispod karte).
 - Provjera: vitest (`nothingShown`, legenda u listu otvorena, obavijest i gumb), e2e na mobitelu (gumb „Legenda”
   otvara list, filtri se zatvaraju); preview 390 px (obična i ugradnja), 1280 px (traka uživo).
+- [x] PR #23, preview provjeren 2026-11-26: na mobitelu „Legenda” otvara legendu kao list, „Filtri i pregled” ga
+  zamjenjuje; u ugradnji na mobitelu sklopljena legenda u kutu; traka uživo: „Kako čitati boje i strelice”
+  sklopljeno, ljestvica i izvor vidljivi; na 800 px klizač 130 px u svom retku; prazna karta (vodovi filtrirani na
+  Crnu Goru, prikaz Hrvatske) kaže „Na ovom dijelu karte nema ničega od uključenoga”, „Poništi filtre” je vraća.
+  E2e je prvi put pao na vlastitom lokatoru (ista riječ i na čipu filtra), ne na aplikaciji. Spojeno uz odobrenje
+  vlasnika. Serija 5.1 iz Faze 31 time je gotova.
