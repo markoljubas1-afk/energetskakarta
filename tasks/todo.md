@@ -3470,3 +3470,11 @@ aplikacije i zadnje dohvaćene podatke, uz jasnu obavijest. Dijelovi karte koji 
 - Provjera: vitest (`strategyFor`, `useOnline`, obavijest, manifest), e2e: SW registriran, ponovno učitavanje bez
   mreže (`context.setOffline`) prikazuje kartu i obavijest; preview: Chrome nudi instalaciju, Lighthouse PWA
   provjere, rad bez mreže.
+- [x] PR #25, preview provjeren 2026-11-26 (Chrome, računalo i mobitel): manifest bez grešaka (jedina prepreka
+  instalaciji u testu je privatni prozor), SW aktivan, nakon prvog posjeta spremljeno 29 datoteka koda (ulaz, karta,
+  MapLibreov worker, fontovi), `/`, `/en/` i `current.json`; bez mreže stranica se otvara sa zaglavljem, datumom
+  podataka i obaviješću „Nema veze s mrežom”. Prva provjera obavijesti tražila ju je prerano (4 s), pa je izgledalo
+  da je nema; poruka SW-a o izvoru podataka svejedno ostaje (Wi-Fi bez interneta). Napomena: Playwrightovo
+  isključivanje mreže ne vrijedi za zahtjeve samog SW-a, pa se put poruke „cache” provjerava jediničnim testom.
+  Ostaje otvoreno: pločice karte (PMTiles, dohvat po dijelovima) se ne spremaju, pa je karta bez mreže prazna i
+  ondje gdje je bila otvorena; tekst obavijesti to ne kaže točno → 59-B. Spojeno uz odobrenje vlasnika.
