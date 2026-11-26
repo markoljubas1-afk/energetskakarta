@@ -2704,7 +2704,7 @@ Serija 3 napravljeno (2026-11-15):
   „Vi” umjesto „ti”; nazivlje; velika slova u grupama; prazna stanja; prečaci koji se mogu isključiti; h1
 - [ ] 5.2 boje slojeva za daltoniste (380 kV crvena / 220 kV zelena, plin~biomasa) — **odluka:** zadržati
   OpenInfraMap konvenciju ili jednobojna skala za napone
-- [ ] 5.3 statične stranice: poravnanje, mrvice, citat, FAQ razmaci, API oznake, 404, oznaka navigacije
+- [x] 5.3 statične stranice: poravnanje, mrvice, citat, FAQ razmaci, API oznake, 404, oznaka navigacije
 
 ## Raspored ažuriranja
 
@@ -3436,6 +3436,10 @@ stranica 404 (postoji, isti stil); otvoreno ili djelomično ostalo je deset. Dva
   (`pipeline/src/energymap/timeline.py`) i novi build podataka: zapisano kao mogući nastavak, ne radi se sada.
 - Provjera: vitest (`changedUrls`, `releasedOn` u manifestu, `checkLive`, `checkTimeline`, opis i JSON-LD
   „Zelene tranzicije” samo s Eurostatom, rečenica „svih vrsta”); preview: „Zelena tranzicija” opis i JSON-LD.
+- [x] PR #27, preview provjeren 2026-11-26: `seo-manifest.json` ima `releasedOn` (8390 stranica); „Zelena
+  tranzicija” na stvarnim podacima prikazuje sve odjeljke, pa opis, šest mjerenih veličina, izvori i četiri licence
+  ostaju potpuni kao prije; nova rečenica „… svih vrsta: 98.” Kraći opis za stranicu s manje odjeljaka pokriva
+  jedinični test. Spojeno uz odobrenje vlasnika. Serija 5.3 iz Faze 31 time je gotova.
 
 ## Faza 59 — PWA: instalacija i zadnje viđeno bez mreže — 2026-11-26 (vlasnik: „napravi i pwa od ovoga”;
 odabrao „Instalacija + zadnje viđeno”)
