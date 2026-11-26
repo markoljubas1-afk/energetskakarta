@@ -142,8 +142,10 @@ test("a topic page lists the country's assets of one kind and links each to its 
   await page.goto("/zemlja/hr/reverzibilne-hidroelektrane/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Reverzibilne hidroelektrane u Hrvatskoj");
   // the planned unit of the same plant (known only to GEM) carries the same name and is listed too
-  const plant = page.locator('a[href="/objekt/osm-way-109/"]');
+  // the list's own link (the chart of the largest above it links the same page, D4)
+  const plant = page.locator('table a[href="/objekt/osm-way-109/"]');
   await expect(plant).toHaveText("RHE Primjer");
+  await expect(page.locator('.ranking a[href="/objekt/osm-way-109/"]')).toHaveText("RHE Primjer");
   const crumbs = page.getByRole("navigation", { name: "Putanja" });
   await expect(crumbs.getByRole("link", { name: "Hrvatska" })).toHaveAttribute("href", "/zemlja/hr/");
   await plant.click();
