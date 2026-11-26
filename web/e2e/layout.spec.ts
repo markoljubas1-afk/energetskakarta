@@ -144,15 +144,16 @@ test("on a phone the legend opens from the bar below the map, and gives way to t
   test.skip(testInfo.project.name !== "mobile", "computers show the legend in the map's corner");
   await open(page, "");
   const legendButton = page.getByRole("button", { name: "Legenda", exact: true });
+  const legend = page.locator("#map-legend");
   await legendButton.click();
-  await expect(page.getByText("380 kV i više")).toBeVisible();
+  await expect(legend.getByText("380 kV i više")).toBeVisible();
   await expect(page.getByRole("button", { name: "Zatvori legendu" })).toHaveAttribute(
     "aria-expanded",
     "true",
   );
   await page.getByRole("button", { name: "Filtri i pregled" }).click();
   await expect(page.locator("#settings-panel")).toBeVisible();
-  await expect(page.getByText("380 kV i više")).toBeHidden();
+  await expect(legend.getByText("380 kV i više")).toBeHidden();
 });
 
 test("nothing switched on in this part of the map is said on the map, with a way back", async ({ page }) => {
