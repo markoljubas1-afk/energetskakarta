@@ -3501,6 +3501,13 @@ zaglavlju; Cache API ne sprema odgovor 206.
   karta „ready”), ali obavijesti nema: poruka SW-a o kopiji `current.json` stigla je prije nego što je karta
   slušala (preglednik poruke isporučuje čim se dokument učita). Sada `useOnline` sluša od učitavanja koda aplikacije
   (`listenToWorker`), s testom za poruku koja stigne prije karte. L-086.
+- [x] Obavijest nestaje čim preglednik javi da je mreža opet tu (e2e u CI-ju: ostajala je do sljedećih podataka).
+- [x] PR #26, preview provjeren 2026-11-26 pravim prekidom mreže (Chrome preko lokalnog proxyja koji se ugasi;
+  provjera da mreža stvarno nije dostupna): nakon posjeta Rijeci spremljeno 16 dijelova pločica; bez mreže karta
+  iscrtana u cijelosti (vodovi, elektrane), bez „nema ničega”, zaglavlje i datum podataka; uz preglednik koji zna
+  da je offline (kao u načinu rada u zrakoplovu) i obavijest „Nema veze s mrežom”. Samo uz ugašeni proxy obavijesti
+  nema s pravom: `current.json` dolazi iz HTTP predmemorije preglednika, a `navigator.onLine` ostaje `true`.
+  Spojeno uz odobrenje vlasnika.
 - Alternative: spremati cijele `.pmtiles` datoteke (odbačeno: desetci MB po sloju); prvo mreža za pločice
   (odbačeno: adrese su nepromjenjive, a svaki pomak karte išao bi na mrežu i pisao u predmemoriju).
 - Rizici: veličina (dijelovi su mali; 2000 × do nekoliko desetaka kB); ETag mora ostati isti kao u zaglavlju.
