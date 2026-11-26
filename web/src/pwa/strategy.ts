@@ -30,8 +30,11 @@ export function strategyFor(request: RequestLike, siteOrigin: string, dataBase: 
   return url.href.startsWith(data.href) ? "data" : "bypass";
 }
 
-/** A data copy is kept under its address without the query: a cache-busting `?t=` must not multiply it. */
-export function dataKey(url: string): string {
+/**
+ * A copy is kept under its address without the query: a data file's cache-busting `?t=` and a map page's state
+ * (`?v=…&sel=…`) must not multiply it.
+ */
+export function cacheKey(url: string): string {
   const parsed = new URL(url);
   parsed.search = "";
   return parsed.href;

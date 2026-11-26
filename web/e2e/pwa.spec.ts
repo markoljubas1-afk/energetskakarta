@@ -16,21 +16,31 @@ test("the manifest makes it an app of its own window, with shortcuts", async ({ 
   expect(manifest.shortcuts).toHaveLength(3);
 });
 
-test("without a network the map opens with the last data seen, and says so", async ({ page, context }) => {
+test("the very first visit already opens without a network, with the last data seen, and says so", async ({
+  page,
+  context,
+}) => {
   await page.goto("/");
   await expect(page.locator('[data-map-status="ready"]')).toBeVisible();
-  // the worker takes over this page once it is active; one more visit lets it keep the data the map reads
-  await page.evaluate(async () => {
-    await navigator.serviceWorker.ready;
+  // installed: the worker has kept the app's code, the map's code and the data index (no second visit online)
+  const kept = await page.evaluate(async () => {
+    const registration = await navigator.serviceWorker.ready;
+    const assets = await caches.open("gridatlas-assets");
+    const files = (await assets.keys()).map((request) => new URL(request.url).pathname);
+    return { state: registration.active?.state, files };
   });
-  await page.reload();
-  await expect(page.locator('[data-map-status="ready"]')).toBeVisible();
-  expect(await page.evaluate(() => navigator.serviceWorker.controller !== null)).toBe(true);
+  expect(kept.state).toBe("activated");
+  const entry = await page.evaluate(
+    () => document.querySelector<HTMLScriptElement>('script[type="module"][src*="/assets/main-"]')?.src ?? "",
+  );
+  expect(kept.files).toContain(new URL(entry).pathname);
+  expect(kept.files.some((file) => file.includes("/MapView-"))).toBe(true);
 
   await context.setOffline(true);
   await page.reload();
   await expect(page.getByRole("status").filter({ hasText: "Nema veze s mrežom" })).toBeVisible();
   // the header and the data's date come from the kept copies
+  await expect(page.getByRole("heading", { level: 1, name: "GridAtlas" })).toBeVisible();
   await expect(page.locator("[data-data-version]")).toContainText("Karta od");
   await context.setOffline(false);
   await expect(page.getByRole("status").filter({ hasText: "Nema veze s mrežom" })).toBeHidden();

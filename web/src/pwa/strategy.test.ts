@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { dataKey, shellFor, strategyFor, type RequestLike } from "./strategy";
+import { cacheKey, shellFor, strategyFor, type RequestLike } from "./strategy";
 
 const SITE = "https://gridatlas.eu";
 const DATA = "https://podaci.gridatlas.eu/";
@@ -42,8 +42,9 @@ describe("what the service worker does with a request (Faza 59)", () => {
     expect(route(request(`${SITE}/api/x.json`, { method: "POST" }))).toBe("bypass");
   });
 
-  it("files a data copy under its address without the query, so ?t=13 and ?t=14 are one copy", () => {
-    expect(dataKey(`${DATA}hep/current.json?t=2026112613`)).toBe(`${DATA}hep/current.json`);
+  it("files a copy under its address without the query: ?t=13 and ?t=14 are one, and so are two map views", () => {
+    expect(cacheKey(`${DATA}hep/current.json?t=2026112613`)).toBe(`${DATA}hep/current.json`);
+    expect(cacheKey(`${SITE}/?v=45,16,7&sel=osm:way/1`)).toBe(`${SITE}/`);
   });
 
   it("falls back to the map in the page's language when a page was never opened", () => {

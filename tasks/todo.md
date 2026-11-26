@@ -3440,18 +3440,24 @@ aplikacije i zadnje dohvaćene podatke, uz jasnu obavijest. Dijelovi karte koji 
 - [x] Manifest: `display: standalone`, `id: "/"`, prečaci „Karta”, „Proizvodnja kroz vrijeme”, „Tokovi i cijene
   uživo” (`/?p=energy`, `/?live=1`), `categories`. Ikone ostaju (maskable tek uz ikonu sa sigurnom zonom).
 - [x] Service worker `src/pwa/sw.ts`, još jedan ulaz postojećeg Rollup builda s fiksnim imenom `sw.js` (kao
-  `learn-live.js`; bez zasebnog esbuild koraka), 1,7 kB bez uvoza, s oznakom izdanja (`__BUILD_ID__`) u imenu
-  predmemorije; staro se briše pri aktivaciji. Pravila u čistoj funkciji `strategyFor(request)`
-  (`src/pwa/strategy.ts`, testirana):
-  - stranice (navigacija, isti izvor): prvo mreža, bez mreže spremljena kopija, inače spremljena aplikacija `/`;
-  - `/assets/*` (imena s hashom, nepromjenjiva): prvo predmemorija;
-  - JSON podataka (`DATA_BASE_URL`, GET bez `Range`): prvo mreža, bez mreže zadnja spremljena kopija;
-  - zahtjevi s `Range` (PMTiles), MapTiler, analitika, sve osim GET: ne diraju se (mreža).
+  `learn-live.js`), bez uvoza. Pravila u čistoj funkciji `strategyFor(request)` (`src/pwa/strategy.ts`):
+  - stranice: prvo mreža, bez mreže spremljena kopija (ključ bez upita, `?v=…&sel=…` ne množi kopije), inače `/`
+    ili `/en/`;
+  - `/assets/*` (imena s hashom): prvo predmemorija;
+  - JSON podataka (`DATA_BASE_URL`) i `/api/*.json`: prvo mreža, bez mreže zadnja kopija (ključ bez `?t=`);
+  - zahtjevi s `Range` (PMTiles), MapTiler, analitika, sve osim GET: ne diraju se.
+- [x] Ispravak nakon pregleda (prije PR-a): predmemorije nisu vezane uz izdanje (`gridatlas-pages`, `-assets`,
+  `-data`, svaka s gornjom granicom broja kopija). Verzionirana predmemorija aplikacije brisala bi pri aktivaciji
+  novog SW-a upravo datoteke novog izdanja koje je stari SW spremio. Pri instalaciji SW sprema `/`, `/en/`,
+  `current.json` i popis datoteka koji build upiše u `sw.js` (`vite/swPrecache.ts`): ulaz i njegovi uvozi, dio s
+  kartom, MapLibreov worker, njihovi stilovi i fontovi. Bez toga prvi posjet bez mreže ima stranicu, ali ne i kod.
 - [x] Registracija u `main.tsx` samo u produkcijskom buildu; `_headers`: `/sw.js` bez dugog predmemoriranja.
 - [x] Obavijest bez mreže: `useOnline` (`navigator.onLine` i događaji) → „Nema veze s mrežom: prikazani su zadnji
   spremljeni podaci.” na mjestu obavijesti na karti; nestaje kad se veza vrati.
 - [x] e2e: Playwrightov `page.route` ne vidi zahtjeve koje šalje service worker, a 27 e2e datoteka podmeće podatke;
-  zato `serviceWorkers: "block"` u `playwright.config.ts`, a `e2e/pwa.spec.ts` ga dopušta. Lokalno (instalirani
+  zato `serviceWorkers: "block"` u `playwright.config.ts`, a `e2e/pwa.spec.ts` ga dopušta i provjerava baš prvi
+  posjet: nakon njega su kod aplikacije i karte spremljeni, a ponovno učitavanje bez mreže prikazuje zaglavlje,
+  datum podataka i obavijest (računalo i mobitel). Lokalno (instalirani
   Chrome): PWA testovi prolaze, `map`/`alert`/`layout` prolaze s jednim radnim procesom (s više njih karta lokalno
   ne stigne do „ready” u 15 s zbog softverskog WebGL-a, ne zbog promjene).
 - Alternative: `vite-plugin-pwa`/Workbox (odbačeno: nova ovisnost i generirana pravila za ono što stane u stotinjak
