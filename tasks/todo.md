@@ -3415,6 +3415,11 @@ stranica 404 (postoji, isti stil); otvoreno ili djelomično ostalo je deset. Dva
   poveznica, s poveznicom na kartu na engleskom.
 - Provjera: vitest (`seo/*.test.ts`: scope, stupci, prazna zemlja, API primjer postoji u indeksu, mrvice), e2e
   `seo.spec.ts`; preview: najveće elektrane, zemlja, API, nepostojeća adresa, na 390 i 1280 px.
+- [x] PR #24, preview provjeren 2026-11-26 (390 i 1280 px): najveće elektrane „Tehnologija” i „Zemlja” lijevo,
+  „Snaga” desno, naziv kao zaglavlje retka, bez vodoravnog pomicanja; API: 5 adresa s GET i formatom, primjer
+  `osm-relation-13844905` postoji (200); plin: Početna › Hrvatska › Plin; `/en/does-not-exist/` → 404 s naslovom na
+  oba jezika. CI je dvaput pao na testovima sa starim HTML-om (L-084), ne na stranicama. Spojeno uz odobrenje
+  vlasnika.
 
 ### 58-B podaci i tražilice (sljedeći PR)
 - [ ] IndexNow samo za promijenjene stranice (`seo-manifest.json` ima datum promjene po stranici).
