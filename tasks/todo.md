@@ -1039,7 +1039,7 @@ konzoli osim očekivanih 404 za neobjavljene ENTSO-E podatke.
       ranije (a6f44a8, `map/firstView.ts`: uspravni mobitel otvara Hrvatsku s rubovima susjeda, `HOME_BOUNDS`),
       samo nije bilo označeno. Provjereno na produkciji 2026-11-26 na 360×740, 390×844 i 412×915: Austrija,
       Mađarska, Hrvatska, BiH, Crna Gora, bez Njemačke i Tunisa.
-- [ ] D3 Vremeplov: graf je nizak i bez osi; nakon A1 provjeriti čitljivost.
+- [x] D3 Vremeplov: graf je nizak i bez osi; nakon A1 provjeriti čitljivost. → PR #29 (2026-11-26).
 - [ ] D4 Statične stranice (zemlja, tema, gradovi) su gole tablice: dodati ključne brojke, graf i sliku karte.
       To je prva stranica za posjetitelja s tražilice.
 - [x] D5 Raspored 1001–1199 px (već zapisano gore). → Riješeno u 57-C1 (PR #22).
@@ -3544,3 +3544,5 @@ Stanje na produkciji (1280 i 390 px, `?y=1990`): graf je visok 56 px; okomite os
   godina dobiva oznaku tek 15 % od kraja.
 - Alternative: graf s knjižnicom grafikona (odbačeno: traka je lagana i crta se sama, bez lijenog učitavanja).
 - Provjera: vitest (`yTicks`, `yearTicks`, TimeBar: oznake osi), preview 1280 i 390 px.
+- [x] PR #29, preview provjeren 2026-11-26 (1280, 390 i 360 px; svijetlo i tamno): graf viši, crte 100 i 200 GW
+  s oznakama, godine 1888., 1950., 2000., 2026. bez preklapanja (izmjereno). Spojeno uz odobrenje vlasnika.
