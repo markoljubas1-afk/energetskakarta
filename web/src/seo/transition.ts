@@ -54,7 +54,7 @@ import { monthName } from "./reportCopy";
 import { geothermalLinks } from "./geothermal";
 import { reportLinks } from "./report";
 import { REPORT_COPY } from "./reportCopy";
-import { TRANSITION_COPY } from "./transitionCopy";
+import { TRANSITION_COPY, TRANSITION_TOPICS, type TransitionTopic } from "./transitionCopy";
 import { ogImage } from "./ogImages";
 
 const FOSSIL: readonly Technology[] = ["coal", "lignite", "gas", "oil"];
@@ -386,6 +386,8 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
     });
   }
   const official = site.renewables ? officialSections(site.renewables, lang) : null;
+  // what the page shows: its description and its data set name only that (Faza 58-B)
+  const covered = new Set<TransitionTopic>(official ? ["official"] : []);
   const sections: StaticPage["sections"] = [...(official?.sections ?? [])];
   const lead: string[] = official ? [official.lead] : [];
 
@@ -419,6 +421,7 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
     });
   }
   if (complete.length > 0) {
+    covered.add("share");
     const c = copy.share.columns;
     const shown = complete.slice(-SHARE_YEARS);
     sections.push({
@@ -453,6 +456,7 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
   const months = monthlyIntensity(site);
   const lastMonth = months.at(-1);
   if (lastMonth) {
+    covered.add("co2");
     lead.push(copy.leadCo2(monthName(lang, lastMonth.month), i18n.number(Math.round(lastMonth.value))));
     tiles.push({
       label: words.co2,
@@ -499,6 +503,7 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
   // installed renewable capacity, and closed fossil plants (timeline)
   const timeline = site.timeline;
   if (timeline?.series.HR) {
+    covered.add("capacity");
     const years = [
       ...CAPACITY_YEARS.filter((y) => y >= timeline.firstYear && y < timeline.lastYear),
       timeline.lastYear,
@@ -549,6 +554,7 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
   // what is being built (the release's statistics)
   const summary = summarize(site.stats, "HR", SCOPE_COUNTRIES);
   if (summary.pipelineMw > 0) {
+    covered.add("pipeline");
     const renewable = summary.technologies
       .filter((t) => isOneOf(RENEWABLE, t.technology))
       .reduce((s, t) => s + t.pipelineMw, 0);
@@ -576,6 +582,7 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
     const counts = countByCategory(site.capacity.stations, "existing");
     const total = counts.none + counts.A + counts.B + counts.C + counts.D;
     if (total > 0) {
+      covered.add("grid");
       sections.push({
         heading: copy.grid.heading,
         html:
@@ -597,12 +604,15 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
   sections.push({ heading: copy.method.heading, html: list(method.map((item) => e(item))) });
 
   const path = PATHS[lang].transition;
+  const topics = TRANSITION_TOPICS.filter((topic) => covered.has(topic));
+  const description = copy.describe(topics.map((topic) => copy.topics[topic]));
+  const fromGrid = covered.has("capacity") || covered.has("pipeline");
   return {
     path,
     lang,
     alternatePath: PATHS[other(lang)].transition,
     title: copy.title,
-    description: official ? copy.descriptionOfficial : copy.description,
+    description,
     heading: copy.heading,
     lead: lead.map((sentence) => `<p>${e(sentence)}</p>`).join(""),
     ...(tiles.length > 0 ? { figures: keyFigures(tiles, CHART_COPY[lang].figures) } : {}),
@@ -612,24 +622,32 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
         "@context": "https://schema.org",
         "@type": "Dataset",
         name: copy.title,
-        description: official ? copy.descriptionOfficial : copy.description,
+        description,
         inLanguage: lang,
         isAccessibleForFree: true,
         spatialCoverage: { "@type": "Place", name: i18n.country("HR") },
-        variableMeasured: [...(official ? [copy.variableOfficial] : []), ...copy.variables].map((name) => ({
-          "@type": "PropertyValue",
-          name,
-        })),
+        variableMeasured: topics
+          .map((topic) => copy.variables[topic])
+          .map((name) => ({
+            "@type": "PropertyValue",
+            name,
+          })),
         isBasedOn: [
           ...(official && site.renewables ? [site.renewables.sourceUrl] : []),
-          ...(site.solarCapita ? [site.solarCapita.generation.url, site.solarCapita.population.url] : []),
-          "https://transparency.entsoe.eu/",
-          "https://www.openstreetmap.org/",
-          "https://globalenergymonitor.org/",
-          "https://kapaciteti.hep.hr/",
+          ...(solar && site.solarCapita
+            ? [site.solarCapita.generation.url, site.solarCapita.population.url]
+            : []),
+          ...(covered.has("share") || covered.has("co2") ? ["https://transparency.entsoe.eu/"] : []),
+          ...(fromGrid ? ["https://www.openstreetmap.org/", "https://globalenergymonitor.org/"] : []),
+          ...(covered.has("grid") ? ["https://kapaciteti.hep.hr/"] : []),
         ],
         // Eurostat and Global Energy Monitor: CC BY 4.0; OpenStreetMap: ODbL
-        license: [SOURCE_TERMS.entsoe, SOURCE_TERMS.osm, SOURCE_TERMS.ccBy, SOURCE_TERMS.hepOds],
+        license: [
+          ...(covered.has("share") || covered.has("co2") ? [SOURCE_TERMS.entsoe] : []),
+          ...(fromGrid ? [SOURCE_TERMS.osm] : []),
+          ...(fromGrid || official || solar ? [SOURCE_TERMS.ccBy] : []),
+          ...(covered.has("grid") ? [SOURCE_TERMS.hepOds] : []),
+        ],
         publisher: publisher(site, i18n),
         ...(site.siteUrl ? { url: site.siteUrl + path } : {}),
       },

@@ -26,8 +26,8 @@ import { checkedRenewables, RENEWABLES_KEY, RenewablesSchema } from "../data/eur
 import { GEOTHERMAL_KEY, GeothermalSchema } from "../data/geothermal";
 import { SUPPORT_CONTENT } from "../support";
 import { checkedHistory, HEP_KEYS, HepHistorySchema, HepReleaseSchema } from "../data/hep";
-import { LiveSchema } from "../data/live";
-import { TimelineSchema } from "../data/timeline";
+import { checkLive, LiveSchema } from "../data/live";
+import { checkTimeline, TimelineSchema } from "../data/timeline";
 import { SearchIndexSchema, toHit, type SearchIndex } from "../data/search";
 import { StatsSchema } from "../data/stats";
 import { apiFiles } from "./api";
@@ -200,8 +200,9 @@ export async function loadSiteData(options: PrerenderOptions): Promise<SiteData>
     capacity,
     capacityHistory: capacityHistory ? checkedHistory(capacityHistory) : null,
     energy,
-    live,
-    timeline,
+    // the same checks as the map's own loaders (Faza 58-B): a column short of an hour or a year must not reach a page
+    live: live ? checkLive(live) : null,
+    timeline: timeline ? checkTimeline(timeline) : null,
     geothermal,
     renewables: renewables ? checkedRenewables(renewables) : null,
     priceMonths,
@@ -224,6 +225,8 @@ export const SEO_MANIFEST = "seo-manifest.json";
 export interface SeoManifest {
   version: 1;
   buildId: string;
+  /** the day of this release: a page whose lastmod is this day changed in it (IndexNow announces those, 58-B) */
+  releasedOn?: string;
   pages: Record<string, { hash: string; lastmod: string }>;
 }
 
@@ -258,7 +261,7 @@ export function seoManifest(
     const before = previous?.pages[page.path];
     entries[page.path] = { hash, lastmod: before?.hash === hash ? before.lastmod : today };
   }
-  return { version: 1, buildId, pages: entries };
+  return { version: 1, buildId, releasedOn: today, pages: entries };
 }
 
 /** The manifest of the live site, or null (first deploy, unreachable, or not ours): then every page is new. */
@@ -278,7 +281,13 @@ export function parseSeoManifest(body: unknown): SeoManifest | null {
       valid[key] = { hash: entry.hash, lastmod: entry.lastmod };
     }
   }
-  return { version: 1, buildId, pages: valid };
+  const { releasedOn } = body as Record<string, unknown>;
+  return {
+    version: 1,
+    buildId,
+    ...(typeof releasedOn === "string" && /^\d{4}-\d{2}-\d{2}$/.test(releasedOn) ? { releasedOn } : {}),
+    pages: valid,
+  };
 }
 
 export async function loadPreviousManifest(siteUrl: string | null): Promise<SeoManifest | null> {

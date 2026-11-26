@@ -3421,12 +3421,21 @@ stranica 404 (postoji, isti stil); otvoreno ili djelomično ostalo je deset. Dva
   oba jezika. CI je dvaput pao na testovima sa starim HTML-om (L-084), ne na stranicama. Spojeno uz odobrenje
   vlasnika.
 
-### 58-B podaci i tražilice (sljedeći PR)
-- [ ] IndexNow samo za promijenjene stranice (`seo-manifest.json` ima datum promjene po stranici).
-- [ ] Prerender provjerava satne podatke uživo i vremeplov kao aplikacija (`checkedLive`, provjera vremeplova).
-- [ ] „Zelena tranzicija”: opis i `variableMeasured`/`isBasedOn` samo za prikazane odjeljke.
-- [ ] „Bez godine puštanja u pogon” broji samo obnovljive (pipeline dijeli `undated` po tehnologiji) ili rečenica
-  kaže da su uključene sve elektrane.
+### 58-B podaci i tražilice — 2026-11-26 (vlasnik: „može, nakon toga kreni s 58-B”)
+- [x] IndexNow samo za stranice promijenjene u ovom izdanju: manifest dobiva `releasedOn` (dan izdanja), a
+  `changedUrls` (`seo/indexnow.ts`) bira stranice čiji je `lastmod` taj dan, i nove stranice koje manifest ne zna;
+  bez manifesta ili bez `releasedOn` (stari manifest) javlja sve kao prije. `notify.ts` ispisuje „N od M stranica”.
+- [x] Prerender provjerava satne podatke uživo i vremeplov istim provjerama kao karta: `checkLive`
+  (`data/live.ts`) i `checkTimeline` (`data/timeline.ts`) sada su izvezene i zajedničke; stupac kraći od broja
+  sati ili godina ruši build stranica (kao `checkedHistory` i `checkedRenewables`), umjesto da dođe na stranicu.
+- [x] „Zelena tranzicija”: opis, `variableMeasured`, `isBasedOn` i licence slažu se od prikazanih odjeljaka
+  (`TRANSITION_TOPICS`: službeni udio, udio u proizvodnji, CO₂, instalirana snaga, izgradnja, slobodni kapacitet);
+  stranica samo s Eurostatovim udjelom više ne obećava CO₂ ni HEP ODS.
+- [x] „Bez godine puštanja u pogon”: rečenica sada kaže da je to broj elektrana svih vrsta (tablica iznad ima samo
+  obnovljive). Točan broj samo obnovljivih traži podjelu `undated` po tehnologiji u pipelineu
+  (`pipeline/src/energymap/timeline.py`) i novi build podataka: zapisano kao mogući nastavak, ne radi se sada.
+- Provjera: vitest (`changedUrls`, `releasedOn` u manifestu, `checkLive`, `checkTimeline`, opis i JSON-LD
+  „Zelene tranzicije” samo s Eurostatom, rečenica „svih vrsta”); preview: „Zelena tranzicija” opis i JSON-LD.
 
 ## Faza 59 — PWA: instalacija i zadnje viđeno bez mreže — 2026-11-26 (vlasnik: „napravi i pwa od ovoga”;
 odabrao „Instalacija + zadnje viđeno”)

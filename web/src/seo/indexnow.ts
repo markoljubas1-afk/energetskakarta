@@ -7,6 +7,7 @@
  * know the sender owns the site. It still lives in a GitHub variable rather than in the repository, so
  * every deployment of this code can use its own.
  */
+import type { SeoManifest } from "./prerender";
 
 export const INDEXNOW_ENDPOINT = "https://api.indexnow.org/indexnow";
 /** the protocol's limit per request */
@@ -74,4 +75,23 @@ export function describeResponse(
   if (status === 403 || status === 422) return "key-rejected";
   if (status === 429) return "throttled";
   return "failed";
+}
+
+/**
+ * The URLs to announce (Faza 58-B): only the pages that changed in this release. The manifest the build wrote
+ * gives every page the day it last changed, and the day of this release; a page it does not know is new. Without
+ * that day (no manifest, or one written before it was kept) every URL is announced, as before.
+ */
+export function changedUrls(
+  urls: readonly string[],
+  siteUrl: string,
+  manifest: SeoManifest | null,
+): string[] {
+  const releasedOn = manifest?.releasedOn;
+  if (!manifest || !releasedOn) return [...urls];
+  return urls.filter((url) => {
+    const path = url.startsWith(siteUrl) ? url.slice(siteUrl.length) || "/" : url;
+    const page = manifest.pages[path];
+    return !page || page.lastmod === releasedOn;
+  });
 }

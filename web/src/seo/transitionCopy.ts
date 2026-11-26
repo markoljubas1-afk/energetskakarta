@@ -2,11 +2,16 @@
 import type { Lang } from "../state/url";
 import type { Forms } from "./markup";
 
+/** What a section of the page is about: its description and its data set name only what is on the page (58-B). */
+export const TRANSITION_TOPICS = ["official", "share", "co2", "capacity", "pipeline", "grid"] as const;
+export type TransitionTopic = (typeof TRANSITION_TOPICS)[number];
+
 interface TransitionCopy {
   title: string;
-  description: string;
-  /** the description when the page has Eurostat's official share */
-  descriptionOfficial: string;
+  /** one phrase per section shown, in this order, for the page's description */
+  topics: Record<TransitionTopic, string>;
+  /** "A, B i C u Hrvatskoj, iz otvorenih podataka." */
+  describe: (phrases: readonly string[]) => string;
   heading: string;
   linkText: string;
   leadShare: (year: string, share: string, prevYear: string, prevShare: string) => string;
@@ -72,17 +77,32 @@ interface TransitionCopy {
   geothermalHeading: string;
   target: { heading: string; text: string; measured: string };
   method: { heading: string; items: string[]; official: string };
-  variables: string[];
-  variableOfficial: string;
+  /** the measured variable of each section, for the data set's JSON-LD */
+  variables: Record<TransitionTopic, string>;
+}
+
+const capitalized = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1);
+
+/** "a", "a i b", "a, b i c" (English: "a, b, and c"; two are joined without the comma). */
+function listed(items: readonly string[], last: string): string {
+  if (items.length <= 1) return items.join("");
+  const head = items.slice(0, -1).join(", ");
+  const final = items.length === 2 ? last.replace(/^,/, "") : last;
+  return `${head}${final}${items.at(-1) ?? ""}`;
 }
 
 export const TRANSITION_COPY: Record<Lang, TransitionCopy> = {
   hr: {
     title: "Zelena tranzicija u Hrvatskoj: pokazatelji",
-    description:
-      "Udio obnovljivih izvora u proizvodnji struje, CO₂ intenzitet, instalirana snaga obnovljivih izvora, što se gradi i što se gasi te slobodni kapacitet mreže u Hrvatskoj, iz otvorenih podataka.",
-    descriptionOfficial:
-      "Službeni udio obnovljivih izvora prema Eurostatu i cilj za 2030., udio u proizvodnji struje, CO₂ intenzitet, instalirana snaga obnovljivih izvora, što se gradi i što se gasi te slobodni kapacitet mreže u Hrvatskoj, iz otvorenih podataka.",
+    topics: {
+      official: "službeni udio obnovljivih izvora prema Eurostatu i cilj za 2030.",
+      share: "udio obnovljivih izvora u proizvodnji struje",
+      co2: "CO₂ intenzitet",
+      capacity: "instalirana snaga obnovljivih izvora i što se gasi",
+      pipeline: "što se gradi",
+      grid: "slobodni kapacitet mreže",
+    },
+    describe: (phrases) => `${capitalized(listed(phrases, " i "))} u Hrvatskoj, iz otvorenih podataka.`,
     heading: "Zelena tranzicija u Hrvatskoj",
     linkText: "Zelena tranzicija: pokazatelji za Hrvatsku",
     leadShare: (year, share, prevYear, prevShare) =>
@@ -157,7 +177,8 @@ export const TRANSITION_COPY: Record<Lang, TransitionCopy> = {
     capacity: {
       heading: "Instalirana snaga obnovljivih izvora kroz godine",
       note: (undated) =>
-        `Elektrane u pogonu, od godine prve jedinice. Bez godine puštanja u pogon (nisu u tablici): ${undated}.`,
+        // the count is of plants of every kind, fossil too: the table above has the renewables only (58-B)
+        `Elektrane u pogonu, od godine prve jedinice. Elektrane bez godine puštanja u pogon nisu u tablici; takvih je u pogonu, svih vrsta: ${undated}.`,
       columns: ["Godina", "Hidro", "Vjetar", "Sunce", "Ostali obnovljivi", "Ukupno"],
     },
     pipeline: {
@@ -197,21 +218,26 @@ export const TRANSITION_COPY: Record<Lang, TransitionCopy> = {
       official:
         "Službeni udio obnovljivih izvora: Eurostat, skup podataka nrg_ind_ren (SHARES, pravila Direktive o obnovljivoj energiji), licenca CC BY 4.0; provjerava se jednom mjesečno. Vrijednosti s oznakom p (privremeno) ili e (procjena) još se mogu promijeniti.",
     },
-    variables: [
-      "udio obnovljivih izvora u proizvodnji struje",
-      "CO₂ intenzitet proizvodnje struje",
-      "instalirana snaga obnovljivih izvora",
-      "snaga u izgradnji i planirana",
-      "slobodni kapacitet mreže",
-    ],
-    variableOfficial: "udio obnovljivih izvora u bruto konačnoj potrošnji energije (Eurostat)",
+    variables: {
+      official: "udio obnovljivih izvora u bruto konačnoj potrošnji energije (Eurostat)",
+      share: "udio obnovljivih izvora u proizvodnji struje",
+      co2: "CO₂ intenzitet proizvodnje struje",
+      capacity: "instalirana snaga obnovljivih izvora",
+      pipeline: "snaga u izgradnji i planirana",
+      grid: "slobodni kapacitet mreže",
+    },
   },
   en: {
     title: "Croatia's energy transition: indicators",
-    description:
-      "Renewable share of electricity generation, carbon intensity, installed renewable capacity, what is being built and closed, and free grid capacity in Croatia, from open data.",
-    descriptionOfficial:
-      "The official renewable share (Eurostat) against the 2030 target, renewable share of electricity generation, carbon intensity, installed renewable capacity, what is being built and closed, and free grid capacity in Croatia, from open data.",
+    topics: {
+      official: "the official renewable share (Eurostat) against the 2030 target",
+      share: "renewable share of electricity generation",
+      co2: "carbon intensity",
+      capacity: "installed renewable capacity and what is being closed",
+      pipeline: "what is being built",
+      grid: "free grid capacity",
+    },
+    describe: (phrases) => `${capitalized(listed(phrases, ", and "))} in Croatia, from open data.`,
     heading: "Croatia's energy transition",
     linkText: "Energy transition: indicators for Croatia",
     leadShare: (year, share, prevYear, prevShare) =>
@@ -286,7 +312,7 @@ export const TRANSITION_COPY: Record<Lang, TransitionCopy> = {
     capacity: {
       heading: "Installed renewable capacity over the years",
       note: (undated) =>
-        `Plants in operation, from the year of their first unit. Without a commissioning year (not in the table): ${undated}.`,
+        `Plants in operation, from the year of their first unit. Plants without a commissioning year are not in the table; in operation, of every kind, there are ${undated}.`,
       columns: ["Year", "Hydro", "Wind", "Solar", "Other renewables", "Total"],
     },
     pipeline: {
@@ -326,13 +352,13 @@ export const TRANSITION_COPY: Record<Lang, TransitionCopy> = {
       official:
         "Official renewable share: Eurostat, dataset nrg_ind_ren (SHARES, the Renewable Energy Directive's rules), licence CC BY 4.0; checked once a month. Values flagged p (provisional) or e (estimated) may still change.",
     },
-    variables: [
-      "renewable share of electricity generation",
-      "carbon intensity of electricity generation",
-      "installed renewable capacity",
-      "capacity under construction and planned",
-      "free grid capacity",
-    ],
-    variableOfficial: "renewable share of gross final energy consumption (Eurostat)",
+    variables: {
+      official: "renewable share of gross final energy consumption (Eurostat)",
+      share: "renewable share of electricity generation",
+      co2: "carbon intensity of electricity generation",
+      capacity: "installed renewable capacity",
+      pipeline: "capacity under construction and planned",
+      grid: "free grid capacity",
+    },
   },
 };
