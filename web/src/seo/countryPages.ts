@@ -9,7 +9,16 @@ import type { Lang } from "../state/url";
 import { hubKeyOf, pageWorthy } from "./assetPages";
 import { COPY, type HubKey } from "./copy";
 import { counted, definitions, e, type Forms, linkedTable, list, table } from "./markup";
-import { CHART_COPY, keyFigures, mixBar, rankBars, sourceBars, splitUnit, tableBehind } from "./charts";
+import {
+  CHART_COPY,
+  keyFigures,
+  mixBar,
+  rankBars,
+  sourceBars,
+  splitUnit,
+  tableBehind,
+  type KeyFigure,
+} from "./charts";
 import { API_PATHS } from "./paths";
 import {
   absolute,
@@ -307,6 +316,52 @@ function hubRows(
   };
 }
 
+/** How many a power is shown for: the ten largest, as bars against the largest of all (D4). */
+const RANKED = 10;
+
+/** A topic page's power: a plant's capacity, a data centre's power; nothing for the rest. */
+function powerOf(hit: SearchHit): number | null {
+  return hit.kind === "plant" ? hit.capacityMw : hit.kind === "datacenter" ? hit.powerMw : null;
+}
+
+/**
+ * The top of a topic page (D4): the count, and where there is power to add up, the total and the largest as
+ * tiles, and the ten largest as bars over the full list.
+ */
+function hubFigures(
+  hits: readonly SearchHit[],
+  lang: Lang,
+  i18n: I18n,
+): { figures: string; ranking: string } {
+  const words = COPY[lang].hub.figures;
+  const withPower = hits
+    .map((hit) => ({ hit, mw: powerOf(hit) ?? 0 }))
+    .filter((row) => row.mw > 0)
+    .sort((a, b) => b.mw - a.mw);
+  const total = withPower.reduce((sum, row) => sum + row.mw, 0);
+  const [largest] = withPower;
+  const tiles: KeyFigure[] = [{ label: words.count, value: i18n.number(hits.length), unit: "" }];
+  if (largest) {
+    const [value, unit] = splitUnit(i18n.power(total));
+    tiles.push({ label: words.total, value, unit });
+    const [big, bigUnit] = splitUnit(i18n.power(largest.mw));
+    tiles.push({ label: words.largest, value: big, unit: bigUnit, note: largest.hit.name });
+  }
+  const ranked = withPower.slice(0, RANKED);
+  const ranking =
+    largest && ranked.length >= 2
+      ? rankBars(
+          ranked.map((row) => ({
+            name: nameCell(row.hit, lang),
+            value: row.mw / largest.mw,
+            text: i18n.power(row.mw),
+            detail: "",
+          })),
+        )
+      : "";
+  return { figures: keyFigures(tiles, CHART_COPY[lang].figures), ranking };
+}
+
 export function hubPage(
   site: SiteData,
   lang: Lang,
@@ -327,6 +382,7 @@ export function hubPage(
   const count = i18n.number(hits.length);
   const shown = hits.slice(0, HUB_ROWS);
   const { head, rows } = hubRows(shown, key, lang, i18n);
+  const { figures, ranking } = hubFigures(hits, lang, i18n);
   const path = PATHS[lang].hub(code.toLowerCase(), key);
   const title = copy.hub.title(plural, where);
   const description = copy.hub.description(plural, where, count, total);
@@ -338,10 +394,12 @@ export function hubPage(
     description,
     heading: `${plural} ${where}`,
     lead: `<p>${e(copy.hub.lead(count, total))}</p>`,
+    figures,
     sections: [
       {
         heading: plural,
         html:
+          ranking +
           linkedTable(head, rows) +
           (hits.length > shown.length
             ? `<p>${e(copy.hub.truncated(i18n.number(shown.length), count))}</p>`

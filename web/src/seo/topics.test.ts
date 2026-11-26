@@ -116,6 +116,27 @@ describe("topic pages", () => {
     expect(substations).toContain("400 kV");
   });
 
+  it("open with key figures and a chart of the largest, above the full list (D4)", () => {
+    const hydro = page("/zemlja/hr/hidroelektrane/");
+    const figures = (hydro.figures ?? "").replace(/\s/gu, " "); // Intl puts no-break spaces before units
+    expect(figures).toContain('<p class="label">Na karti</p><p class="big">3<small></small></p>');
+    expect(figures).toContain(
+      '<p class="label">Zbroj upisane snage</p><p class="big">319<small>MW</small></p>',
+    );
+    expect(figures).toContain(
+      '<p class="label">Najveći objekt</p><p class="big">276<small>MW</small></p><p>HE Velika</p>',
+    );
+    const html = hydro.sections[0]?.html ?? "";
+    expect(html).toContain('<div class="ranking">');
+    expect(html.indexOf('<div class="ranking">')).toBeLessThan(html.indexOf("<table"));
+    expect(html).toContain('<span class="rname"><a href="/objekt/osm-way-2/">HE Velika</a></span>');
+    // substations have no power to rank: the count alone
+    const substations = page("/zemlja/hr/trafostanice/");
+    expect(substations.figures).toContain('<p class="label">Na karti</p>');
+    expect(substations.figures).not.toContain("Najveći objekt");
+    expect(substations.sections[0]?.html).not.toContain('<div class="ranking">');
+  });
+
   it("say when the list is cut at the row limit", () => {
     const many: SiteData = {
       ...site,
