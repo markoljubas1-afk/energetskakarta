@@ -2,7 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { DATA_SOURCE_MESSAGE } from "./dataSource";
-import { useOnline } from "./useOnline";
+import { listenToWorker, useOnline } from "./useOnline";
 
 const setOnline = (online: boolean): void => {
   Object.defineProperty(navigator, "onLine", { configurable: true, get: () => online });
@@ -17,7 +17,7 @@ const fromWorker = (source: "network" | "cache"): void => {
 
 beforeEach(() => {
   worker = Object.assign(new EventTarget(), { startMessages: () => undefined });
-  Object.defineProperty(navigator, "serviceWorker", { configurable: true, get: () => worker });
+  listenToWorker(worker);
 });
 
 afterEach(() => {
@@ -26,6 +26,13 @@ afterEach(() => {
 });
 
 describe("useOnline (Faza 59)", () => {
+  it("counts a word from the worker that came before the map was there to listen (59-B)", () => {
+    // offline, the data index is served from a kept copy while the page is still loading
+    fromWorker("cache");
+    const { result } = renderHook(() => useOnline());
+    expect(result.current).toBe(false);
+  });
+
   it("follows the browser's network state as it changes", () => {
     const { result } = renderHook(() => useOnline());
     expect(result.current).toBe(true);

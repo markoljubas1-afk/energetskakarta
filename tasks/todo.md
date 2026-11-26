@@ -3497,6 +3497,10 @@ zaglavlju; Cache API ne sprema odgovor 206.
   `X-GridAtlas-Kept`); mutacijom provjereno da tada pada. Isto ograničenje znači da ni e2e iz PR-a #25 nije stvarno
   bio bez mreže za SW: dokazao je da je sve spremljeno, a pravi rad bez mreže provjerava se na previewu preko
   lokalnog proxyja koji se ugasi (tada mreže nema ni za SW).
+- [x] Pravi test bez mreže (proxy) na previewu PR-a #25: stranica se otvara iz kopija (zaglavlje, datum podataka,
+  karta „ready”), ali obavijesti nema: poruka SW-a o kopiji `current.json` stigla je prije nego što je karta
+  slušala (preglednik poruke isporučuje čim se dokument učita). Sada `useOnline` sluša od učitavanja koda aplikacije
+  (`listenToWorker`), s testom za poruku koja stigne prije karte. L-086.
 - Alternative: spremati cijele `.pmtiles` datoteke (odbačeno: desetci MB po sloju); prvo mreža za pločice
   (odbačeno: adrese su nepromjenjive, a svaki pomak karte išao bi na mrežu i pisao u predmemoriju).
 - Rizici: veličina (dijelovi su mali; 2000 × do nekoliko desetaka kB); ETag mora ostati isti kao u zaglavlju.
