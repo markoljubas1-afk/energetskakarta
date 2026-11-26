@@ -3591,3 +3591,36 @@ Plant”; spojeni zapisi uzimaju OSM-ovo ime, pa su to zapisi samo iz GEM-a ili 
   „Hidroelektrana Dubrovnik”; engleska stranica izvorna imena; tražilica „Senj” — „Vjetroelektrana Senj (Norinco)”,
   „Hidroelektrana Senj II”…; detalji „Hidroelektrana Senj II”. Ne pokriva rijetke oblike poput „Lika-Senj County
   solar project” („project”, „County”): ostavljeni kakvi jesu, bez pogađanja prijevoda.
+
+## Provjera spajanja OSM–GEM — 2026-11-26 (vlasnik: „može, kreni s provjerom spajanja”)
+Nalaz (build 20261123T134649Z, 13 462 elektrane: 9584 samo OSM, 2757 samo GEM, 1017 spojene):
+- **HE Dubrovnik nije greška spajanja.** U OSM-u je `relation/19686395` (power=plant, type=multipolygon), ali
+  su joj „outer” članovi tuneli, cjevovodi i ispusti (17 otvorenih putova), ne obrub. osmium takav lik ne
+  sastavi, pa elektrana ne stigne do `extract` i nitko to ne broji. Ni sastavljeni dijelovi ne daju upotrebljiv
+  položaj (~15 km dalje). GEM zapis stoji na pravom mjestu, s imenom „Hidroelektrana Dubrovnik”. Popravak je u
+  OSM-u (oznake elektrane na zgradu `way/843297503`, ili relacija samo s tim obrubom) — to je objava, ne radim je.
+- **Stvarna greška: dvostruke elektrane.** 38 parova iste vrste, ≤ 0,5 km, snaga unutar 10 %, nije spojeno jer se
+  imena razlikuju: Paks / Paksi Atomerőmű (0,35 km, 2027 / 2000 MW), Mratinje / HE Piva (342 / 342), Achensee
+  Jenbach / Achenseekraftwerk, La Casella / „Edoardo Amaldi”, HR „Zadar County solar project I” / SE Obrovac…
+  Na karti su dvije točke, a zbrojevi broje dvaput: „Nuklearne elektrane u Mađarskoj” pokazuju 6,56 GW
+  (Paks 2,03 + Paksi Atomerőmű 2 + Paks II 2,53).
+- Ostatak (2293 samo-GEM zapisa bez OSM elektrane iste vrste unutar 2 km) nije spajanje: vjetroelektrane u OSM-u
+  često imaju samo pojedinačne turbine (Senj, Krs-Padene, Korlat), mala sunčana polja nisu ucrtana, ili je OSM
+  lik pokvaren kao kod Dubrovnika. 160 bliskih parova s različitom ili nepoznatom snagom ostaje za pregled.
+
+Plan:
+- [ ] `conflate.evaluate`: novo pravilo prihvaćanja — poznata ista obitelj, udaljenost ≤ `SAME_SPOT_KM`, obje snage
+  poznate i unutar 10 %, isti status. Ocjena ispod svakog spajanja po imenu, da ne uzme OSM elektranu koju bi
+  dobilo spajanje po imenu.
+- [ ] Zaštita od dvoznačnosti: ako pravilo zadovoljavaju dvije OSM (ili dvije GEM) elektrane za isti zapis, par ide
+  u pregled, ne spaja se (realan lažni slučaj: dva susjedna sunčana polja slične snage). Test: Paks (spaja),
+  dva susjedna polja (ne spaja), različita snaga (ne spaja), postojeća spajanja po imenu nepromijenjena.
+- [ ] `extract`: brojati i zapisati u log power=plant multipoligone koji se nisu sastavili (id-jevi relacija viđeni
+  kao relacija bez nastalog Area) → `stats["plant_area_not_assembled"]`, da se sljedeći „Dubrovnik” vidi u buildu.
+- [ ] Jasni parovi malo izvan pravila (Jablanica 4,3 km, Sarroch 0,55 km, Laakirchen 0,57 km, Taranto offshore)
+  → `force` u `overrides/conflation.yaml`, ne širenje pravila.
+- [ ] Stranice spojenih GEM zapisa (`/objekt/gem-…`) nestaju: `_redirects` iz prerendera — za svaki spojeni zapis
+  GEM `sourceId` iz `provenance` → stranica OSM objekta (oba jezika), da nema novih 404 u Search Consoleu.
+- Provjera: pytest; stvarni `evaluate`/spajanje grane na zapisima iz objavljenog `plants.ndjson` (samo-OSM i
+  samo-GEM, `approximate=False`) — popis novih parova (~33–38) i nijedno postojeće spajanje promijenjeno;
+  nakon builda: HU nuklearne ≈ 4,5 GW, Paks jedna točka.
