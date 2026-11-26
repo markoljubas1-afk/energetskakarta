@@ -12,7 +12,10 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
   if (command === "build" && mode === "production" && !env.VITE_DATA_BASE_URL) {
     throw new Error("VITE_DATA_BASE_URL must be set for production builds");
   }
+  // one id per build: the service worker's text changes with it, so browsers take the new release (Faza 59)
+  const buildId = Date.now().toString(36);
   return {
+    define: { __BUILD_ID__: JSON.stringify(buildId) },
     plugins: [react(), localData(process.env.LOCAL_DATA_DIR ?? ".data"), securityHeaders(dataBaseUrl)],
     // MapLibre's worker is an ES module that imports a shared chunk
     worker: { format: "es" },
@@ -32,10 +35,15 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
         ? {}
         : {
             rollupOptions: {
-              input: { main: "index.html", "learn-live": "src/widgets/learnLive.ts" },
+              // the service worker (Faza 59) too: it must live at the root, under a name that never changes
+              input: { main: "index.html", "learn-live": "src/widgets/learnLive.ts", sw: "src/pwa/sw.ts" },
               output: {
                 entryFileNames: (chunk: { name: string }) =>
-                  chunk.name === "learn-live" ? "learn-live.js" : "assets/[name]-[hash].js",
+                  chunk.name === "learn-live"
+                    ? "learn-live.js"
+                    : chunk.name === "sw"
+                      ? "sw.js"
+                      : "assets/[name]-[hash].js",
               },
             },
           }),

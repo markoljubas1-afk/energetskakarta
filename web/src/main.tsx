@@ -13,6 +13,7 @@ import { App } from "./app/App";
 import { ErrorBoundary } from "./app/ErrorBoundary";
 import { AppErrorScreen, ConfigErrorScreen } from "./app/Screens";
 import { ConfigError, readConfig, type AppConfig } from "./config";
+import { registerServiceWorker } from "./pwa/register";
 import { canonicalUrl } from "./state/url";
 
 const root = document.getElementById("root");
@@ -38,3 +39,6 @@ createRoot(root).render(
     </ErrorBoundary>
   </StrictMode>,
 );
+
+// installable, and the last release and data seen open without a network (Faza 59)
+registerServiceWorker(import.meta.env.PROD);

@@ -75,6 +75,8 @@ export const en: Dictionary = {
   selectAll: "All",
   selectNone: "None",
   resetFilters: "Reset filters",
+  offlineNotice:
+    "No network connection: showing the last saved data. Parts of the map that were not opened stay empty.",
   emptyMap:
     "Nothing that is switched on is in this part of the map. Zoom in, move the map or change the filters.",
   legendOpen: "Legend",
