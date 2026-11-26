@@ -3587,3 +3587,7 @@ Plant”; spojeni zapisi uzimaju OSM-ovo ime, pa su to zapisi samo iz GEM-a ili 
   tražilica „Senj”.
 - Napravljeno: `i18n/plantName.ts`, `I18n.plantName`, `displayName` za statične stranice (JSON-LD dobiva i
   `alternateName` s izvornim imenom kad se razlikuje).
+- [x] PR #31, preview provjeren 2026-11-26: „Hidroelektrane u Hrvatskoj” — „Hidroelektrana Senj II”,
+  „Hidroelektrana Dubrovnik”; engleska stranica izvorna imena; tražilica „Senj” — „Vjetroelektrana Senj (Norinco)”,
+  „Hidroelektrana Senj II”…; detalji „Hidroelektrana Senj II”. Ne pokriva rijetke oblike poput „Lika-Senj County
+  solar project” („project”, „County”): ostavljeni kakvi jesu, bez pogađanja prijevoda.
