@@ -28,6 +28,14 @@ export function listenToWorker(workers: WorkerMessages | null | undefined): void
 
 if (typeof navigator !== "undefined" && "serviceWorker" in navigator) listenToWorker(navigator.serviceWorker);
 
+// the browser says the network is back: the worker's last word ("a copy") is history; if the network still
+// reaches nothing, the next data the worker serves says so again
+if (typeof window !== "undefined") {
+  window.addEventListener("online", () => {
+    lastSource = "network";
+  });
+}
+
 function subscribe(onChange: () => void): () => void {
   subscribers.add(onChange);
   window.addEventListener("online", onChange);

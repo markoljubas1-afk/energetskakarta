@@ -59,6 +59,19 @@ describe("useOnline (Faza 59)", () => {
     expect(result.current).toBe(true);
   });
 
+  it("lets the notice go when the browser says the network is back, before the worker says anything", () => {
+    const { result } = renderHook(() => useOnline());
+    act(() => {
+      fromWorker("cache");
+      setOnline(false);
+    });
+    expect(result.current).toBe(false);
+    act(() => {
+      setOnline(true);
+    });
+    expect(result.current).toBe(true);
+  });
+
   it("ignores messages that are not the worker's word on where data came from", () => {
     const { result } = renderHook(() => useOnline());
     act(() => {
