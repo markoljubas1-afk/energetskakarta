@@ -71,22 +71,12 @@ import { fromProperties, toSelection, type Selection } from "./selection";
 import { canvasToBlob, composeSnapshot } from "./snapshot";
 import { FLOW_CYCLE_MS, FLOW_STEPS, stepAt, stepPattern } from "./flowAnimation";
 import { timelineTooltip, tooltipFor } from "./tooltip";
+import { useMediaQuery } from "../app/useMediaQuery";
 import styles from "./MapView.module.css";
 
 /** Follows the visitor's "reduce motion" preference, live. */
 function useReducedMotion(): boolean {
-  const query = useMemo(() => window.matchMedia("(prefers-reduced-motion: reduce)"), []);
-  const [reduced, setReduced] = useState(query.matches);
-  useEffect(() => {
-    const onChange = (event: MediaQueryListEvent): void => {
-      setReduced(event.matches);
-    };
-    query.addEventListener("change", onChange);
-    return () => {
-      query.removeEventListener("change", onChange);
-    };
-  }, [query]);
-  return reduced;
+  return useMediaQuery("(prefers-reduced-motion: reduce)");
 }
 
 /** The time machine's layers of plants drawn from the timeline (layers.ts). */

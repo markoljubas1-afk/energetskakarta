@@ -36,6 +36,12 @@
   overflow-wrap: anywhere;
 }
 
+/* focus arrives here from the program (56-B), so a screen reader reads the title; it is not a control, and a
+   ring around it read as a mistake when the details opened from a link (Faza 57-C1) */
+.titles h2:focus {
+  outline: none;
+}
+
 .kind {
   margin: 0;
   font-size: 13px;

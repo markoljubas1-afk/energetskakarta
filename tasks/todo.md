@@ -3334,10 +3334,35 @@ ostaje na pregledu regije (zum ~5), gdje se elektrane od 10–100 MW i planirane
   vidljivi; sloj Elektrane bez „nema ničega” (ta obavijest ostaje samo uz vodove kad nema planiranih vodova, što je
   točno). Spojeno uz odobrenje vlasnika.
 
-### 57-C raspored (legenda, 721–1000 px, traka uživo, prazna karta)
+### 57-C raspored — 2026-11-26 (vlasnik: „nakon toga kreni s 57-C”)
+
+Izmjereno na produkciji 2026-11-26 (Plomin iz poveznice, traka uživo otvorena, 760–1280 px):
+- 760–1000 px: panel detalja (desno, 320 px) leži preko trake uživo (od 364 px do ruba) i preko gumba „Legenda”;
+  filtri (lijevo, 340 px) i detalji zajedno ostavljaju karti uski procjep.
+- 1001–1199 px: traka uživo ide 76 px pod detalje (pravilo `right: 388px` vrijedi tek od 1200 px).
+- Zaglavlje: tražilica (najmanje 170 px) prekriva kraj imena na 1181–1290 px i 1321–1470 px (do 62 px), jer se
+  opis uz ime skriva tek do 1320 px, a riječi na gumbima do 1180 px.
+- Naslov detalja otvorenih iz poveznice dobiva vidljiv okvir fokusa (fokus iz 56-B, ne s tipkovnice).
+
+#### 57-C1 raspored na tabletu i računalu (ovaj PR)
+- [x] 721–1000 px: otvoreni detalji (i kartica dobrodošlice) zauzimaju mjesto filtara (lijevi stupac); filtri i
+  gumb za njihovo skrivanje dok su detalji otvoreni nisu vidljivi ni dostupni tipkovnicom (`:has`, bez JS-a),
+  zatvaranjem detalja vraćaju se. Desna strana ostaje karti, legendi i zumu.
+- [x] 721–1000 px: traka uživo ostavlja mjesta sklopljenoj legendi (gumb „Legenda” desno dolje).
+- [x] 1001–1199 px: traka uživo završava gdje počinju detalji (kao od 1200 px).
+- [x] Zaglavlje: opis uz ime skriva se do 1480 px, riječi na gumbima do 1300 px (izmjereno: tada nema preklapanja
+  ni na jednoj širini 1000–1500 px).
+- [x] Naslov detalja bez okvira fokusa kad fokus dođe iz programa (`:focus:not(:focus-visible)` i
+  `tabindex=-1`); čitač zaslona ga i dalje čita.
+- Usput: `useMediaQuery` (`app/useMediaQuery.ts`) za legendu koja do 1000 px počinje sklopljena; isti hook sada
+  prati i smanjeno kretanje na karti (prije zasebna kopija u `MapView`).
+- Alternative: na tabletu automatski skriti filtre u Reactu (odbačeno: mijenja zapamćeni izbor korisnika);
+  detalji kao list odozdo kao na mobitelu (odbačeno: na 800×1000 pokrivaju kartu koju tablet ima).
+- Rizici: `:has` nema u starim preglednicima (Firefox < 121): ondje ostaje današnje preklapanje, ništa ne puca.
+- Provjera: e2e `layout.spec.ts` na 800 px (detalji ne preklapaju traku ni legendu, filtri skriveni) i zaglavlje
+  bez preklapanja na 1200/1280/1400 px; preview 760/800/900/1000/1100/1280 px.
+
+#### 57-C2 mobitel i ugradnja (sljedeći PR)
 - [ ] Legenda na mobitelu i u ugradnji (gumb „Legenda”).
-- [ ] Tablet 721–1000 px: detalji kao list ili uži paneli, bez preklapanja; e2e na 800 px.
 - [ ] Traka uživo na uskom: opisi ljestvice i „ažurirano” u sklopivi dio, kontrole u dva retka.
 - [ ] Obavijest na karti kad filtri sakriju sve.
-- [ ] Zaglavlje na 1001–1320 px: tražilica prekriva kraj imena („GridAtl…”); isto je i na produkciji (provjereno
-  2026-11-26), nije od 57-A.
