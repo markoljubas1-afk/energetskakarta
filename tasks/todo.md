@@ -3427,3 +3427,33 @@ stranica 404 (postoji, isti stil); otvoreno ili djelomično ostalo je deset. Dva
 - [ ] „Zelena tranzicija”: opis i `variableMeasured`/`isBasedOn` samo za prikazane odjeljke.
 - [ ] „Bez godine puštanja u pogon” broji samo obnovljive (pipeline dijeli `undated` po tehnologiji) ili rečenica
   kaže da su uključene sve elektrane.
+
+## Faza 59 — PWA: instalacija i zadnje viđeno bez mreže — 2026-11-26 (vlasnik: „napravi i pwa od ovoga”;
+odabrao „Instalacija + zadnje viđeno”)
+
+Stanje: `public/site.webmanifest` postoji (ikone 192/512), ali `display: browser`, pa se ne instalira; service
+workera nema; CSP već dopušta `worker-src 'self'`.
+
+Cilj: GridAtlas se instalira kao aplikacija (vlastiti prozor, ikona, prečaci), a bez mreže otvara zadnju verziju
+aplikacije i zadnje dohvaćene podatke, uz jasnu obavijest. Dijelovi karte koji nisu bili otvoreni ostaju prazni.
+
+- [ ] Manifest: `display: standalone`, `id: "/"`, prečaci „Karta”, „Proizvodnja kroz vrijeme”, „Tokovi i cijene
+  uživo” (`/?p=energy`, `/?live=1`), `categories`. Ikone ostaju (maskable tek uz ikonu sa sigurnom zonom).
+- [ ] Service worker `src/pwa/sw.ts`, preveden esbuildom (dolazi s Viteom) u `dist/sw.js` pri buildu, s oznakom
+  izdanja u imenu predmemorije; staro se briše pri aktivaciji. Pravila u čistoj funkciji `strategyFor(request)`
+  (`src/pwa/strategy.ts`, testirana):
+  - stranice (navigacija, isti izvor): prvo mreža, bez mreže spremljena kopija, inače spremljena aplikacija `/`;
+  - `/assets/*` (imena s hashom, nepromjenjiva): prvo predmemorija;
+  - JSON podataka (`DATA_BASE_URL`, GET bez `Range`): prvo mreža, bez mreže zadnja spremljena kopija;
+  - zahtjevi s `Range` (PMTiles), MapTiler, analitika, sve osim GET: ne diraju se (mreža).
+- [ ] Registracija u `main.tsx` samo u produkcijskom buildu; `_headers`: `/sw.js` bez dugog predmemoriranja.
+- [ ] Obavijest bez mreže: `useOnline` (`navigator.onLine` i događaji) → „Nema veze s mrežom: prikazani su zadnji
+  spremljeni podaci.” na mjestu obavijesti na karti; nestaje kad se veza vrati.
+- Alternative: `vite-plugin-pwa`/Workbox (odbačeno: nova ovisnost i generirana pravila za ono što stane u stotinjak
+  redaka); predmemoriranje pločica (odbačeno vlasnikovim izborom; 206 odgovori se ne mogu spremiti u Cache API).
+- Rizici: zastarjela aplikacija nakon objave (stranice idu prvo na mrežu, a neuspjelo učitavanje dijela već nudi
+  „Učitaj ponovno”, 56-A); veličina predmemorije podataka (samo JSON koji je stvarno dohvaćen; stara izdanja se
+  brišu s novim izdanjem SW-a); e2e radi na produkcijskom buildu, pa SW radi i u testovima.
+- Provjera: vitest (`strategyFor`, `useOnline`, obavijest, manifest), e2e: SW registriran, ponovno učitavanje bez
+  mreže (`context.setOffline`) prikazuje kartu i obavijest; preview: Chrome nudi instalaciju, Lighthouse PWA
+  provjere, rad bez mreže.
