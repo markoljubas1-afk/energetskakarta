@@ -1,6 +1,6 @@
 /**
  * Deploy step: `node .prerender/notify.js` after the site is live. Reads the sitemap the build wrote and
- * tells IndexNow which pages exist now. Bundled by `vite build --ssr` next to entry.ts.
+ * tells IndexNow which of its pages changed in this release. Bundled by `vite build --ssr` next to entry.ts.
  */
 import { readFile } from "node:fs/promises";
 import path from "node:path";
@@ -8,13 +8,14 @@ import path from "node:path";
 import { z } from "zod";
 
 import {
+  changedUrls,
   describeResponse,
   INDEXNOW_ENDPOINT,
   indexNowPayloads,
   isValidKey,
   sitemapLocations,
 } from "./indexnow";
-import { normalizeSiteUrl } from "./prerender";
+import { normalizeSiteUrl, parseSeoManifest, SEO_MANIFEST, type SeoManifest } from "./prerender";
 
 const env = z.object({ VITE_SITE_URL: z.string().optional() }).parse(import.meta.env);
 const siteUrl = normalizeSiteUrl(env.VITE_SITE_URL);
@@ -42,7 +43,21 @@ async function pageUrls(base: string): Promise<string[]> {
   return parts.flatMap(sitemapLocations).filter((url) => url.startsWith(base));
 }
 
-const urls = await pageUrls(siteUrl);
+/** The manifest this build wrote (which pages changed, and the day); null when it cannot be read. */
+async function builtManifest(): Promise<SeoManifest | null> {
+  try {
+    return parseSeoManifest(JSON.parse(await readFile(path.join(outDir, SEO_MANIFEST), "utf8")));
+  } catch (error) {
+    console.warn("[indexnow] no readable seo-manifest.json: announcing every page", error);
+    return null;
+  }
+}
+
+// only what changed in this release (Faza 58-B): announcing all 8000 pages every week reads as noise
+const every = await pageUrls(siteUrl);
+const urls = changedUrls(every, siteUrl, await builtManifest());
+console.info(`[indexnow] ${String(urls.length)} of ${String(every.length)} pages changed in this release`);
+if (urls.length === 0) process.exit(0);
 let failed = false;
 for (const payload of indexNowPayloads(siteUrl, key, urls)) {
   const response = await fetch(endpoint, {

@@ -2,7 +2,14 @@ import { describe, expect, it } from "vitest";
 
 import { TECHNOLOGIES, type CountryCode, type Technology } from "../domain";
 import { SAMPLE_TIMELINE } from "./timeline.fixture";
-import { clampYear, retiredFeatures, stackedSeries, summarize, type TimelineScope } from "./timeline";
+import {
+  checkTimeline,
+  clampYear,
+  retiredFeatures,
+  stackedSeries,
+  summarize,
+  type TimelineScope,
+} from "./timeline";
 
 const scope = (
   countries: CountryCode[] = [],
@@ -43,5 +50,16 @@ describe("timeline", () => {
     expect(clampYear(SAMPLE_TIMELINE, 1900)).toBe(1960);
     expect(clampYear(SAMPLE_TIMELINE, 2026)).toBe(1964);
     expect(clampYear(SAMPLE_TIMELINE, 1962.4)).toBe(1962);
+  });
+});
+
+describe("checkTimeline (shared with the static pages, Faza 58-B)", () => {
+  it("passes a timeline whose columns span its years, and refuses one that does not", () => {
+    expect(checkTimeline(SAMPLE_TIMELINE)).toBe(SAMPLE_TIMELINE);
+    const broken = { ...SAMPLE_TIMELINE, lastYear: SAMPLE_TIMELINE.lastYear + 1 };
+    expect(() => checkTimeline(broken)).toThrow(/columns do not match/);
+    expect(() => checkTimeline({ ...SAMPLE_TIMELINE, lastYear: SAMPLE_TIMELINE.firstYear - 1 })).toThrow(
+      /ends before it starts/,
+    );
   });
 });

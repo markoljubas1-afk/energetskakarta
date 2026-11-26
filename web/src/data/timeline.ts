@@ -36,7 +36,11 @@ export type RetiredPlant = z.infer<typeof Retired>;
 export async function loadTimeline(base: URL, key: string, signal: AbortSignal): Promise<Timeline> {
   const response = await fetch(assetUrl(base, key), { signal });
   if (!response.ok) throw new DataError(`timeline returned HTTP ${response.status}`);
-  const timeline = TimelineSchema.parse(await response.json());
+  return checkTimeline(TimelineSchema.parse(await response.json()));
+}
+
+/** A timeline, checked: every column has one value per year. Shared with the static pages' prerender (58-B). */
+export function checkTimeline(timeline: Timeline): Timeline {
   const length = timeline.lastYear - timeline.firstYear + 1;
   if (length < 1) throw new DataError("timeline ends before it starts");
   for (const techs of Object.values(timeline.series))

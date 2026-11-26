@@ -275,7 +275,12 @@ describe("official renewable share (Eurostat) on the transition page", () => {
     const dataset = official("en").jsonLd[0] as { variableMeasured: unknown[]; isBasedOn: string[] };
     expect(dataset.variableMeasured).toHaveLength(6);
     expect(dataset.isBasedOn[0]).toBe(SAMPLE_RENEWABLES.sourceUrl);
-    expect(official("hr").description).toBe(TRANSITION_COPY.hr.descriptionOfficial);
+    expect(official("hr").description).toMatch(
+      /^Službeni udio obnovljivih izvora prema Eurostatu i cilj za 2030\., /,
+    );
+    expect(official("hr").description).toMatch(
+      / i slobodni kapacitet mreže u Hrvatskoj, iz otvorenih podataka\.$/,
+    );
   });
 
   it("is a page on Eurostat's share alone, converts to Markdown and is in llms.txt", () => {
@@ -294,6 +299,29 @@ describe("official renewable share (Eurostat) on the transition page", () => {
       "official renewable share of gross final energy consumption (Eurostat)",
     );
     expect(llmsTxt(site)).not.toContain("(Eurostat)");
+  });
+
+  it("says the count of plants without a year is of every kind, not only the table's renewables (58-B)", () => {
+    expect(text(page("hr"))).toContain(
+      "Elektrane bez godine puštanja u pogon nisu u tablici; takvih je u pogonu, svih vrsta: 3.",
+    );
+  });
+
+  it("names in its description and data set only what the page shows (Faza 58-B)", () => {
+    const only = official("en", bareSite({ renewables: SAMPLE_RENEWABLES }));
+    expect(only.description).toBe(
+      "The official renewable share (Eurostat) against the 2030 target in Croatia, from open data.",
+    );
+    const dataset = only.jsonLd[0] as {
+      variableMeasured: { name: string }[];
+      isBasedOn: string[];
+      license: string[];
+    };
+    expect(dataset.variableMeasured.map((v) => v.name)).toEqual([
+      "renewable share of gross final energy consumption (Eurostat)",
+    ]);
+    expect(dataset.isBasedOn).toEqual([SAMPLE_RENEWABLES.sourceUrl]);
+    expect(dataset.license).toEqual([SOURCE_TERMS.ccBy]);
   });
 
   it("leaves the official sections out without Croatia's overall share", () => {

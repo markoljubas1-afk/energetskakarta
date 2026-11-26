@@ -1,7 +1,18 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { jsonResponse } from "../test/render";
-import { arc, COUNTRY_ANCHORS, dayOf, flowsAt, hourKey, loadLive, overlay, pickHour, pricesAt } from "./live";
+import {
+  arc,
+  checkLive,
+  COUNTRY_ANCHORS,
+  dayOf,
+  flowsAt,
+  hourKey,
+  loadLive,
+  overlay,
+  pickHour,
+  pricesAt,
+} from "./live";
 import { SAMPLE_LIVE } from "./live.fixture";
 
 afterEach(() => {
@@ -126,5 +137,15 @@ describe("hour keys around the autumn clock change", () => {
 
   it("still opens links without an offset", () => {
     expect(pickHour(live, "2026-10-25T01", new Date(0))).toBe(0);
+  });
+});
+
+describe("checkLive (shared with the static pages, Faza 58-B)", () => {
+  it("passes a document whose every column has one value per hour, and refuses one that does not", () => {
+    expect(checkLive(SAMPLE_LIVE)).toBe(SAMPLE_LIVE);
+    const [first, ...rest] = SAMPLE_LIVE.flows;
+    if (!first) throw new Error("the fixture has flows");
+    const broken = { ...SAMPLE_LIVE, flows: [{ ...first, mw: first.mw.slice(1) }, ...rest] };
+    expect(() => checkLive(broken)).toThrow(/columns do not match/);
   });
 });

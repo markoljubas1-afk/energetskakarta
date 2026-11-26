@@ -29,16 +29,22 @@ export type Live = z.infer<typeof LiveSchema>;
 
 export type LiveLoad = { kind: "none" } | { kind: "ready"; live: Live };
 
-/** A live document, checked: every column has one value per hour. */
-function checkedLive(raw: unknown): LiveLoad {
-  const live = LiveSchema.parse(raw);
+/**
+ * A live document, checked: every column has one value per hour. Shared with the static pages' prerender
+ * (Faza 58-B), which read the same file for the price page.
+ */
+export function checkLive(live: Live): Live {
   const n = live.hours.length;
   const bad =
     live.flows.some((f) => f.mw.length !== n) ||
     Object.values(live.prices).some((p) => p.eurPerMwh.length !== n) ||
     Object.values(live.generation ?? {}).some((techs) => Object.values(techs).some((v) => v.length !== n));
   if (bad) throw new DataError("live data columns do not match its hours");
-  return { kind: "ready", live };
+  return live;
+}
+
+function checkedLive(raw: unknown): LiveLoad {
+  return { kind: "ready", live: checkLive(LiveSchema.parse(raw)) };
 }
 
 export async function loadLive(base: URL, signal: AbortSignal): Promise<LiveLoad> {

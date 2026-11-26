@@ -4,11 +4,12 @@ import {
   describeResponse,
   INDEXNOW_MAX_URLS,
   indexNowPayloads,
+  changedUrls,
   isValidKey,
   keyFileName,
   sitemapLocations,
 } from "./indexnow";
-import { staticFiles } from "./prerender";
+import { parseSeoManifest, staticFiles } from "./prerender";
 import type { SiteData } from "./pages";
 
 describe("IndexNow", () => {
@@ -91,5 +92,39 @@ describe("IndexNow", () => {
       ),
     ).toBe(false);
     expect(staticFiles(site, "bad key").has("bad key.txt")).toBe(false);
+  });
+
+  it("announces only the pages that changed in this release, not the whole site (Faza 58-B)", () => {
+    const site = "https://gridatlas.eu";
+    const urls = [`${site}/`, `${site}/zemlja/hr/`, `${site}/zemlja/si/`, `${site}/objekt/osm-way-1/`];
+    const manifest = {
+      version: 1 as const,
+      buildId: "b2",
+      releasedOn: "2026-11-26",
+      pages: {
+        "/": { hash: "a", lastmod: "2026-11-01" },
+        "/zemlja/hr/": { hash: "b", lastmod: "2026-11-26" },
+        "/zemlja/si/": { hash: "c", lastmod: "2026-11-19" },
+      },
+    };
+    // a page the manifest does not know is new to it: announced
+    expect(changedUrls(urls, site, manifest)).toEqual([`${site}/zemlja/hr/`, `${site}/objekt/osm-way-1/`]);
+  });
+
+  it("reads the day of the release back from the manifest the build wrote, and drops a malformed one", () => {
+    const pages = { "/": { hash: "a", lastmod: "2026-11-26" } };
+    expect(parseSeoManifest({ version: 1, buildId: "b", releasedOn: "2026-11-26", pages })?.releasedOn).toBe(
+      "2026-11-26",
+    );
+    expect(
+      parseSeoManifest({ version: 1, buildId: "b", releasedOn: "26.11.", pages })?.releasedOn,
+    ).toBeUndefined();
+  });
+
+  it("announces everything when it cannot tell what changed (no manifest, or one from before releasedOn)", () => {
+    const site = "https://gridatlas.eu";
+    const urls = [`${site}/`, `${site}/zemlja/hr/`];
+    expect(changedUrls(urls, site, null)).toEqual(urls);
+    expect(changedUrls(urls, site, { version: 1, buildId: "b1", pages: {} })).toEqual(urls);
   });
 });
