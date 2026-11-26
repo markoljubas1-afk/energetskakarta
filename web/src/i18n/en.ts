@@ -659,7 +659,6 @@ export const en: Dictionary = {
   timePlay: "Play",
   timePause: "Pause",
   timeChart: "Capacity in operation by source over the years, up to {max}",
-  timeAxisMax: "top of chart: {max}",
   timeOperating: "In operation in {year}: {mw}",
   timeClosed: "Closed by then (grey outlines): {count}, {mw} in total.",
   timeLastClosure: "Latest: {name}, {year}.",

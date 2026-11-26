@@ -88,12 +88,42 @@
   background: var(--accent-soft);
 }
 
+/* the chart and its power labels (D3); the labels sit just under their lines, at the left */
+.plot {
+  position: relative;
+  margin-top: 8px;
+}
+
 .chart {
   display: block;
   width: 100%;
-  height: 56px;
-  margin-top: 8px;
+  height: 96px;
   border-bottom: 1px solid var(--line);
+}
+
+@media (max-width: 720px) {
+  .chart {
+    height: 72px;
+  }
+}
+
+.grid {
+  stroke: var(--muted);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0.6;
+}
+
+.yTick {
+  position: absolute;
+  left: 2px;
+  margin-top: 1px;
+  padding: 0 3px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  color: var(--muted);
+  font: 500 11px/1.3 var(--font-num);
+  pointer-events: none;
 }
 
 .future {
@@ -106,12 +136,28 @@
   stroke-width: 1.5;
 }
 
+/* years under the chart, each where the slider puts it; the ends lean inwards so they stay inside the bar */
 .axis {
-  display: flex;
-  justify-content: space-between;
+  position: relative;
+  height: 16px;
   margin-top: 2px;
   color: var(--muted);
   font: 500 11.5px/1.3 var(--font-num);
+}
+
+.axis span {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.axis span[data-end="first"] {
+  transform: none;
+}
+
+.axis span[data-end="last"] {
+  transform: translateX(-100%);
 }
 
 .figure {

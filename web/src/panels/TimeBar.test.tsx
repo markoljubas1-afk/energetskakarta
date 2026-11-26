@@ -25,6 +25,31 @@ describe("TimeBar", () => {
     expect(screen.getByText("Bez godine puštanja u pogon, pa nisu na karti: 4.")).toBeInTheDocument();
   });
 
+  it("reads like a chart: power lines with their values, and round years between the ends (D3)", () => {
+    // a century of hydro growing to 900 MW: the top is 1 GW, the lines 500 MW and 1 GW, years every fifty
+    const century = {
+      ...SAMPLE_TIMELINE,
+      firstYear: 1900,
+      lastYear: 2026,
+      series: { HR: { hydro: Array.from({ length: 127 }, (_, i) => Math.round((i / 126) * 900)) } },
+    };
+    const { container } = renderWithI18n(
+      <TimeBar
+        data={{ status: "ready", value: century }}
+        year={1990}
+        scope={scope}
+        theme="light"
+        onYear={vi.fn()}
+        onRetry={vi.fn()}
+      />,
+    );
+    const text = (selector: string): string[] =>
+      [...container.querySelectorAll(selector)].map((node) => node.textContent.replace(/\s/g, " "));
+    expect(text("[data-y-tick]")).toEqual(["500 MW", "1 GW"]);
+    expect(text("[data-x-tick]")).toEqual(["1900.", "1950.", "2000.", "2026."]);
+    expect(screen.queryByText(/vrh grafikona/)).toBeNull();
+  });
+
   it("moves by year, keeps inside the timeline and closes", () => {
     const onYear = vi.fn();
     renderWithI18n(
