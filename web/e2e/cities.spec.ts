@@ -85,7 +85,7 @@ test("the register page lists cities by country with lighting and transport colu
   // the large city has its own page with the sector table
   await row.getByRole("link", { name: "Grad Primjer" }).click();
   await expect(page).toHaveURL(/\/objekt\/com-1001\/$/);
-  await expect(page.getByRole("cell", { name: "Javna rasvjeta" })).toBeVisible();
+  await expect(page.getByRole("rowheader", { name: "Javna rasvjeta" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Prikaži na karti" })).toHaveAttribute(
     "href",
     /sel=com%3A1001/,
