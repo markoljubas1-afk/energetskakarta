@@ -9,6 +9,15 @@ import { useEffect, useId, useRef, type ReactNode } from "react";
 
 import styles from "./PopoverMenu.module.css";
 
+/**
+ * Close the menu `element` is in, if it is in one: for an item that hands the reader over to the map, which
+ * the open menu would cover (Faza 57-D). The browser returns focus to the menu's button.
+ */
+export function closeMenuOf(element: Element): void {
+  const menu = element.closest("[popover]");
+  if (menu instanceof HTMLElement && menu.matches(":popover-open")) menu.hidePopover();
+}
+
 /** Where the menu prefers to open. */
 export type Placement = "above" | "below";
 

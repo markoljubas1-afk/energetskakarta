@@ -3315,6 +3315,21 @@ grupama uglavnom riješeni, imena gumba postoje (čitač ih ima), samo bez opisa
   isključen prekidač → `t` ne mijenja temu, ni nakon ponovnog učitavanja (`energymap-shortcuts=off`); Esc zatvara
   popis; sloj „Tokovi i cijene uživo”, ploča „Filtri i pregled”. Spojeno uz odobrenje vlasnika.
 
+### 57-D gumbi „Prikaži …” u kartici zelene struje — 2026-11-26 (vlasnik: „napravi popravak gumba”)
+Nalaz (provjera na produkciji 2026-11-26): „Prikaži na karti: vjetar”, „Prikaži elektrane u pogonu: plin,
+ugljen” i „Prikaži što se gradi i planira” postave filtre ispravno, ali kartica ostaje otvorena preko karte, a karta
+ostaje na pregledu regije (zum ~5), gdje se elektrane od 10–100 MW i planirane još ne crtaju (`plant_minzoom` u
+`pipeline/src/energymap/tiles.py`: 7). Filtar tada piše „Na ovom dijelu karte nema ničega iz ovog sloja”.
+- [x] Klik na gumb zatvara karticu: `closeMenuOf(element)` u `share/PopoverMenu.tsx` zatvara izbornik u kojem je
+  gumb (native `hidePopover`); kontekst nije moguć jer `GreenLight` sam crta svoj `PopoverMenu`.
+- [x] Karta odleti do zemlje na zum 7 (`map/countryView.ts`: središte svake zemlje regije, zum = najmanji zum
+  na kojem se crtaju sve osim najmanjih elektrana i planirane). Na računalu se na zumu 7 vidi cijela Hrvatska ili
+  njezin veći dio, na mobitelu sredina zemlje. Uz smanjeno kretanje skok (postojeći `flyTo`).
+- Alternative: pravila zuma u pločicama za filtrirani prikaz (odbačeno: novi build i veće pločice za jedan gumb);
+  `fitBounds` granica zemlje (odbačeno: za Hrvatsku daje zum ispod 7, pa se vjetroelektrane opet ne vide).
+- Provjera: vitest (zatvaranje kartice, središta svih zemalja), preview: sva tri gumba → kartica zatvorena, karta
+  na Hrvatskoj, elektrane vidljive, filtar bez „nema ničega”.
+
 ### 57-C raspored (legenda, 721–1000 px, traka uživo, prazna karta)
 - [ ] Legenda na mobitelu i u ugradnji (gumb „Legenda”).
 - [ ] Tablet 721–1000 px: detalji kao list ili uži paneli, bez preklapanja; e2e na 800 px.
