@@ -3645,3 +3645,6 @@ Plan:
   `/objekt/osm-relation-7671467/`; `_redirects` ≈ 58–60 redaka (30 živih GEM stranica, 29 s ciljem); u logu builda
   `matched_by_capacity` ≈ 34 i upozorenje s `relation/19686395`. Ako je upozorenje bučno (multipoligon preko
   granice sastavljen u susjednom izvatku), uspoređivati id-jeve nakon `merge`, ne po izvatku.
+- [x] PR #32, preview provjeren 2026-11-26 (regresije, podaci isti kao na produkciji): početna, /en/, HU nuklearne,
+  stara GEM stranica Paksa i stranica `osm-relation-7671467`, hidroelektrane HR, /api/ — sve 200; SEO manifest
+  8390 stranica, bez `moved` i bez preusmjeravanja (ništa još nije spojeno, kako se i očekuje).
