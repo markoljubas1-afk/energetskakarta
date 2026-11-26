@@ -119,15 +119,43 @@ export function contentsNav(sections: readonly { heading: string }[], label: str
   return `<nav class="toc" aria-label="${e(label)}"><p>${e(label)}</p><ol>${items}</ol></nav>`;
 }
 
-export function table(head: string[], rows: string[][]): string {
-  const th = head.map((cell) => `<th>${e(cell)}</th>`).join("");
-  const body = rows
-    .map(
-      (row) =>
-        `<tr>${row.map((cell, i) => (i === 0 ? `<td>${e(cell)}</td>` : `<td class="num">${e(cell)}</td>`)).join("")}</tr>`,
-    )
+/** A cell that reads as a number: it starts with a digit or a sign (217 MW, −3,5 %, +12), or is a lone dash. */
+const NUMBER = /^[−+-]?\d|^[—–-]$/;
+
+/**
+ * Which columns hold numbers (Faza 58-A): those are aligned right and kept on one line, words are not. A column
+ * is one when at least half its values are numbers. The first column names the row and is never one; a column
+ * with no values is not either.
+ */
+export function numericColumns(rows: readonly (readonly string[])[], width: number): boolean[] {
+  return Array.from({ length: width }, (_, column) => {
+    if (column === 0) return false;
+    const values = rows.map((row) => (row[column] ?? "").trim()).filter((value) => value !== "");
+    // most of it: a figure the sources do not give ("nije navedeno") does not turn a column of numbers into words
+    const numbers = values.filter((value) => NUMBER.test(value)).length;
+    return values.length > 0 && numbers * 2 >= values.length;
+  });
+}
+
+/** The header row: every cell names its column for screen readers, number columns align with their values. */
+function headRow(head: readonly string[], numeric: readonly boolean[]): string {
+  const cells = head.map((cell, i) => `<th scope="col"${numeric[i] ? ' class="num"' : ""}>${e(cell)}</th>`);
+  return `<thead><tr>${cells.join("")}</tr></thead>`;
+}
+
+/** The rest of a row after its header cell, already escaped or not. */
+function restCells(cells: readonly string[], numeric: readonly boolean[]): string {
+  return cells
+    .map((cell, i) => (numeric[i + 1] ? `<td class="num">${e(cell)}</td>` : `<td>${e(cell)}</td>`))
     .join("");
-  return scrollable(`<table><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table>`, head);
+}
+
+export function table(head: string[], rows: string[][]): string {
+  const numeric = numericColumns(rows, head.length);
+  const body = rows
+    .map(([first = "", ...rest]) => `<tr><th scope="row">${e(first)}</th>${restCells(rest, numeric)}</tr>`)
+    .join("");
+  return scrollable(`<table>${headRow(head, numeric)}<tbody>${body}</tbody></table>`, head);
 }
 
 /**
@@ -200,12 +228,12 @@ export function definitions(rows: [string, string][]): string {
 
 /** A table whose first column is already HTML (a name, linked or not) and the rest plain text. */
 export function linkedTable(head: string[], rows: [string, ...string[]][]): string {
-  const th = head.map((cell) => `<th>${e(cell)}</th>`).join("");
+  const numeric = numericColumns(
+    rows.map(([, ...rest]) => ["", ...rest]),
+    head.length,
+  );
   const body = rows
-    .map(
-      ([first, ...rest]) =>
-        `<tr><td>${first}</td>${rest.map((cell) => `<td class="num">${e(cell)}</td>`).join("")}</tr>`,
-    )
+    .map(([first, ...rest]) => `<tr><th scope="row">${first}</th>${restCells(rest, numeric)}</tr>`)
     .join("");
-  return scrollable(`<table><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table>`, head);
+  return scrollable(`<table>${headRow(head, numeric)}<tbody>${body}</tbody></table>`, head);
 }

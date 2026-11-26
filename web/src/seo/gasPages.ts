@@ -18,7 +18,17 @@ import { gasPlaceLinks } from "./gasPlaces";
 import { e, list, table } from "./markup";
 import { CHART_COPY, keyFigures, rankBars, roundUp, tableBehind, valueColumns } from "./charts";
 import { ogImage } from "./ogImages";
-import { home, mapLink, other, PATHS, publisher, type Section, type SiteData, type StaticPage } from "./site";
+import {
+  croatiaCrumb,
+  home,
+  mapLink,
+  other,
+  PATHS,
+  publisher,
+  type Section,
+  type SiteData,
+  type StaticPage,
+} from "./site";
 
 const HOME = "HR";
 /** the gas days in the table of deliveries */
@@ -490,7 +500,7 @@ function gasPage(site: SiteData, flows: GasFlows, storage: GasStorage | null, la
     ],
     image: ogImage("gas", lang),
     lastModified: flows.generatedAt,
-    breadcrumbs: [home(lang)],
+    breadcrumbs: [home(lang), croatiaCrumb(lang)],
   };
 }
 

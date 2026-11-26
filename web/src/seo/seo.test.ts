@@ -4,9 +4,12 @@ import type { Current } from "../data/current";
 import type { SearchIndex } from "../data/search";
 import type { Stats } from "../data/stats";
 import { SCOPE_COUNTRIES } from "../domain";
-import { renderPage } from "./html";
+import { renderNotFound, renderPage } from "./html";
 import { ASSET_PAGE_MIN_KV, ASSET_PAGE_MIN_MW, assetSlug, buildPages, mapLink, type SiteData } from "./pages";
+import { apiFiles } from "./api";
 import { normalizeSiteUrl, staticFiles } from "./prerender";
+
+const apiFilesOf = (data: SiteData): string[] => [...apiFiles(data).keys()];
 import { llmsTxt, robotsTxt, SITEMAP_CHUNK, sitemapFiles } from "./sitemap";
 
 const current: Current = {
@@ -105,6 +108,36 @@ describe("buildPages", () => {
     for (const dataset of datasets) {
       expect(dataset.spatialCoverage).toMatchObject({ "@type": "Place" });
     }
+  });
+
+  it("says a country has no plants or lines on the map, instead of an empty table (Faza 58-A)", () => {
+    // the fixture's stats have Croatia only
+    const si = buildPages(site).find((page) => page.path === "/zemlja/si/");
+    expect(si?.sections[0]?.html).not.toContain("<table");
+    expect(si?.sections[0]?.html).toContain("Na karti još nema elektrana iz ove zemlje.");
+    expect(si?.sections[1]?.html).not.toContain("<table");
+    expect(si?.sections[1]?.html).toContain("Na karti još nema dalekovoda iz ove zemlje.");
+    const en = buildPages(site).find((page) => page.path === "/en/country/si/");
+    expect(en?.sections[0]?.html).toContain("No power plants from this country are on the map yet.");
+  });
+
+  it("lists the API's addresses with their method and format, and an example asset that exists (Faza 58-A)", () => {
+    const api = buildPages(site).find((page) => page.path === "/api/");
+    const endpoints = api?.sections[0]?.html ?? "";
+    expect(endpoints).toContain('<span class="method">GET</span>');
+    expect(endpoints).toContain('<span class="format">JSON</span>');
+    expect(endpoints).toMatch(/<code>[^<]*\/api\/objekt\/\{slug\}\.json<\/code>/);
+    const example = /<a href="[^"]*?\/(api\/objekt\/[^"{]+\.json)">/.exec(endpoints)?.[1];
+    expect(example).toBeDefined();
+    expect(apiFilesOf(site)).toContain(example);
+  });
+
+  it("says page not found in both languages, alike, since it answers every address (Faza 58-A)", () => {
+    const html = renderNotFound(site);
+    expect(html).toContain("<title>Stranica nije pronađena · Page not found (404) – GridAtlas</title>");
+    expect(html).toContain('<h1>Stranica nije pronađena <span lang="en">· Page not found</span></h1>');
+    expect(html).toMatch(/<p class="lead" lang="en">This page does not exist/);
+    expect(html).toContain('<a href="/en/" lang="en">');
   });
 
   it("fills a country page with the numbers of that country", () => {

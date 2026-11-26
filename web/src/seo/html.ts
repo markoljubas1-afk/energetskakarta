@@ -342,6 +342,10 @@ ${supportLinks(site, page.lang)
  * root). Without it Pages would answer every unknown address with the map and status 200, so search engines
  * would keep the pages of removed assets as copies of the home page. Bilingual, `noindex`, no canonical.
  */
+/**
+ * The one 404 page, served for every address that does not exist, Croatian and English alike (Faza 58-A): the
+ * heading, the explanation and the way on in both languages, with the same weight.
+ */
 export function renderNotFound(site: SiteData): string {
   const hr = COPY.hr;
   const en = COPY.en;
@@ -353,6 +357,7 @@ export function renderNotFound(site: SiteData): string {
     ...SCOPE_COUNTRIES.map(
       (code) => `<a href="${PATHS.hr.country(code.toLowerCase())}">${e(i18n.country(code))}</a>`,
     ),
+    `<a href="${mapLink("en", {})}" lang="en">${e(en.nav.map)} (English)</a>`,
     `<a href="${PATHS.en.about}" lang="en">${e(en.nav.about)} (English)</a>`,
   ];
   return `<!doctype html>
@@ -360,7 +365,7 @@ export function renderNotFound(site: SiteData): string {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${e(hr.notFound.title)}</title>
+<title>${e(hr.notFound.heading)} · ${e(en.notFound.title)}</title>
 <meta name="robots" content="noindex">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#1f6f8b">
@@ -373,12 +378,12 @@ export function renderNotFound(site: SiteData): string {
 </div></header>
 <main>
 <div class="hero">
-<h1>${e(hr.notFound.heading)}</h1>
+<h1>${e(hr.notFound.heading)} <span lang="en">· ${e(en.notFound.heading)}</span></h1>
 <p class="lead">${e(hr.notFound.text)}</p>
-<p lang="en">${e(en.notFound.text)}</p>
+<p class="lead" lang="en">${e(en.notFound.text)}</p>
 </div>
 <div class="body"><div class="content">
-<section><h2>${e(hr.notFound.linksHeading)}</h2>
+<section><h2>${e(hr.notFound.linksHeading)} <span lang="en">· ${e(en.notFound.linksHeading)}</span></h2>
 <ul>${links.map((link) => `<li>${link}</li>`).join("")}</ul></section>
 </div></div>
 </main>

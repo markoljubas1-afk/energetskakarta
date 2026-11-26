@@ -125,32 +125,38 @@ export function countryPage(site: SiteData, lang: Lang, code: CountryCode, hubs:
     sections: [
       {
         heading: copy.country.capacityHeading,
-        html: behind(
-          capacityChart,
-          table(
-            [labels.technology, labels.operating, labels.pipeline, labels.plants],
-            summary.technologies.map((row) => [
-              i18n.technology(row.technology),
-              // plants are there but none has a figure in the sources: "0 MW" would read as "no wind power"
-              row.operatingMw === 0 && row.operatingPlants > 0
-                ? labels.notStated
-                : i18n.power(row.operatingMw),
-              i18n.power(row.pipelineMw),
-              i18n.number(row.plants),
-            ]),
-          ),
-        ),
+        // a country the stats do not cover yet: a sentence, not a table of headers alone (Faza 58-A)
+        html:
+          summary.technologies.length === 0
+            ? `<p>${e(copy.country.noPlants)}</p>`
+            : behind(
+                capacityChart,
+                table(
+                  [labels.technology, labels.operating, labels.pipeline, labels.plants],
+                  summary.technologies.map((row) => [
+                    i18n.technology(row.technology),
+                    // plants are there but none has a figure in the sources: "0 MW" would read as "no wind power"
+                    row.operatingMw === 0 && row.operatingPlants > 0
+                      ? labels.notStated
+                      : i18n.power(row.operatingMw),
+                    i18n.power(row.pipelineMw),
+                    i18n.number(row.plants),
+                  ]),
+                ),
+              ),
       },
       {
         heading: copy.country.linesHeading,
         html:
-          behind(
-            linesChart,
-            table(
-              [labels.voltage, labels.km],
-              summary.lineKm.map((row) => [i18n.voltage(row.voltage), i18n.km(row.km)]),
-            ),
-          ) +
+          (summary.lineKm.length === 0
+            ? `<p>${e(copy.country.noLines)}</p>`
+            : behind(
+                linesChart,
+                table(
+                  [labels.voltage, labels.km],
+                  summary.lineKm.map((row) => [i18n.voltage(row.voltage), i18n.km(row.km)]),
+                ),
+              )) +
           definitions([
             [labels.substations, e(i18n.number(summary.substations))],
             [labels.datacenters, e(i18n.number(summary.datacenters.count))],

@@ -117,7 +117,7 @@ describe("generation by year", () => {
     expect(hr.lead).toContain("hidro 58,6");
     expect(hr.lead).toContain("Potrošnja (ukupno opterećenje sustava) bila je 18,5 TWh.");
     const years = hr.sections.find((section) => section.heading === "Po godinama")?.html ?? "";
-    expect(years).toContain("<td>2026*</td>");
+    expect(years).toContain('<th scope="row">2026*</th>');
     expect(years.indexOf("2026*")).toBeLessThan(years.indexOf(">2024<"));
     expect(page("/en/electricity-generation/hr/").title).toBe(
       "Electricity generation in Croatia by source (2024–2025)",

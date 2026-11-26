@@ -109,7 +109,7 @@ describe("topic pages", () => {
     const html = page("/zemlja/hr/hidroelektrane/").sections[0]?.html ?? "";
     expect(html).toContain('<a href="/objekt/osm-way-2/">HE Velika</a>');
     expect(html).toContain('<a href="/objekt/osm-way-1/">HE Mala</a>');
-    expect(html).toContain("<td>MHE Potok</td>"); // 2.5 MW: below the asset-page threshold
+    expect(html).toContain('<th scope="row">MHE Potok</th>'); // 2.5 MW: below the asset-page threshold
     expect(html.indexOf("HE Velika")).toBeLessThan(html.indexOf("HE Mala"));
     const substations = page("/zemlja/hr/trafostanice/").sections[0]?.html ?? "";
     expect(substations.indexOf("Žerjavinec")).toBeLessThan(substations.indexOf("TS Area"));

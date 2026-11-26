@@ -2,6 +2,7 @@
  * What a static page is and where it lives (Faza 26 split from pages.ts): the site data, the page model, the
  * addresses of every kind of page, and the JSON-LD the pages share.
  */
+import { createI18n } from "../i18n";
 import type { PriceMonths } from "../data/priceMonths";
 import type { GasFlows } from "../data/gasFlows";
 import type { GasStorage } from "../data/gasStorage";
@@ -282,6 +283,12 @@ export function mapLink(lang: Lang, params: Record<string, string>): string {
 export const home = (lang: Lang): Crumb => ({ name: COPY[lang].breadcrumbHome, path: mapLink(lang, {}) });
 
 export const homeCrumb = home;
+
+/** Croatia's page, the step above the pages about Croatia alone (gas, the green transition; Faza 58-A). */
+export const croatiaCrumb = (lang: Lang): Crumb => ({
+  name: createI18n(lang).country("HR"),
+  path: PATHS[lang].country("hr"),
+});
 
 // ---------------------------------------------------------------- pages
 

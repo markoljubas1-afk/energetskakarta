@@ -39,6 +39,7 @@ import {
 } from "./charts";
 import { COMPLETE_COVERAGE, lastComplete, RENEWABLE, yearRows } from "./energyPages";
 import {
+  croatiaCrumb,
   homeCrumb,
   latestDate,
   mapLink,
@@ -644,7 +645,7 @@ function transitionPage(site: SiteData, lang: Lang): StaticPage | null {
       site.current.createdAt,
     ),
     image: ogImage("transition", lang),
-    breadcrumbs: [homeCrumb(lang)],
+    breadcrumbs: [homeCrumb(lang), croatiaCrumb(lang)],
   };
 }
 

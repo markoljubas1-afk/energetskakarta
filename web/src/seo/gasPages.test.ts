@@ -131,6 +131,14 @@ describe("the gas page", () => {
     expect(hr.lastModified).toBe("2026-11-19T10:00:00+00:00");
   });
 
+  it("sits under Croatia in the trail, as the other pages about one country do (Faza 58-A)", () => {
+    const hr = gasPages(site).find((each) => each.lang === "hr");
+    expect(hr?.breadcrumbs).toEqual([
+      { name: "Početna", path: "/" },
+      { name: "Hrvatska", path: "/zemlja/hr/" },
+    ]);
+  });
+
   it("answers its questions with tables of the same day", () => {
     const hr = page("hr");
     expect(hr.sections.map((section) => section.heading)).toEqual([
@@ -143,16 +151,18 @@ describe("the gas page", () => {
       "Što ove brojke jesu, a što nisu?",
     ]);
     const [from, to, perDay, storage, onMap, more] = hr.sections.map((section) => section.html);
-    expect(from).toContain('<td>LNG terminal</td><td class="num">98,4</td><td class="num">81 %</td>');
+    expect(from).toContain(
+      '<th scope="row">LNG terminal</th><td class="num">98,4</td><td class="num">81 %</td>',
+    );
     expect(to).toContain("izašlo je 97,2 GWh plina");
     expect(to).toContain("Rogatec (Slovenija)");
     // eight reported days, the latest first; the unreported 18th is not there
     expect(perDay?.match(/<tr>/g)?.length).toBe(9);
     expect(perDay).toContain(
-      '<td>17. studenoga 2026.</td><td class="num">71,9</td><td class="num">121,2</td>',
+      '<th scope="row">17. studenoga 2026.</th><td class="num">71,9</td><td class="num">121,2</td>',
     );
     expect(perDay).not.toContain("18. studenoga");
-    expect(storage).toContain("<td>Zsana</td>");
+    expect(storage).toContain('<th scope="row">Zsana</th>');
     expect(storage).toContain("GIE AGSI");
     expect(onMap).toContain("l=gas%2Cpipelines");
     expect(more).toContain('href="/edukacija/"');
@@ -293,10 +303,12 @@ describe("the pages of the terminal and the storage", () => {
     );
     const [perDay, what] = terminal.sections.map((section) => section.html);
     expect(perDay?.match(/<tr>/g)?.length).toBe(9);
-    expect(perDay).toContain('<td>16. studenoga 2026.</td><td class="num">100</td><td class="num">83 %</td>');
+    expect(perDay).toContain(
+      '<th scope="row">16. studenoga 2026.</th><td class="num">100</td><td class="num">83 %</td>',
+    );
     expect(what).toContain("Ukapljeni plin (LNG) dolazi brodovima na terminal u Omišlju");
     expect(what).toContain('href="https://sabor.hr/');
-    expect(terminal.breadcrumbs.at(-1)).toEqual({ name: "Plin u Hrvatskoj", path: "/plin/" });
+    expect(terminal.breadcrumbs.map((crumb) => crumb.path)).toEqual(["/", "/zemlja/hr/", "/plin/"]);
 
     expect(storage.heading).toBe("Skladište plina Okoli (PSP Okoli)");
     expect(text(storage.lead)).toBe(

@@ -16,7 +16,17 @@ import { SOURCE_TERMS } from "./license";
 import { LEARN_COPY } from "./learnPages";
 import { e, list, table } from "./markup";
 import { ogImage } from "./ogImages";
-import { home, mapLink, other, PATHS, publisher, type Crumb, type SiteData, type StaticPage } from "./site";
+import {
+  croatiaCrumb,
+  home,
+  mapLink,
+  other,
+  PATHS,
+  publisher,
+  type Crumb,
+  type SiteData,
+  type StaticPage,
+} from "./site";
 
 const HOME = "HR";
 const DAYS_SHOWN = 14;
@@ -157,7 +167,11 @@ export const GAS_PLACE_PATHS: Record<Lang, PlacePaths> = {
   en: { terminal: "/en/gas/krk-lng-terminal/", storage: "/en/gas/okoli-gas-storage/" },
 };
 
-const trail = (lang: Lang): Crumb[] => [home(lang), { name: COPY[lang].hub, path: PATHS[lang].gas }];
+const trail = (lang: Lang): Crumb[] => [
+  home(lang),
+  croatiaCrumb(lang),
+  { name: COPY[lang].hub, path: PATHS[lang].gas },
+];
 
 const sourcesHtml = (lang: Lang, which: readonly [string, string][]): string =>
   `<p>${e(COPY[lang].sources)}: ${which.map(([name, url]) => `<a href="${e(url)}">${e(name)}</a>`).join("; ")}.</p>`;
