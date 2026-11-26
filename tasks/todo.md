@@ -3568,3 +3568,20 @@ podaci, zasebno.
 ### D4-B slika karte (prijedlog, čeka odluku)
 - Statična slika položaja objekata (točke po snazi) na stranici zemlje i teme; bez obrisa obale u podacima stranice
   to traži ili crtanje u pipelineu (slika iz pločica) ili obris zemlje iz `boundaries`. Procjena: dan.
+
+## Imena elektrana na hrvatskom — 2026-11-26 (vlasnik: „nakon toga kreni s imenima elektrana”)
+Stanje: ~2200 elektrana (IT 1755, AT 152, HR 78, BA 71, RS 68, HU 47, ME 33, SI 24) nosi GEM-ovo englesko ime
+oblika „<ime> <opis>”: „Senj II hydroelectric plant”, „Apelovac solar farm”, „Brda Umovi wind farm”, „Ajka Power
+Plant”; spojeni zapisi uzimaju OSM-ovo ime, pa su to zapisi samo iz GEM-a ili bez OSM imena.
+- [ ] `plantName(name, technology, lang)` (čista funkcija): na hrvatskom prepoznaje engleski opis na kraju imena
+  („solar farm”, „wind farm”, „hydroelectric plant”, „power station”, „power plant”, uz dodatke „Pumped Storage”,
+  „floating”, „offshore”, „gas”, „CHP”… i rimski broj iza) i umjesto njega stavlja hrvatski naziv vrste iz
+  tehnologije ispred imena: „Hidroelektrana Senj II”, „Sunčana elektrana Apelovac”, „Reverzibilna hidroelektrana
+  Blaca”, „Plutajuća vjetroelektrana Abruzzo 1”. Vlastito ime se ne dira; na engleskom ime ostaje kakvo jest;
+  ime bez prepoznatog opisa (OSM-ova hrvatska imena, „TE Plomin”) ostaje isto.
+- [ ] Gdje se prikazuje: tooltip i naslov detalja na karti, rezultati tražilice, stranice objekata (naslov, opis,
+  susjedi, JSON-LD), stranice tema i najvećih elektrana. Otvoreni API zadržava izvorno ime (podaci).
+- Ne pokriva: natpise na samoj karti (crta ih MapLibre iz pločica; njegovi izrazi nemaju regularne izraze) i
+  zašto se neke poznate elektrane (HE Dubrovnik) nisu spojile s OSM-om — to je posebna provjera spajanja.
+- Provjera: vitest (`plantName`: primjeri i ne-primjeri), testovi stranica; preview: hidroelektrane u Hrvatskoj,
+  tražilica „Senj”.
