@@ -43,8 +43,8 @@ describe("the chart's axes (D3)", () => {
   });
 
   it("names round years between the ends, none so close to an end that the labels would touch", () => {
-    // 1888 to 2026: every fifty years; 1900 is far enough from 1888 to be read on its own
-    expect(yearTicks(1888, 2026)).toEqual([1900, 1950, 2000]);
+    // 1888 to 2026: every fifty years; 1900 sits too close to 1888 to have a label of its own
+    expect(yearTicks(1888, 2026)).toEqual([1950, 2000]);
     expect(yearTicks(1960, 2026)).toEqual([1975, 2000]);
     expect(yearTicks(2000, 2026)).toEqual([2010, 2020]);
     expect(yearTicks(2020, 2026)).toEqual([]);

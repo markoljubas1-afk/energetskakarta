@@ -3540,5 +3540,7 @@ Stanje na produkciji (1280 i 390 px, `?y=1990`): graf je visok 56 px; okomite os
   polovica okrugla), s oznakom snage uz svaku; natpis „vrh grafikona” odlazi.
 - [x] Vodoravna os: okrugle godine između krajeva (`yearTicks`: korak 25 ili 50 godina prema rasponu), na mjestu
   koje odgovara klizaču (`yearX`); krajevi ostaju.
+  Na previewu su se „1888.” i „1900.” preklapale (1900. je 8 % od kraja, a oznaka ~36 px na grafu od ~240 px):
+  godina dobiva oznaku tek 15 % od kraja.
 - Alternative: graf s knjižnicom grafikona (odbačeno: traka je lagana i crta se sama, bez lijenog učitavanja).
 - Provjera: vitest (`yTicks`, `yearTicks`, TimeBar: oznake osi), preview 1280 i 390 px.

@@ -57,8 +57,11 @@ export const stepMs = (year: number): number => (year < 1950 ? 90 : year < 2000 
  */
 export const yTicks = (max: number): number[] => [max / 2, max];
 
-/** Labels closer to an end than this share of the axis would touch the end's own label. */
-const END_GAP = 0.08;
+/**
+ * Labels closer to an end than this share of the axis would touch the end's own label: a year's label is about
+ * 36 px, the chart as narrow as 240 px in a phone's bar (seen on the preview: "1888.1900." at 8 %).
+ */
+const END_GAP = 0.15;
 
 /**
  * Round years between the ends of the axis (D3): every 50 years over a century, every 25 over four decades,
