@@ -3636,3 +3636,12 @@ Plan:
   statusa, prag 50 %) — svako hvata po test. Stvarni kod na objavljenom `plants.ndjson`: 34 spajanja po snazi +
   4 ručna, 0 novih po imenu (postojeća spajanja nedirnuta); svih 34 provjereno okom (Paks, Piva, Achensee, Ferrara,
   HR: SE Obrovac, Vis, Donja Dubrava, Palinovec, Konjščina…). vitest (report.test samo pod opterećenjem, sam 15/15).
+- Napomena: preview pokazuje samo da ništa nije pokvareno — spajanja nastaju tek u sljedećem buildu podataka
+  (`osm-scheduled`/`osm-build`), a `_redirects` u deployu weba koji ga slijedi (web.yml, `workflow_run`, sa
+  `SITE_URL` → čita živi `seo-manifest.json`). Slaba točka: ako se živi manifest u tom deployu ne pročita
+  (samo upozorenje), stranice GEM zapisa ispadnu iz manifesta i preusmjeravanje za njih više ne nastaje.
+- [ ] **Nakon sljedećeg builda podataka:** `/zemlja/hu/nuklearne-elektrane/` — 3 zapisa, ≈ 4,5 GW;
+  `curl -sI https://gridatlas.eu/objekt/gem-L100000500197-operating/` (i `/en/asset/…`) → 301 na
+  `/objekt/osm-relation-7671467/`; `_redirects` ≈ 58–60 redaka (30 živih GEM stranica, 29 s ciljem); u logu builda
+  `matched_by_capacity` ≈ 34 i upozorenje s `relation/19686395`. Ako je upozorenje bučno (multipoligon preko
+  granice sastavljen u susjednom izvatku), uspoređivati id-jeve nakon `merge`, ne po izvatku.
