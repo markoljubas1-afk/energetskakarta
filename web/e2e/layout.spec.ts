@@ -102,3 +102,37 @@ test("a small laptop window keeps the same guarantee", async ({ page }, testInfo
   const required = ["live bar", "data version", "downloads", "settings panel", "zoom buttons"];
   expect(overlaps(await visibleBoxes(page, required))).toEqual([]);
 });
+
+/*
+ * Tablets and small windows (Faza 57-C1). Between 721 and 1000 px there is no room for the filters, the details
+ * and the bars side by side: the details take the filters' place while they are open. Up to 1200 px the bars
+ * end where the details begin.
+ */
+for (const width of [800, 1100]) {
+  test(`a ${String(width)} px window: details, bars, legend and zoom keep clear of one another`, async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop", "phones have their own layout, covered above");
+    await page.setViewportSize({ width, height: 800 });
+    await open(page, `live=1&v=44.7,13.85,9&sel=${encodeURIComponent(PIPELINE)}`);
+    await expect(page.getByRole("heading", { name: "Plinovod Primjer" })).toBeVisible();
+    const required = ["details", "live bar", "legend", "zoom buttons", "data version"];
+    expect(overlaps(await visibleBoxes(page, required))).toEqual([]);
+    // on a tablet the filters give way to the details, and come back when they close
+    await expect(page.locator("#settings-panel")).toBeVisible({ visible: width > 1000 });
+    await page.getByRole("button", { name: "Zatvori detalje" }).click();
+    await expect(page.locator("#settings-panel")).toBeVisible();
+  });
+}
+
+test("the search never covers the name in the header", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop", "phones put the search on a row of its own");
+  await open(page, "");
+  for (const width of [1100, 1200, 1280, 1350, 1440, 1600]) {
+    await page.setViewportSize({ width, height: 800 });
+    const name = await page.locator("header h1").boundingBox();
+    const search = await page.getByRole("combobox", { name: "Pretraga" }).boundingBox();
+    if (!name || !search) throw new Error("the name and the search are in the header");
+    expect(name.x + name.width, `at ${String(width)} px`).toBeLessThanOrEqual(search.x);
+  }
+});

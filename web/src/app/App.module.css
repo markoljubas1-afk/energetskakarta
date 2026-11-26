@@ -161,15 +161,34 @@
 }
 
 /* with the details panel or the welcome card open the bars end where that column begins (56 + 320 + 12) */
-@media (min-width: 1200px) {
+@media (min-width: 1001px) {
   .details ~ .dock {
     right: 388px;
   }
 }
 
-@media (max-width: 1000px) {
+/*
+ * Tablets and small windows, 721 to 1000 px (Faza 57-C1): the filters, the details and the bars do not fit side
+ * by side. While the details (or the welcome card) are open they take the filters' place on the left; the
+ * filters and their fold button step aside, out of sight and out of the tab order, and come back when the
+ * details close. The bars keep clear of the folded legend's button in the bottom-right corner (the legend
+ * starts folded at this width, App.tsx). Browsers without :has keep the old overlap; nothing breaks.
+ */
+@media (min-width: 721px) and (max-width: 1000px) {
   .dock {
-    right: 12px;
+    right: 136px;
+  }
+
+  .details {
+    left: 12px;
+    right: auto;
+    width: 340px;
+    max-height: calc(100% - 68px);
+  }
+
+  .side:has(~ .details),
+  .sideFold:has(~ .details) {
+    display: none;
   }
 }
 

@@ -114,6 +114,7 @@ import { useHourClock } from "./useHourClock";
 import { useIntro, type IntroControl } from "./useIntro";
 import { useTheme } from "./theme";
 import { COUNTRY_CENTER, SHOW_PLANTS_ZOOM } from "../map/countryView";
+import { useMediaQuery } from "./useMediaQuery";
 
 /** How often an open map reloads the live layer (the pipeline publishes hourly, at :12). */
 const LIVE_REFRESH_MS = 15 * 60_000;
@@ -382,6 +383,8 @@ function Explorer({
     ...(state.layers.has("gas") ? (["entsog", "gie"] as const) : []),
   ];
   const [details, setDetails] = useState<Selection | null>(null);
+  // up to 1000 px the open legend would sit under the bars (App.module.css, Faza 57-C1): it starts folded
+  const narrowWindow = useMediaQuery("(max-width: 1000px)");
   const [basemap, setBasemap] = useState<Basemap["kind"] | null>(null);
   // the map's controls, for the share menu here and for search in the header (via onMapReady)
   const [mapApi, setMapApi] = useState<MapApi | null>(null);
@@ -1191,7 +1194,7 @@ function Explorer({
           <div className={styles.legend}>
             <Legend
               theme={theme}
-              compact={state.selected !== null || state.embed || welcomeShown}
+              compact={state.selected !== null || state.embed || welcomeShown || narrowWindow}
               distribution={state.layers.has("distribution")}
               chargers={state.layers.has("chargers")}
               chargersBanded={chargerBands !== null}

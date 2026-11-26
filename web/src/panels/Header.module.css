@@ -201,13 +201,14 @@
   min-width: 170px;
 }
 
-@media (max-width: 1320px) {
+/* measured (Faza 57-C1): below these widths the search, at its 170 px, ran over the end of the name */
+@media (max-width: 1480px) {
   .tagline {
     display: none;
   }
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1300px) {
   .buttonLabel {
     position: absolute;
     width: 1px;
