@@ -3329,6 +3329,10 @@ ostaje na pregledu regije (zum ~5), gdje se elektrane od 10–100 MW i planirane
   `fitBounds` granica zemlje (odbačeno: za Hrvatsku daje zum ispod 7, pa se vjetroelektrane opet ne vide).
 - Provjera: vitest (zatvaranje kartice, središta svih zemalja), preview: sva tri gumba → kartica zatvorena, karta
   na Hrvatskoj, elektrane vidljive, filtar bez „nema ničega”.
+- [x] PR #21, preview provjeren 2026-11-26: sva tri gumba zatvaraju karticu i vode kartu na Hrvatsku
+  (`v=44.9,16.2,7`); vjetroelektrane istaknute, plin i ugljen u pogonu, vjetar i sunce u izgradnji i planirani
+  vidljivi; sloj Elektrane bez „nema ničega” (ta obavijest ostaje samo uz vodove kad nema planiranih vodova, što je
+  točno). Spojeno uz odobrenje vlasnika.
 
 ### 57-C raspored (legenda, 721–1000 px, traka uživo, prazna karta)
 - [ ] Legenda na mobitelu i u ugradnji (gumb „Legenda”).
