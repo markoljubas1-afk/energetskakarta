@@ -90,7 +90,7 @@ describe("solar electricity per inhabitant", () => {
         "5. mjesto među 8 zemalja regije. Prva je Mađarska s 962 kWh po stanovniku, 4,5 puta više. " +
         "Godine 2023. bilo je 107 kWh po stanovniku.",
     );
-    expect(html).toContain('<td>Hrvatska</td><td class="num">212</td><td class="num">820</td>');
+    expect(html).toContain('<th scope="row">Hrvatska</th><td class="num">212</td><td class="num">820</td>');
     // Bosnia and Herzegovina's population carries Eurostat's flag, and the flag is explained
     expect(html).toContain("3.411.829 (p)");
     expect(html).toContain("p – ");

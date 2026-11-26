@@ -508,3 +508,10 @@
 - What happened: rečenica o licenci dodana je u `geothermal.ts` naredbom `sed`; lokalno su prošli testovi, tipovi i lint, ali CI `npm run check` pao je na `prettier --check` (predugi red), pa se objava nije dogodila.
 - Root cause: prije pusha nisam pokrenuo Prettier; lokalni `prettier --check .` uz to javlja i datoteke koje se razlikuju samo po CRLF-u, pa nije jasan signal.
 - Rule going forward: prije pusha na main pokrenuti `npx prettier --check <izmijenjene datoteke>` (ili `--write` na njima), uz testove, `tsc` i lint.
+
+### L-084 — Promjena zajedničkog pomoćnika provjerena samo u svojoj mapi (2026-11-26)
+- Što se dogodilo: PR #24 (58-A) promijenio je HTML tablica u `seo/markup.ts` (`th scope="row"`); pokrenuti su samo
+  testovi iz `src/seo`, a `src/share/solarCapitaCard.test.ts` koristi istu tablicu i pao je tek u CI-ju.
+- Uzrok: pretpostavka da pomoćnik iz `seo/` koriste samo stranice iz `seo/`; kartice za dijeljenje ga uvoze.
+- Pravilo: nakon promjene zajedničkog pomoćnika (HTML, formatiranje, i18n) prije slanja pokrenuti cijeli vitest
+  (`npx vitest run`) ili barem `grep` po svim testovima za stari izlaz, ne samo testove mape u kojoj je promjena.
