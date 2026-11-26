@@ -3311,6 +3311,9 @@ grupama uglavnom riješeni, imena gumba postoje (čitač ih ima), samo bez opisa
   `?`, koji se može isključiti); na dodirnim ekranima bez miša gumba nema.
 - Provjera: vitest (prečaci isključeni, prekidač u popisu, gumb u traci; testovi s tekstovima prilagođeni), e2e
   tekstovi; preview: isključi prečace → `t` ne mijenja temu, Esc zatvara; ponovno učitavanje pamti.
+- [x] PR #20, preview provjeren 2026-11-26: `t` mijenja temu; gumb s tipkovnicom u donjoj traci otvara popis;
+  isključen prekidač → `t` ne mijenja temu, ni nakon ponovnog učitavanja (`energymap-shortcuts=off`); Esc zatvara
+  popis; sloj „Tokovi i cijene uživo”, ploča „Filtri i pregled”. Spojeno uz odobrenje vlasnika.
 
 ### 57-C raspored (legenda, 721–1000 px, traka uživo, prazna karta)
 - [ ] Legenda na mobitelu i u ugradnji (gumb „Legenda”).
