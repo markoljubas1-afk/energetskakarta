@@ -175,7 +175,7 @@ export function assetExtras(
             html: `<ul>${close
               .map(
                 ({ hit: other, metres }) =>
-                  `<li><a href="${PATHS[lang].asset(assetSlug(other.id))}">${e(other.name)}</a> (${e(kind(other))}, ${e(i18n.number(metres / 1000, 1))} km)</li>`,
+                  `<li><a href="${PATHS[lang].asset(assetSlug(other.id))}">${e(other.kind === "plant" ? i18n.plantName(other.name, other.technology) : other.name)}</a> (${e(kind(other))}, ${e(i18n.number(metres / 1000, 1))} km)</li>`,
               )
               .join("")}</ul>`,
           }

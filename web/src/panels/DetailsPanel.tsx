@@ -343,7 +343,9 @@ export function DetailsPanel({
     );
     if (selection.kind === "plant") {
       const note = expansionNote(selection, t);
-      const name = selection.name ?? t("detailsUnnamed");
+      const name = selection.name
+        ? i18n.plantName(selection.name, selection.technology)
+        : t("detailsUnnamed");
       title = note ? `${name} (${note})` : name;
       body = (
         <dl className={styles.rows}>

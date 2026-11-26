@@ -4,6 +4,7 @@ import type { DataSource, Technology, VoltageClass } from "../domain";
 import type { Lang } from "../state/url";
 import { en } from "./en";
 import { hr, type Dictionary, type MessageKey, type PluralKey } from "./hr";
+import { plantName } from "./plantName";
 
 const DICTIONARIES: Record<Lang, Dictionary> = { hr, en };
 const LOCALES: Record<Lang, string> = { hr: "hr-HR", en: "en-GB" };
@@ -39,6 +40,8 @@ export interface I18n {
   /** Localised country name for an ISO code (scope countries and neighbours alike). */
   country: (code: string) => string;
   technology: (tech: Technology) => string;
+  /** a plant's name as this language says it: GEM's English "X solar farm" is "Sunčana elektrana X" in Croatian */
+  plantName: (name: string, tech: Technology) => string;
   voltage: (klass: VoltageClass) => string;
   /** "OpenStreetMap, Global Energy Monitor" */
   sources: (list: readonly DataSource[]) => string;
@@ -112,6 +115,7 @@ export function createI18n(lang: Lang): I18n {
     country: (code) =>
       lang === "en" && code === "BA" ? "Bosnia and Herzegovina" : (regions.of(code) ?? code),
     technology: (tech) => t(`tech_${tech}`),
+    plantName: (name, tech) => plantName(name, tech, lang),
     voltage: (klass) => t(VOLTAGE_KEYS[klass]),
     sources: (list) => list.map((source) => t(`source_${source}`)).join(", "),
     attribution: (list) => list.map((source) => t(`attr_${source}`)).join(" | "),
