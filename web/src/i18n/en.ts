@@ -154,6 +154,10 @@ export const en: Dictionary = {
   mapVersionHint: "Plants, lines and substations are refreshed weekly. Live figures carry their own hour.",
   download: "Download the database",
   shortcutsTitle: "Keyboard shortcuts",
+  shortcutsSingleKeys: "Single-key shortcuts (/, ?, t, l)",
+  shortcutsSingleKeysNote:
+    "Esc always works. Turn them off if you type by voice or the keys get in your way.",
+  shortcutsOpen: "Keyboard shortcuts",
   shortcut_search: "Jump to search",
   shortcut_escape: "Close details, settings or this list",
   shortcut_help: "Show this list",

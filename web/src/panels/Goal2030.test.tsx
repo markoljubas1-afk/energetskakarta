@@ -88,7 +88,7 @@ describe("the 2030 target", () => {
     renderWithI18n(
       <Goal2030 country="HR" renewables={SAMPLE_RENEWABLES} targets={TARGETS} onShowComing={onShowComing} />,
     );
-    fireEvent.click(screen.getByRole("button", { name: "Pokaži što se gradi i planira: vjetar i sunce" }));
+    fireEvent.click(screen.getByRole("button", { name: "Prikaži što se gradi i planira: vjetar i sunce" }));
     expect(onShowComing).toHaveBeenCalledOnce();
   });
 });

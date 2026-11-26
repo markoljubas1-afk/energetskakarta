@@ -77,7 +77,7 @@ test("the share menu opens the day card, which is drawn and saved as a PNG", asy
   const kind = dialog.getByLabel("Što je na slici");
   await kind.selectOption({ label: "Izvori električne energije: zadnji potpuni dan" });
   await expect(picture).toHaveAccessibleName(
-    /^GridAtlas: Izvori električne energije\. Hrvatska · \d+\. \S+ \d{4}\. · cijeli dan: \d+ % obnovljivi izvori; /,
+    /^GridAtlas: izvori električne energije\. Hrvatska · \d+\. \S+ \d{4}\. · cijeli dan: \d+ % obnovljivi izvori; /,
   );
   await expect(picture).toHaveAccessibleName(/ Proizvodnja; .* Potrošnja; /);
   const still = await dialog.boundingBox();
@@ -95,7 +95,7 @@ test("the share menu opens the day card, which is drawn and saved as a PNG", asy
   await kind.selectOption({ label: "Izvori električne energije: zadnji potpuni mjesec" });
   await dialog.getByRole("radio", { name: "Vodoravna" }).check();
   await expect(picture).toHaveAccessibleName(
-    /^GridAtlas: Izvori električne energije\. Hrvatska · \S+ \d{4}\.: /,
+    /^GridAtlas: izvori električne energije\. Hrvatska · \S+ \d{4}\.: /,
   );
   const monthly = page.waitForEvent("download");
   await dialog.getByRole("button", { name: "Preuzmi sliku (PNG)" }).click();
@@ -123,7 +123,7 @@ test("a monthly report's link opens the picture of that month", async ({ page })
   const dialog = page.getByRole("dialog", { name: "Slika za dijeljenje" });
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole("img")).toHaveAccessibleName(
-    /^GridAtlas: Izvori električne energije\. Hrvatska · \S+ \d{4}\.: /,
+    /^GridAtlas: izvori električne energije\. Hrvatska · \S+ \d{4}\.: /,
   );
   const downloading = page.waitForEvent("download");
   await dialog.getByRole("button", { name: "Preuzmi sliku (PNG)" }).click();
@@ -176,7 +176,7 @@ test("the learning corner's card opens the picture of the gas in storage", async
   await expect(dialog.getByLabel("Što je na slici")).toHaveValue("gas");
   const picture = dialog.getByRole("img");
   await expect(picture).toHaveAccessibleName(
-    "GridAtlas: Zalihe plina. Hrvatska · 17. studenoga 2026.: 76 % popunjenost skladišta plina (UGS Primjer, plinski dan 17. studenoga 2026.); 3,8 TWh plina u skladištu (stane 5 TWh); −3,5 p. b. promjena popunjenosti u sedam dana (u postotnim bodovima; 10. studenoga 2026. bilo je 79,5 %). Izvor: GIE AGSI (agsi.gie.eu) · gridatlas.eu",
+    "GridAtlas: zalihe plina. Hrvatska · 17. studenoga 2026.: 76 % popunjenost skladišta plina (UGS Primjer, plinski dan 17. studenoga 2026.); 3,8 TWh plina u skladištu (stane 5 TWh); −3,5 p. b. promjena popunjenosti u sedam dana (u postotnim bodovima; 10. studenoga 2026. bilo je 79,5 %). Izvor: GIE AGSI (agsi.gie.eu) · gridatlas.eu",
   );
   const box = await dialog.boundingBox();
   const viewport = page.viewportSize();

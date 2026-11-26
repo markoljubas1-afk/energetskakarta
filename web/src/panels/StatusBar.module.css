@@ -138,3 +138,14 @@
     flex: none;
   }
 }
+
+/* the keyboard shortcuts: of no use where there is no keyboard, and the bar is full there (Faza 57) */
+.keys {
+  padding: 3px 8px;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .keys {
+    display: none;
+  }
+}

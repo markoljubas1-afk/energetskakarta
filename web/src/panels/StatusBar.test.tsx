@@ -106,4 +106,14 @@ describe("StatusBar", () => {
     ); // prettier-ignore
     expect(screen.getByRole("status")).toHaveTextContent("Detaljna podloga nije dostupna");
   });
+
+  it("opens the keyboard shortcuts from a button, so they can be found and turned off (Faza 57)", () => {
+    let opened = 0;
+    renderWithI18n(
+      <StatusBar current={current} dataBaseUrl={base} basemap="fallback" basemapExpected={false}
+        map={null} onShortcuts={() => { opened += 1; }} />,
+    ); // prettier-ignore
+    fireEvent.click(screen.getByRole("button", { name: "Tipkovnički prečaci" }));
+    expect(opened).toBe(1);
+  });
 });

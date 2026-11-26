@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { KEY_OF, SHORTCUTS } from "../app/shortcuts";
+import { KEY_OF, setSingleKeys, SHORTCUTS, singleKeysOn } from "../app/shortcuts";
 import { useI18n } from "../i18n";
 import styles from "./ShortcutsHelp.module.css";
 
@@ -16,6 +16,7 @@ const KEY_LABEL: Record<string, string> = { Escape: "Esc" };
 export function ShortcutsHelp({ open, onClose }: Props) {
   const { t } = useI18n();
   const dialog = useRef<HTMLDialogElement>(null);
+  const [singleKeys, setSingleKeysShown] = useState(singleKeysOn);
 
   useEffect(() => {
     const element = dialog.current;
@@ -42,6 +43,18 @@ export function ShortcutsHelp({ open, onClose }: Props) {
           </div>
         ))}
       </dl>
+      <label className={styles.toggle}>
+        <input
+          type="checkbox"
+          checked={singleKeys}
+          onChange={(event) => {
+            setSingleKeys(event.target.checked);
+            setSingleKeysShown(event.target.checked);
+          }}
+        />
+        {t("shortcutsSingleKeys")}
+      </label>
+      <p className={styles.note}>{t("shortcutsSingleKeysNote")}</p>
     </dialog>
   );
 }

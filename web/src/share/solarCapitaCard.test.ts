@@ -49,7 +49,7 @@ describe("solar electricity per inhabitant", () => {
     if (!card) throw new Error("no card");
     const summary = cardSummary(solarCapitaCardText(card, hr));
     expect(summary).toBe(
-      "GridAtlas: Sunčana struja po stanovniku. Hrvatska · 2024.: " +
+      "GridAtlas: sunčana struja po stanovniku. Hrvatska · 2024.: " +
         "212 kWh sunčane struje po stanovniku (820 GWh iz fotonaponskih elektrana na 3,87 mil. stanovnika); " +
         "5. od 8 mjesto u regiji (prva: Mađarska, 962 kWh); " +
         "+98 % u odnosu na 2023. (tada 107 kWh po stanovniku). " +

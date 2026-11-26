@@ -106,7 +106,7 @@ describe("the picture of where the gas came in", () => {
     const day = balance(FLOWS, "HR");
     if (!day) throw new Error("no balance");
     const text = gasFlowCardText(day, createI18n("hr"));
-    expect(text.title).toBe("GridAtlas: Odakle je plin ušao");
+    expect(text.title).toBe("GridAtlas: odakle je plin ušao");
     expect(text.subtitle).toBe("Hrvatska · plinski dan 17. studenoga 2026. · privremeni podaci");
     expect(text.figures).toEqual([
       {
@@ -361,7 +361,7 @@ describe("the day's deliveries against the seven days before", () => {
       "Kupcima i distribuciji u zemlji isporučeno je 100 GWh: 25 % više od prosjeka prethodnih sedam plinskih dana (80 GWh).",
     );
     const text = gasUseCardText(day, createI18n("hr"));
-    expect(text?.title).toBe("GridAtlas: Plin isporučen kupcima");
+    expect(text?.title).toBe("GridAtlas: plin isporučen kupcima");
     expect(text?.subtitle).toBe("Hrvatska · plinski dan 17. studenoga 2026.");
     expect(text?.figures).toEqual([
       {

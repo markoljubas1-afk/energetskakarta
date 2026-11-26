@@ -28,7 +28,7 @@ test("the layer is switched on from the layer list and shows flows and prices", 
   await expect(page.locator('[data-map-status="ready"]')).toBeVisible();
   const toggle = page.getByRole("button", { name: "Filtri i pregled" });
   if (await toggle.isVisible()) await toggle.click();
-  await page.getByRole("checkbox", { name: "Tokovi i cijene (uživo)" }).check();
+  await page.getByRole("checkbox", { name: "Tokovi i cijene uživo" }).check();
   await expect(page).toHaveURL(/live=1/);
   if (await page.getByRole("button", { name: "Sakrij filtre i pregled" }).isVisible()) {
     await page.getByRole("button", { name: "Sakrij filtre i pregled" }).click();
@@ -101,7 +101,7 @@ test("the bars fold away to free the map and come back", async ({ page }) => {
   await page.getByRole("button", { name: "Sakrij kartice" }).click();
   await expect(bar).toBeHidden();
   await expect(page).toHaveURL(/live=1/); // folded, not switched off
-  await page.getByRole("button", { name: "Pokaži kartice" }).click();
+  await page.getByRole("button", { name: "Prikaži kartice" }).click();
   await expect(bar).toBeVisible();
 });
 
@@ -116,7 +116,7 @@ test("the status bar says how green the electricity is, and explains the number"
   await expect(page.getByText("Koliko je struja sada zelena")).toBeVisible();
   await expect(page.getByText("proizvodnje je iz obnovljivih izvora")).toBeVisible();
   await expect(page.getByRole("link", { name: "Zašto je to važno?" })).toHaveAttribute("href", "/edukacija/");
-  await expect(page.getByRole("button", { name: /^Pokaži na karti: / })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Prikaži na karti: / })).toBeVisible();
 });
 
 test("the green card shows where the country stands against its 2030 target, asked for only when opened", async ({
@@ -173,7 +173,7 @@ test("the green card shows where the country stands against its 2030 target, ask
   expect(box.y + Math.min(box.height, 120)).toBeGreaterThan(0);
 
   // what is on its way towards the target: the country's wind and solar plants being built and planned
-  await goal.getByRole("button", { name: "Pokaži što se gradi i planira: vjetar i sunce" }).click();
+  await goal.getByRole("button", { name: "Prikaži što se gradi i planira: vjetar i sunce" }).click();
   await expect(page).toHaveURL(/[?&]s=[^&]*planned/);
   await expect(page).toHaveURL(/[?&]s=[^&]*construction/);
   await expect(page).not.toHaveURL(/[?&]s=[^&]*operating/);

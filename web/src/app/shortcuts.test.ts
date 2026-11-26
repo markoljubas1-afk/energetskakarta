@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
-import { KEY_OF, routeShortcut, SHORTCUTS } from "./shortcuts";
+import { KEY_OF, routeShortcut, setSingleKeys, SHORTCUTS, singleKeysOn } from "./shortcuts";
 
 const press = (key: string, target: EventTarget | null = document.body, mods = {}) => ({
   key,
@@ -36,5 +36,27 @@ describe("routeShortcut", () => {
     }
     // a button is not a field: shortcuts work with one focused
     expect(routeShortcut(press("?", document.createElement("button")))).toBe("help");
+  });
+});
+
+describe("single-key shortcuts can be turned off (Faza 57, WCAG 2.1.4)", () => {
+  afterEach(() => {
+    setSingleKeys(true);
+    window.localStorage.clear();
+  });
+
+  it("are on unless the reader turned them off, and the choice is remembered", () => {
+    expect(singleKeysOn()).toBe(true);
+    setSingleKeys(false);
+    expect(singleKeysOn()).toBe(false);
+    expect(window.localStorage.getItem("energymap-shortcuts")).toBe("off");
+    setSingleKeys(true);
+    expect(singleKeysOn()).toBe(true);
+  });
+
+  it("when off, only Escape still works: it is not a character key and closes what is open", () => {
+    for (const action of SHORTCUTS) {
+      expect(routeShortcut(press(KEY_OF[action]), false)).toBe(action === "escape" ? "escape" : null);
+    }
   });
 });

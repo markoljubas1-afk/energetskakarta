@@ -87,14 +87,14 @@ describe("SolarBar", () => {
       expect(card).toHaveTextContent("TE-TO (4TS28) · 110/x kV · 2,2 km zračne linije");
       expect(card).toHaveTextContent("D: više od 20 MW, slobodno 48 MW");
       expect(card).toHaveTextContent(/određuje HEP ODS/);
-      fireEvent.click(screen.getByRole("button", { name: "Pokaži na karti" }));
+      fireEvent.click(screen.getByRole("button", { name: "Prikaži na karti" }));
       expect(onStation).toHaveBeenCalledWith("TS 110/30kV 4TS 28 TE-TO");
     });
 
     it("says that capacity is published for Croatia only when no substation is near", () => {
       withCapacity(RELEASE);
       expect(screen.getByText(/U krugu od 30 km nema trafostanice HEP ODS-a/)).toBeInTheDocument();
-      expect(screen.queryByRole("button", { name: "Pokaži na karti" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Prikaži na karti" })).not.toBeInTheDocument();
     });
 
     it("points to PVGIS with the place's coordinates, with or without capacity data", () => {

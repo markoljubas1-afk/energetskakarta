@@ -46,7 +46,7 @@ describe("welcome card", () => {
       />,
     );
     expect(screen.getByRole("button", { name: /Što je novo/ })).toBeVisible();
-    await user.click(screen.getByRole("button", { name: /Tokovi struje uživo/ }));
+    await user.click(screen.getByRole("button", { name: /Tokovi i cijene uživo/ }));
     expect(live).toHaveBeenCalledOnce();
     expect(onClose).toHaveBeenCalledOnce();
   });
@@ -68,7 +68,7 @@ describe("welcome card", () => {
         onClose={vi.fn()}
       />,
     );
-    expect(screen.queryByRole("button", { name: /Tokovi struje uživo/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Tokovi i cijene uživo/ })).toBeNull();
     await user.click(screen.getByRole("button", { name: /Gdje u mreži ima mjesta/ }));
     expect(capacity).toHaveBeenCalledOnce();
   });

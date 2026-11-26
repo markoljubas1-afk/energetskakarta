@@ -75,3 +75,28 @@ kbd {
   font: 600 12px/1.5 var(--font-num);
   text-align: center;
 }
+
+/* the switch for the character keys (Faza 57, WCAG 2.1.4) */
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.toggle input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12.5px;
+}

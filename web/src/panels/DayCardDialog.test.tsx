@@ -148,7 +148,7 @@ describe("the day in three figures", () => {
       const picture = screen.getByRole("img");
       // the hour is written in the reader's own time zone (L-073): match it, do not spell it
       expect(picture).toHaveAccessibleName(
-        /^GridAtlas: Energetska slika dana\. Hrvatska · 16\. studenoga 2026\.: 69 % obnovljivi izvori u proizvodnji struje \(sat od \d\d:00, bez uvoza\); 100 €\/MWh prosječna cijena na burzi, dan unaprijed \(prosjek 24 sati tog dana\); 85 % popunjenost skladišta plina \(PSP Okoli, plinski dan 15\. studenoga 2026\.\)\. Izvori: ENTSO-E Transparency Platform; GIE AGSI · gridatlas\.eu$/,
+        /^GridAtlas: energetska slika dana\. Hrvatska · 16\. studenoga 2026\.: 69 % obnovljivi izvori u proizvodnji struje \(sat od \d\d:00, bez uvoza\); 100 €\/MWh prosječna cijena na burzi, dan unaprijed \(prosjek 24 sati tog dana\); 85 % popunjenost skladišta plina \(PSP Okoli, plinski dan 15\. studenoga 2026\.\)\. Izvori: ENTSO-E Transparency Platform; GIE AGSI · gridatlas\.eu$/,
       );
       expect(drawn).toEqual(
         expect.arrayContaining(["69", "100", "85", "€/MWh", "Hrvatska · 16. studenoga 2026."]),
@@ -237,7 +237,7 @@ describe("the day in three figures", () => {
       );
       // one day in the data: the fill and the volume, no change over seven days; the source is GIE's
       expect(screen.getByRole("img")).toHaveAccessibleName(
-        /^GridAtlas: Zalihe plina\. Hrvatska · 15\. studenoga 2026\.: 85 % popunjenost skladišta plina \(PSP Okoli, plinski dan 15\. studenoga 2026\.\); 4,3 TWh plina u skladištu \(stane 5 TWh\)\. Izvor: GIE AGSI \(agsi\.gie\.eu\) · gridatlas\.eu$/,
+        /^GridAtlas: zalihe plina\. Hrvatska · 15\. studenoga 2026\.: 85 % popunjenost skladišta plina \(PSP Okoli, plinski dan 15\. studenoga 2026\.\); 4,3 TWh plina u skladištu \(stane 5 TWh\)\. Izvor: GIE AGSI \(agsi\.gie\.eu\) · gridatlas\.eu$/,
       );
       expect(drawn).toEqual(expect.arrayContaining(["85", "%", "4,3", "TWh"]));
       // only countries with storage are offered; Austria's two are added up: 40 of 80 TWh
@@ -296,7 +296,7 @@ describe("the day in three figures", () => {
 
 describe("the last check before a picture", () => {
   it("holds back any picture whose words carry a figure that is not one", () => {
-    expect(presentable("GridAtlas: Izvori električne energije. Hrvatska: 71 % obnovljivi izvori.")).toBe(
+    expect(presentable("GridAtlas: izvori električne energije. Hrvatska: 71 % obnovljivi izvori.")).toBe(
       true,
     );
     expect(presentable("Udio obnovljivih je NaN %")).toBe(false);

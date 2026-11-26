@@ -52,7 +52,7 @@ test("the picture of solar electricity per inhabitant opens from its link and ca
   await expect(dialog.getByLabel("Što je na slici")).toHaveValue("solarhead");
   const picture = dialog.getByRole("img");
   await expect(picture).toHaveAccessibleName(
-    "GridAtlas: Sunčana struja po stanovniku. Hrvatska · 2024.: 212 kWh sunčane struje po stanovniku (820 GWh iz fotonaponskih elektrana na 3,87 mil. stanovnika); 2. od 2 mjesto u regiji (prva: Mađarska, 962 kWh); +98 % u odnosu na 2023. (tada 107 kWh po stanovniku). Izračun GridAtlasa iz podataka Eurostata (nrg_bal_peh, demo_gind) · gridatlas.eu",
+    "GridAtlas: sunčana struja po stanovniku. Hrvatska · 2024.: 212 kWh sunčane struje po stanovniku (820 GWh iz fotonaponskih elektrana na 3,87 mil. stanovnika); 2. od 2 mjesto u regiji (prva: Mađarska, 962 kWh); +98 % u odnosu na 2023. (tada 107 kWh po stanovniku). Izračun GridAtlasa iz podataka Eurostata (nrg_bal_peh, demo_gind) · gridatlas.eu",
   );
   const downloading = page.waitForEvent("download");
   await dialog.getByRole("button", { name: "Preuzmi sliku (PNG)" }).click();
