@@ -115,7 +115,7 @@
 .next {
   border: 1px solid var(--accent);
   background: var(--accent);
-  color: var(--accent-ink, #fff);
+  color: var(--on-accent);
 }
 
 .back:not(:disabled):hover {

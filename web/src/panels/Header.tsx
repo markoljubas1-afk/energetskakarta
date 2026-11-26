@@ -38,9 +38,10 @@ export function Header({ theme, page, onPage, onToggleTheme, onToggleLang, child
       </a>
       {/* The name as the intro writes it, and what it is in small letters (decision 2026-11-16). */}
       <div className={styles.brand}>
-        <strong aria-label={t("appName")}>
+        {/* the page's one h1 (Faza 57): every panel heading below it is an h2 or h3 */}
+        <h1 aria-label={t("appName")}>
           Grid<span>Atlas</span>
-        </strong>
+        </h1>
         <span className={styles.tagline}>{t("appTagline")}</span>
       </div>
       <div className={styles.search}>{page === "map" ? children : null}</div>
@@ -52,6 +53,8 @@ export function Header({ theme, page, onPage, onToggleTheme, onToggleLang, child
               key={option}
               type="button"
               aria-pressed={page === option}
+              // the words are hidden on narrow windows: a mouse still gets them (Faza 57)
+              title={t(PAGE_LABELS[option])}
               // on a phone the comparisons are reached from the reports: the row has no room for a third
               // button, not even on the comparisons page itself, where it would run into the name
               className={option === "compare" ? styles.widePage : undefined}
@@ -66,7 +69,7 @@ export function Header({ theme, page, onPage, onToggleTheme, onToggleLang, child
         })}
       </div>
       <div className={styles.actions}>
-        <a className={styles.textButton} href={PATHS[lang].learn}>
+        <a className={styles.textButton} href={PATHS[lang].learn} title={t("learnLink")}>
           <GraduationCap size={16} strokeWidth={1.75} aria-hidden="true" />
           <span className={styles.buttonLabel}>{t("learnLink")}</span>
         </a>
@@ -81,11 +84,15 @@ export function Header({ theme, page, onPage, onToggleTheme, onToggleLang, child
           <span className={styles.buttonLabel}>{t("authorLink")}</span>
         </a>
         {/* the monthly reports exist wherever generation data is published, as on the live site */}
-        <a className={`${styles.textButton} ${styles.optional}`} href={PATHS[lang].reports}>
+        <a
+          className={`${styles.textButton} ${styles.optional}`}
+          href={PATHS[lang].reports}
+          title={t("reportsLink")}
+        >
           <FileText size={16} strokeWidth={1.75} aria-hidden="true" />
           <span className={styles.buttonLabel}>{t("reportsLink")}</span>
         </a>
-        <a className={styles.textButton} href={PATHS[lang].about}>
+        <a className={styles.textButton} href={PATHS[lang].about} title={t("aboutLink")}>
           <Info size={16} strokeWidth={1.75} aria-hidden="true" />
           <span className={styles.buttonLabel}>{t("aboutLink")}</span>
         </a>
@@ -94,6 +101,7 @@ export function Header({ theme, page, onPage, onToggleTheme, onToggleLang, child
           className={styles.textButton}
           onClick={onToggleLang}
           aria-label={t("languageToggleLabel")}
+          title={t("languageToggleLabel")}
         >
           <Globe size={16} strokeWidth={1.75} aria-hidden="true" />
           <span className={styles.buttonLabel}>{t("languageToggle")}</span>
@@ -103,6 +111,7 @@ export function Header({ theme, page, onPage, onToggleTheme, onToggleLang, child
           className={styles.iconButton}
           onClick={onToggleTheme}
           aria-label={t("themeToggle")}
+          title={t("themeToggle")}
         >
           {theme === "dark" ? <Sun size={18} strokeWidth={1.75} /> : <Moon size={18} strokeWidth={1.75} />}
         </button>

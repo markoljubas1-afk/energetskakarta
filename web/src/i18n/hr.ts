@@ -2,6 +2,9 @@
 export const hr = {
   appName: "GridAtlas",
   appTagline: "Regionalna energetska karta",
+  mapZoomIn: "Približi",
+  mapZoomOut: "Udalji",
+  mapCreditsToggle: "Prikaži ili sakrij izvore karte",
   /** the browser tab and what search engines show for the home page; matches <title> in index.html */
   documentTitle: "GridAtlas: energetska karta Hrvatske, elektrane, mreža, plin",
   skipToMap: "Preskoči na kartu",

@@ -3270,18 +3270,24 @@ Provjera 2026-11-26 (podagent, kod, bez pokretanja): od 15 nalaza 11 otvoreno; p
 grupama uglavnom riješeni, imena gumba postoje (čitač ih ima), samo bez opisa na mišu. Tri PR-a, svaki s previewom.
 
 ### 57-A pristupačnost bez promjene rasporeda (kontrast, čipovi, dodir, polja, h1, MapLibre na hrvatskom)
-- [ ] Kontrast tokena (`app/tokens.css`), cilj 4,5:1 za tekst na svakoj podlozi na kojoj stoji (canvas, surface,
+- [x] Kontrast tokena (`app/tokens.css`), cilj 4,5:1 za tekst na svakoj podlozi na kojoj stoji (canvas, surface,
   surface-2), 3:1 za rubove polja: svijetlo `--muted`, `--accent`, `--ok`; tamno `--muted`, `--accent`,
   `--danger`; `--on-accent` za tekst na naglasnoj boji (u tamnoj temi taman, ne bijel: 2,45:1). Rub polja
   (tražilica, izbornici, čipovi) jači token `--line-strong`. Test: omjeri izračunati iz tokena (vitest).
-- [ ] Uključeni čip ima kvačicu (✓, oblik, ne samo boja) i obrub u naglasnoj boji.
-- [ ] Dodirne mete 44 px uz `(pointer: coarse)`: čipovi, „i”, „Sve/Ništa”, gumbi zaglavlja i kartice stranica,
+- [x] Uključeni čip ima kvačicu (✓, oblik, ne samo boja) i obrub u naglasnoj boji.
+- [x] Dodirne mete 44 px uz `(pointer: coarse)`: čipovi, „i”, „Sve/Ništa”, gumbi zaglavlja i kartice stranica,
   koraci i play u traci uživo, MapLibreovi gumbi zuma i izvora. Potvrdni okviri ostaju 16 px, ali cijeli redak
   (oznaka) je meta.
-- [ ] Polja i izbornici 16 px uz `(pointer: coarse)` (iOS inače zumira pri fokusu).
-- [ ] Jedan `h1` u aplikaciji: ime u zaglavlju postaje `h1` (izgled isti).
-- [ ] MapLibreovi natpisi na jeziku stranice (`locale`: zum, izvori). Gumbi zaglavlja bez vidljivog teksta dobivaju
+- [x] Polja i izbornici 16 px uz `(pointer: coarse)` (iOS inače zumira pri fokusu).
+- [x] Jedan `h1` u aplikaciji: ime u zaglavlju postaje `h1` (izgled isti).
+- [x] MapLibreovi natpisi na jeziku stranice (`locale`: zum, izvori). Gumbi zaglavlja bez vidljivog teksta dobivaju
   `title` (opis na mišu).
+- Napravljeno: svijetlo `--muted #57636d`, `--accent #1d6984`, `--ok #256e4b`; tamno `--muted #a9b3bc`,
+  `--accent #75bbd3`, `--danger #ea9e97`; `--on-accent` bijel / `#0e151c`; `--line-strong` na tražilici, izbornicima
+  i čipovima (`--line` ostaje za crte razdvajanja). Kvačica je bez teksta za čitač (`content: "✓" / ""`), ime gumba
+  ostaje isto. Odstupanja: gumbi zaglavlja rastu samo u visinu (na 360 px nema mjesta u širinu); (i) izvora ostaje
+  24 px (minimum AA; apsolutno je postavljen pa bi veći izašao iz izmjerenog kuta). MapLibreov `locale` se čita samo
+  pri stvaranju karte, a jezik se mijenja bez nove karte, pa `map/controlLabels.ts` imenuje gumbe pri promjeni jezika.
 - Rizici: tamnije boje mijenjaju izgled (blago); veće mete na mobitelu mogu gurnuti zaglavlje u dva retka →
   provjera na 360/390 px. e2e lokatori po imenu ostaju isti.
 - Provjera: vitest (kontrast, locale), e2e; preview 390 px i 1280 px, svijetlo i tamno.

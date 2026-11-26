@@ -35,7 +35,8 @@
  * The name is the logo, written as in the intro: "Grid" in ink, "Atlas" in the map's own light, warm to
  * cool, over a short rule of the same light.
  */
-.brand strong {
+.brand h1 {
+  margin: 0;
   position: relative;
   padding-bottom: 5px;
   font-size: 19px;
@@ -45,14 +46,14 @@
   white-space: nowrap;
 }
 
-.brand strong > span {
+.brand h1 > span {
   background: linear-gradient(90deg, var(--intro-warm), var(--intro-cool));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-.brand strong::after {
+.brand h1::after {
   content: "";
   position: absolute;
   left: 0;
@@ -244,5 +245,17 @@
 @media (max-width: 480px) {
   .pages button.widePage {
     display: none;
+  }
+}
+
+/* fingers need 44 px (Faza 57). The buttons grow in height only: on a 360 px phone the row of them has no
+   room to grow wider without pushing the name out. */
+@media (pointer: coarse) {
+  .iconButton,
+  .textButton {
+    height: 44px;
+  }
+  .pages button {
+    min-height: 38px;
   }
 }
