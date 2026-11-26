@@ -3258,3 +3258,8 @@ Provjera 2026-11-25: nijedan nalaz serije 4 nije bio ispravljen (dokazi u kodu, 
   mirovanje karte), a `shownDetails` u `App` ne pokazuje stare detalje.
 - Provjera: vitest (`historyMode`, `useUrlState` push/replace, Intro dodir, uvod bez skoka), e2e; preview: odaberi
   dva objekta → Natrag vraća prvi → Natrag zatvara panel; pomak karte ne dodaje unose.
+- [x] PR #18, preview provjeren 2026-11-26: TE Plomin pa TS Plomin iz tražilice (gotovo isto mjesto, bez pravog
+  leta), pomak karte mišem ne dodaje unos (2 unosa za 2 objekta); Natrag → TE Plomin s detaljima, Natrag → panel
+  zatvoren, i dalje na karti. Mobitel: povlačenje prstom po uvodu ga skida za ~0,5 s. Računalo: pomak karte dok se
+  veo gasi ostaje (adresa dobiva novi `v=`), uvod bez diranja ostavlja čistu adresu. Spojeno uz odobrenje vlasnika
+  („kad prođe pogledaj preview i spoji”).
