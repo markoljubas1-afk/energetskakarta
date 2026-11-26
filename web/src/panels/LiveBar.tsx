@@ -197,10 +197,19 @@ export function LiveBar({
                 </span>
               ))}
             </span>
-            <span className={styles.scaleLabel}>{t("livePriceNoColor")}</span>
-            <span className={styles.scaleLabel}>{t("livePriceItaly")}</span>
           </div>
         )}
+        {/* how to read the colours and the arrows: read once, then in the way of the map (Faza 57-C2) */}
+        <details className={styles.details}>
+          <summary>{t("liveHowToRead")}</summary>
+          {prices.some((price) => price.eur !== null) && (
+            <>
+              <p className={styles.muted}>{t("livePriceNoColor")}</p>
+              <p className={styles.muted}>{t("livePriceItaly")}</p>
+            </>
+          )}
+          <p className={styles.muted}>{t("liveLegend")}</p>
+        </details>
         {/* Folded until asked for: open, the card made the bar cover the map, and the arrows of the flows,
             which are what the layer is for, lay hidden under it. */}
         <details className={styles.details}>
@@ -214,9 +223,7 @@ export function LiveBar({
             hourLabel={(i) => `${t(DAY_KEYS[dayOf(live, i)])} ${(live.hours[i] ?? "").slice(11, 16)}`}
           />
         </details>
-        <p className={styles.muted}>
-          {t("liveLegend")} {t("liveUpdated", { time: i18n.dateTime(live.generatedAt) })}
-        </p>
+        <p className={styles.muted}>{t("liveUpdated", { time: i18n.dateTime(live.generatedAt) })}</p>
         <details className={styles.details}>
           <summary>{t("liveTable")}</summary>
           <div className={styles.tables}>

@@ -3367,7 +3367,21 @@ Izmjereno na produkciji 2026-11-26 (Plomin iz poveznice, traka uživo otvorena, 
   mjestu filtara, filtri skriveni, traka uživo i „Legenda” slobodni; 1100 i 1280 px traka završava prije detalja,
   detalji iznad legende; ime u zaglavlju nigdje pod tražilicom. Spojeno uz odobrenje vlasnika.
 
-#### 57-C2 mobitel i ugradnja (sljedeći PR)
-- [ ] Legenda na mobitelu i u ugradnji (gumb „Legenda”).
-- [ ] Traka uživo na uskom: opisi ljestvice i „ažurirano” u sklopivi dio, kontrole u dva retka.
-- [ ] Obavijest na karti kad filtri sakriju sve.
+#### 57-C2 mobitel i ugradnja
+Stanje na produkciji 2026-11-26 (390 px): legende nema ni na mobitelu ni u ugradnji na mobitelu (u ugradnji na
+računalu je ima, sklopljenu); traka uživo na mobitelu ima tri retka objašnjenja ispod ljestvice i odlomak o
+strelicama, pa kontrole i karta ostaju s malo mjesta; kad filtri sakriju sve, to piše samo u zatvorenom listu.
+- [x] Mobitel: u donjoj traci uz „Filtri i pregled” gumb „Legenda” koji otvara legendu kao list (jedan list
+  odjednom: otvaranje jednog zatvara drugi). U listu je legenda uvijek otvorena (bez vlastitog sklapanja).
+- [x] Ugradnja na mobitelu: sklopljena legenda kao u ugradnji na računalu (desno dolje, iznad izvora).
+- [x] Traka uživo: dva retka o boji (zemlja bez boje, Italija) i odlomak o strelicama idu u sklopivi dio
+  „Kako čitati boje i strelice” (na svim širinama); naziv ljestvice, ljestvica i „Stanje … Izvor” ostaju vidljivi.
+  Kontrole se lome prema širini same trake (container query), ne prozora: na tabletu s filtrima traka je široka
+  oko 300 px i klizač se stiskao u točku (viđeno na previewu 57-C1); do 380 px klizač ima prvi red sam.
+- [x] Obavijest na karti kad ništa od uključenoga nije na ovom dijelu karte (svi uključeni slojevi s pločicama
+  prazni, nijedan drugi sloj uključen): „Ovdje nema ničega od uključenoga…” s gumbom „Poništi filtre” kad filtri
+  nisu zadani. Čista funkcija `nothingShown(layers, emptyLayers)` u `map/inView.ts`.
+- Alternative: legenda na mobitelu kao plutajući gumb na karti (odbačeno: sudara se s obaviješću i trakom
+  statusa na vrhu karte, a raširena prekriva trake ispod karte).
+- Provjera: vitest (`nothingShown`, legenda u listu otvorena, obavijest i gumb), e2e na mobitelu (gumb „Legenda”
+  otvara list, filtri se zatvaraju); preview 390 px (obična i ugradnja), 1280 px (traka uživo).

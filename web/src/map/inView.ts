@@ -57,6 +57,16 @@ const DRAWN_BY: Partial<Record<LayerKey, readonly string[]>> = {
   extraction: ["extraction"],
 };
 
+/**
+ * Whether the map shows nothing at all of what is switched on (Faza 57-C2): every layer that is on is one the
+ * map can count (drawn from tiles) and has nothing in view. With a layer it cannot count (solar potential,
+ * gas…) it does not say so (nor with the live flows, which are not a layer: App.tsx), and with nothing switched on there is nothing to say.
+ */
+export function nothingShown(layers: ReadonlySet<LayerKey>, empty: ReadonlySet<LayerKey>): boolean {
+  if (layers.size === 0) return false;
+  return [...layers].every((layer) => DRAWN_BY[layer] !== undefined && empty.has(layer));
+}
+
 function emptyLayers(map: MapLibreMap): ReadonlySet<LayerKey> {
   const empty = new Set<LayerKey>();
   for (const [key, names] of Object.entries(DRAWN_BY) as [LayerKey, readonly string[]][]) {

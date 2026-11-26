@@ -85,6 +85,22 @@ describe("LiveBar", () => {
     expect(screen.getByText("Zemlja bez boje nema cijenu za taj sat.")).toBeInTheDocument();
   });
 
+  it("folds the reading notes away and keeps the scale and the source in sight (Faza 57-C2)", () => {
+    renderWithI18n(<LiveBar theme="dark" data={ready()} index={0} onHour={vi.fn()} onRetry={vi.fn()} />);
+    const notes = screen.getByText("Kako čitati boje i strelice").closest("details");
+    if (!notes) throw new Error("the notes are a <details>");
+    expect(notes.open).toBe(false);
+    for (const text of [
+      "Zemlja bez boje nema cijenu za taj sat.",
+      /Italija: cijena zone Sjever/,
+      "Strelica pokazuje smjer neto toka, a debljina njegovu snagu.",
+    ]) {
+      expect(notes).toContainElement(screen.getByText(text));
+    }
+    expect(notes).not.toContainElement(screen.getByText(/Izvor: ENTSO-E/));
+    expect(notes).not.toContainElement(screen.getByText("Boja zemlje: cijena u satu (€/MWh)"));
+  });
+
   it("plays the day one hour per step and stops at its end", () => {
     vi.useFakeTimers();
     try {

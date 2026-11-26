@@ -1,5 +1,7 @@
 /* Placement belongs to the dock in App.module.css; the bar only fills the slot it is given. */
 .bar {
+  /* the controls wrap by the bar's own width, which on a tablet is far less than the window's (Faza 57-C2) */
+  container-type: inline-size;
   padding: 10px 14px 8px;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
@@ -207,7 +209,7 @@
   transform: none;
 }
 
-@media (max-width: 520px) {
+@container (max-width: 480px) {
   .controls {
     grid-template-columns: auto minmax(0, 1fr) auto auto;
   }
@@ -215,6 +217,22 @@
   .play {
     grid-column: 1 / -1;
     justify-self: start;
+  }
+}
+
+/* narrower still (a tablet with the filters open): the slider keeps the first row to itself */
+@container (max-width: 380px) {
+  .controls {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .hour {
+    grid-column: 1 / 3;
+  }
+
+  .play {
+    grid-column: 3;
+    justify-self: end;
   }
 }
 

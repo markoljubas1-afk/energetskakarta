@@ -75,6 +75,10 @@ export const en: Dictionary = {
   selectAll: "All",
   selectNone: "None",
   resetFilters: "Reset filters",
+  emptyMap:
+    "Nothing that is switched on is in this part of the map. Zoom in, move the map or change the filters.",
+  legendOpen: "Legend",
+  legendClose: "Close the legend",
   overviewTitle: "Installed capacity",
   overviewScope: "Area",
   overviewRegion: "Whole region",
@@ -632,6 +636,7 @@ export const en: Dictionary = {
   liveFailed: "Flows and prices could not be loaded.",
   liveUpdated: "As of {time} · Source: ENTSO-E",
   liveFixture: "Test data, not real",
+  liveHowToRead: "How to read the colours and arrows",
   liveLegend: "Arrows show the direction of the net flow; width shows its size.",
   livePlayDay: "Play the day",
   livePause: "Pause",

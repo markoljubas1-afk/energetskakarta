@@ -136,3 +136,32 @@ test("the search never covers the name in the header", async ({ page }, testInfo
     expect(name.x + name.width, `at ${String(width)} px`).toBeLessThanOrEqual(search.x);
   }
 });
+
+/* Phones (Faza 57-C2): the legend is a sheet of its own, opened from the bar below the map, one sheet at a time. */
+test("on a phone the legend opens from the bar below the map, and gives way to the settings", async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile", "computers show the legend in the map's corner");
+  await open(page, "");
+  const legendButton = page.getByRole("button", { name: "Legenda", exact: true });
+  await legendButton.click();
+  await expect(page.getByText("380 kV i više")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Zatvori legendu" })).toHaveAttribute(
+    "aria-expanded",
+    "true",
+  );
+  await page.getByRole("button", { name: "Filtri i pregled" }).click();
+  await expect(page.locator("#settings-panel")).toBeVisible();
+  await expect(page.getByText("380 kV i više")).toBeHidden();
+});
+
+test("nothing switched on in this part of the map is said on the map, with a way back", async ({ page }) => {
+  // the fixture's lines are in Croatia (map.spec.ts: TS at 45.55, 15.95); filtered to Montenegro, nothing is left
+  await open(page, "l=lines&c=ME&v=45.55,15.95,9");
+  const notice = page
+    .getByRole("status")
+    .filter({ hasText: "Na ovom dijelu karte nema ničega od uključenoga" });
+  await expect(notice).toBeVisible();
+  await notice.getByRole("button", { name: "Poništi filtre" }).click();
+  await expect(notice).toBeHidden();
+});
