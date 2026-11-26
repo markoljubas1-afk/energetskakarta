@@ -2691,11 +2691,11 @@ Serija 3 napravljeno (2026-11-15):
   stranici, `checkedLive`/`checkedTimeline` u prerenderu, prazne tablice zemlje bez podataka, opis i varijable
   „Zelene tranzicije” samo za prikazane odjeljke, broj elektrana bez godine uključuje fosilne, `th scope`
 
-**Serija 4 — aplikacija (P1/P2)**
-- [ ] 4.1 svaki pomak karte ponovno gradi cijeli stil (novi `Set` objekti iz URL-a)
-- [ ] 4.2 zasluge (attribution) zamrznute pri stvaranju karte: ENTSOG se ne pojavi, jezik se ne mijenja
-- [ ] 4.3 nema korijenske granice greške; „Pokušaj ponovno” ne može oporaviti neuspjelo učitavanje MapLibre dijela
-- [ ] 4.4 detalji objekta „Učitavanje…” + „izvan prikaza” bez kraja; fokus; Back izlazi sa stranice;
+**Serija 4 — aplikacija (P1/P2)** — napravljeno u Fazi 56 (PR #16–#18, 2026-11-25/26)
+- [x] 4.1 svaki pomak karte ponovno gradi cijeli stil (novi `Set` objekti iz URL-a)
+- [x] 4.2 zasluge (attribution) zamrznute pri stvaranju karte: ENTSOG se ne pojavi, jezik se ne mijenja
+- [x] 4.3 nema korijenske granice greške; „Pokušaj ponovno” ne može oporaviti neuspjelo učitavanje MapLibre dijela
+- [x] 4.4 detalji objekta „Učitavanje…” + „izvan prikaza” bez kraja; fokus; Back izlazi sa stranice;
   `flyTo` ignorira smanjeno kretanje; `er=` ruši analitiku; uvod (predaja, ponovni povratak, dodir)
 
 **Serija 5 — UX i pristupačnost (P1/P2), dio traži tvoju odluku**
@@ -3263,3 +3263,38 @@ Provjera 2026-11-25: nijedan nalaz serije 4 nije bio ispravljen (dokazi u kodu, 
   zatvoren, i dalje na karti. Mobitel: povlačenje prstom po uvodu ga skida za ~0,5 s. Računalo: pomak karte dok se
   veo gasi ostaje (adresa dobiva novi `v=`), uvod bez diranja ostavlja čistu adresu. Spojeno uz odobrenje vlasnika
   („kad prođe pogledaj preview i spoji”).
+
+## Faza 57 — Serija 5.1 iz Faze 31 (UX i pristupačnost) — 2026-11-26 (vlasnik: „može, kreni s 5.1”)
+
+Provjera 2026-11-26 (podagent, kod, bez pokretanja): od 15 nalaza 11 otvoreno; prazna stanja i velika slova u
+grupama uglavnom riješeni, imena gumba postoje (čitač ih ima), samo bez opisa na mišu. Tri PR-a, svaki s previewom.
+
+### 57-A pristupačnost bez promjene rasporeda (kontrast, čipovi, dodir, polja, h1, MapLibre na hrvatskom)
+- [ ] Kontrast tokena (`app/tokens.css`), cilj 4,5:1 za tekst na svakoj podlozi na kojoj stoji (canvas, surface,
+  surface-2), 3:1 za rubove polja: svijetlo `--muted`, `--accent`, `--ok`; tamno `--muted`, `--accent`,
+  `--danger`; `--on-accent` za tekst na naglasnoj boji (u tamnoj temi taman, ne bijel: 2,45:1). Rub polja
+  (tražilica, izbornici, čipovi) jači token `--line-strong`. Test: omjeri izračunati iz tokena (vitest).
+- [ ] Uključeni čip ima kvačicu (✓, oblik, ne samo boja) i obrub u naglasnoj boji.
+- [ ] Dodirne mete 44 px uz `(pointer: coarse)`: čipovi, „i”, „Sve/Ništa”, gumbi zaglavlja i kartice stranica,
+  koraci i play u traci uživo, MapLibreovi gumbi zuma i izvora. Potvrdni okviri ostaju 16 px, ali cijeli redak
+  (oznaka) je meta.
+- [ ] Polja i izbornici 16 px uz `(pointer: coarse)` (iOS inače zumira pri fokusu).
+- [ ] Jedan `h1` u aplikaciji: ime u zaglavlju postaje `h1` (izgled isti).
+- [ ] MapLibreovi natpisi na jeziku stranice (`locale`: zum, izvori). Gumbi zaglavlja bez vidljivog teksta dobivaju
+  `title` (opis na mišu).
+- Rizici: tamnije boje mijenjaju izgled (blago); veće mete na mobitelu mogu gurnuti zaglavlje u dva retka →
+  provjera na 360/390 px. e2e lokatori po imenu ostaju isti.
+- Provjera: vitest (kontrast, locale), e2e; preview 390 px i 1280 px, svijetlo i tamno.
+
+### 57-B tekstovi (Vi, nazivlje, prečaci)
+- [ ] „Vi” svugdje (Zalijepite, Koristite, Možete, Vaša lokacija); kratke oznake gumba ostaju (Zatvori).
+- [ ] Nazivlje: „Prikaži” (ne „Pokaži”), „Dalekovodi i kabeli” u nazivu sloja i „vodovi” u tekstu, jedno ime
+  sloja uživo („Tokovi i cijene uživo”), „Filtri i pregled” za postavke; malo slovo iza dvotočke u naslovima.
+- [ ] Prečaci jednom tipkom (`t`, `l`, `/`, `?`) mogu se isključiti u pomoći za prečace (pamti preglednik), WCAG 2.1.4.
+- Provjera: vitest (prečaci isključeni), e2e tekstovi.
+
+### 57-C raspored (legenda, 721–1000 px, traka uživo, prazna karta)
+- [ ] Legenda na mobitelu i u ugradnji (gumb „Legenda”).
+- [ ] Tablet 721–1000 px: detalji kao list ili uži paneli, bez preklapanja; e2e na 800 px.
+- [ ] Traka uživo na uskom: opisi ljestvice i „ažurirano” u sklopivi dio, kontrole u dva retka.
+- [ ] Obavijest na karti kad filtri sakriju sve.
