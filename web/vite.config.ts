@@ -4,6 +4,7 @@ import { defineConfig, loadEnv } from "vite";
 
 import { localData } from "./vite/localData.ts";
 import { securityHeaders } from "./vite/securityHeaders.ts";
+import { swPrecache } from "./vite/swPrecache.ts";
 
 export default defineConfig(({ command, mode, isSsrBuild }) => {
   const env = loadEnv(mode, process.cwd(), "VITE_");
@@ -12,11 +13,14 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
   if (command === "build" && mode === "production" && !env.VITE_DATA_BASE_URL) {
     throw new Error("VITE_DATA_BASE_URL must be set for production builds");
   }
-  // one id per build: the service worker's text changes with it, so browsers take the new release (Faza 59)
-  const buildId = Date.now().toString(36);
   return {
-    define: { __BUILD_ID__: JSON.stringify(buildId) },
-    plugins: [react(), localData(process.env.LOCAL_DATA_DIR ?? ".data"), securityHeaders(dataBaseUrl)],
+    plugins: [
+      react(),
+      localData(process.env.LOCAL_DATA_DIR ?? ".data"),
+      securityHeaders(dataBaseUrl),
+      // the files the service worker keeps at install, written into /sw.js (Faza 59)
+      swPrecache(),
+    ],
     // MapLibre's worker is an ES module that imports a shared chunk
     worker: { format: "es" },
     build: {

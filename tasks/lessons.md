@@ -517,3 +517,12 @@
   (`npx vitest run`) ili barem `grep` po svim testovima za stari izlaz, ne samo testove mape u kojoj je promjena.
   E2e se lokalno ne pokreće: promjena uloge elementa (ovdje `td` → `th scope="row"`, uloga `cell` → `rowheader`)
   traži `grep` po `e2e/` za `getByRole("cell"` i slične lokatore prije slanja.
+
+### L-085 — Test rada bez mreže koji je prošao samo zato što je stranicu učitao dvaput (2026-11-26)
+- Što se dogodilo: prvi e2e za PWA (Faza 59) učitao je stranicu još jednom dok je mreža radila, pa je SW spremio
+  kod aplikacije i test je prošao; stvarni prvi posjet bez mreže dao bi praznu stranicu (kod se učitao prije SW-a).
+  Isti pregled našao je i da bi verzionirana predmemorija pri novom izdanju obrisala datoteke tog izdanja.
+- Uzrok: test je napisan tako da prođe, a ne prema putu korisnika; životni ciklus SW-a (instalacija, preuzimanje
+  stranice, novo izdanje dok je stranica otvorena) nije prođen korak po korak.
+- Pravilo: test rada bez mreže ide točno putem korisnika (jedan posjet, pa bez mreže), i prije PR-a za SW proći
+  instalaciju i nadogradnju na papiru: što je u kojoj predmemoriji u svakom koraku.
