@@ -142,6 +142,11 @@ def extract(path: Path, index: CountryIndex, scope: frozenset[str], retrieved_at
     ctx = _Context(index=index, scope=scope, retrieved_at=retrieved_at)
     result = ExtractResult()
     wkb = osmium.geom.WKBFactory()
+    # multipolygon relations of plants and substations, and the ones that became a place on the map: a
+    # multipolygon that does not close (HE Dubrovnik's "outer" members are tunnels) yields no area, or one
+    # without a valid shape, and would otherwise be lost without a word; the difference is counted and logged
+    point_relations: set[int] = set()
+    assembled_relations: set[int] = set()
 
     for obj in osmium.FileProcessor(str(path)).with_locations().with_areas():
         if not obj.tags:
@@ -176,6 +181,8 @@ def extract(path: Path, index: CountryIndex, scope: frozenset[str], retrieved_at
                 if cycle.kind in _POINT_KINDS:
                     osm_type: OsmType = "way" if obj.from_way() else "relation"
                     point = shapely.from_wkb(wkb.create_multipolygon(obj)).point_on_surface()
+                    if osm_type == "relation" and not point.is_empty:
+                        assembled_relations.add(obj.orig_id())
                     _add_point(result, ctx, cycle, tag_map, osm_type, obj.orig_id(), point.x, point.y)
             elif isinstance(obj, osmium.osm.Node):
                 if cycle.kind in _POINT_KINDS:
@@ -186,13 +193,12 @@ def extract(path: Path, index: CountryIndex, scope: frozenset[str], retrieved_at
                 if cycle.kind in _LINE_KINDS:
                     coords = [(n.lon, n.lat) for n in obj.nodes]
                     _add_line(result, ctx, cycle, tag_map, obj.id, coords)
-            elif (
-                isinstance(obj, osmium.osm.Relation)
-                and cycle.kind in _POINT_KINDS
-                and tag_map.get("type") == "site"
-            ):
-                # Site relations need member geometry assembly (not in the MVP): counted, not guessed.
-                result.stats[f"skipped_site_relation_{cycle.kind}"] += 1
+            elif isinstance(obj, osmium.osm.Relation) and cycle.kind in _POINT_KINDS:
+                if tag_map.get("type") == "multipolygon":
+                    point_relations.add(obj.id)
+                elif tag_map.get("type") == "site":
+                    # Site relations need member geometry assembly (not in the MVP): counted, not guessed.
+                    result.stats[f"skipped_site_relation_{cycle.kind}"] += 1
         except osmium.InvalidLocationError:
             result.stats["invalid_location"] += 1
         except (RuntimeError, shapely.errors.GEOSException) as exc:
@@ -202,6 +208,13 @@ def extract(path: Path, index: CountryIndex, scope: frozenset[str], retrieved_at
             result.stats["failed_validation"] += 1
             log.warning("record failed validation", extra={"osm_id": obj.id, "errors": exc.errors()})
 
+    broken = sorted(point_relations - assembled_relations)
+    if broken:
+        result.stats["multipolygon_not_assembled"] += len(broken)
+        log.warning(
+            "multipolygons that do not close into an area were left out",
+            extra={"file": path.name, "relations": [f"relation/{osm_id}" for osm_id in broken]},
+        )
     log.info("extracted", extra={"file": path.name, "counts": result.counts(), "stats": dict(result.stats)})
     return result
 

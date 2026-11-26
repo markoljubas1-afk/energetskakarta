@@ -3609,18 +3609,30 @@ Nalaz (build 20261123T134649Z, 13 462 elektrane: 9584 samo OSM, 2757 samo GEM, 1
   lik pokvaren kao kod Dubrovnika. 160 bliskih parova s različitom ili nepoznatom snagom ostaje za pregled.
 
 Plan:
-- [ ] `conflate.evaluate`: novo pravilo prihvaćanja — poznata ista obitelj, udaljenost ≤ `SAME_SPOT_KM`, obje snage
+- [x] `conflate.evaluate`: novo pravilo prihvaćanja — poznata ista obitelj, udaljenost ≤ `SAME_SPOT_KM`, obje snage
   poznate i unutar 10 %, isti status. Ocjena ispod svakog spajanja po imenu, da ne uzme OSM elektranu koju bi
   dobilo spajanje po imenu.
-- [ ] Zaštita od dvoznačnosti: ako pravilo zadovoljavaju dvije OSM (ili dvije GEM) elektrane za isti zapis, par ide
+- [x] Zaštita od dvoznačnosti: ako pravilo zadovoljavaju dvije OSM (ili dvije GEM) elektrane za isti zapis, par ide
   u pregled, ne spaja se (realan lažni slučaj: dva susjedna sunčana polja slične snage). Test: Paks (spaja),
   dva susjedna polja (ne spaja), različita snaga (ne spaja), postojeća spajanja po imenu nepromijenjena.
-- [ ] `extract`: brojati i zapisati u log power=plant multipoligone koji se nisu sastavili (id-jevi relacija viđeni
+- [x] `extract`: brojati i zapisati u log power=plant multipoligone koji se nisu sastavili (id-jevi relacija viđeni
   kao relacija bez nastalog Area) → `stats["plant_area_not_assembled"]`, da se sljedeći „Dubrovnik” vidi u buildu.
-- [ ] Jasni parovi malo izvan pravila (Jablanica 4,3 km, Sarroch 0,55 km, Laakirchen 0,57 km, Taranto offshore)
+- [x] Jasni parovi malo izvan pravila (Jablanica 4,3 km, Sarroch 0,55 km, Laakirchen 0,57 km, Taranto offshore)
   → `force` u `overrides/conflation.yaml`, ne širenje pravila.
-- [ ] Stranice spojenih GEM zapisa (`/objekt/gem-…`) nestaju: `_redirects` iz prerendera — za svaki spojeni zapis
+- [x] Stranice spojenih GEM zapisa (`/objekt/gem-…`) nestaju: `_redirects` iz prerendera — za svaki spojeni zapis
   GEM `sourceId` iz `provenance` → stranica OSM objekta (oba jezika), da nema novih 404 u Search Consoleu.
 - Provjera: pytest; stvarni `evaluate`/spajanje grane na zapisima iz objavljenog `plants.ndjson` (samo-OSM i
   samo-GEM, `approximate=False`) — popis novih parova (~33–38) i nijedno postojeće spajanje promijenjeno;
   nakon builda: HU nuklearne ≈ 4,5 GW, Paks jedna točka.
+- Napravljeno: `conflate.same_capacity`, `Candidate.by_capacity` (izvještaj `byCapacity`), `stats.matched_by_capacity`;
+  `extract`: `stats.multipolygon_not_assembled` + upozorenje s id-jevima relacija (relacija se broji kao sastavljena
+  tek kad iz nje nastane točka: osmium za HE Dubrovnik-oblik napravi Area bez valjanog lika); `overrides`: 4 `force`;
+  web `seo/moved.ts`: `movedPages` (samo stranice koje su bile objavljene — iz prošlog SEO manifesta; prenose se u
+  `moved` manifesta dok cilj ima stranicu; stranica koja se opet objavljuje nikad se ne preusmjerava) i
+  `redirectsFile` (`_redirects`, 301, najviše 2000 — Cloudflare ostale ne čita, pa build to kaže). `AssetSource`
+  dobiva `sourceId`.
+- Provjereno: pytest (osim `test_tiles` i `test_gem_build` attribution — padaju samo na Windowsu, i na `main`),
+  mypy --strict, ruff; namjerno pokvarena pravila (bez zaštite od dvoznačnosti, ocjena iznad imena, bez provjere
+  statusa, prag 50 %) — svako hvata po test. Stvarni kod na objavljenom `plants.ndjson`: 34 spajanja po snazi +
+  4 ručna, 0 novih po imenu (postojeća spajanja nedirnuta); svih 34 provjereno okom (Paks, Piva, Achensee, Ferrara,
+  HR: SE Obrovac, Vis, Donja Dubrava, Palinovec, Konjščina…). vitest (report.test samo pod opterećenjem, sam 15/15).

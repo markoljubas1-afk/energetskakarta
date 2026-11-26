@@ -125,6 +125,8 @@ def test_counted_exclusions(result: ExtractResult) -> None:
     assert s["outside_scope"] == 1  # gas plant in SK
     assert s["ambiguous_capacity"] == 1
     assert s["skipped_site_relation_plant"] == 1
+    # a multipolygon whose "outer" member is an open tunnel never becomes an area: counted, not lost silently
+    assert s["multipolygon_not_assembled"] == 1
 
 
 def test_provenance(result: ExtractResult) -> None:

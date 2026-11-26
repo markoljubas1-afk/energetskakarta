@@ -8,6 +8,8 @@ import { isOneOf, STATUSES, type Status } from "../domain";
 
 export interface AssetSource {
   source: string;
+  /** the record's id at the source ("way/123", "L100000604070:operating"), when the download has it */
+  sourceId?: string;
   license: string;
   url: string | null;
 }
@@ -35,7 +37,9 @@ function sourcesOf(value: unknown): AssetSource[] {
     const entry = item as Record<string, unknown>;
     const source = text(entry.source);
     const license = text(entry.license);
-    return source && license ? [{ source, license, url: text(entry.url) }] : [];
+    const sourceId = text(entry.sourceId);
+    if (!source || !license) return [];
+    return [{ source, ...(sourceId ? { sourceId } : {}), license, url: text(entry.url) }];
   });
 }
 

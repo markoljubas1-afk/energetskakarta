@@ -4,7 +4,10 @@ Rules (tasks/todo.md, Faza 2):
 * a pair is a candidate when the technology families agree, the plants are close enough and their
   statuses are compatible;
 * a candidate is accepted when the names agree, or when the points are practically identical and one
-  side has no name to compare;
+  side has no name to compare, or (whatever the names) when the points are practically identical and the
+  plants have the same status and capacity: the same plant under two names (Paks / Paksi Atomerőmű);
+* a match by capacity alone ranks below every match by name, and is left for review when another plant
+  on the other side fits it as well (two neighbouring solar parks of the same size);
 * accepted pairs are matched one-to-one, best score first;
 * OSM keeps the id and position, GEM provides capacity, status, year and operator;
 * near misses are reported for review and never merged automatically;
@@ -48,6 +51,10 @@ SAME_SPOT_KM = 0.5
 NAME_MATCH = 0.6
 NAME_MATCH_UNKNOWN_TECH = 0.75
 REVIEW_NAME_MIN = 0.3
+#: two capacities are the same plant's when they differ by at most this share of the larger
+CAPACITY_MATCH = 0.10
+#: below any match by name (whose score is never under -0.6)
+_BY_CAPACITY_SCORE = -1.0
 
 # Words that describe the kind of plant rather than name it, grouped by language.
 _STOPWORD_GROUPS = (
@@ -96,6 +103,12 @@ def radius_km(gem: GemPlant) -> float:
     return base * 2 if gem.approximate else base
 
 
+def same_capacity(a: float | None, b: float | None) -> bool:
+    if a is None or b is None or a <= 0 or b <= 0:
+        return False
+    return abs(a - b) <= CAPACITY_MATCH * max(a, b)
+
+
 @dataclass(frozen=True, slots=True)
 class Candidate:
     osm_id: str
@@ -104,6 +117,8 @@ class Candidate:
     name_similarity: float
     accepted: bool
     score: float
+    #: accepted on position, status and capacity only: the names do not agree
+    by_capacity: bool = False
 
 
 def evaluate(osm: PowerPlant, gem: GemPlant) -> Candidate | None:
@@ -121,6 +136,15 @@ def evaluate(osm: PowerPlant, gem: GemPlant) -> Candidate | None:
     threshold = NAME_MATCH_UNKNOWN_TECH if unknown_tech else NAME_MATCH
     same_spot_unnamed = distance <= SAME_SPOT_KM and not unknown_tech and not normalize_name(osm.name)
     accepted = distance <= limit and (similarity >= threshold or same_spot_unnamed)
+    if (
+        not accepted
+        and not unknown_tech
+        and distance <= SAME_SPOT_KM
+        and osm.status == gem.status
+        and same_capacity(osm.capacity_mw, gem.capacity_mw)
+    ):
+        score = _BY_CAPACITY_SCORE - 0.1 * distance / SAME_SPOT_KM
+        return Candidate(osm.id, gem.key, round(distance, 3), similarity, True, round(score, 3), True)
     if not accepted and similarity < REVIEW_NAME_MIN and distance > SAME_SPOT_KM:
         return None
     score = similarity - 0.3 * min(distance / limit, 2.0) + (0.2 if osm.status == gem.status else 0.0)
@@ -188,6 +212,7 @@ class ConflationResult:
                 "gemName": names.get(c.gem_key),
                 "distanceKm": c.distance_km,
                 "nameSimilarity": c.name_similarity,
+                "byCapacity": c.by_capacity,
             }
 
         return {
@@ -305,12 +330,27 @@ def conflate(
                         candidates.append(candidate)
 
     # 3. best first, one-to-one
-    # accepted pairs first, so near misses are only reported for plants that stayed unmatched
+    # accepted pairs first, so near misses are only reported for plants that stayed unmatched; matches by
+    # capacity alone come after every match by name (their score is lower), and only when nothing else
+    # still free fits either side as well
+    by_capacity = [c for c in candidates if c.by_capacity]
+
+    def ambiguous(candidate: Candidate) -> bool:
+        return any(
+            other is not candidate
+            and other.osm_id not in used_osm
+            and other.gem_key not in used_gem
+            and (other.osm_id == candidate.osm_id or other.gem_key == candidate.gem_key)
+            for other in by_capacity
+        )
+
     for candidate in sorted(candidates, key=lambda c: (not c.accepted, -c.score, c.osm_id, c.gem_key)):
         if candidate.osm_id in used_osm or candidate.gem_key in used_gem:
             continue
-        if candidate.accepted:
+        if candidate.accepted and not (candidate.by_capacity and ambiguous(candidate)):
             accept(candidate)
+            if candidate.by_capacity:
+                result.stats["matched_by_capacity"] += 1
         else:
             result.review.append(candidate)
 
