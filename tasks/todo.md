@@ -1031,13 +1031,18 @@ konzoli osim očekivanih 404 za neobjavljene ENTSO-E podatke.
 - [ ] C3 Vođene priče umjesto kartice dobrodošlice: 3–4 prizora koja sama lete kartom.
 
 ### D. Uporabljivost
-- [ ] D1 Sloj „Gradovi” uključen na pregledu regije ne prikaže ništa i ne kaže zašto. Svaki sloj s pragom
-      zooma treba poruku „približi kartu”.
-- [ ] D2 Mobitel: prvi pogled pokazuje pola Europe (od Njemačke do Tunisa); namjestiti na regiju.
+- [x] D1 Sloj „Gradovi” uključen na pregledu regije ne prikaže ništa i ne kaže zašto. Svaki sloj s pragom
+      zooma treba poruku „približi kartu”. → Riješeno ranije (a6f44a8, „savjet uz prazan sloj”): uz prazan sloj
+      piše „Na ovom dijelu karte nema ničega iz ovog sloja. Približite kartu ili je pomaknite.”; od 57-C2 i
+      obavijest na karti kad ništa od uključenoga nije u prikazu. Provjereno 2026-11-26.
+- [x] D2 Mobitel: prvi pogled pokazuje pola Europe (od Njemačke do Tunisa); namjestiti na regiju. → Riješeno
+      ranije (a6f44a8, `map/firstView.ts`: uspravni mobitel otvara Hrvatsku s rubovima susjeda, `HOME_BOUNDS`),
+      samo nije bilo označeno. Provjereno na produkciji 2026-11-26 na 360×740, 390×844 i 412×915: Austrija,
+      Mađarska, Hrvatska, BiH, Crna Gora, bez Njemačke i Tunisa.
 - [ ] D3 Vremeplov: graf je nizak i bez osi; nakon A1 provjeriti čitljivost.
 - [ ] D4 Statične stranice (zemlja, tema, gradovi) su gole tablice: dodati ključne brojke, graf i sliku karte.
       To je prva stranica za posjetitelja s tražilice.
-- [ ] D5 Raspored 1001–1199 px (već zapisano gore).
+- [x] D5 Raspored 1001–1199 px (već zapisano gore). → Riješeno u 57-C1 (PR #22).
 
 Redoslijed koji predlažem: A (dan), B1–B3 (dva dana), D1–D2, zatim C nakon tokena, D4 na kraju.
 
