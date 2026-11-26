@@ -47,6 +47,11 @@ export function toggled<T>(set: ReadonlySet<T>, value: T): Set<T> {
   return next;
 }
 
+/** The filters are as a fresh map has them (nothing for "Poništi filtre" to do). */
+export function filtersAreDefault(state: AppState): boolean {
+  return serializeState(resetFilters(state), state.lang) === serializeState(state, state.lang);
+}
+
 /** Filters only; view, selection, language and panel are left as they are. */
 export function resetFilters(state: AppState): AppState {
   const defaults = defaultState(state.lang);
@@ -165,7 +170,7 @@ export function FiltersPanel({
   const update = (patch: (s: AppState) => Partial<AppState>): void => {
     setState((s) => ({ ...s, ...patch(s) }));
   };
-  const isDefault = serializeState(resetFilters(state), state.lang) === serializeState(state, state.lang);
+  const isDefault = filtersAreDefault(state);
   const plantsOn = state.layers.has("plants");
   // notes the reader opened (or that opened themselves when the layer was switched on)
   const [openNotes, setOpenNotes] = useState<ReadonlySet<LayerKey>>(new Set());

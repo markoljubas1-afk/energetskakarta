@@ -74,6 +74,10 @@ export const hr = {
   selectAll: "Sve",
   selectNone: "Ništa",
   resetFilters: "Poništi filtre",
+  emptyMap:
+    "Na ovom dijelu karte nema ničega od uključenoga. Približite ili pomaknite kartu, ili promijenite filtre.",
+  legendOpen: "Legenda",
+  legendClose: "Zatvori legendu",
   overviewTitle: "Instalirana snaga",
   overviewScope: "Područje",
   overviewRegion: "Cijela regija",
@@ -624,6 +628,7 @@ export const hr = {
   liveFailed: "Tokovi i cijene se nisu učitali.",
   liveUpdated: "Stanje: {time} · Izvor: ENTSO-E",
   liveFixture: "Testni podaci, nisu stvarni",
+  liveHowToRead: "Kako čitati boje i strelice",
   liveLegend: "Strelica pokazuje smjer neto toka, a debljina njegovu snagu.",
   livePlayDay: "Pusti dan",
   livePause: "Zaustavi",

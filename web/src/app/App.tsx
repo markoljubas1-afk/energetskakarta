@@ -2,6 +2,7 @@ import {
   ChevronDown,
   ChevronUp,
   ExternalLink,
+  List,
   SlidersHorizontal,
   X,
   PanelLeftClose,
@@ -49,7 +50,7 @@ import { I18nProvider, useI18n } from "../i18n";
 import type { Basemap } from "../map/basemap";
 import type { InView } from "../map/inView";
 import { loadImages, photoOf } from "../data/images";
-import { NOTHING_IN_VIEW } from "../map/inView";
+import { NOTHING_IN_VIEW, nothingShown } from "../map/inView";
 import type { Spotlight } from "../map/spotlight";
 import { StoryCard } from "../panels/StoryCard";
 import { GreenLight } from "../panels/GreenLight";
@@ -115,6 +116,8 @@ import { useIntro, type IntroControl } from "./useIntro";
 import { useTheme } from "./theme";
 import { COUNTRY_CENTER, SHOW_PLANTS_ZOOM } from "../map/countryView";
 import { useMediaQuery } from "./useMediaQuery";
+import { EmptyMapNotice } from "../panels/EmptyMapNotice";
+import { filtersAreDefault, resetFilters } from "../panels/FiltersPanel";
 
 /** How often an open map reloads the live layer (the pipeline publishes hourly, at :12). */
 const LIVE_REFRESH_MS = 15 * 60_000;
@@ -396,6 +399,8 @@ function Explorer({
     [onMapReady],
   );
   const [sheetOpen, setSheetOpen] = useState(false);
+  // phones: the legend is a sheet of its own (Faza 57-C2); one sheet at a time
+  const [legendSheet, setLegendSheet] = useState(false);
   // On a computer the panel of filters can be folded away to leave the map to itself; the choice is kept.
   const [sideFolded, setSideFolded] = useState(sideWasFolded);
   const foldSide = (folded: boolean): void => {
@@ -410,11 +415,21 @@ function Explorer({
     () => ({
       escape: () => {
         if (state.selected) setState((s) => ({ ...s, selected: null }));
+        else if (legendSheet) setLegendSheet(false);
         else if (sheetOpen) setSheetOpen(false);
         else if (state.story) setState((s) => leave(s, beforeStory));
       },
     }),
-    [state.selected, state.story, beforeStory, sheetOpen, setState, setSheetOpen],
+    [
+      state.selected,
+      state.story,
+      beforeStory,
+      sheetOpen,
+      legendSheet,
+      setState,
+      setSheetOpen,
+      setLegendSheet,
+    ],
   );
   useShortcuts(escape);
 
@@ -900,6 +915,7 @@ function Explorer({
       changes: current.diff
         ? () => {
             setState((s) => ({ ...s, panel: "changes" }));
+            setLegendSheet(false);
             setSheetOpen(true);
           }
         : null,
@@ -915,7 +931,7 @@ function Explorer({
           }
         : null,
     }),
-    [setState, setSheetOpen, current.diff, livePublished, timelinePublished],
+    [setState, setSheetOpen, setLegendSheet, current.diff, livePublished, timelinePublished],
   );
 
   // The grid next to a plant: asked for once a plant is first selected; a failure only means nothing is lit.
@@ -1079,6 +1095,7 @@ function Explorer({
                 aria-expanded={sheetOpen}
                 aria-controls="settings-panel"
                 onClick={() => {
+                  setLegendSheet(false);
                   setSheetOpen((open) => !open);
                 }}
               >
@@ -1088,6 +1105,24 @@ function Explorer({
                   <SlidersHorizontal size={16} strokeWidth={1.75} aria-hidden="true" />
                 )}
                 {sheetOpen ? t("closeSettings") : t("openSettings")}
+              </button>
+              <button
+                type="button"
+                className={styles.legendToggle}
+                aria-expanded={legendSheet}
+                aria-controls="map-legend"
+                aria-label={legendSheet ? t("legendClose") : t("legendOpen")}
+                onClick={() => {
+                  setSheetOpen(false);
+                  setLegendSheet((open) => !open);
+                }}
+              >
+                {legendSheet ? (
+                  <X size={16} strokeWidth={1.75} aria-hidden="true" />
+                ) : (
+                  <List size={16} strokeWidth={1.75} aria-hidden="true" />
+                )}
+                {t("legendOpen")}
               </button>
             </div>
           )}
@@ -1153,6 +1188,20 @@ function Explorer({
             </aside>
           )}
 
+          {!alert && !story && !state.live && nothingShown(state.layers, seen.emptyLayers) && (
+            <div className={styles.alert}>
+              <EmptyMapNotice
+                onReset={
+                  filtersAreDefault(state)
+                    ? undefined
+                    : () => {
+                        setState(resetFilters);
+                      }
+                }
+              />
+            </div>
+          )}
+
           {alert && !story && (
             <div className={styles.alert}>
               <ErrorBoundary area="alert" fallback={() => null}>
@@ -1191,10 +1240,14 @@ function Explorer({
             </aside>
           )}
 
-          <div className={styles.legend}>
+          <div id="map-legend" className={styles.legend} data-open={legendSheet}>
             <Legend
+              // a phone's legend sheet opens spread out, whatever was chosen for the folded legend before
+              key={legendSheet ? "sheet" : "map"}
               theme={theme}
-              compact={state.selected !== null || state.embed || welcomeShown || narrowWindow}
+              compact={
+                !legendSheet && (state.selected !== null || state.embed || welcomeShown || narrowWindow)
+              }
               distribution={state.layers.has("distribution")}
               chargers={state.layers.has("chargers")}
               chargersBanded={chargerBands !== null}

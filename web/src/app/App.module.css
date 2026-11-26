@@ -209,7 +209,8 @@
 }
 
 /* Phones: a bar below the map holds the settings button; both sheets open above it, so it is never covered. */
-.mobileBar {
+.mobileBar,
+.legendToggle {
   display: none;
 }
 
@@ -312,9 +313,54 @@
     display: none;
   }
 
-  .legend,
   .welcome {
     display: none; /* a phone's first screen is the map; the card would sit on top of it */
+  }
+
+  .mobileBar {
+    gap: 8px;
+  }
+
+  /* the legend's own button beside the settings (Faza 57-C2): quieter, the settings are the main door */
+  .legendToggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 9px 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--ink);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  /* on a phone the legend is a sheet of its own, opened from the bar below the map (Faza 57-C2) */
+  .legend {
+    display: none;
+  }
+
+  .legend[data-open="true"] {
+    display: block;
+    z-index: 4;
+    top: auto;
+    right: 0;
+    bottom: var(--mobile-bar);
+    left: 0;
+    max-width: none;
+    max-height: 60%;
+    border-bottom: 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+}
+
+@media (max-width: 720px) {
+  /* an embedded map on a phone has no bar below it: its legend is the folded one in the corner, as on a computer */
+  .app[data-embed] .legend {
+    display: block;
+    right: 10px;
+    bottom: calc(var(--map-chrome, 40px) + 8px);
   }
 }
 
