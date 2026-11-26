@@ -58,11 +58,11 @@ describe("the largest plants of Croatia", () => {
     const html = section?.html ?? "";
     expect(html).toContain("4 elektrana u pogonu s najvećom zabilježenom snagom; zajedno imaju 951 MW.");
     expect(html).toMatch(
-      /<a href="\/[^"]+">HE Zakučac<\/a><\/td><td class="num">Hidro<\/td><td class="num">576 MW<\/td><td class="num">1961<\/td>/,
+      /<a href="\/[^"]+">HE Zakučac<\/a><\/th><td>Hidro<\/td><td class="num">576 MW<\/td><td class="num">1961<\/td>/,
     );
     // a year the record does not have is a dash, not a guess
     expect(html).toMatch(
-      /VE Senj<\/a><\/td><td class="num">Vjetar<\/td><td class="num">156 MW<\/td><td class="num">—<\/td>/,
+      /VE Senj<\/a><\/th><td>Vjetar<\/td><td class="num">156 MW<\/td><td class="num">—<\/td>/,
     );
     // a plant under the page threshold has no page to link to
     expect(html).toContain("Najveća sunčana elektrana u pogonu: SE Obrovac, 9 MW.");

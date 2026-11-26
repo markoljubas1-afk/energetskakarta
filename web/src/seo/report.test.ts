@@ -165,16 +165,16 @@ describe("monthly reports", () => {
     );
     const sources = plain(page.sections[1]?.html ?? "");
     expect(sources).toContain(
-      "<th>Izvor</th><th>rujan 2026.</th><th>Udio</th><th>kolovoz 2026.</th><th>rujan 2025.</th>",
+      '<th scope="col">Izvor</th><th scope="col" class="num">rujan 2026.</th><th scope="col" class="num">Udio</th><th scope="col" class="num">kolovoz 2026.</th><th scope="col" class="num">rujan 2025.</th>',
     );
     expect(sources.indexOf("Hidro")).toBeLessThan(sources.indexOf("Plin"));
     expect(sources).toContain(`<td class="num">60 %</td>`);
-    expect(sources).toContain("<td>Udio obnovljivih</td>");
+    expect(sources).toContain('<th scope="row">Udio obnovljivih</th>');
     const regionOf = (p: StaticPage) => p.sections.find((s) => s.heading.startsWith("Regija"));
     const region = plain(regionOf(page)?.html ?? "");
     expect(regionOf(page)?.heading).toBe("Regija: rujan 2026.");
     expect(region.indexOf("Hrvatska")).toBeLessThan(region.indexOf("Slovenija"));
-    expect(region).toContain(`<a href="/zemlja/si/">Slovenija</a></td>`);
+    expect(region).toContain(`<a href="/zemlja/si/">Slovenija</a></th>`);
     expect(region).toContain(
       "Bez potpunih podataka: Mađarska, Srbija, Bosna i Hercegovina, Crna Gora, Italija, Austrija.",
     );

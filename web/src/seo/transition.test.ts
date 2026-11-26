@@ -92,6 +92,11 @@ const text = (p: StaticPage): string =>
   plain([p.lead, ...p.sections.map((s) => s.heading + s.html)].join(" "));
 
 describe("energy transition page", () => {
+  it("sits under Croatia in the trail (Faza 58-A)", () => {
+    expect(page("hr").breadcrumbs.map((crumb) => crumb.path)).toEqual(["/", "/zemlja/hr/"]);
+    expect(page("en").breadcrumbs.map((crumb) => crumb.path)).toEqual(["/en/", "/en/country/hr/"]);
+  });
+
   it("exists in both languages, each pointing at the other", () => {
     expect(page("hr").path).toBe("/zelena-tranzicija/");
     expect(page("hr").alternatePath).toBe("/en/energy-transition/");
@@ -212,8 +217,8 @@ describe("official renewable share (Eurostat) on the transition page", () => {
     expect(hr).toContain(
       "U 2024. obnovljivi izvori činili su 34,1 % bruto konačne potrošnje energije u Hrvatskoj (EU-27: 25 %). Do cilja od 42,5 % za 2030. nedostaje 8,4 postotna boda.",
     );
-    expect(hr).toContain("<td>2015</td>");
-    expect(hr).not.toContain("<td>2014</td>");
+    expect(hr).toContain('<th scope="row">2015</th>');
+    expect(hr).not.toContain('<th scope="row">2014</th>');
     expect(hr).toContain(`<td class="num">34,1 % (p)</td>`);
     expect(hr).toContain(`<td class="num">8 % (b)</td>`);
     expect(hr).toContain("Oznake Eurostata: b – prekid vremenske serije, p – privremeno.");
@@ -236,7 +241,7 @@ describe("official renewable share (Eurostat) on the transition page", () => {
     expect(order.every((at) => at >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
     expect(hr).toContain(
-      `<a href="/zemlja/ba/">Bosna i Hercegovina</a></td><td class="num">49 % (2023.)</td>`,
+      `<a href="/zemlja/ba/">Bosna i Hercegovina</a></th><td class="num">49 % (2023.)</td>`,
     );
     expect(hr).toContain("Zemlje bez Eurostatovih udjela: Mađarska, Srbija, Crna Gora, Italija, Austrija.");
     expect(hr).toContain("Gdje za 2024. nema podatka, u zagradi je godina zadnjeg podatka.");

@@ -3391,3 +3391,34 @@ strelicama, pa kontrole i karta ostaju s malo mjesta; kad filtri sakriju sve, to
   Crnu Goru, prikaz Hrvatske) kaže „Na ovom dijelu karte nema ničega od uključenoga”, „Poništi filtre” je vraća.
   E2e je prvi put pao na vlastitom lokatoru (ista riječ i na čipu filtra), ne na aplikaciji. Spojeno uz odobrenje
   vlasnika. Serija 5.1 iz Faze 31 time je gotova.
+
+## Faza 58 — Serija 5.3 iz Faze 31 (statične stranice) — 2026-11-26 (vlasnik: „nakon toga kreni s 5.3”)
+
+Provjera 2026-11-26 (podagent, kod): od 14 nalaza riješeni su citat, razmaci u FAQ-u, oznake navigacije i
+stranica 404 (postoji, isti stil); otvoreno ili djelomično ostalo je deset. Dva PR-a.
+
+### 58-A oznake i tablice (ovaj PR)
+- [x] Tablice: desno poravnati i bez lomljenja samo stupci s brojevima (sada svaki stupac osim prvog, pa i
+  „Tehnologija”, „Država”, „Vrsta”); `table`/`linkedTable` u `seo/markup.ts` znaju koji su stupci brojevi.
+- [x] `<th scope="col">` u zaglavljima i `<th scope="row">` za prvu ćeliju retka (sada obični `td`).
+- [x] Stranica zemlje bez podataka o elektranama ili vodovima: rečenica „nema podataka” umjesto tablice samo sa
+  zaglavljem.
+- [x] API stranica: svaka adresa kao `GET`, poveznica u `<code>` i format (JSON, Atom); primjer objekta
+  iz stvarnog popisa objekata (sada `osm-way-109`, id iz testnog skupa, na živoj stranici ne postoji).
+- [x] Mrvice: „Zelena tranzicija” i plinske stranice (samo Hrvatska) dobivaju korak „Hrvatska” kao ostale
+  stranice tema.
+- [x] 404: naslov i uvod na oba jezika istog izgleda (stranica se poslužuje za sve adrese, i /en/).
+- Napravljeno: stupac je brojčani kad su barem pola vrijednosti brojevi (`numericColumns` u `seo/markup.ts`), pa
+  „nije navedeno” u stupcu snage ne mijenja poravnanje; red ima `<th scope="row">` istog izgleda; API adrese s
+  `GET`, `<code>`, formatom i stvarnim primjerom objekta; „Primjer u JavaScriptu”; korak „Hrvatska” u mrvicama
+  plina, terminala, skladišta i „Zelene tranzicije” (`croatiaCrumb`); 404 dvojezičan naslov, uvod i naslov
+  poveznica, s poveznicom na kartu na engleskom.
+- Provjera: vitest (`seo/*.test.ts`: scope, stupci, prazna zemlja, API primjer postoji u indeksu, mrvice), e2e
+  `seo.spec.ts`; preview: najveće elektrane, zemlja, API, nepostojeća adresa, na 390 i 1280 px.
+
+### 58-B podaci i tražilice (sljedeći PR)
+- [ ] IndexNow samo za promijenjene stranice (`seo-manifest.json` ima datum promjene po stranici).
+- [ ] Prerender provjerava satne podatke uživo i vremeplov kao aplikacija (`checkedLive`, provjera vremeplova).
+- [ ] „Zelena tranzicija”: opis i `variableMeasured`/`isBasedOn` samo za prikazane odjeljke.
+- [ ] „Bez godine puštanja u pogon” broji samo obnovljive (pipeline dijeli `undated` po tehnologiji) ili rečenica
+  kaže da su uključene sve elektrane.

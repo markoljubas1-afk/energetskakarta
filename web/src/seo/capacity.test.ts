@@ -67,11 +67,11 @@ describe("grid capacity pages", () => {
     const heading = (start: string): string =>
       overview.sections.find((section) => section.heading.startsWith(start))?.html ?? "";
     expect(heading("Kategorije prihvata")).toContain(
-      '<td>nema mogućnosti prihvata</td><td class="num">6</td><td class="num">5</td>',
+      '<th scope="row">nema mogućnosti prihvata</th><td class="num">6</td><td class="num">5</td>',
     );
     // the locale puts a no-break space before "%", hence \s
     expect(heading("Po distribucijskom području")).toMatch(
-      /<td>Elektra Bjelovar<\/td><td class="num">1<\/td><td class="num">1 \(100\s%\)<\/td>/,
+      /<th scope="row">Elektra Bjelovar<\/th><td class="num">1<\/td><td class="num">1 \(100\s%\)<\/td>/,
     );
     expect(heading("Kroz izdanja")).toContain("1. listopada 2026. (v4)");
     const changes = heading("Promjene između");
@@ -101,7 +101,7 @@ describe("grid capacity pages", () => {
     expect(body).toContain("<dt>Transformacija (MVA)</dt><dd>8 + 8 + 8</dd>");
     // history: B with 7.1 MW in version 4, nothing in version 5
     expect(body).toContain(
-      '<td>1. listopada 2026. (v4)</td><td class="num">B: do 10 MW</td><td class="num">7,1 MW</td>',
+      '<th scope="row">1. listopada 2026. (v4)</th><td>B: do 10 MW</td><td class="num">7,1 MW</td>',
     );
     expect(html("/kapaciteti/ts-110-35kv-pokupje/")).toContain(
       '<a href="/kapaciteti/ts-35-20-10kv-ilovac/">TS 35/20/10kV ILOVAC</a>',

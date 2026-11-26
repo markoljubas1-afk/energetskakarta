@@ -76,6 +76,9 @@ export interface Copy {
     intro: (country: string, operatingMw: string, plants: string, lineKm: string) => string;
     capacityHeading: string;
     linesHeading: string;
+    /** said in place of a table that would have no rows (Faza 58-A) */
+    noPlants: string;
+    noLines: string;
     openMap: string;
     /** the section linking the country's generation page and the price page (17-10) */
     energyHeading: string;
@@ -149,6 +152,8 @@ export interface Copy {
     endpointsHeading: string;
     endpoints: { index: string; country: string; asset: string; cities: string; feed: string };
     exampleHeading: string;
+    /** before a real address of a templated one: "Na primjer:" */
+    exampleLabel: string;
     rulesHeading: string;
     rules: string[];
   };
@@ -347,6 +352,8 @@ const hr: Copy = {
       `${country} ima ${operatingMw} instalirane snage u pogonu i ${lineKm} dalekovoda u pogonu. Elektrane u pogonu zabilježene na karti: ${plants}. Brojke su zbroj onoga što je upisano u izvorima, pa su donja granica stvarnog stanja.`,
     capacityHeading: "Instalirana snaga po tehnologiji",
     linesHeading: "Dalekovodi u pogonu po naponu",
+    noPlants: "Na karti još nema elektrana iz ove zemlje.",
+    noLines: "Na karti još nema dalekovoda iz ove zemlje.",
     openMap: "Otvori na karti",
     energyHeading: "Proizvodnja struje i cijene",
   },
@@ -437,7 +444,8 @@ const hr: Copy = {
       cities: "registar gradova: struja po namjeni, godina inventara, stanovnici",
       feed: "Atom feed promjena od prošle objave",
     },
-    exampleHeading: "Primjer",
+    exampleHeading: "Primjer u JavaScriptu",
+    exampleLabel: "Na primjer:",
     rulesHeading: "Pravila",
     rules: [
       "Podaci su pod ODbL 1.0 uz navođenje izvora; dijelovi iz Global Energy Monitora CC BY 4.0, TransitionZero CC BY-NC 4.0 (zato su preuzimanja u cjelini samo za nekomercijalnu upotrebu), Sporazum gradonačelnika/JRC CC BY 4.0.",
@@ -674,6 +682,8 @@ const en: Copy = {
       `${country} has ${operatingMw} of operating capacity and ${lineKm} of transmission lines in operation. Operating power plants recorded on the map: ${plants}. The figures sum what the sources record, so they are a lower bound.`,
     capacityHeading: "Installed capacity by technology",
     linesHeading: "Operating lines by voltage",
+    noPlants: "No power plants from this country are on the map yet.",
+    noLines: "No transmission lines from this country are on the map yet.",
     openMap: "Open on the map",
     energyHeading: "Electricity generation and prices",
   },
@@ -763,7 +773,8 @@ const en: Copy = {
       cities: "city register: electricity by purpose, inventory year, population",
       feed: "Atom feed of changes since the previous release",
     },
-    exampleHeading: "Example",
+    exampleHeading: "Example in JavaScript",
+    exampleLabel: "For example:",
     rulesHeading: "Rules",
     rules: [
       "Data is ODbL 1.0 with attribution; parts from Global Energy Monitor CC BY 4.0, TransitionZero CC BY-NC 4.0 (which makes the downloads non-commercial as a whole), Covenant of Mayors/JRC CC BY 4.0.",

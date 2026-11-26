@@ -6,11 +6,14 @@ import { createI18n } from "../i18n";
 import { DOWNLOAD_LABELS } from "../i18n/labels";
 import type { Lang } from "../state/url";
 import { AUTHOR, COPY } from "./copy";
-import { definitions, e, list, steps } from "./markup";
+import { e, list, steps } from "./markup";
 import { countryJsonDoor, learnDoor, mapDoor } from "./pageDoors";
 import { API_PATHS } from "./paths";
+import { pageWorthy } from "./assetPages";
+import { toHit } from "../data/search";
 import {
   absolute,
+  assetSlug,
   datasetJsonLd,
   downloadUrl,
   home,
@@ -122,20 +125,56 @@ export function authorPage(site: SiteData, lang: Lang): StaticPage {
   };
 }
 
+interface Endpoint {
+  url: string;
+  /** what comes back: JSON, or the Atom feed */
+  format: string;
+  text: string;
+  /** a real address of the same shape, for an address with a {placeholder} */
+  example?: string;
+}
+
+/**
+ * The API's addresses as a reader of API documentation expects them (Faza 58-A): the method, the address as
+ * code (a link when it is a real address), the format, then what it holds.
+ */
+function endpointList(endpoints: readonly Endpoint[], exampleLabel: string): string {
+  const items = endpoints.map(({ url, format, text, example }) => {
+    const address = url.includes("{")
+      ? `<code>${e(url)}</code>`
+      : `<code><a href="${e(url)}">${e(url)}</a></code>`;
+    const sample = example
+      ? ` ${e(exampleLabel)} <a href="${e(example)}"><code>${e(example)}</code></a>`
+      : "";
+    return `<dt><span class="method">GET</span> ${address} <span class="format">${format}</span></dt><dd>${e(text)}${sample}</dd>`;
+  });
+  return `<dl class="api">${items.join("")}</dl>`;
+}
+
 export function apiPage(site: SiteData, lang: Lang): StaticPage {
   const copy = COPY[lang];
   const api = copy.api;
   const base = site.siteUrl ?? "";
-  const endpoints: [string, string][] = [
-    [`${base}/api/index.json`, api.endpoints.index],
-    [`${base}/api/zemlja/hr.json`, api.endpoints.country],
-    [`${base}/api/objekt/osm-way-109.json`, api.endpoints.asset],
-    ...(site.cities ? ([[`${base}/api/gradovi.json`, api.endpoints.cities]] as [string, string][]) : []),
+  // the asset example is a real one: the first asset that has its own file (Faza 58-A; it was a test fixture id)
+  const exampleAsset = site.index.rows.map(toHit).find(pageWorthy);
+  const endpoints: Endpoint[] = [
+    { url: `${base}/api/index.json`, format: "JSON", text: api.endpoints.index },
+    { url: `${base}/api/zemlja/hr.json`, format: "JSON", text: api.endpoints.country },
+    {
+      url: `${base}/api/objekt/{slug}.json`,
+      format: "JSON",
+      text: api.endpoints.asset,
+      ...(exampleAsset ? { example: `${base}${API_PATHS.asset(assetSlug(exampleAsset.id))}` } : {}),
+    },
+    ...(site.cities ? [{ url: `${base}/api/gradovi.json`, format: "JSON", text: api.endpoints.cities }] : []),
     ...(hasFeed(site)
-      ? ([[`${base}${lang === "hr" ? "/feed.xml" : "/en/feed.xml"}`, api.endpoints.feed]] as [
-          string,
-          string,
-        ][])
+      ? [
+          {
+            url: `${base}${lang === "hr" ? "/feed.xml" : "/en/feed.xml"}`,
+            format: "Atom",
+            text: api.endpoints.feed,
+          },
+        ]
       : []),
   ];
   const example = `fetch("${base}/api/zemlja/hr.json")
@@ -154,7 +193,7 @@ export function apiPage(site: SiteData, lang: Lang): StaticPage {
     sections: [
       {
         heading: api.endpointsHeading,
-        html: definitions(endpoints.map(([url, text]) => [url, e(text)] as [string, string])),
+        html: endpointList(endpoints, api.exampleLabel),
       },
       { heading: api.exampleHeading, html: `<pre><code>${e(example)}</code></pre>` },
       { heading: api.rulesHeading, html: list(api.rules.map(e)) },
