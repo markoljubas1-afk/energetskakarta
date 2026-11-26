@@ -45,3 +45,33 @@ test("the very first visit already opens without a network, with the last data s
   await context.setOffline(false);
   await expect(page.getByRole("status").filter({ hasText: "Nema veze s mrežom" })).toBeHidden();
 });
+
+/*
+ * The map's tiles (Faza 59-B). Playwright cannot take the network away from a service worker's own requests
+ * (setOffline and route do not reach them), so this checks what makes the map work offline: once kept, a piece
+ * is served from the cache, before and without the network.
+ */
+test("the map's tile pieces are kept and then read from the cache, not the network", async ({ page }) => {
+  // the fixture's lines are around Zagreb (map.spec.ts)
+  await page.goto("/?v=45.55,15.95,9");
+  await expect(page.locator('[data-map-status="ready"]')).toBeVisible();
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+  });
+  // the worker took the page over after it loaded: one look with it in charge keeps the pieces in view
+  await page.reload();
+  await expect(page.locator('[data-map-status="ready"]')).toBeVisible();
+  const pieces = await page.evaluate(
+    async () => (await (await caches.open("gridatlas-tiles")).keys()).length,
+  );
+  expect(pieces).toBeGreaterThan(0);
+
+  const kept: string[] = [];
+  page.on("response", (response) => {
+    if (response.url().includes(".pmtiles") && response.headers()["x-gridatlas-kept"] === "1")
+      kept.push(response.url());
+  });
+  await page.reload();
+  await expect(page.locator('[data-map-status="ready"]')).toBeVisible();
+  expect(kept.some((url) => url.includes("grid.pmtiles"))).toBe(true);
+});

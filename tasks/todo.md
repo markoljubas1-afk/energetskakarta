@@ -3486,12 +3486,17 @@ obavijest kaže da su prazni samo dijelovi koji nisu bili otvoreni.
 Činjenice: sve pločice su pod `builds/<id>/*.pmtiles` i poslužuju se kao nepromjenjive (`immutable`, ETag); PMTiles
 (4.5) traži dijelove s `range: bytes=a-b`, uvijek iste za isti dio karte, i provjerava da im je ETag isti kao
 zaglavlju; Cache API ne sprema odgovor 206.
-- [ ] `strategyFor`: zahtjev s `Range` za `.pmtiles` s adrese podataka → „tiles” (ostali `Range` i dalje mimo SW-a).
-- [ ] SW „tiles”: prvo predmemorija (adrese su nepromjenjive, pa je to brže i s mrežom), ključ = adresa + raspon
+- [x] `strategyFor`: zahtjev s `Range` za `.pmtiles` s adrese podataka → „tiles” (ostali `Range` i dalje mimo SW-a).
+- [x] SW „tiles”: prvo predmemorija (adrese su nepromjenjive, pa je to brže i s mrežom), ključ = adresa + raspon
   (`tileKey`); spremljeno kao 200 s tijelom, `Content-Range` i `ETag`, posluženo natrag kao 206 s istim zaglavljima;
   odgovor 200 (poslužitelj bez raspona) se ne sprema. Predmemorija `gridatlas-tiles`, najviše 2000 dijelova.
-- [ ] e2e bez mreže stvarno bez mreže: `context.route` prekida i zahtjeve samog SW-a (`setOffline` ih ne prekida),
-  pa test nakon jednog posjeta prekine sve, ponovno učita i očekuje kartu „ready” s vodovima, ne „nema ničega”.
+- [x] e2e: Playwright ne može oduzeti mrežu zahtjevima samog SW-a (ni `setOffline` ni `context.route`, ni uz
+  `PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS`; provjereno mutacijom: s isključenim posluživanjem kopija test
+  „bez mreže” je i dalje prolazio). Zato test provjerava ono što kartu čini neovisnom o mreži: nakon jednog posjeta
+  pod SW-om dijelovi su spremljeni, a pri sljedećem učitavanju karta ih dobiva iz predmemorije (zaglavlje
+  `X-GridAtlas-Kept`); mutacijom provjereno da tada pada. Isto ograničenje znači da ni e2e iz PR-a #25 nije stvarno
+  bio bez mreže za SW: dokazao je da je sve spremljeno, a pravi rad bez mreže provjerava se na previewu preko
+  lokalnog proxyja koji se ugasi (tada mreže nema ni za SW).
 - Alternative: spremati cijele `.pmtiles` datoteke (odbačeno: desetci MB po sloju); prvo mreža za pločice
   (odbačeno: adrese su nepromjenjive, a svaki pomak karte išao bi na mrežu i pisao u predmemoriju).
 - Rizici: veličina (dijelovi su mali; 2000 × do nekoliko desetaka kB); ETag mora ostati isti kao u zaglavlju.

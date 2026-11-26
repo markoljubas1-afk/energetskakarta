@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { cacheKey, shellFor, strategyFor, type RequestLike } from "./strategy";
+import { cacheKey, keptTile, servedTile, shellFor, strategyFor, tileKey, type RequestLike } from "./strategy";
 
 const SITE = "https://gridatlas.eu";
 const DATA = "https://podaci.gridatlas.eu/";
@@ -36,8 +36,12 @@ describe("what the service worker does with a request (Faza 59)", () => {
     expect(route(request(`${SITE}/api/zemlja/hr.json`))).toBe("data");
   });
 
-  it("leaves alone map tiles read in pieces, other sites, and anything but reading", () => {
-    expect(route(request(`${DATA}builds/x/grid.pmtiles`, { range: true }))).toBe("bypass");
+  it("keeps the map's tiles, read in pieces from files that never change (Faza 59-B)", () => {
+    expect(route(request(`${DATA}builds/x/grid.pmtiles`, { range: true }))).toBe("tiles");
+  });
+
+  it("leaves alone other pieces, other sites, and anything but reading", () => {
+    expect(route(request(`${DATA}live/flows.bin`, { range: true }))).toBe("bypass");
     expect(route(request("https://api.maptiler.com/maps/x/style.json"))).toBe("bypass");
     expect(route(request(`${SITE}/api/x.json`, { method: "POST" }))).toBe("bypass");
   });
@@ -50,5 +54,39 @@ describe("what the service worker does with a request (Faza 59)", () => {
   it("falls back to the map in the page's language when a page was never opened", () => {
     expect(shellFor(`${SITE}/en/country/hr/`, SITE)).toBe(`${SITE}/en/`);
     expect(shellFor(`${SITE}/zemlja/hr/`, SITE)).toBe(`${SITE}/`);
+  });
+});
+
+describe("a map tile piece kept and served again (Faza 59-B)", () => {
+  it("is filed under its address and its byte range, since one file holds every piece", () => {
+    expect(tileKey(`${DATA}builds/x/grid.pmtiles`, "bytes=0-16383")).toBe(
+      `${DATA}builds/x/grid.pmtiles?range=bytes%3D0-16383`,
+    );
+  });
+
+  it("is kept as a whole answer (a cache keeps no 206) and served back as the same 206", async () => {
+    const body = new Uint8Array([1, 2, 3, 4]).buffer;
+    const network = new Response(body, {
+      status: 206,
+      headers: {
+        "Content-Range": "bytes 100-103/5000",
+        ETag: '"abc"',
+        "Content-Type": "application/octet-stream",
+      },
+    });
+    const kept = await keptTile(network);
+    if (!kept) throw new Error("a 206 is kept");
+    expect(kept.status).toBe(200);
+    const served = await servedTile(kept);
+    expect(served.status).toBe(206);
+    expect(served.headers.get("Content-Range")).toBe("bytes 100-103/5000");
+    expect(served.headers.get("ETag")).toBe('"abc"');
+    expect(served.headers.get("Content-Length")).toBe("4");
+    expect(served.headers.get("X-GridAtlas-Kept")).toBe("1");
+    expect(new Uint8Array(await served.arrayBuffer())).toEqual(new Uint8Array([1, 2, 3, 4]));
+  });
+
+  it("is not kept when the server sent the whole file instead of the piece", async () => {
+    expect(await keptTile(new Response(new Uint8Array([1]).buffer, { status: 200 }))).toBeNull();
   });
 });
