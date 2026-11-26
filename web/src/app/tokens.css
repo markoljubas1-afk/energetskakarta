@@ -1,17 +1,22 @@
-/* Design tokens from the approved prototype (tasks/todo.md, "Dizajn sustav"). */
+/* Design tokens from the approved prototype (tasks/todo.md, "Dizajn sustav"). Text colours read at 4.5:1 on
+   every ground of their theme (Faza 57, tokens.test.ts). */
 :root {
   --canvas: #dcdfe2;
   --surface: #eef0f1;
   --surface-2: #e4e7ea;
   --line: #c7cdd3;
+  /* the edge of a field or a chip: 3:1 against the panels (Faza 57) */
+  --line-strong: #808488;
   --ink: #1e262e;
-  --muted: #5e6a75;
-  --accent: #1f6f8b;
+  --muted: #57636d;
+  --accent: #1d6984;
+  /* text on the accent colour */
+  --on-accent: #ffffff;
   --accent-soft: rgba(31, 111, 139, 0.14);
   --warn-bg: #efe6d2;
   --warn-ink: #6b4e12;
   --danger: #a3372f;
-  --ok: #2f8a5e;
+  --ok: #256e4b;
   --shadow: 0 1px 2px rgba(30, 38, 46, 0.08), 0 8px 24px rgba(30, 38, 46, 0.1);
   --font: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-num: "IBM Plex Sans Condensed", "Arial Narrow", "IBM Plex Sans", system-ui, sans-serif;
@@ -38,13 +43,15 @@
   --surface: #343b42;
   --surface-2: #3c444c;
   --line: #4b545d;
+  --line-strong: #898f95;
   --ink: #e4e8ec;
-  --muted: #a3aeb8;
-  --accent: #5fb0cc;
+  --muted: #a9b3bc;
+  --accent: #75bbd3;
+  --on-accent: #0e151c;
   --accent-soft: rgba(95, 176, 204, 0.18);
   --warn-bg: #4a4232;
   --warn-ink: #ebd7a8;
-  --danger: #e27a70;
+  --danger: #ea9e97;
   --ok: #6fc39a;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
   color-scheme: dark;
@@ -76,6 +83,18 @@ input,
 select {
   font: inherit;
   color: inherit;
+}
+
+/*
+ * iOS zooms the page into any field under 16 px when it gets focus, and does not zoom back (Faza 57). One
+ * rule for every field on a touch screen; it must win over the smaller sizes the panels give their fields.
+ */
+@media (pointer: coarse) {
+  input:not([type="checkbox"], [type="radio"], [type="range"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }
 
 :focus-visible {

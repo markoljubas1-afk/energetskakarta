@@ -42,7 +42,7 @@
 .select input {
   min-width: 180px;
   padding: 7px 10px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--ink);
@@ -288,7 +288,7 @@
 
 .inlineSelect select {
   padding: 4px 6px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--ink);

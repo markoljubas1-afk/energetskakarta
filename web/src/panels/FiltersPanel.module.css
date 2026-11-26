@@ -61,7 +61,7 @@
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 999px;
   background: none;
   color: var(--muted);
@@ -70,10 +70,19 @@
   cursor: pointer;
 }
 
+/* on: a tick and an accent edge, so the state is a shape and not only a colour (Faza 57) */
 .chip[aria-pressed="true"] {
-  border-color: transparent;
+  border-color: var(--accent);
   background: var(--accent-soft);
   color: var(--ink);
+}
+
+.chip[aria-pressed="true"]::before {
+  /* empty alternative text: the button's name stays "220–379 kV", aria-pressed already says it is on */
+  content: "✓";
+  content: "✓" / "";
+  font-weight: 600;
+  color: var(--accent);
 }
 
 .chip:disabled,
@@ -118,7 +127,7 @@
 .select {
   width: 100%;
   padding: 7px 10px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   background: var(--surface);
 }
@@ -230,4 +239,27 @@
 
 .action:disabled {
   cursor: default;
+}
+
+/* fingers need 44 px (Faza 57): chips and rows grow, the small "i" keeps its look and grows its reach */
+@media (pointer: coarse) {
+  .chip {
+    min-height: 44px;
+    padding: 4px 14px;
+  }
+  .toggle {
+    min-height: 44px;
+  }
+  .bulk {
+    min-height: 44px;
+    padding: 0 8px;
+  }
+  .noteButton {
+    width: 44px;
+    height: 44px;
+    margin: -10px -10px -10px 0;
+  }
+  .action {
+    min-height: 44px;
+  }
 }

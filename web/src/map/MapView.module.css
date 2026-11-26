@@ -112,3 +112,12 @@
 .tooltipDetail {
   color: var(--muted);
 }
+
+/* MapLibre's zoom buttons (29 px) are too small for a finger (Faza 57). The credits' (i) stays 24 px (the
+   AA minimum): it is placed absolutely, and a bigger one would hang out of the corner the layout measures. */
+@media (pointer: coarse) {
+  .map :global(.maplibregl-ctrl-group button) {
+    width: 44px;
+    height: 44px;
+  }
+}

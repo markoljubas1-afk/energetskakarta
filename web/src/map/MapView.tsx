@@ -27,6 +27,7 @@ import { useI18n } from "../i18n";
 import { DEFAULT_VIEW, type AppState } from "../state/url";
 import { composeStyle, loadBasemap, type Basemap } from "./basemap";
 import { foldCreditsWhenNarrow, showCredits } from "./credits";
+import { labelControls } from "./controlLabels";
 import {
   dataLayers,
   dataSources,
@@ -618,6 +619,17 @@ export function MapView(props: Props) {
       remove();
     };
   }, [attribution]);
+
+  // after the credits: their effect makes a new (i) button, which MapLibre names in English
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    labelControls(map.getContainer(), {
+      zoomIn: t("mapZoomIn"),
+      zoomOut: t("mapZoomOut"),
+      credits: t("mapCreditsToggle"),
+    });
+  }, [t, attribution]);
 
   // Load the basemap for the current theme.
   useEffect(() => {

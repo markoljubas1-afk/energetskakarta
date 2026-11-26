@@ -3,6 +3,9 @@ import type { Dictionary } from "./hr";
 export const en: Dictionary = {
   appName: "GridAtlas",
   appTagline: "Regional energy map",
+  mapZoomIn: "Zoom in",
+  mapZoomOut: "Zoom out",
+  mapCreditsToggle: "Show or hide the map credits",
   documentTitle: "GridAtlas: energy map of Croatia, power plants, grid, gas",
   skipToMap: "Skip to map",
   searchPlaceholder: "Search a plant, city…",
