@@ -3291,6 +3291,10 @@ grupama uglavnom riješeni, imena gumba postoje (čitač ih ima), samo bez opisa
 - Rizici: tamnije boje mijenjaju izgled (blago); veće mete na mobitelu mogu gurnuti zaglavlje u dva retka →
   provjera na 360/390 px. e2e lokatori po imenu ostaju isti.
 - Provjera: vitest (kontrast, locale), e2e; preview 390 px i 1280 px, svijetlo i tamno.
+- [x] PR #19, preview provjeren 2026-11-26 (360, 390 px dodir i 1280 px; svijetlo i tamno): jedan `h1`
+  (GridAtlas); zaglavlje i stranica bez vodoravnog prelijevanja na 360 px; tražilica 44 px i 16 px; zum 44 px
+  „Približi”, na engleskom „Zoom in”; (i) „Prikaži ili sakrij izvore karte”; čip 44 px s kvačicom i obrubom u
+  naglasnoj boji, ime gumba nepromijenjeno („220–379 kV”). Spojeno uz odobrenje vlasnika.
 
 ### 57-B tekstovi (Vi, nazivlje, prečaci)
 - [ ] „Vi” svugdje (Zalijepite, Koristite, Možete, Vaša lokacija); kratke oznake gumba ostaju (Zatvori).
@@ -3304,3 +3308,5 @@ grupama uglavnom riješeni, imena gumba postoje (čitač ih ima), samo bez opisa
 - [ ] Tablet 721–1000 px: detalji kao list ili uži paneli, bez preklapanja; e2e na 800 px.
 - [ ] Traka uživo na uskom: opisi ljestvice i „ažurirano” u sklopivi dio, kontrole u dva retka.
 - [ ] Obavijest na karti kad filtri sakriju sve.
+- [ ] Zaglavlje na 1001–1320 px: tražilica prekriva kraj imena („GridAtl…”); isto je i na produkciji (provjereno
+  2026-11-26), nije od 57-A.
