@@ -515,3 +515,5 @@
 - Uzrok: pretpostavka da pomoćnik iz `seo/` koriste samo stranice iz `seo/`; kartice za dijeljenje ga uvoze.
 - Pravilo: nakon promjene zajedničkog pomoćnika (HTML, formatiranje, i18n) prije slanja pokrenuti cijeli vitest
   (`npx vitest run`) ili barem `grep` po svim testovima za stari izlaz, ne samo testove mape u kojoj je promjena.
+  E2e se lokalno ne pokreće: promjena uloge elementa (ovdje `td` → `th scope="row"`, uloga `cell` → `rowheader`)
+  traži `grep` po `e2e/` za `getByRole("cell"` i slične lokatore prije slanja.
