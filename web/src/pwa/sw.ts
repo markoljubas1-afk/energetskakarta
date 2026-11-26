@@ -9,7 +9,7 @@
  */
 // a type only: a value shared with the page would become a chunk both import, and /sw.js must import nothing
 import type { DataSourceMessage } from "./dataSource";
-import { cacheKey, shellFor, strategyFor } from "./strategy";
+import { cacheKey, keptTile, servedTile, shellFor, strategyFor, tileKey } from "./strategy";
 
 /** Only what this worker uses of ServiceWorkerGlobalScope (the WebWorker lib cannot share a program with DOM). */
 interface ExtendableEvent extends Event {
@@ -36,9 +36,11 @@ const worker = self as unknown as WorkerScope;
 const PAGES = "gridatlas-pages";
 const ASSETS = "gridatlas-assets";
 const DATA = "gridatlas-data";
-const KEPT = new Set([PAGES, ASSETS, DATA]);
+/** pieces of the map's tile archives (Faza 59-B): the map as it was seen */
+const TILES = "gridatlas-tiles";
+const KEPT = new Set([PAGES, ASSETS, DATA, TILES]);
 /** at most this many copies each; the oldest go first (every release and data build brings new names) */
-const LIMIT: Record<string, number> = { [PAGES]: 60, [ASSETS]: 250, [DATA]: 300 };
+const LIMIT: Record<string, number> = { [PAGES]: 60, [ASSETS]: 250, [DATA]: 300, [TILES]: 2000 };
 
 // filled in at build time (vite/swPrecache.ts): the page's code, the map's code, their styles and the fonts
 const PRECACHE = "__GRIDATLAS_PRECACHE__".split(",").filter((path) => path.startsWith("/"));
@@ -80,6 +82,7 @@ worker.addEventListener("fetch", (event) => {
   const strategy = strategyFor(event.request, SITE, DATA_BASE);
   if (strategy === "bypass") return;
   if (strategy === "cache-first") event.respondWith(cacheFirst(event.request));
+  else if (strategy === "tiles") event.respondWith(tiles(event.request));
   else event.respondWith(networkFirst(event.request, strategy === "page" ? PAGES : DATA, event.clientId));
 });
 
@@ -140,6 +143,24 @@ async function cacheFirst(request: Request): Promise<Response> {
   if (response.ok) {
     await cache.put(key, response.clone());
     await trim(cache, ASSETS);
+  }
+  return response;
+}
+
+/**
+ * A piece of a tile archive (Faza 59-B). The archives never change (builds/<id>/), so a kept piece is served at
+ * once, with a network or without; a new piece is fetched, kept, and passed on.
+ */
+async function tiles(request: Request): Promise<Response> {
+  const cache = await caches.open(TILES);
+  const key = tileKey(request.url, request.headers.get("range") ?? "");
+  const kept = await cache.match(key);
+  if (kept) return servedTile(kept);
+  const response = await fetch(request);
+  const copy = await keptTile(response.clone());
+  if (copy) {
+    await cache.put(key, copy);
+    await trim(cache, TILES);
   }
   return response;
 }
