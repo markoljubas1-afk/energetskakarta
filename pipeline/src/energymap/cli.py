@@ -30,6 +30,7 @@ from energymap import config, diff, log, publish, sources, tiles
 from energymap.baseline import BaselineError, fetch_published, iter_layer
 from energymap.cities import read as cities_read
 from energymap.conflate import OverridesError
+from energymap.entsoe import capacity as energy_capacity
 from energymap.entsoe import fetch as energy_fetch
 from energymap.entsoe import live as energy_live
 from energymap.entsoe import prices as energy_prices
@@ -205,6 +206,18 @@ def parser() -> argparse.ArgumentParser:
         )
         if name == "prices-dir":
             step.add_argument("--out", type=Path, required=True)
+
+    capacity_survey = energy.add_parser(
+        "capacity-survey",
+        help="list installed capacity per type and per unit on ENTSO-E, by year (data/entsoe/capacity.json)",
+    )
+    _data_dir(capacity_survey)
+    capacity_survey.add_argument(
+        "--countries",
+        type=_countries,
+        default=list(config.COUNTRIES),
+        help="comma separated codes, default: all",
+    )
 
     pull = energy.add_parser("pull", help="download the published yearly files (fresh machine)")
     _data_dir(pull)
@@ -853,6 +866,13 @@ def run(args: argparse.Namespace) -> None:
                 shares_store, read_json(shares_file), allow_drop=args.allow_drop
             )
             print(json.dumps({"changed": shares_changed}))
+    elif args.group == "energy" and args.step == "capacity-survey":
+        with EntsoeClient.from_env() as client:
+            capacity_document = energy_capacity.survey(
+                client, datetime.now(UTC), [c.code for c in args.countries]
+            )
+        write_json_atomic(paths.root / "entsoe" / "capacity.json", capacity_document)
+        print(energy_capacity.markdown(capacity_document), end="")
     elif args.group == "energy" and args.step == "pull":
         with make_client() as client:
             print(json.dumps(energy_release.pull(client, args.baseline_url, paths.root / "energy")))

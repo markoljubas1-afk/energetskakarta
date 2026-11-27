@@ -1,0 +1,36 @@
+# A survey of installed generation capacity on the ENTSO-E Transparency Platform (per production type, A68,
+# and per unit of 100 MW or more, A71), every country in scope and every year since 2015. The capacity data
+# is planned against this real answer. Publishes nothing: the tables go to the job summary and capacity.json
+# to the run's artifacts. Started by hand only.
+name: capacity-survey
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  survey:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/pyproject.toml
+      - run: python -m pip install -e .
+      - name: Survey installed capacity
+        env:
+          ENTSOE_TOKEN: ${{ secrets.ENTSOE_TOKEN }}
+        run: energymap energy capacity-survey --data-dir data >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: capacity-survey
+          path: pipeline/data/entsoe/capacity.json
+          retention-days: 30
