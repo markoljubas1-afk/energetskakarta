@@ -6,7 +6,7 @@
  * say who "covered the country's needs": part of the gas goes on across the border and into storage. What
  * was delivered to consumers inside the country is written under the figures, so the two are not confused.
  */
-import type { Balance, FlowRow } from "../data/gasFlows";
+import type { Balance, BorderFlow, FlowRow } from "../data/gasFlows";
 import type { I18n } from "../i18n";
 import type { CardText } from "./dayCard";
 import { signed } from "./gasCard";
@@ -52,6 +52,21 @@ export function flowPointText(row: FlowRow, i18n: I18n): string {
       ? t(row.direction === "entry" ? "gasFlowPointIn" : "gasFlowPointOut", { value: gwh(row.kwh, i18n) })
       : t("gasFlowPointIdle");
   return `${flowName(row, i18n)}\n${flow}`;
+}
+
+/** A border crossing's label on the map: its name, and under it which way the gas went net and how much. */
+export function borderFlowText(flow: BorderFlow, i18n: I18n): string {
+  const { t } = i18n;
+  const across =
+    flow.kwh > 0
+      ? t("gasBorderFlow", {
+          from: i18n.country(flow.from),
+          to: i18n.country(flow.to),
+          value: gwh(flow.kwh, i18n),
+        })
+      : t("gasFlowPointIdle");
+  return `${flow.border.label}
+${across}`;
 }
 
 /** What the picture says, in the reader's language. */

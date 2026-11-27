@@ -149,6 +149,8 @@ interface Props {
   gasStorage?: FeatureCollection | null;
   /** the gas system's points with the shown day's flow, while the gas layer is on (data/gasFlows.ts) */
   gasFlow?: FeatureCollection | null;
+  /** the net flow across each gas border crossing on that day, as arrows (data/gasFlows.ts) */
+  gasBorder?: FeatureCollection | null;
   /** a storage facility was clicked: the gas layer's bar opens it */
   onGasStorage?: (id: string) => void;
   theme: Theme;
@@ -203,6 +205,7 @@ export function MapView(props: Props) {
   const capacity = props.capacity ?? null;
   const gasStorage = props.gasStorage ?? null;
   const gasFlow = props.gasFlow ?? null;
+  const gasBorder = props.gasBorder ?? null;
   const { onGasStorage } = props;
   const solar = props.solar ?? null;
   const { onViewChange, onSelect, onBasemap, onReady, onInView, onGeothermalSite, onCapacityStation } = props;
@@ -687,7 +690,17 @@ export function MapView(props: Props) {
       value.style,
       dataSources(
         tiles,
-        { live: live?.features ?? null, gas, timeline, geothermal, capacity, gasStorage, gasFlow, solar },
+        {
+          live: live?.features ?? null,
+          gas,
+          timeline,
+          geothermal,
+          capacity,
+          gasStorage,
+          gasFlow,
+          gasBorder,
+          solar,
+        },
         optIn,
       ),
       stage === null ? layers : introLayers(layers, stage, palette),
@@ -718,6 +731,7 @@ export function MapView(props: Props) {
     capacity,
     gasStorage,
     gasFlow,
+    gasBorder,
     solar,
     reducedMotion,
     stage,

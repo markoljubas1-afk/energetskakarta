@@ -36,6 +36,8 @@ export const GAS_STORAGE_LAYER = `${LAYER_PREFIX}gas-storage`;
 /** the points of the gas system that are one place (data/gasFlows.ts), sized by the day's flow */
 export const GAS_FLOW_SOURCE = "energymap-gas-flow";
 export const GAS_FLOW_LAYER = `${LAYER_PREFIX}gas-flow`;
+/** the net gas flow across each border crossing (data/gasFlows.ts `borderOverlay`), shown with the gas layer */
+export const GAS_BORDER_SOURCE = "energymap-gas-border";
 /** charging stations added up by area, drawn below the zoom where single stations are in the tiles */
 export const CHARGER_OVERVIEW_LAYER = `${LAYER_PREFIX}chargers-overview`;
 /** retired plants for the time machine (data/timeline.ts); a GeoJSON source like the live layer */
@@ -144,6 +146,7 @@ export interface Overlays {
   capacity?: FeatureCollection | null;
   gasStorage?: FeatureCollection | null;
   gasFlow?: FeatureCollection | null;
+  gasBorder?: FeatureCollection | null;
   /** the solar potential picture and its corners, while that layer is on */
   solar?: SolarImage | null;
 }
@@ -158,6 +161,7 @@ export function dataSources(
     capacity = null,
     gasStorage = null,
     gasFlow = null,
+    gasBorder = null,
     solar = null,
   }: Overlays = {},
   optIn: OptIn = NOTHING_OPTED_IN,
@@ -205,6 +209,7 @@ export function dataSources(
     [CAPACITY_SOURCE]: { type: "geojson", data: capacity ?? EMPTY },
     [GAS_STORAGE_SOURCE]: { type: "geojson", data: gasStorage ?? EMPTY },
     [GAS_FLOW_SOURCE]: { type: "geojson", data: gasFlow ?? EMPTY },
+    [GAS_BORDER_SOURCE]: { type: "geojson", data: gasBorder ?? EMPTY },
     // always declared and empty; the map fills it directly while a story's light travels, because a new
     // style sixty times a second would be the wrong tool for moving one point
     [TRAVEL_SOURCE]: { type: "geojson", data: EMPTY },

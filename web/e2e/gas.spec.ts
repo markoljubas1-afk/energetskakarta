@@ -200,6 +200,29 @@ const FLOWS = {
     },
   },
   missing: [],
+  // the net flow across a border, as the map draws it: an arrow where the pipeline crosses
+  borders: [
+    {
+      id: "rogatec",
+      label: "Rogatec",
+      country: "HR",
+      neighbour: "SI",
+      operator: "Plinacro Ltd",
+      points: ["ITP-00042"],
+      place: {
+        lon: 15.7516,
+        lat: 46.209509,
+        source: "openstreetmap",
+        sourceId: "way/854206570",
+        license: "ODbL-1.0",
+        retrievedAt: "2026-11-18",
+        what: "the border end of the Rogatec - Zabok pipeline (Plinacro)",
+      },
+      inside: [15.8497, 46.18654],
+      netKwhPerDay: FLOW_DAYS.map((_, at) => (at === 9 ? null : -25.3e6)),
+      status: FLOW_DAYS.map((_, at) => (at === 9 ? null : "P")),
+    },
+  ],
 };
 
 test("the gas layer shows what entered the system and where it went, and a picture of it to share", async ({

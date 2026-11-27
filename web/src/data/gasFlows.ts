@@ -8,7 +8,7 @@
  * the country's needs. Gas that enters also leaves across the border and into storage, and the difference
  * between what entered and what left stays in the pipes.
  */
-import type { Feature, FeatureCollection, Point as GeoPoint } from "geojson";
+import type { Feature, FeatureCollection, LineString, Point as GeoPoint, Polygon } from "geojson";
 import { z } from "zod";
 
 import { assetUrl, DataError } from "./current";
@@ -26,6 +26,27 @@ const PlaceSchema = z.object({
   retrievedAt: z.string(),
   what: z.string(),
 });
+
+/**
+ * The net flow across one border crossing, as the operator of one side reports it (2026-11-27): one side
+ * only, so nothing is counted twice. A positive figure went into `country`.
+ */
+const BorderSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  country: z.string().length(2),
+  neighbour: z.string().length(2),
+  operator: z.string().min(1),
+  points: z.array(z.string().min(1)).min(1),
+  /** where the pipeline crosses the border */
+  place: PlaceSchema,
+  /** lon, lat of a point on the same pipeline inside `country`: the way an arrow into it points */
+  inside: z.tuple([z.number().min(-180).max(180), z.number().min(-90).max(90)]),
+  /** kWh/d into `country`; null: a point of the crossing gave no figure that day */
+  netKwhPerDay: z.array(z.number().nullable()),
+  status: z.array(z.enum(["P", "C"]).nullable()),
+});
+export type GasBorder = z.infer<typeof BorderSchema>;
 
 export const GasFlowsSchema = z.object({
   version: z.literal(1),
@@ -58,6 +79,8 @@ export const GasFlowsSchema = z.object({
     }),
   ),
   missing: z.array(z.string()),
+  /** absent in a document written before the borders were */
+  borders: z.array(BorderSchema).default([]),
 });
 export type GasFlows = z.infer<typeof GasFlowsSchema>;
 type Point = GasFlows["countries"][string]["points"][number];
@@ -77,6 +100,11 @@ export async function loadGasFlows(base: URL, signal: AbortSignal): Promise<GasF
       if (point.kwhPerDay.length !== flows.days.length || point.status.length !== flows.days.length) {
         throw new DataError(`gas flows: ${country} ${point.key} does not have one value per day`);
       }
+    }
+  }
+  for (const border of flows.borders) {
+    if (border.netKwhPerDay.length !== flows.days.length || border.status.length !== flows.days.length) {
+      throw new DataError(`gas flows: border ${border.id} does not have one value per day`);
     }
   }
   return { kind: "ready", flows };
@@ -261,7 +289,8 @@ export function flowOverlay(
   const features: Feature<GeoPoint, FlowPointProperties>[] = [];
   if (system && balance) {
     const rows = [...balance.entries, ...balance.exits];
-    const seen = new Set<string>();
+    // a border point has its arrow (borderOverlay), which says more than a circle can: which way, and net
+    const seen = new Set<string>(flows.borders.flatMap((border) => border.points));
     for (const point of system.points) {
       if (!point.place || seen.has(point.key)) continue;
       seen.add(point.key);
@@ -275,6 +304,116 @@ export function flowOverlay(
         properties: { key: row.key, kwh: row.kwh, direction: row.direction, text: describe(row) },
       });
     }
+  }
+  return { type: "FeatureCollection", features };
+}
+
+export interface BorderFlow {
+  border: GasBorder;
+  /** the gas day */
+  day: string;
+  /** the country the gas went from, and the one it went into; for a day with no flow, the border's own two */
+  from: string;
+  to: string;
+  /** what went across, net, kWh; 0 when nothing did */
+  kwh: number;
+  provisional: boolean;
+}
+
+/** Every border's net flow on the gas day `day`, largest first; a border without a figure that day is left out. */
+export function borderFlows(flows: GasFlows, day: string): BorderFlow[] {
+  const index = flows.days.indexOf(day);
+  if (index < 0) return [];
+  return flows.borders
+    .flatMap((border) => {
+      const net = border.netKwhPerDay[index];
+      if (net == null) return [];
+      const inward = net >= 0;
+      return [
+        {
+          border,
+          day,
+          from: inward ? border.neighbour : border.country,
+          to: inward ? border.country : border.neighbour,
+          kwh: Math.abs(net),
+          provisional: border.status[index] !== "C",
+        },
+      ];
+    })
+    .sort((a, b) => b.kwh - a.kwh || a.border.label.localeCompare(b.border.label));
+}
+
+/** The latest gas day on which at least one border has a figure; null when none has. */
+export function latestBorderDay(flows: GasFlows): string | null {
+  for (let index = flows.days.length - 1; index >= 0; index -= 1) {
+    if (flows.borders.some((border) => border.netKwhPerDay[index] != null)) return flows.days[index] ?? null;
+  }
+  return null;
+}
+
+export interface BorderArrowProperties {
+  id: string;
+  /** what went across, net, kWh */
+  kwh: number;
+  /** on the label feature only: the crossing's name and its flow, in the reader's words */
+  text?: string;
+}
+
+/** Half the arrow's length and its head's size, in degrees of latitude: short enough to sit at the border. */
+export const ARROW_HALF = 0.2;
+const HEAD = 0.1;
+
+type Lonlat = [number, number];
+
+/**
+ * The borders' flows on the gas day `day` as arrows for the map: a short straight arrow across the border
+ * where the pipeline crosses it, pointing the way the gas went net, along the pipeline. A border through
+ * which nothing went keeps the shaft without a head. Each crossing also has a point at the border for its
+ * label.
+ */
+export function borderOverlay(
+  flows: GasFlows,
+  day: string,
+  describe: (flow: BorderFlow) => string,
+): FeatureCollection<LineString | Polygon | GeoPoint, BorderArrowProperties> {
+  const features: Feature<LineString | Polygon | GeoPoint, BorderArrowProperties>[] = [];
+  for (const flow of borderFlows(flows, day)) {
+    const { border, kwh } = flow;
+    const { lon, lat } = border.place;
+    // distances east are shorter at this latitude: work in a plane where a degree is the same both ways
+    const scale = Math.cos((lat * Math.PI) / 180) || 1;
+    const east = (border.inside[0] - lon) * scale;
+    const north = border.inside[1] - lat;
+    const length = Math.hypot(east, north);
+    if (!(length > 0)) continue;
+    const inward = flow.to === border.country ? 1 : -1;
+    const along: Lonlat = [(inward * east) / length, (inward * north) / length];
+    const at = (step: number, side = 0): Lonlat => [
+      lon + (along[0] * step - along[1] * side) / scale,
+      lat + along[1] * step + along[0] * side,
+    ];
+    const properties = { id: border.id, kwh };
+    features.push({
+      type: "Feature",
+      geometry: { type: "LineString", coordinates: [at(-ARROW_HALF), at(ARROW_HALF - HEAD / 2)] },
+      properties,
+    });
+    if (kwh > 0) {
+      const tip = at(ARROW_HALF);
+      features.push({
+        type: "Feature",
+        geometry: {
+          type: "Polygon",
+          coordinates: [[tip, at(ARROW_HALF - HEAD, HEAD * 0.6), at(ARROW_HALF - HEAD, -HEAD * 0.6), tip]],
+        },
+        properties,
+      });
+    }
+    features.push({
+      type: "Feature",
+      geometry: { type: "Point", coordinates: [lon, lat] },
+      properties: { ...properties, text: describe(flow) },
+    });
   }
   return { type: "FeatureCollection", features };
 }

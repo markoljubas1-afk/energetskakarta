@@ -3719,3 +3719,103 @@ Rečenica ne kaže „od uvoza”: u satu ili mjesecu kad Hrvatska izvozi to ne 
   potrošnje)” i stavka metodologije, stranica Krškog (hr i en) s vlasništvom i 2025., `/zemlja/hr/` i `/zemlja/si/`
   s poveznicom „O elektrani” na `/objekt/osm-way-89819245/`; GEM-ov planirani blok, početna i /en/ bez napomene.
   Kartica na karti i energetski pregled provjereni testovima (jsdom), ne u pregledniku.
+
+## Plin na granicama: strelice na karti i susjedi — POTVRĐENO 2026-11-27 („može, kreni po planu.”)
+
+**Stanje.** Faza 30 korak 2 je velikim dijelom već napravljen u Fazama 44 i 45: dnevni tokovi
+(`live/gasflows.json`, HR, SI, HU), traka i Sankey, krug na Krku, Rogatcu i Dravaszerdahelyju, stranice
+`/plin/`, LNG Krk i Okoli. Nedostaju strelice po granici i sve granice osim dviju hrvatskih.
+
+**Pregled točaka (gas-points, run 45983693061, plinski dan 26. 11.).**
+- Granice u našem području i tko ih prijavljuje:
+  - HR–SI Rogatec i HR–HU Dravaszerdahely: prijavljuju obje strane.
+  - SI–AT Murfeld/Ceršak: obje strane (oko 16,6 GWh/d prema SI).
+  - SI–IT Gorica/Šempeter: obje strane (26. 11. nula).
+  - AT–IT Arnoldstein/Tarvisio: TAG i Snam (88,4 GWh/d prema IT).
+  - AT–HU Mosonmagyaróvár: obje strane (nula).
+  - HU–RS Kiskundorozsma i Kiskundorozsma-2/Horgoš: prijavljuje samo FGSZ. Transportgas Srbija i Gastrans su
+    na platformi, ali bez podataka.
+  - RS–BA Zvornik: nitko ne prijavljuje tok. ME: nema točaka.
+- Ulazi izvana: AT Baumgarten (SK), Oberkappel i Überackern (DE); IT Passo Gries (CH), TAP Melendugno, Mazara
+  (TN), Gela (LY), pet LNG terminala, od toga Adriatic LNG (Porto Levante) na Jadranu; HU iz SK, RO i UA.
+
+**Cilj.** Na karti, uz sloj plina, strelica na svakoj granici s neto tokom plinskog dana s klizača: smjer po
+predznaku, debljina po GWh/d, kao kod struje. U oblačiću: točka, GWh/d, tko prijavljuje i oznaka
+privremeno/potvrđeno.
+
+**Pristup.**
+- G1 Pipeline:
+  - Novi dio dokumenta, `borders`: popis graničnih točaka s parom zemalja, operatorom koji prijavljuje i neto
+    tokom po danu (ulaz − izlaz s njegove strane).
+  - Jedan operator po točki, onaj koji prijavljuje; kad prijavljuju obje strane, uzima se jedna
+    (domaća za HR, SI i HU), pa se ništa ne broji dvaput.
+  - AT (Gas Connect Austria, TAG) i IT (Snam) samo za granične točke, bez bilance zemlje: kod njih se
+    bilanca ne može zbrojiti bez dvostrukog brojanja, kao u 44-3.
+  - Validacija: svaka točka ima mjesto i par zemalja, a dan bez prijave ostaje `null`, nikad 0.
+- G2 Položaji iz OSM-a, ručno, kao u 45-3: kraj cjevovoda na granici, s izvorom (`way/…`) u `PLACES`.
+  - Novi položaji: Murfeld/Ceršak, Gorica/Šempeter, Arnoldstein/Tarvisio, Mosonmagyaróvár, oba
+    Kiskundorozsma; za ulaze izvana Baumgarten, Oberkappel, Passo Gries, Melendugno i Porto Levante.
+  - Točka bez nađenog položaja ne crta se i upisuje se ovdje.
+- G3 Web:
+  - `data/gasFlows.ts` (zod za `borders`), izvor i sloj strelica u `layers.ts` (isti oblik i animacija kao
+    kod struje, boja plina), oblačić, i18n.
+  - Strelice prate dan na klizaču trake.
+- G4 Stranica `/plin/`: tablica „Tokovi na granicama” za zadnji plinski dan (hr i en).
+
+**Razmotreno i odbačeno.**
+- Strelice duž cjevovoda: tok po cijevi nitko ne objavljuje, kao i u 45-1.
+- Bilance za AT i IT u traci: zbrajanje preko više operatora; ostaje za poslije.
+- Srbija i BiH iz vlastitih izvora: na ENTSOG-u nemaju podatke; granica HU–RS se crta iz FGSZ-a,
+  Zvornik se ne crta.
+
+**Rizici.**
+- Dvije strane iste točke ponekad se malo razlikuju (Rogatec 25,24 prema 25,17 GWh): crta se jedna strana i
+  piše se koja.
+- Veći dokument: trenutno 30 dana × oko 12 točaka.
+- Ako se položaji ne mogu naći, točka se ne crta.
+
+**Provjera.** pytest s lažnim API-jem (neto tok, jedna strana, `null` dan, validacija), vitest (strelice, smjer,
+debljina, oblačić), e2e za sloj plina; ručno pokretanje `gas-daily` i pregled previewa.
+
+**Napravljeno (2026-11-27, grana `faza-plin-granice`).**
+- [x] G1 `gas/flows.py`: `operator_series` (svaki operator jednom), `Crossing`/`CROSSINGS` (17 granica),
+  `border_flow` (neto ulaz − izlaz; dan bez ijedne brojke ostaje prazan; potvrđeno samo ako su sve brojke
+  potvrđene), `borders` u dokumentu (stari dokument bez njih i dalje se čita). Testovi +5 (lažni API, provjera
+  stvarnog popisa: jedna strana, nijedna točka dvaput, točka smjera ≤ 10 km).
+  Stvarno preuzimanje lokalno (26. 11.): svih 17 granica ima brojke; Kiskundorozsma 209,9 GWh iz Srbije,
+  Mazara 671,2 GWh iz Tunisa, Balassagyarmat 124,6 GWh prema Slovačkoj; HR za 26. 11. još bez brojke.
+  Dokument 40 kB.
+- [x] G2 položaji iz OSM-a (Overpass i OSM API, 2026-11-27), u `CROSSINGS` s `way/…` i opisom.
+- [x] G3 web: `borderFlows`, `borderOverlay`, `latestBorderDay` (`data/gasFlows.ts`), izvor
+  `energymap-gas-border`, slojevi strelice, glave i natpisa, širina po GWh (`GAS_BORDER_WIDTH`), natpis
+  „Rogatec / Hrvatska → Slovenija: 25,2 GWh”; dan je dan trake. Testovi: `gasFlows.test.ts` (+5), stil.
+- [x] G4 `/plin/`: odjeljak „Koliko plina prelazi granice u regiji?” (rečenica s najvećim prijelazom, trake,
+  tablica, napomena o jednoj strani i o Srbiji i BiH), i u FAQ-u; hr i en.
+
+**Usput odlučeno (2026-11-27, tijekom rada).**
+- Granice na karti: Rogatec, Dravaszerdahely, Murfeld/Ceršak, Gorica/Šempeter, Mosonmagyaróvár,
+  Kiskundorozsma/Horgoš (dvije točke FGSZ-a zajedno), Csanádpalota, Balassagyarmat, Bereg, Arnoldstein/Tarvisio,
+  Baumgarten (tri točke GCA i TAG-a zajedno), Oberkappel, Überackern (dvije točke), Passo Gries, te izlasci
+  podmorskih plinovoda na obalu: TAP (Melendugno), TransMed (Mazara del Vallo), GreenStream (Gela).
+- Strelica je kratka i ravna, preko granice, u smjeru cijevi (druga točka iste cijevi unutar zemlje koja
+  prijavljuje; zemlja provjerena upitom `is_in` u OSM-u); broj je natpis uz strelicu, kao kod krugova (nema
+  oblačića). Krug na Rogatcu i Dravaszerdahelyju zamijenila je strelica; krug ostaje LNG-u na Krku.
+- Talijanski LNG terminali (Porto Levante i ostali) nisu granice: izvan opsega ovog koraka.
+- Beregdaróc 1400 (ITP-00095) nema tokova u 30 dana; izostavljen.
+
+**Izvan opsega.** Faza 30 korak 3 (Okoli iz AGSI+): Okoli već ima popunjenost iz AGSI-ja (44-2); stavka
+ostaje otvorena samo ako se traži nešto više.
+
+## Krško na slikama za dijeljenje i u usporedbama — PRIJEDLOG 2026-11-27 (vlasnik: „kod slika za dijeljenje… i
+usporedbe… važno je staviti napomenu”), poslije plina, čeka potvrdu
+
+Stanje: slike izvora (dan, mjesec) imaju napomenu samo u opisu i ispod slike u dijalogu, ne na samoj slici
+(nije stala, vidi „Napomena o Krškom”). Usporedbe (`reports/CompareView`) i slike grafova (`chartImage`,
+`ChartShare`) nemaju je uopće.
+- KS1 `chartImage`: polje `note`, prelomljeno u podnožju iznad izvora (slika raste za te retke); dobivaju ga
+  grafovi energetskog pregleda i usporedbi kad je zemlja HR ili SI.
+- KS2 Usporedbe: rečenica ispod grafa i tablice za HR i SI (mjesec kroz godine, godina prema godini, zemlje
+  jedna uz drugu), s brojkom za svako razdoblje koje je Slovenija prijavila u cijelosti; CSV dobiva redak
+  kao u rasponu.
+- KS3 Slike izvora: kratak redak na samoj slici („+ ½ NE Krško ≈ 258 GWh, HEP”), uz novi raspored legende
+  (široka i uspravna); provjera na šest izvora i dugim imenima.

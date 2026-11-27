@@ -22,6 +22,7 @@ import { stepPattern } from "./flowAnimation";
 import {
   CITY_RADIUS_STOPS,
   DATACENTER_RADIUS_STOPS,
+  GAS_BORDER_WIDTH,
   GAS_FLOW_RADIUS,
   GAS_RADIUS,
   LINE_WIDTH_STOPS,
@@ -53,6 +54,7 @@ import { priceFill } from "./priceScale";
 import {
   BOUNDARY_SOURCE,
   CAPACITY_LAYER,
+  GAS_BORDER_SOURCE,
   GAS_FLOW_LAYER,
   GAS_FLOW_SOURCE,
   GAS_STORAGE_LAYER,
@@ -916,6 +918,57 @@ export function dataLayers({
         "text-radial-offset": 1,
         "text-max-width": 12,
         "text-allow-overlap": true,
+      },
+      paint: {
+        "text-color": palette.labelText,
+        "text-halo-color": palette.labelHalo,
+        "text-halo-width": 1.4,
+      },
+    });
+  }
+
+  // Gas across the borders: a short arrow where the pipeline crosses, the way the gas went net that gas day;
+  // its width follows the GWh, the shaft without a head means nothing went across.
+  layers.push(
+    {
+      id: `${LAYER_PREFIX}gas-border-casing`,
+      type: "line",
+      source: GAS_BORDER_SOURCE,
+      filter: ["==", ["geometry-type"], "LineString"],
+      layout: { visibility: show("gas"), "line-cap": "butt" },
+      paint: { "line-color": palette.casing, "line-width": ["+", GAS_BORDER_WIDTH, 2] },
+    },
+    {
+      id: `${LAYER_PREFIX}gas-border-arrows`,
+      type: "line",
+      source: GAS_BORDER_SOURCE,
+      filter: ["==", ["geometry-type"], "LineString"],
+      layout: { visibility: show("gas"), "line-cap": "butt" },
+      paint: { "line-color": palette.gas, "line-width": GAS_BORDER_WIDTH },
+    },
+    {
+      id: `${LAYER_PREFIX}gas-border-heads`,
+      type: "fill",
+      source: GAS_BORDER_SOURCE,
+      filter: ["==", ["geometry-type"], "Polygon"],
+      layout: { visibility: show("gas") },
+      paint: { "fill-color": palette.gas, "fill-outline-color": palette.casing },
+    },
+  );
+  if (labels) {
+    layers.push({
+      id: `${LAYER_PREFIX}gas-border-labels`,
+      type: "symbol",
+      source: GAS_BORDER_SOURCE,
+      filter: ["==", ["geometry-type"], "Point"],
+      layout: {
+        visibility: show("gas"),
+        "text-field": ["get", "text"],
+        "text-font": labels,
+        "text-size": 11,
+        "text-variable-anchor": ["left", "right", "top", "bottom"],
+        "text-radial-offset": 1.2,
+        "text-max-width": 12,
       },
       paint: {
         "text-color": palette.labelText,

@@ -14,9 +14,11 @@ import type { AppConfig } from "../config";
 import { gasOverlay, loadGas, type GasLoad } from "../data/gas";
 import {
   balance as gasBalance,
+  borderOverlay,
   flowCountries,
   flowOverlay,
   GAS_FLOWS_KEY,
+  latestBorderDay,
   loadGasFlows,
 } from "../data/gasFlows";
 import { GAS_STORAGE_KEY, loadGasStorage, storageOverlay } from "../data/gasStorage";
@@ -78,7 +80,7 @@ import { AlertBanner } from "../panels/AlertBanner";
 import { DayCardDialog } from "../panels/DayCardDialog";
 import { askedGasPicture } from "../share/gasCard";
 import { askedSolarPicture } from "../share/solarCapitaCard";
-import { flowPointText } from "../share/gasFlowCard";
+import { borderFlowText, flowPointText } from "../share/gasFlowCard";
 import { askedPictureMonth } from "../share/sourcesCard";
 import { DetailsPanel } from "../panels/DetailsPanel";
 import { ShortcutsHelp } from "../panels/ShortcutsHelp";
@@ -615,6 +617,17 @@ function Explorer({
     const day = flowDay !== null && flows.days.includes(flowDay.day) ? flowDay.day : latest.day;
     return flowOverlay(flows, country, day, (row) => flowPointText(row, i18n));
   }, [gasOn, flowData, flowDay, i18n]);
+  // the borders on the day the bar shows (its first country's latest day until the reader moves it), or,
+  // without a bar, on the latest day they have figures for
+  const borderArrows = useMemo(() => {
+    if (!gasOn || flowData?.status !== "ready" || flowData.value.kind !== "ready") return null;
+    const { flows } = flowData.value;
+    const first = flowCountries(flows, SCOPE_COUNTRIES)[0];
+    const shown = first === undefined ? null : (gasBalance(flows, first)?.day ?? null);
+    const day =
+      flowDay !== null && flows.days.includes(flowDay.day) ? flowDay.day : (shown ?? latestBorderDay(flows));
+    return day === null ? null : borderOverlay(flows, day, (flow) => borderFlowText(flow, i18n));
+  }, [gasOn, flowData, flowDay, i18n]);
   const storagePoints = useMemo(
     () =>
       storageData?.status === "ready" && storageData.value.kind === "ready"
@@ -1036,6 +1049,7 @@ function Explorer({
             onCapacityStation={pickCapStation}
             gasStorage={gasOn ? storagePoints : null}
             gasFlow={flowPoints}
+            gasBorder={borderArrows}
             onGasStorage={pickStorage}
             onGeothermalSite={pickGeoSite}
             attribution={i18n.attribution(sources)}

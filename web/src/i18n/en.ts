@@ -208,6 +208,7 @@ export const en: Dictionary = {
   gasFlowPointIn: "{value} GWh in",
   gasFlowPointOut: "{value} GWh out",
   gasFlowPointIdle: "no flow",
+  gasBorderFlow: "{from} → {to}: {value} GWh",
   gasFlow_LNG: "LNG terminal",
   gasFlow_PRD: "the country's own fields",
   gasFlow_UGS_entry: "from storage",
