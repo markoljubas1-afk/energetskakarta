@@ -2,6 +2,7 @@ import { MapPin } from "lucide-react";
 import { useState } from "react";
 
 import { mixIntensity } from "../data/co2";
+import { krskoHalfOfHour, krskoNote } from "../data/krsko";
 import type { Live } from "../data/live";
 import { gridMix, mixCountries, productionMix } from "../data/mix";
 import type { CountryCode } from "../domain";
@@ -53,6 +54,9 @@ export function MixCard({ live, index, theme, hourLabel, mapCenter, heading = tr
   const unknownFrom = mix
     ? mix.imports.filter((item) => !item.known).map((item) => i18n.country(item.country))
     : [];
+  // the hour the mix fell back to, not the hour asked for
+  const krskoMw = mix ? krskoHalfOfHour(live, mix.index) : null;
+  const krsko = krskoNote(i18n, country, krskoMw === null ? null : i18n.power(krskoMw), null);
 
   return (
     <section className={styles.card} aria-label={t("mixTitle")}>
@@ -167,6 +171,7 @@ export function MixCard({ live, index, theme, hourLabel, mapCenter, heading = tr
             </p>
           )}
           {withImports && mix.incomplete && <p className={styles.muted}>{t("mixIncomplete")}</p>}
+          {krsko !== null && <p className={styles.muted}>{krsko}</p>}
         </>
       )}
       <p className={styles.note}>{t("mixNote")}</p>

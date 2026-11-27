@@ -11,6 +11,7 @@ import {
   type YearFile,
 } from "../data/energy";
 import type { I18n } from "../i18n";
+import { krskoNote } from "../data/krsko";
 import { PALETTES } from "../map/palette";
 import { foldParts, type SourcesCard, type SourcesText } from "./sourcesCard";
 
@@ -106,6 +107,15 @@ export function sourcesText(card: SourcesCard, i18n: I18n): SourcesText {
     legend,
     figures,
     sentence,
+    note:
+      card.krskoMwh === null
+        ? null
+        : krskoNote(
+            i18n,
+            card.country,
+            i18n.energy(card.krskoMwh),
+            card.loadMwh === null ? null : percent(card.krskoMwh / card.loadMwh),
+          ),
     footer: t(card.co2 !== null ? "sourcesFooter" : "dayCardFooter"),
   };
 }
@@ -114,5 +124,5 @@ export function sourcesText(card: SourcesCard, i18n: I18n): SourcesText {
 export function sourcesSummary(text: SourcesText): string {
   const legend = text.legend.map((row) => `${row.label} ${row.value}`).join(", ");
   const figures = text.figures.map((f) => `${f.value} ${f.unit} ${f.label}`).join("; ");
-  return `${text.title}. ${text.subtitle}: ${text.centre.value} ${text.centre.label}; ${legend}. ${figures}.${text.sentence ? ` ${text.sentence}` : ""} ${text.footer}`;
+  return `${text.title}. ${text.subtitle}: ${text.centre.value} ${text.centre.label}; ${legend}. ${figures}.${text.sentence ? ` ${text.sentence}` : ""}${text.note ? ` ${text.note}` : ""} ${text.footer}`;
 }

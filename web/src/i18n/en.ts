@@ -271,6 +271,12 @@ export const en: Dictionary = {
   sourcesCo2Unit: "g/kWh",
   sourcesImport: "Consumption exceeded generation by {diff}; imports covered the difference.",
   sourcesExport: "Generation exceeded consumption by {diff}; the surplus was exported or stored.",
+  krskoHr:
+    "Croatia also owns half of the output of the Krško nuclear plant, about {amount}. The plant is in Slovenia, so ENTSO-E counts its generation as Slovenian and the part HEP takes as an import into Croatia.",
+  krskoHrShare:
+    "Croatia also owns half of the output of the Krško nuclear plant, about {amount} ({share} of consumption). The plant is in Slovenia, so ENTSO-E counts its generation as Slovenian and the part HEP takes as an import into Croatia.",
+  krskoSi:
+    "Half of the output of the Krško nuclear plant, about {amount}, belongs to Croatia (HEP). Here, as at ENTSO-E, it is counted in Slovenia's generation.",
   sourcesFooter:
     "Source: ENTSO-E Transparency Platform · Carbon footprint: calculated with IPCC AR5 factors · gridatlas.eu",
   sourceName_hydro: "Hydropower",

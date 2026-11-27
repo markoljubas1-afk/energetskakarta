@@ -74,6 +74,8 @@ export function presentable(summary: string): boolean {
 /** A picture ready to draw: its words for a screen reader, how it is drawn, and its file's name. */
 interface Picture {
   summary: string;
+  /** a sentence the picture has no room for, written under it (Croatia's half of Krško) */
+  note?: string;
   draw: (ctx: CanvasRenderingContext2D, font: string, format: CardFormat) => void;
   slug: string;
 }
@@ -235,6 +237,7 @@ export function DayCardDialog(props: Props) {
       const text = sourcesText(card, i18n);
       picture = {
         summary: sourcesSummary(text),
+        ...(text.note === null ? {} : { note: text.note }),
         draw: (ctx, font, shape) => {
           drawSourcesCard(ctx, text, font, shape);
         },
@@ -378,6 +381,7 @@ export function DayCardDialog(props: Props) {
               {t("dayCardFailed")}
             </p>
           )}
+          {picture.note !== undefined && <p className={styles.note}>{picture.note}</p>}
           <p className={styles.note}>{t("dayCardFree")}</p>
         </>
       ) : (

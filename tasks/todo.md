@@ -3672,3 +3672,29 @@ pomogao (odbačeno).
 - Provjera: testovi pravila; actionlint ako je dostupan; sljedeći ručni osm-scheduled.
 - Izvan opsega: ručni osm-build nema ponovni pokušaj (pokreće ga osoba, koja vidi dijagnostiku i može ga
   pokrenuti ponovno).
+
+## Napomena o Krškom — 2026-11-27 (vlasnik: „može, kreni s napomenom za Krško, i na javnim stranicama”)
+
+Cilj: gdje god se prikazuje proizvodnja, potrošnja ili uvoz Hrvatske ili Slovenije, reći da je NE Krško u
+Sloveniji, a pola njezine proizvodnje pripada Hrvatskoj (HEP), pa je ENTSO-E i Eurostat vode kao slovensku
+proizvodnju, a hrvatski dio kao uvoz. Izračuni ostaju po teritorijalnom načelu (usporedivi s izvorima).
+
+**Brojka:** pola slovenske nuklearne proizvodnje (ENTSO-E `nuclear`; Krško je jedina nuklearka u Sloveniji)
+u istom satu, danu, mjesecu ili godini. Ako podatka nema ili je 0 (remont), rečenica bez brojke ne ide u
+vremenske prikaze; stalne stranice (Krško, zemlja) imaju rečenicu bez brojke.
+Ne preuzimamo brojke iz zalijepljenog teksta (15–16 %, 30–40 %), ni tvrdnju o EU ciljevima.
+
+Rečenica ne kaže „od uvoza”: u satu ili mjesecu kad Hrvatska izvozi to ne bi bilo točno.
+
+- [ ] K1 `web/src/data/krsko.ts`: udio (0,5), zemlje, `krskoHalf(siNuclear)`; i18n ključevi hr/en.
+- [ ] K2 Karta, kartica sastava struje (`MixCard`), sat: HR i SI.
+- [ ] K3 Slika izvora za dijeljenje (dan, mjesec; `sourcesCard`/`sourcesText`): HR i SI.
+- [ ] K4 Energetski pregled (`EnergyView`: prsten i raspon) i CSV raspona: HR i SI.
+- [ ] K5 Javni mjesečni izvještaj (`seo/report.ts`): rečenica uz „pokrila je X potrošnje” i stavka metode.
+- [ ] K6 `/proizvodnja/hr/` i `/proizvodnja/si/` (godina): rečenica u uvodu.
+- [ ] K7 Stranica NE Krško i `/zemlja/hr/`, `/zemlja/si/`: stalna rečenica s poveznicom.
+- Izvan opsega: usporedba zemalja (nema rečenice o uvozu), zeleno svjetlo i punionice (već kažu „bez
+  uvoza”), tablica tokova po granici (sirovi tokovi), stranica Edukacija (opći tekst; priča već ima korak).
+- Razmotreno i odbijeno: prekidač „računaj Krško kao domaće” (dvije inačice svakog izračuna).
+- Provjera: testovi uz svaku točku (TDD), cijeli vitest, tsc, lint, Prettier; preview: kartica na karti,
+  energetski pregled za HR i SI, mjesečni izvještaj, `/proizvodnja/hr/`, stranica Krškog, obje jezične inačice.

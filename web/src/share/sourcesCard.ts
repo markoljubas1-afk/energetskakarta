@@ -10,6 +10,7 @@
 import { intensity } from "../data/co2";
 import { series, type Periods, type YearFile } from "../data/energy";
 import { RENEWABLE } from "../data/greenShare";
+import { krskoHalfOfPeriod, krskoHalfOfRange } from "../data/krsko";
 import { isOneOf, TECHNOLOGIES, type Technology } from "../domain";
 import { CARD_COLOURS, CARD_SIZES, figureFonts, paintCard, wrap, type CardFormat } from "./dayCard";
 import { drawRing } from "./ring";
@@ -30,6 +31,8 @@ export interface SourcesCard {
   loadMwh: number | null;
   /** g CO₂-eq per kWh generated (a calculation); null when nothing countable was generated */
   co2: number | null;
+  /** Croatia's half of the Krško nuclear plant in the same period, MWh (data/krsko.ts); null when unknown */
+  krskoMwh: number | null;
 }
 
 /** A day counts as reported in full from here (the pipeline writes 1.0 for a complete one). */
@@ -46,6 +49,7 @@ function build(
   period: string,
   byTech: ReadonlyMap<Technology, number>,
   loadMwh: number | null,
+  krskoMwh: number | null,
 ): SourcesCard | null {
   const totalMwh = [...byTech.values()].reduce((sum, mwh) => sum + mwh, 0);
   if (!(totalMwh > 0)) return null;
@@ -65,6 +69,7 @@ function build(
     renewableShare: renewable / totalMwh,
     loadMwh,
     co2: intensity(parts.map((part) => [part.technology, part.mwh] as const)),
+    krskoMwh,
   };
 }
 
@@ -86,7 +91,14 @@ export function latestDay(files: readonly YearFile[], country: string): SourcesC
       }
       const load = data.load[index];
       const loadKnown = (data.coverage.load[index] ?? 0) >= COMPLETE && load !== null && load !== undefined;
-      const card = build(country, "day", day, byTech, loadKnown ? load : null);
+      const card = build(
+        country,
+        "day",
+        day,
+        byTech,
+        loadKnown ? load : null,
+        krskoHalfOfRange(files, day, day),
+      );
       if (card) return card;
     }
   }
@@ -116,7 +128,8 @@ export function latestMonth(
     const load = data.load[index];
     const loadKnown =
       (data.loadCoverage[index] ?? 0) >= MONTH_COMPLETE && load !== null && load !== undefined;
-    const card = build(country, "month", month, byTech, loadKnown ? load : null);
+    const krsko = krskoHalfOfPeriod(periods, "month", month);
+    const card = build(country, "month", month, byTech, loadKnown ? load : null, krsko);
     if (card) return card;
   }
   return null;
@@ -150,6 +163,12 @@ export interface SourcesText {
   figures: { value: string; unit: string; label: string }[];
   /** the comparison of consumption and generation; null when the load is not known */
   sentence: string | null;
+  /**
+   * Croatia's half of Krško, for Croatia and Slovenia (data/krsko.ts). Not drawn: neither picture has room
+   * for it above the footer. The words for a screen reader carry it, and the dialog writes it under the
+   * picture.
+   */
+  note: string | null;
   footer: string;
 }
 
