@@ -3900,6 +3900,16 @@ se popuni redak „ENTSO-E kapaciteti, mjesečno” u rasporedu ažuriranja.
       ulaz `allow_drop`. `web.yml` gradi stranice i nakon njega.
     - Testovi +7 (`test_entsoe_installed.py`).
     - Nakon spajanja: ručno pokretanje `capacity-monthly`, pa KC2/KC3 na novoj grani.
+  - [x] KC1 spojen (PR #39, f733894); `capacity-monthly` ručno (run 46077126656, 26 min): objavljeno svih 8
+    zemalja, zajednička godina 2026. (HR 5,61 GW, SI 5,35, HU 16,9, RS 11,2, BA 4,69, ME 1,03, AT 33,5, IT 108,8).
+  - [x] KC2/KC3 (PR #40, grana `faza-entsoe-kapaciteti-4`): `data/installed.ts`, `seo/installed.ts`; odjeljak na
+    `/proizvodnja/{zemlja}/` (rečenica, rast sunca i vjetra, Krško, trake prema prije pet godina, tablica iza
+    klika, FAQ, Dataset), pločica i rečenica na `/zemlja/{zemlja}/`. Testovi +5.
+    - Na mobitelu je peta pločica ostajala sama: neparna zadnja pločica sad zauzima cijeli red (vrijedi za sve
+      stranice s pločicama). Na 1024 px ide u drugi red, kao i drugdje.
+  - [x] Preview (2026-11-28): `/proizvodnja/hr/` (5,61 GW; sunce 85 MW → 620 MW, vjetar 796 MW → 1,31 GW;
+    Krško 700/350 MW), `/proizvodnja/si/`, `/en/electricity-generation/it/` (108,78 GW), `/zemlja/hr/` na 360,
+    390, 1024 i 1280 px.
   - **KC1 pipeline:**
     - `energymap energy capacity-fetch` / `capacity-publish-r2` (`entsoe/capacity.py`) čita A68 za svaku
       zemlju i godinu od 2015. i spaja ga u tehnologije karte (`PSR_TECHNOLOGY`).
