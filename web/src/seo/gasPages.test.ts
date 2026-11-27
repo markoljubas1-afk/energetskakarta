@@ -55,6 +55,7 @@ const FLOWS: GasFlows = {
     },
   },
   missing: [],
+  borders: [],
 };
 
 const facility = (
@@ -235,6 +236,67 @@ describe("the gas page", () => {
     const silent = bareSite({ gasFlows: { ...FLOWS, countries: {} } });
     expect(hasGasPage(silent)).toBe(false);
     expect(gasPages(silent)).toEqual([]);
+  });
+});
+
+describe("gas across the borders on the gas page", () => {
+  const place = {
+    lon: 15.7,
+    lat: 46.2,
+    source: "openstreetmap",
+    sourceId: "way/1",
+    license: "ODbL-1.0",
+    retrievedAt: "2026-11-27",
+    what: "where the pipeline crosses the border",
+  };
+  const border = (id: string, label: string, country: string, neighbour: string, net: number | null) => ({
+    id,
+    label,
+    country,
+    neighbour,
+    operator: "Operator",
+    points: ["ITP-00001"],
+    place,
+    inside: [15.7, 46.1] as [number, number],
+    netKwhPerDay: [...DAYS.slice(0, 7).map(() => 1e6), net, null],
+    status: [...DAYS.slice(0, 8).map(() => "P" as const), null],
+  });
+  const withBorders = bareSite({
+    gasFlows: {
+      ...FLOWS,
+      borders: [
+        border("rogatec", "Rogatec", "HR", "SI", -25.24e6),
+        border("arnoldstein", "Arnoldstein / Tarvisio", "AT", "IT", -88.41e6),
+        border("moson", "Mosonmagyaróvár", "HU", "AT", 0),
+        border("silent", "Silent", "HU", "RS", null),
+      ],
+    },
+  });
+  const section = (lang: "hr" | "en") =>
+    gasPages(withBorders)
+      .find((each) => each.lang === lang)
+      ?.sections.find((each) => each.heading.startsWith(lang === "hr" ? "Koliko plina" : "How much gas")) ??
+    null;
+
+  it("says the largest crossing in a sentence, and lists every border with a figure that day", () => {
+    const hr = section("hr");
+    expect(hr?.heading).toBe("Koliko plina prelazi granice u regiji?");
+    const words = text(hr?.html ?? "");
+    expect(words).toContain(
+      "Plinskog dana 17. studenoga 2026. najviše je plina preko granice prešlo na točki Arnoldstein / Tarvisio: 88,4 GWh (Austrija → Italija).",
+    );
+    expect(words).toContain("Rogatec");
+    expect(words).toContain("Hrvatska → Slovenija");
+    expect(words).toContain("25,2");
+    // nothing went across: a zero, between the border's own two
+    expect(words).toContain("Mosonmagyaróvár");
+    // a border without a figure that day is not in the list, and not a zero
+    expect(words).not.toContain("Silent");
+    expect(section("en")?.heading).toBe("How much gas crosses the borders of the region?");
+  });
+
+  it("is not there when the document has no borders", () => {
+    expect(page("hr").sections.some((each) => each.heading.startsWith("Koliko plina prelazi"))).toBe(false);
   });
 });
 

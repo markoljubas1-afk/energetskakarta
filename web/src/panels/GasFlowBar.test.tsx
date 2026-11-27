@@ -61,6 +61,7 @@ const FLOWS: GasFlows = {
     },
   },
   missing: [],
+  borders: [],
 };
 
 /** The same document with every point of Croatia's system passed through `change`. */

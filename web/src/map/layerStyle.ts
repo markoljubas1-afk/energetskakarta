@@ -232,6 +232,21 @@ export const GAS_FLOW_RADIUS: Expr = [
   56,
 ];
 
+/** A gas border arrow's width in pixels by the GWh that went across: thin when idle, broad at 400 GWh. */
+export const GAS_BORDER_WIDTH: Expr = [
+  "interpolate",
+  ["linear"],
+  ["get", "kwh"],
+  0,
+  1.5,
+  25_000_000,
+  3.5,
+  100_000_000,
+  6,
+  400_000_000,
+  10,
+];
+
 export function pipelineColor(palette: Palette): ExpressionSpecification {
   const c = palette.pipeline;
   return ["match", ["get", "medium"], "gas", c.gas, "oil", c.oil, "other", c.other, c.unknown];

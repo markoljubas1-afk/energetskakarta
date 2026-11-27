@@ -8,7 +8,14 @@
  * its source), and the same sentences are the page's FAQ structured data, word for word. Without a
  * balance for Croatia there is no page.
  */
-import { balance, balances, type Balance, type GasFlows } from "../data/gasFlows";
+import {
+  balance,
+  balances,
+  borderFlows,
+  latestBorderDay,
+  type Balance,
+  type GasFlows,
+} from "../data/gasFlows";
 import { readings, type GasStorage, type Reading } from "../data/gasStorage";
 import { createI18n, type I18n } from "../i18n";
 import { flowName, gwh } from "../share/gasFlowCard";
@@ -46,6 +53,12 @@ interface GasCopy {
   estimated: string;
   whereFrom: { heading: string; columns: [string, string, string] };
   whereTo: { heading: string; answer: (date: string, total: string) => string };
+  borders: {
+    heading: string;
+    answer: (date: string, label: string, value: string, way: string) => string;
+    columns: [string, string, string, string];
+    note: string;
+  };
   perDay: { heading: string; columns: [string, string, string]; note: string };
   storage: { heading: string; none: string; columns: [string, string, string, string]; note: string };
   onMap: { heading: string; intro: string; links: [string, Record<string, string>][] };
@@ -75,6 +88,13 @@ export const GAS_COPY: Record<Lang, GasCopy> = {
       heading: "Kamo plin odlazi iz sustava?",
       answer: (date, total) =>
         `Plinskog dana ${date} iz hrvatskog transportnog sustava izašlo je ${total} GWh plina: kupcima u zemlji, preko granice i u skladište.`,
+    },
+    borders: {
+      heading: "Koliko plina prelazi granice u regiji?",
+      answer: (date, label, value, way) =>
+        `Plinskog dana ${date} najviše je plina preko granice prešlo na točki ${label}: ${value} GWh (${way}).`,
+      columns: ["Granična točka", "Smjer", "GWh", "Prijavljuje"],
+      note: "Neto tok je ulaz manje izlaz na točki, kako ga ENTSOG-u javlja operator jedne strane granice (jedne, da se ništa ne broji dvaput). Podaci su isprva privremeni. Srbija i Bosna i Hercegovina na platformi ne javljaju tokove, pa granicu sa Srbijom pokazuje mađarski operator, a Zvornik (Srbija – BiH) nije prikazan.",
     },
     perDay: {
       heading: "Koliko se plina isporuči kupcima u Hrvatskoj po danu?",
@@ -144,6 +164,13 @@ export const GAS_COPY: Record<Lang, GasCopy> = {
       heading: "Where does the gas go?",
       answer: (date, total) =>
         `On the gas day of ${date}, ${total} GWh of gas left Croatia's transmission system: to customers in the country, across the border and into storage.`,
+    },
+    borders: {
+      heading: "How much gas crosses the borders of the region?",
+      answer: (date, label, value, way) =>
+        `On the gas day of ${date}, the most gas crossed a border at ${label}: ${value} GWh (${way}).`,
+      columns: ["Border point", "Direction", "GWh", "Reported by"],
+      note: "The net flow is what entered less what left at the point, as the operator of one side of the border reports it to ENTSOG (one side, so that nothing is counted twice). The figures are provisional at first. Serbia and Bosnia and Herzegovina report no flows on the platform, so the border with Serbia is shown from the Hungarian operator, and Zvornik (Serbia – Bosnia and Herzegovina) is not shown.",
     },
     perDay: {
       heading: "How much gas is delivered to customers in Croatia per day?",
@@ -366,6 +393,44 @@ function gasPage(site: SiteData, flows: GasFlows, storage: GasStorage | null, la
     [copy.whereFrom.heading, said.entered],
     [copy.whereTo.heading, said.left],
   ];
+  // the borders on the page's own gas day, or on the latest day they have figures for
+  const borderDay = borderFlows(flows, day.day).length > 0 ? day.day : latestBorderDay(flows);
+  const across = borderDay === null ? [] : borderFlows(flows, borderDay);
+  const [largest] = across;
+  if (borderDay !== null && largest) {
+    const way = (flow: (typeof across)[number]): string =>
+      `${i18n.country(flow.from)} → ${i18n.country(flow.to)}`;
+    const top = largest.kwh > 0 ? largest.kwh : 1;
+    const sentence = copy.borders.answer(
+      i18n.date(borderDay),
+      largest.border.label,
+      gwh(largest.kwh, i18n),
+      way(largest),
+    );
+    sections.push({
+      heading: copy.borders.heading,
+      html:
+        `<p>${e(sentence)}</p>` +
+        rankBars(
+          across.map((flow) => ({
+            name: e(flow.border.label),
+            value: flow.kwh / top,
+            text: `${gwh(flow.kwh, i18n)} GWh`,
+            detail: way(flow),
+            own: flow.border.country === HOME || flow.border.neighbour === HOME,
+          })),
+        ) +
+        tableBehind(
+          chartWords.table,
+          table(
+            [...copy.borders.columns],
+            across.map((flow) => [flow.border.label, way(flow), gwh(flow.kwh, i18n), flow.border.operator]),
+          ),
+        ) +
+        `<p>${e(copy.borders.note)}</p>`,
+    });
+    faq.push([copy.borders.heading, sentence]);
+  }
   if (said.delivered !== null) {
     const days = balances(flows, HOME)
       .filter((each) => each.consumersKwh !== null)

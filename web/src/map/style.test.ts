@@ -108,6 +108,19 @@ describe("generated map style", () => {
     expect(withGlyphs).toContain("energymap-gas-labels");
     const gasOn = style(parseState("?l=gas", "hr"), "light", ["Noto Sans Regular"], false).layers;
     expect(gasOn.find((layer) => layer.id === "energymap-gas-labels")?.layout?.visibility).toBe("visible");
+    // the arrows across the gas borders ride on the gas layer: shaft, head and the figure beside them
+    for (const id of [
+      "energymap-gas-border-arrows",
+      "energymap-gas-border-heads",
+      "energymap-gas-border-labels",
+    ]) {
+      expect(gasOn.find((layer) => layer.id === id)?.layout?.visibility).toBe("visible");
+      expect(withGlyphs.includes(id) || id !== "energymap-gas-border-labels").toBe(true);
+    }
+    const gasOff = style(defaultState("hr"), "light", ["Noto Sans Regular"], false).layers;
+    expect(gasOff.find((layer) => layer.id === "energymap-gas-border-arrows")?.layout?.visibility).toBe(
+      "none",
+    );
   });
 
   it("hides layers the user switched off instead of removing them", () => {

@@ -205,6 +205,7 @@ export const hr = {
   gasFlowPointIn: "ulaz {value} GWh",
   gasFlowPointOut: "izlaz {value} GWh",
   gasFlowPointIdle: "bez toka",
+  gasBorderFlow: "{from} → {to}: {value} GWh",
   gasFlow_LNG: "LNG terminal",
   gasFlow_PRD: "domaća polja",
   gasFlow_UGS_entry: "iz skladišta",
