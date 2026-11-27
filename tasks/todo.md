@@ -3714,3 +3714,8 @@ Rečenica ne kaže „od uvoza”: u satu ili mjesecu kad Hrvatska izvozi to ne 
 - Provjera: vitest cijeli (951 prolazi; 8 sporih testova u report/topics padaju samo na vremenskom
   ograničenju lokalno, sami s 60 s prolaze 38/38), tsc, eslint, Prettier; mutacije (pokrivenost, područje,
   potpuni dani) — svaku hvata test.
+- [x] PR #34, preview provjeren 2026-11-27 (stvarni podaci): `/proizvodnja/hr/` „oko 2,77 TWh (15,2 % potrošnje)”,
+  `/proizvodnja/si/` „oko 2,77 TWh, pripada Hrvatskoj (HEP)”, izvještaj za listopad 2026. „oko 258 GWh (18,1 %
+  potrošnje)” i stavka metodologije, stranica Krškog (hr i en) s vlasništvom i 2025., `/zemlja/hr/` i `/zemlja/si/`
+  s poveznicom „O elektrani” na `/objekt/osm-way-89819245/`; GEM-ov planirani blok, početna i /en/ bez napomene.
+  Kartica na karti i energetski pregled provjereni testovima (jsdom), ne u pregledniku.
