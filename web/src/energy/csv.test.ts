@@ -64,4 +64,23 @@ describe("the energy page's CSV", () => {
       ["Potrošnja", null, null, null],
     ]);
   });
+
+  it("ends with Croatia's half of Krško and its share of the load when there is one", () => {
+    const known: RangeTotals = {
+      days: 2,
+      coveredDays: 2,
+      loadCoveredDays: 2,
+      generation: [{ tech: "hydro", mwh: 1000 }],
+      total: 1000,
+      pumping: 0,
+      load: 2000,
+    };
+    expect(rangeTable(known, labels, { label: "Hrvatska polovica NE Krško", mwh: 300 }).rows.at(-1)).toEqual([
+      "Hrvatska polovica NE Krško",
+      300,
+      null,
+      15,
+    ]);
+    expect(rangeTable(known, labels).rows.at(-1)?.[0]).toBe("Potrošnja");
+  });
 });

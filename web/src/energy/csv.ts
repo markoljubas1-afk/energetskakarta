@@ -64,8 +64,17 @@ export function compareTable(lines: readonly YearLine[], labels: CsvLabels): Tab
   };
 }
 
-/** Totals for a chosen period: each source, then the total, the load and pumping. */
-export function rangeTable(totals: RangeTotals, labels: CsvLabels): Table {
+/** Croatia's half of Krško in the chosen period, labelled for the area (data/krsko.ts). */
+export interface KrskoRow {
+  label: string;
+  mwh: number;
+}
+
+/**
+ * Totals for a chosen period: each source, then the total, the load and pumping; for Croatia or Slovenia
+ * last of all Croatia's half of Krško, with its share of the load.
+ */
+export function rangeTable(totals: RangeTotals, labels: CsvLabels, krsko: KrskoRow | null = null): Table {
   const share = (mwh: number, of: number | null): number | null => (of ? percent(mwh / of) : null);
   return {
     header: [labels.source, "MWh", `${labels.shareOfGeneration} (%)`, `${labels.shareOfLoad} (%)`],
@@ -79,6 +88,7 @@ export function rangeTable(totals: RangeTotals, labels: CsvLabels): Table {
       [labels.total, totals.total, totals.total > 0 ? 100 : null, share(totals.total, totals.load)],
       [labels.load, totals.load, null, null],
       ...(totals.pumping > 0 ? [[labels.pumping, totals.pumping, null, null]] : []),
+      ...(krsko ? [[krsko.label, krsko.mwh, null, share(krsko.mwh, totals.load)]] : []),
     ],
   };
 }

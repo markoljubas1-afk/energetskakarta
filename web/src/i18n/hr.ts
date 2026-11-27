@@ -583,6 +583,8 @@ export const hr = {
   energyPumping: "Pumpanje u reverzibilnim HE (potrošnja)",
   energyCoverage: "Podaci za {covered} od {total} dana.",
   energyLoadUnknown: "Potrošnja nije poznata za cijelo razdoblje, pa udio u potrošnji nije izračunat.",
+  energyKrskoRowHr: "Hrvatska polovica NE Krško (u Sloveniji, nije u ukupnom)",
+  energyKrskoRowSi: "Od toga pola NE Krško, koja pripada Hrvatskoj",
   energyRangeInvalid: "Početak mora biti prije kraja, a razdoblje najviše tri godine.",
   energyRangeEmpty: "Za ovo razdoblje nema podataka.",
   energyRangeHint: "Odaberite početni i završni datum.",
