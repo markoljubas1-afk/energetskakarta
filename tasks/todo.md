@@ -3867,9 +3867,40 @@ se popuni redak „ENTSO-E kapaciteti, mjesečno” u rasporedu ažuriranja.
   - Prvo pokretanje (run 46012147012, nakon spajanja PR #37) prekinuto je nakon 30 minuta, kod Crne Gore:
     platforma odgovara 5–15 s po upitu (2–5 min po zemlji, Italija s osam područja oko 25 min), a sažetak
     se piše tek na kraju. Popravak: 120 minuta i ulaz `countries` za pokretanje po zemljama.
-- [ ] Korak 2 (čeka korak 1): plan proizvoda prema stvarnom odgovoru. Mogućnosti:
-  - tablica „Instalirana snaga po izvoru” po zemlji i godini (stranice zemalja i `/proizvodnja/`) uz zbroj s
-    karte;
-  - jedinice A71 spojene s elektranama na karti (EIC), sa službenom snagom u panelu objekta;
-  - mjesečna provjera u postojećem `energy-daily` (izvor se mijenja jednom godišnje).
+- [x] Pregled izveden 2026-11-27 (run 46017249693 za sve zemlje; run 46023667289 s grane
+  `faza-entsoe-kapaciteti-3` za jedinice, bez Italije).
+  - A68 ima svih osam zemalja: 2015.–2026. (BiH od 2017.), 2027. još nema. Italija je potpuna samo na razini
+    zemlje, po zonama ništa.
+  - Zbroj za 2026.: HR 5,6 GW, SI 5,3 GW, HU 16,9 GW, RS 11,2 GW, BA 4,7 GW, ME 1,0 GW, AT 33,5 GW,
+    IT 108,8 GW.
+  - A71 (jedinice ≥ 100 MW) je već objavljen za 2027.: SI 7, BA 8, ME 6, RS 22, AT 38, HU 65, IT 298.
+    Hrvatska ne objavljuje nijednu.
+  - Ime i EIC jedinice su u `registeredResource.name/mRID`, a ne pod `MktPSRType`: popravljeno.
+  - Pazi:
+    - IT ima nemoguće brojke (geotermalna 450.000 MW, sunčane 80.000 MW).
+    - HU ima zbirne „jedinice” (MAVIRGYuz 3.934 MW sunca, regulacijski centar 924 MW).
+    - RS uključuje TE Kosovo A i B.
+- [ ] Korak 2: PLAN 2026-11-27, čeka potvrdu.
+  - **KC1 pipeline:**
+    - `energymap energy capacity-fetch` / `capacity-publish-r2` (`entsoe/capacity.py`) čita A68 za svaku
+      zemlju i godinu od 2015. i spaja ga u tehnologije karte (`PSR_TECHNOLOGY`).
+    - Rezultat je `energy/capacity.json`: po zemlji godine i MW po tehnologiji, s izvorom i datumom.
+    - Validacija: svaka zemlja ima zadnju godinu, a zbroj nije pao više od 50 % prema prethodnoj godini.
+      Inače ostaje objavljeni dokument.
+    - Novi radni tok `capacity-monthly.yml`: jednom mjesečno (oko 20 min) i ručno, s prekidačem rasporeda
+      kao ostali.
+  - **KC2 web:**
+    - `/proizvodnja/{zemlja}/` (hr, en) dobiva odjeljak „Instalirana snaga po izvoru”: rečenica sa zbrojem
+      i najvećim izvorima, trake za zadnju godinu, tablica po godinama iza klika, rast sunca i vjetra u
+      odnosu na prije pet godina.
+    - Isto ide u FAQ i Dataset.
+  - **KC3 web:** pločica „Instalirana snaga (ENTSO-E)” na `/zemlja/{zemlja}/`. Uz nju ide rečenica da se
+    zbroj s karte (OSM/GEM, elektrane u pogonu) razlikuje i zašto: male sunčane elektrane nisu na karti, a
+    ENTSO-E broji priključenu snagu.
+  - **Izvan opsega (kasnije):** jedinice A71 u panelu objekta. Spajanje po imenu ili EIC-u za SI, BA, ME,
+    RS, AT i dio HU-a; HR ih nema, IT je nepouzdana.
+  - **Razmotreno:** dnevno u `energy-daily` (odbijeno: 15–20 min upita dnevno za podatak koji se mijenja
+    jednom godišnje).
+  - **Provjera:** pytest s lažnim API-jem, vitest za stranice, pa ručno pokretanje i preview.
+
 
