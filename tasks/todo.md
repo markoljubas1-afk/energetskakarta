@@ -3648,3 +3648,23 @@ Plan:
 - [x] PR #32, preview provjeren 2026-11-26 (regresije, podaci isti kao na produkciji): početna, /en/, HU nuklearne,
   stara GEM stranica Paksa i stranica `osm-relation-7671467`, hidroelektrane HR, /api/ — sve 200; SEO manifest
   8390 stranica, bez `moved` i bez preusmjeravanja (ništa još nije spojeno, kako se i očekuje).
+
+## Geofabrik s GitHubova poslužitelja — 2026-11-27 (vlasnik: „može, dodaj oboje”)
+
+Stanje: build s objavom 27. 11. pao je dvaput na preuzimanju („Network is unreachable”). Dijagnostika iz
+osm-build (run 45952854325) na drugom runneru: IPv4 HTTP 200 za 1 s, IPv6 nema puta. Kao u L-082: neki
+runneri dobiju odbijanje na IPv4, drugi ne; poruka o IPv6 samo je zadnja greška. Prisilni IPv4 zato ne bi
+pomogao (odbačeno).
+
+- [x] Dijagnostički korak (kao u osm-build) i u osm-scheduled, prije preuzimanja; nikad ne obara build.
+- [x] Preuzimanje u zasebnom poslu `download`; ako ne uspije, posao `download-again` pokušava još jednom na
+  novom runneru (nova adresa). Build (`update`) preuzima izvatke iz cachea tog pokretanja i sam se više ne
+  spaja na Geofabrik.
+- [x] Prijava greške kao issue i kad oba preuzimanja padnu (tada se `update` ne pokreće).
+- [x] Test pravila (test_workflow_rules.py): poslovi, uvjeti, cache bez promašaja, dijagnostika prije
+  preuzimanja; prekidač rasporeda i dalje na svakom poslu.
+- Razmotreno: ponovno pokretanje cijelog runa iz posla na kraju (`gh run rerun --failed`) — ne može dok
+  run još traje; pokušaj u istom poslu — isti runner, ista adresa.
+- Provjera: testovi pravila; actionlint ako je dostupan; sljedeći ručni osm-scheduled.
+- Izvan opsega: ručni osm-build nema ponovni pokušaj (pokreće ga osoba, koja vidi dijagnostiku i može ga
+  pokrenuti ponovno).
