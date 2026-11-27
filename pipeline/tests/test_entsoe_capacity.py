@@ -119,7 +119,7 @@ def test_italy_is_asked_per_bidding_zone_too() -> None:
 
 def test_cli_capacity_survey(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     platform = Platform()
-    monkeypatch.setattr(cli.EntsoeClient, "from_env", classmethod(lambda cls: _client(platform)))
+    monkeypatch.setattr(ec.EntsoeClient, "from_env", classmethod(lambda cls: _client(platform)))
     assert cli.main(["energy", "capacity-survey", "--data-dir", str(tmp_path), "--countries", "HR"]) == 0
     written = json.loads((tmp_path / "entsoe" / "capacity.json").read_text(encoding="utf-8"))
     assert written["countries"]["HR"]["10YHR-HEP------M"]["perType"]["2026"] == {"B16": 502, "B12": 1_500}
