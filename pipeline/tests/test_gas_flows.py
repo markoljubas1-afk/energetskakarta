@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import math
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -15,6 +16,9 @@ from pydantic import ValidationError
 from energymap import cli, publish
 from energymap.gas import flows
 from energymap.gas.entsog import EntsogError
+
+#: the module's own crossings, read before the tests below put their stand-ins in place
+REAL_CROSSINGS = flows.CROSSINGS
 
 NOW = datetime(2026, 11, 19, 10, 0, tzinfo=UTC)  # 11:00 CET: gas day 2026-11-18 is complete
 OPERATOR = "HR-TSO-0001"
@@ -76,8 +80,7 @@ class Platform:
         assert path == "operationalData"
         assert request.url.params["indicator"] == "Physical Flow"
         assert request.url.params["periodType"] == "day"
-        assert request.url.params["operatorKey"] == OPERATOR
-        if self.empty:
+        if self.empty or request.url.params["operatorKey"] != OPERATOR:
             return httpx.Response(404, json={"message": "No result found"})
         start = date.fromisoformat(request.url.params["from"])
         end = date.fromisoformat(request.url.params["to"])
@@ -90,10 +93,39 @@ class Platform:
         return httpx.Response(200, json={"operationalData": rows + self.extra})
 
 
+PLACE = flows.Place(
+    lon=15.7516,
+    lat=46.209509,
+    source="openstreetmap",
+    source_id="way/854206570",
+    license="ODbL-1.0",
+    retrieved_at=date(2026, 11, 18),
+    what="the border end of the pipeline",
+)
+CROSSINGS = (
+    flows.Crossing("rogatec", "Rogatec", "HR", "SI", ((OPERATOR, "ITP-00042"),), PLACE, (15.74, 46.2)),
+    flows.Crossing(
+        "dravaszerdahely", "Dravaszerdahely", "HR", "HU", ((OPERATOR, "ITP-00011"),), PLACE, (18.1, 45.76)
+    ),
+    # two points of two operators at one place; the second operator reports nothing
+    flows.Crossing(
+        "two",
+        "Two points",
+        "HR",
+        "AT",
+        ((OPERATOR, "ITP-00042"), ("AT-TSO-0001", "ITP-00062")),
+        PLACE,
+        (15.74, 46.2),
+    ),
+    flows.Crossing("silent", "Silent", "AT", "SK", (("AT-TSO-0001", "ITP-00062"),), PLACE, (16.8, 48.3)),
+)
+
+
 @pytest.fixture(autouse=True)
 def _croatia_only(monkeypatch: pytest.MonkeyPatch) -> None:
-    """The stand-in platform knows one operator; the countries read are the module's own business."""
+    """The stand-in platform knows one operator; the countries and crossings read are the module's own."""
     monkeypatch.setattr(flows, "OPERATORS", {"HR": OPERATOR})
+    monkeypatch.setattr(flows, "CROSSINGS", CROSSINGS)
 
 
 @pytest.fixture
@@ -142,6 +174,49 @@ def test_collect_reads_every_point_direction_of_the_operator(client: httpx.Clien
         "retrievedAt": "2026-11-18",
         "what": "the border end of the Városföld - Slobodnica pipeline (Plinacro)",
     }
+
+
+def test_a_border_is_the_net_flow_into_the_reporting_side(client: httpx.Client, platform: Platform) -> None:
+    document = flows.collect(client, NOW, days=3)
+    borders = {border.id: border for border in document.borders}
+    # nothing the second operator would have said: the crossing it alone reports is left out
+    assert sorted(borders) == ["dravaszerdahely", "rogatec", "two"]
+    rogatec = borders["rogatec"]
+    # 0 in, 25.3 GWh out: 25.3 GWh a day from Croatia into Slovenia; the day not yet reported has no figure
+    assert rogatec.net_kwh_per_day == [-25_300_000, -25_300_000, None]
+    assert rogatec.status == ["P", "P", None]
+    assert (rogatec.country, rogatec.neighbour, rogatec.operator) == ("HR", "SI", "Plinacro Ltd")
+    assert rogatec.points == ["ITP-00042"] and rogatec.place == PLACE
+    # a point with one direction only: the other is not reported, not zero
+    assert borders["dravaszerdahely"].net_kwh_per_day == [-26_300_000, -26_300_000, None]
+    assert borders["two"].points == ["ITP-00042"]
+    published = document.model_dump(mode="json", by_alias=True)["borders"][0]
+    assert published["netKwhPerDay"][0] == -25_300_000 and published["place"]["sourceId"] == "way/854206570"
+    assert published["inside"] == [15.74, 46.2]
+
+
+def test_a_border_day_is_only_as_good_as_its_worst_figure(client: httpx.Client, platform: Platform) -> None:
+    first, second = date(2026, 11, 16), date(2026, 11, 17)
+    platform.extra = [
+        {**row("ITP-00011", "Dravaszerdahely", "entry", first, 1e6), "flowStatus": "Confirmed"},
+        row("ITP-00011", "Dravaszerdahely", "entry", second, ""),
+    ]
+    border = next(b for b in flows.collect(client, NOW, days=3).borders if b.id == "dravaszerdahely")
+    # 1 GWh in, 26.3 out; provisional beside confirmed is provisional; a blank entry leaves the day blank
+    assert border.net_kwh_per_day == [-25_300_000, None, None]
+    assert border.status == ["P", None, None]
+
+
+def test_a_document_without_borders_still_reads(client: httpx.Client) -> None:
+    raw = flows.collect(client, NOW, days=3).model_dump(mode="json", by_alias=True)
+    del raw["borders"]
+    assert flows.parse(raw).borders == []
+    raw["borders"] = [
+        {**border, "netKwhPerDay": [1.0]}
+        for border in flows.collect(client, NOW, days=3).model_dump(mode="json", by_alias=True)["borders"]
+    ]
+    with pytest.raises(ValidationError, match="border rogatec: not one value per day"):
+        flows.parse(raw)
 
 
 def test_blank_and_broken_values_are_gaps(client: httpx.Client, platform: Platform) -> None:
@@ -230,3 +305,21 @@ def test_cli_gas_flows_fetch_and_publish(
     assert published["version"] == 1 and published["source"] == "ENTSOG Transparency Platform"
     platform.status = 503
     assert cli.main(["gas", "flows-fetch", "--data-dir", str(tmp_path)]) == cli.EXIT_FAILED
+
+
+def test_the_crossings_on_the_map_are_each_one_side_of_one_place() -> None:
+    assert len({crossing.id for crossing in REAL_CROSSINGS}) == len(REAL_CROSSINGS)
+    points = [part for crossing in REAL_CROSSINGS for part in crossing.parts]
+    # no point of an operator is read twice
+    assert len(set(points)) == len(points)
+    for crossing in REAL_CROSSINGS:
+        # the reporting operators are the side the figures are said to be from
+        assert all(operator.startswith(f"{crossing.country}-") for operator, _ in crossing.parts), crossing.id
+        assert crossing.country != crossing.neighbour
+        assert crossing.place.license == "ODbL-1.0"
+        # the direction point is on the pipeline near the crossing, not across the map
+        east = (crossing.inside[0] - crossing.place.lon) * 111.32 * math.cos(math.radians(crossing.place.lat))
+        north = (crossing.inside[1] - crossing.place.lat) * 110.57
+        assert 0.1 < math.hypot(east, north) <= 10, crossing.id
+    # one point a border never has from both sides: Rogatec is read from Croatia only
+    assert ("SI-TSO-0001", "ITP-00042") not in points
