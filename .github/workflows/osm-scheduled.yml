@@ -56,7 +56,7 @@ jobs:
           done
       - &restore-previous
         name: Restore the previous extracts
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: &raw |
             pipeline/data/raw
@@ -71,7 +71,7 @@ jobs:
       - &save
         name: Keep the extracts for the build
         if: steps.fetch.outcome == 'success'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: *raw
           key: osm-raw-${{ github.run_id }}
@@ -128,7 +128,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends tippecanoe
       - *install
       - name: Extracts downloaded in this run
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: *raw
           key: osm-raw-${{ github.run_id }}
