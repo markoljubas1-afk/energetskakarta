@@ -3845,4 +3845,10 @@ Stanje: slike izvora (dan, mjesec) imaju napomenu samo u opisu i ispod slike u d
   na mjestu (test crteža). Puna rečenica ostaje u opisu i ispod slike u dijalogu.
 - Odstupanje od prijedloga: u usporedbama vidljiva tablica nema novi stupac; brojke su u rečenici ispod kartice
   (tablica bi za HR imala stupac koji ne ulazi u ukupno, što zbunjuje).
+- [x] Preview (2026-11-27):
+  - Slika izvora za listopad 2026., HR: redak „+ ½ NE Krško (HEP): oko 258 GWh, vodi se kao uvoz iz Slovenije”
+    stoji ispod podnaslova, iznad prstena. Na okomitoj je smanjen da stane u širinu.
+  - Usporedbe HR: listopad kroz godine (2022: 163 MWh, 2025: 14,8 GWh, mjeseci remonta; 2024: 260 GWh);
+    godina prema godini 2025: 2,26 TWh, 2026: 2,49 TWh (isti mjeseci); zemlje u listopadu 2026.: 258 GWh,
+    18,1 % potrošnje.
 
