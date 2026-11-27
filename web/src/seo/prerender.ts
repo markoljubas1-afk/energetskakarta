@@ -21,6 +21,7 @@ import { PRICE_MONTHS_KEY, PriceMonthsSchema } from "../data/priceMonths";
 import { GAS_FLOWS_KEY, GasFlowsSchema } from "../data/gasFlows";
 import { GAS_STORAGE_KEY, GasStorageSchema } from "../data/gasStorage";
 import { SOLAR_CAPITA_KEY, SolarCapitaSchema } from "../data/solarCapita";
+import { INSTALLED_KEY, InstalledSchema } from "../data/installed";
 import { STORAGE_MONTHS_KEY, StorageMonthsSchema } from "../data/storageMonths";
 import { checkedRenewables, RENEWABLES_KEY, RenewablesSchema } from "../data/eurostat";
 import { GEOTHERMAL_KEY, GeothermalSchema } from "../data/geothermal";
@@ -169,6 +170,7 @@ export async function loadSiteData(options: PrerenderOptions): Promise<SiteData>
     solarCapita,
     gasFlows,
     gasStorage,
+    installed,
   ] = await Promise.all([
     loadJson(options, current.stats, StatsSchema),
     loadJson(options, current.search, SearchIndexSchema),
@@ -186,6 +188,7 @@ export async function loadSiteData(options: PrerenderOptions): Promise<SiteData>
     loadOptionalJson(options, SOLAR_CAPITA_KEY, SolarCapitaSchema),
     loadOptionalJson(options, GAS_FLOWS_KEY, GasFlowsSchema),
     loadOptionalJson(options, GAS_STORAGE_KEY, GasStorageSchema),
+    loadOptionalJson(options, INSTALLED_KEY, InstalledSchema),
   ]);
   // the pointer names the file with monthly and yearly totals; once it exists, that file must load
   const energy = energyPointer ? await loadJson(options, energyPointer.periods.key, PeriodsSchema) : null;
@@ -211,6 +214,7 @@ export async function loadSiteData(options: PrerenderOptions): Promise<SiteData>
     solarCapita,
     gasFlows,
     gasStorage,
+    installed,
     energyUpdatedAt: energyPointer?.updatedAt ?? null,
     records,
     builtAt: new Date().toISOString(),

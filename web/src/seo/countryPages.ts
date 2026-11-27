@@ -39,6 +39,7 @@ import { krskoCountryLead } from "./krsko";
 import { KRSKO_ID } from "../data/krsko";
 import { gasLinks } from "./gasPages";
 import { energyLinks } from "./energyPages";
+import { installedComparison, installedFigure } from "./installed";
 import { DATASET_LICENSE } from "./license";
 
 const COUNTRY_FIGURES = {
@@ -86,12 +87,14 @@ export function countryPage(site: SiteData, lang: Lang, code: CountryCode, hubs:
   // Faza 54-3: the page's own figures as tiles, the tables as charts with the tables behind a click
   const [operatingValue, operatingUnit] = splitUnit(operating);
   const [kmValue, kmUnit] = splitUnit(i18n.km(totalKm));
+  const entsoe = site.installed ? installedFigure(site.installed, lang, code) : null;
   const figures = keyFigures(
     [
       { label: words.operating, value: operatingValue, unit: operatingUnit, note: words.floor },
       { label: words.lines, value: kmValue, unit: kmUnit },
       { label: words.plants, value: plants, unit: "" },
       { label: words.substations, value: i18n.number(summary.substations), unit: "" },
+      ...(entsoe ? [entsoe] : []),
     ],
     chartWords.figures,
   );
@@ -146,7 +149,7 @@ export function countryPage(site: SiteData, lang: Lang, code: CountryCode, hubs:
         heading: copy.country.capacityHeading,
         // a country the stats do not cover yet: a sentence, not a table of headers alone (Faza 58-A)
         html:
-          summary.technologies.length === 0
+          (summary.technologies.length === 0
             ? `<p>${e(copy.country.noPlants)}</p>`
             : behind(
                 capacityChart,
@@ -162,7 +165,7 @@ export function countryPage(site: SiteData, lang: Lang, code: CountryCode, hubs:
                     i18n.number(row.plants),
                   ]),
                 ),
-              ),
+              )) + (site.installed ? installedComparison(site.installed, lang, code) : ""),
       },
       {
         heading: copy.country.linesHeading,
