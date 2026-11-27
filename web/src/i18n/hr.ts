@@ -273,6 +273,8 @@ export const hr = {
     "Hrvatskoj pripada i polovica proizvodnje Nuklearne elektrane Krško, oko {amount}. Elektrana je u Sloveniji, pa ENTSO-E njezinu proizvodnju vodi kao slovensku, a dio koji preuzima HEP kao uvoz u Hrvatsku.",
   krskoHrShare:
     "Hrvatskoj pripada i polovica proizvodnje Nuklearne elektrane Krško, oko {amount} ({share} potrošnje). Elektrana je u Sloveniji, pa ENTSO-E njezinu proizvodnju vodi kao slovensku, a dio koji preuzima HEP kao uvoz u Hrvatsku.",
+  krskoBadgeHr: "+ ½ NE Krško (HEP): oko {amount}, vodi se kao uvoz iz Slovenije",
+  krskoBadgeSi: "Od toga ½ NE Krško, oko {amount}, pripada Hrvatskoj (HEP)",
   krskoSi:
     "Polovica proizvodnje Nuklearne elektrane Krško, oko {amount}, pripada Hrvatskoj (HEP). Ovdje je, kao i u ENTSO-E-u, uračunata u slovensku proizvodnju.",
   krskoPlant:
@@ -543,6 +545,7 @@ export const hr = {
   compareUnitMonth: "Mjesec",
   compareUnitYear: "Godina",
   comparePrice: "Prosječna cijena (€/MWh)",
+  compareKrskoFigures: "Hrvatska polovica: {list}.",
   compareCo2Note:
     "CO₂ je izračun iz proizvodnje po izvoru i faktora IPCC AR5 za cijeli životni vijek elektrane, ne mjerenje. Udio obnovljivih je udio u proizvodnji, ne u potrošnji. Zemlja bez potpunih podataka za razdoblje nije prikazana.",
   comparePriceNote:

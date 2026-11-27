@@ -332,11 +332,38 @@ describe("the drawing", () => {
 });
 
 describe("the drawing with Croatia's half of Krško", () => {
-  it.each(CARD_FORMATS)("leaves the %s picture as it is: there is no room above the footer", (format) => {
+  it.each(CARD_FORMATS)(
+    "writes it in a line under the subtitle of the %s picture, clear of the ring",
+    (format) => {
+      const day = latestDay([DAYS], "HR");
+      if (!day) throw new Error("no day");
+      const text = sourcesText({ ...day, loadMwh: 52000, krskoMwh: 7900 }, hr);
+      expect(text.badge?.replace(/\p{Zs}/gu, " ")).toBe(
+        "+ ½ NE Krško (HEP): oko 7,9 GWh, vodi se kao uvoz iz Slovenije",
+      );
+      const written = drawn(text, format);
+      const plain = drawn({ ...text, badge: null }, format);
+      // everything else stays where it was
+      expect(written.filter((each) => each.text !== text.badge)).toEqual(plain);
+      const badge = written.find((each) => each.text === text.badge);
+      const subtitle = written.find((each) => each.text === text.subtitle);
+      if (!badge || !subtitle) throw new Error("not drawn");
+      const { width } = CARD_SIZES[format];
+      expect(badge.y).toBeGreaterThan(subtitle.y);
+      // below it, the first thing written is the centre of the ring or a figure: a clear line further down
+      const next = Math.min(...plain.filter((each) => each.y > subtitle.y).map((each) => each.y));
+      expect(next - badge.y).toBeGreaterThanOrEqual(format === "story" ? 60 : 40);
+      expect(badge.x + badge.text.length * 4).toBeLessThan(width);
+    },
+  );
+
+  it("says it the other way round for Slovenia, and not at all elsewhere", () => {
     const day = latestDay([DAYS], "HR");
     if (!day) throw new Error("no day");
-    const text = sourcesText({ ...day, loadMwh: 52000, krskoMwh: 7900 }, hr);
-    expect(text.note).not.toBeNull();
-    expect(drawn(text, format)).toEqual(drawn({ ...text, note: null }, format));
+    expect(sourcesText({ ...day, country: "SI", krskoMwh: 7900 }, hr).badge?.replace(/\p{Zs}/gu, " ")).toBe(
+      "Od toga ½ NE Krško, oko 7,9 GWh, pripada Hrvatskoj (HEP)",
+    );
+    expect(sourcesText({ ...day, country: "HU", krskoMwh: 7900 }, hr).badge).toBeNull();
+    expect(sourcesText({ ...day, krskoMwh: null }, hr).badge).toBeNull();
   });
 });

@@ -9,6 +9,8 @@ import {
   change,
   countriesSide,
   countryPeriods,
+  krskoOfRows,
+  krskoOverMonths,
   latestUsable,
   monthAcrossYears,
   resolveChoice,
@@ -152,6 +154,29 @@ describe("one year against another", () => {
     expect(yearAgainstYear(hr, "2024", "2031")).toBeNull();
     expect(change(100, 112)).toBeCloseTo(0.12);
     expect(change(0, 5)).toBeNull();
+  });
+});
+
+describe("Croatia's half of Krško beside the comparisons", () => {
+  // Slovenia's nuclear: 500 GWh a month; it reported nothing for March 2025
+  const withNuclear = structuredClone(PERIODS);
+  const si = withNuclear.countries.SI;
+  if (!si) throw new Error("fixture without SI");
+  si.months.generation.nuclear = MONTHS.map((month) => (month === "2025-03" ? null : 500_000));
+
+  it("is half of Slovenia's nuclear in each period, and nothing for a period not reported in full", () => {
+    const rows = areaRows(withNuclear, "HR", "month") ?? [];
+    const halves = krskoOfRows(withNuclear, rows, "month");
+    expect(halves[0]).toBe(250_000);
+    expect(halves.at(-1)).toBeNull();
+    // without Slovenia's nuclear at all there is no figure anywhere
+    expect(krskoOfRows(PERIODS, rows, "month").every((value) => value === null)).toBe(true);
+  });
+
+  it("adds up over the same months the year comparison uses, or gives nothing", () => {
+    expect(krskoOverMonths(withNuclear, "2024", [1, 2, 3])).toBe(750_000);
+    expect(krskoOverMonths(withNuclear, "2025", [1, 2, 3])).toBeNull();
+    expect(krskoOverMonths(withNuclear, "2025", [])).toBeNull();
   });
 });
 

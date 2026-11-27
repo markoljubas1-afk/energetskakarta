@@ -20,7 +20,14 @@ import {
   type Periods,
 } from "../data/energy";
 import { RENEWABLE } from "../data/greenShare";
-import { KRSKO_HOST, KRSKO_PARTNER, krskoHalfOfPeriod, krskoHalfOfRange, krskoNote } from "../data/krsko";
+import {
+  KRSKO_HOST,
+  KRSKO_PARTNER,
+  krskoHalfOfPeriod,
+  krskoHalfOfRange,
+  krskoNote,
+  krskoPictureNote,
+} from "../data/krsko";
 import { isOneOf, type Technology } from "../domain";
 import { useI18n, type I18n } from "../i18n";
 import { PALETTES, type Theme } from "../map/palette";
@@ -100,6 +107,8 @@ interface CardShare {
   kit: ShareKit;
   subtitle: string;
   table: () => Table;
+  /** the sentence the card's picture carries under the chart: Croatia's half of Krško, for HR and SI */
+  note?: string | null;
 }
 
 /**
@@ -131,6 +140,7 @@ function Card(props: {
               dataDate={share.kit.dataDate}
               sourceLine={share.kit.sourceLine}
               table={share.table}
+              note={share.note ?? null}
               canvas={canvas}
               embed={id}
             />
@@ -324,6 +334,7 @@ function Content({ dataBaseUrl, pointer, periods, energy, update, theme, embedde
             kit,
             subtitle: `${areaName} · ${energy.unit === "month" ? t("energyMonthly") : t("energyYearly")}`,
             table: () => mixTable(data, techs, kit.labels),
+            note: krskoPictureNote(i18n, area, null, null),
           }}
         >
           {energy.show === "chart" ? (
@@ -383,6 +394,7 @@ function Content({ dataBaseUrl, pointer, periods, energy, update, theme, embedde
           ink={ink}
           grid={grid}
           kit={kit}
+          note={krskoPictureNote(i18n, area, null, null)}
         />
       )}
 
@@ -594,6 +606,7 @@ function SourceRing(props: {
         kit,
         subtitle: `${areaName} · ${periodName}`,
         table: () => ringTable(shown, kit.labels),
+        note: krskoPictureNote(i18n, area, krskoOf(shown.period), shown.load),
       }}
     >
       {energy.show === "chart" ? (
@@ -768,8 +781,9 @@ function YearComparison(props: {
   ink: string;
   grid: string;
   kit: ShareKit;
+  note: string | null;
 }) {
-  const { monthly, energy, update, areaName, ink, grid, kit } = props;
+  const { monthly, energy, update, areaName, ink, grid, kit, note } = props;
   const i18n = useI18n();
   const { t } = i18n;
   const techs = technologiesOf(monthly);
@@ -804,6 +818,7 @@ function YearComparison(props: {
         kit,
         subtitle: tech ? `${i18n.technology(tech)} · ${areaName}` : areaName,
         table: () => compareTable(lines, kit.labels),
+        note,
       }}
     >
       {!tech || lines.length === 0 ? (
@@ -892,6 +907,8 @@ function RangeTotals(props: {
   let result: ReactNode = <p className={styles.muted}>{t("energyRangeHint")}</p>;
   // the rows the table shows; until a period is calculated there are none
   let rows: Table = { header: [], rows: [] };
+  // until a period is calculated, the picture says it without a figure
+  let note = krskoPictureNote(i18n, area, null, null);
   if (range && files?.status === "error") {
     result = (
       <p className={styles.muted} role="alert">
@@ -902,6 +919,7 @@ function RangeTotals(props: {
     const totals = rangeTotals(files.value, area, codes, range.from, range.to);
     const krsko = krskoHalfOfRange(files.value, range.from, range.to);
     rows = rangeTable(totals, kit.labels, krskoRow(area, krsko, t));
+    note = krskoPictureNote(i18n, area, krsko, totals.load);
     if (totals.coveredDays === 0 && totals.total === 0) {
       result = <p className={styles.muted}>{t("energyRangeEmpty")}</p>;
     } else {
@@ -982,6 +1000,7 @@ function RangeTotals(props: {
         kit,
         subtitle: range ? `${areaName} · ${i18n.date(range.from)} – ${i18n.date(range.to)}` : areaName,
         table: () => rows,
+        note,
       }}
     >
       <form

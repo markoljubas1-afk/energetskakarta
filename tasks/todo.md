@@ -3817,7 +3817,7 @@ debljina, oblačić), e2e za sloj plina; ručno pokretanje `gas-daily` i pregled
 ostaje otvorena samo ako se traži nešto više.
 
 ## Krško na slikama za dijeljenje i u usporedbama — PRIJEDLOG 2026-11-27 (vlasnik: „kod slika za dijeljenje… i
-usporedbe… važno je staviti napomenu”), poslije plina, čeka potvrdu
+usporedbe… važno je staviti napomenu”), POTVRĐENO 2026-11-27 („kreni s Krškom”)
 
 Stanje: slike izvora (dan, mjesec) imaju napomenu samo u opisu i ispod slike u dijalogu, ne na samoj slici
 (nije stala, vidi „Napomena o Krškom”). Usporedbe (`reports/CompareView`) i slike grafova (`chartImage`,
@@ -3829,3 +3829,20 @@ Stanje: slike izvora (dan, mjesec) imaju napomenu samo u opisu i ispod slike u d
   kao u rasponu.
 - KS3 Slike izvora: kratak redak na samoj slici („+ ½ NE Krško ≈ 258 GWh, HEP”), uz novi raspored legende
   (široka i uspravna); provjera na šest izvora i dugim imenima.
+
+**Napravljeno (2026-11-27, grana `faza-krsko-slike`).**
+- [x] KS1 `chartImage`: polje `note` je prelomljeno u podnožju, iznad izvora, u boji teksta, a slika raste za te
+  retke. `ChartShare` prima `note`; `krskoPictureNote` (`data/krsko.ts`) daje rečenicu s brojkom kad graf ima
+  jedno razdoblje s brojkom, inače bez nje; za druga područja ništa. Energetski pregled: sastav, prsten (brojka
+  razdoblja), usporedba godina, raspon (brojka raspona).
+- [x] KS2 Usporedbe (`reports/CompareView`):
+  - Ispod svake kartice za HR i SI ide rečenica i, gdje je Slovenija prijavila cijelo razdoblje, „Hrvatska
+    polovica: 2024: … · 2025: …”; isto je na slici.
+  - „Godina prema godini” računa iste mjesece kao usporedba (`krskoOverMonths`).
+  - Kartica zemalja: rečenica s brojkom razdoblja kad su HR ili SI među zemljama.
+  - CSV: stupac (mjesec kroz godine) ili redak (godine, zemlje).
+- [x] KS3 Slike izvora: kratak redak (`badge`) ispod podnaslova, iznad prstena, u boji naglaska; ostalo ostaje
+  na mjestu (test crteža). Puna rečenica ostaje u opisu i ispod slike u dijalogu.
+- Odstupanje od prijedloga: u usporedbama vidljiva tablica nema novi stupac; brojke su u rečenici ispod kartice
+  (tablica bi za HR imala stupac koji ne ulazi u ukupno, što zbunjuje).
+

@@ -52,6 +52,8 @@ test("year against year compares the same months, and the countries stand side b
   await expect(countries.getByRole("row", { name: /^Hrvatska/ })).toBeVisible();
   await expect(countries.getByRole("row", { name: /^Slovenija/ })).toBeVisible();
   await expect(countries.getByText(/CO₂ je izračun/)).toBeVisible();
+  // Croatia among the countries: its half of Krško is said under the card (and goes onto its picture)
+  await expect(countries.getByText(/^Hrvatskoj pripada i polovica/)).toBeVisible();
   await countries.getByRole("button", { name: "Godina" }).click();
   await expect(page).toHaveURL(/[?&]cu=year/);
   // the test data has no year complete for two countries (Slovenia from 2025, Croatia missing days in

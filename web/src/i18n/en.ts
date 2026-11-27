@@ -276,6 +276,8 @@ export const en: Dictionary = {
     "Croatia also owns half of the output of the Krško nuclear plant, about {amount}. The plant is in Slovenia, so ENTSO-E counts its generation as Slovenian and the part HEP takes as an import into Croatia.",
   krskoHrShare:
     "Croatia also owns half of the output of the Krško nuclear plant, about {amount} ({share} of consumption). The plant is in Slovenia, so ENTSO-E counts its generation as Slovenian and the part HEP takes as an import into Croatia.",
+  krskoBadgeHr: "+ ½ of the Krško nuclear plant (HEP): about {amount}, counted as an import from Slovenia",
+  krskoBadgeSi: "Of which ½ of the Krško nuclear plant, about {amount}, is Croatia's (HEP)",
   krskoSi:
     "Half of the output of the Krško nuclear plant, about {amount}, belongs to Croatia (HEP). Here, as at ENTSO-E, it is counted in Slovenia's generation.",
   krskoPlant:
@@ -551,6 +553,7 @@ export const en: Dictionary = {
   compareUnitMonth: "Month",
   compareUnitYear: "Year",
   comparePrice: "Average price (€/MWh)",
+  compareKrskoFigures: "Croatia's half: {list}.",
   compareCo2Note:
     "CO₂ is calculated from generation by source with IPCC AR5 lifecycle factors, not measured. The renewable share is a share of generation, not of consumption. A country without complete data for the period is not shown.",
   comparePriceNote:

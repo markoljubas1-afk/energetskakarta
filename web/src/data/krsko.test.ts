@@ -2,7 +2,14 @@ import { describe, expect, it } from "vitest";
 
 import { createI18n } from "../i18n";
 import { PeriodsSchema, YearFileSchema, type Periods, type YearFile } from "./energy";
-import { krskoHalfOfHour, krskoHalfOfPeriod, krskoHalfOfRange, krskoNote, KRSKO_ID } from "./krsko";
+import {
+  krskoHalfOfHour,
+  krskoHalfOfPeriod,
+  krskoHalfOfRange,
+  krskoNote,
+  krskoPictureNote,
+  KRSKO_ID,
+} from "./krsko";
 import { MIX_LIVE } from "./mix.fixture";
 
 const block = (periods: string[], nuclear: (number | null)[], coverage: number[]) => ({
@@ -109,5 +116,24 @@ describe("the note", () => {
     expect(krskoNote(hr, "HU", "2,8 TWh", null)).toBeNull();
     expect(krskoNote(hr, "ALL", "2,8 TWh", null)).toBeNull();
     expect(krskoNote(hr, "HR", null, null)).toBeNull();
+  });
+});
+
+describe("Krško on a picture of a chart", () => {
+  const hr = createI18n("hr");
+  it("gives the figure when the chart has one period, with the share of consumption when known", () => {
+    expect(krskoPictureNote(hr, "HR", 2_775_000, 18_230_000)?.replace(/\p{Zs}/gu, " ")).toContain(
+      "oko 2,78 TWh (15,2 % potrošnje)",
+    );
+    expect(krskoPictureNote(hr, "SI", 2_775_000, null)?.replace(/\p{Zs}/gu, " ")).toContain(
+      "oko 2,78 TWh, pripada Hrvatskoj (HEP)",
+    );
+  });
+
+  it("says it without a figure for a chart of many periods, or a period not reported in full", () => {
+    expect(krskoPictureNote(hr, "HR", null, null)).toBe(hr.t("krskoCountryHr"));
+    expect(krskoPictureNote(hr, "SI", null, 1)).toBe(hr.t("krskoCountrySi"));
+    expect(krskoPictureNote(hr, "HU", 1, 1)).toBeNull();
+    expect(krskoPictureNote(hr, "ALL", null, null)).toBeNull();
   });
 });

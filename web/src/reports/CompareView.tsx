@@ -11,6 +11,7 @@ import { useAsync } from "../app/useAsync";
 import { assetUrl, DataError } from "../data/current";
 import { ALL, EnergyPointerSchema, PeriodsSchema, type EnergyPointer, type Periods } from "../data/energy";
 import { PRICE_MONTHS_KEY, PriceMonthsSchema, type PriceMonths } from "../data/priceMonths";
+import { KRSKO_HOST, KRSKO_PARTNER, krskoHalfOfPeriod, krskoPictureNote } from "../data/krsko";
 import { isOneOf, type Technology } from "../domain";
 import { useI18n, type I18n } from "../i18n";
 import { PALETTES, type Theme } from "../map/palette";
@@ -26,6 +27,8 @@ import {
   change,
   countriesSide,
   countryPeriods,
+  krskoOfRows,
+  krskoOverMonths,
   monthAcrossYears,
   resolveChoice,
   rowIntensity,
@@ -231,8 +234,24 @@ function Content(props: {
         </label>
       </div>
       <p className={styles.muted}>{t("energySource", { date: i18n.date(pointer.updatedAt) })}</p>
-      <MonthCard rows={monthRows} month={shown.month ?? 1} update={update} areaName={areaName} kit={kit} />
-      <YearsCard rows={monthRows} chosen={shown.years} update={update} areaName={areaName} kit={kit} />
+      <MonthCard
+        rows={monthRows}
+        month={shown.month ?? 1}
+        update={update}
+        areaName={areaName}
+        kit={kit}
+        periods={periods}
+        area={area}
+      />
+      <YearsCard
+        rows={monthRows}
+        chosen={shown.years}
+        update={update}
+        areaName={areaName}
+        kit={kit}
+        periods={periods}
+        area={area}
+      />
       <CountriesCard
         periods={periods}
         prices={prices}
@@ -254,9 +273,11 @@ function Card(props: {
   controls: ReactNode;
   table: () => Table;
   kit: Kit;
+  /** Croatia's half of Krško, for Croatia and Slovenia: under the card and on its picture */
+  note?: string | null;
   children: ReactNode;
 }) {
-  const { id, title, subtitle, controls, table, kit, children } = props;
+  const { id, title, subtitle, controls, table, kit, note = null, children } = props;
   const ref = useRef<HTMLElement>(null);
   return (
     <section id={id} ref={ref} className={styles.card} aria-label={title}>
@@ -271,15 +292,32 @@ function Card(props: {
             dataDate={kit.dataDate}
             sourceLine={kit.sourceLine}
             table={table}
+            note={note}
             canvas={() => ref.current?.querySelector("canvas") ?? null}
           />
         </div>
       </div>
       <div className={own.controls}>{controls}</div>
       {children}
+      {note !== null && <p className={own.note}>{note}</p>}
       <p className={styles.cardSource}>{kit.sourceLine}</p>
     </section>
   );
+}
+
+const krskoArea = (area: string): boolean => area === KRSKO_PARTNER || area === KRSKO_HOST;
+
+/**
+ * Croatia's half of Krško under a comparison of Croatia or Slovenia: the sentence, then the half in each
+ * period compared that Slovenia reported in full; null for any other area.
+ */
+function krskoText(i18n: I18n, area: string, figures: readonly [string, number | null][]): string | null {
+  const sentence = krskoPictureNote(i18n, area, null, null);
+  if (sentence === null) return null;
+  const known = figures.flatMap(([label, mwh]) => (mwh === null ? [] : [`${label}: ${i18n.energy(mwh)}`]));
+  return known.length === 0
+    ? sentence
+    : `${sentence} ${i18n.t("compareKrskoFigures", { list: known.join(" · ") })}`;
 }
 
 const techsOf = (rows: readonly PeriodRow[]): Technology[] => {
@@ -309,11 +347,19 @@ function MonthCard(props: {
   update: (patch: Partial<CompareState>) => void;
   areaName: string;
   kit: Kit;
+  periods: Periods;
+  area: string;
 }) {
-  const { rows, month, update, areaName, kit } = props;
+  const { rows, month, update, areaName, kit, periods, area } = props;
   const i18n = useI18n();
   const { t } = i18n;
   const years = monthAcrossYears(rows, month);
+  const halves = krskoArea(area) ? krskoOfRows(periods, years, "month") : null;
+  const note = krskoText(
+    i18n,
+    area,
+    years.map((row, index) => [row.period.slice(0, 4), halves?.[index] ?? null]),
+  );
   const techs = techsOf(years);
   const monthName = kit.names[month - 1] ?? "";
   const table = (): Table => ({
@@ -323,13 +369,15 @@ function MonthCard(props: {
       t("energyTotal"),
       t("compareRenewable"),
       t("energyComplete"),
+      ...(halves ? [t(area === KRSKO_PARTNER ? "energyKrskoRowHr" : "energyKrskoRowSi")] : []),
     ],
-    rows: years.map((row) => [
+    rows: years.map((row, index) => [
       row.period,
       ...techs.map((tech) => row.byTech[tech] ?? null),
       row.total,
       row.share,
       row.coverage,
+      ...(halves ? [halves[index] ?? null] : []),
     ]),
   });
   return (
@@ -339,6 +387,7 @@ function MonthCard(props: {
       subtitle={`${monthName} · ${areaName}`}
       table={table}
       kit={kit}
+      note={note}
       controls={
         <label className={styles.select}>
           <span>{t("compareMonth")}</span>
@@ -432,12 +481,25 @@ function YearsCard(props: {
   update: (patch: Partial<CompareState>) => void;
   areaName: string;
   kit: Kit;
+  periods: Periods;
+  area: string;
 }) {
-  const { rows, chosen, update, areaName, kit } = props;
+  const { rows, chosen, update, areaName, kit, periods, area } = props;
   const i18n = useI18n();
   const { t } = i18n;
   const years = yearsOf(rows);
   const pair = chosen ? yearAgainstYear(rows, chosen[0], chosen[1]) : null;
+  // over the same months as the comparison itself
+  const halves =
+    pair && krskoArea(area)
+      ? { a: krskoOverMonths(periods, pair.a, pair.months), b: krskoOverMonths(periods, pair.b, pair.months) }
+      : null;
+  const note = pair
+    ? krskoText(i18n, area, [
+        [pair.a, halves?.a ?? null],
+        [pair.b, halves?.b ?? null],
+      ])
+    : null;
   const span = pair ? monthSpan(pair.months, kit.names, t("compareAnd")) : null;
   const spanText =
     span === null || span.kind === "all"
@@ -477,6 +539,17 @@ function YearsCard(props: {
             pair.total.b - pair.total.a,
             change(pair.total.a, pair.total.b),
           ],
+          ...(halves?.a != null && halves.b !== null
+            ? [
+                [
+                  t(area === KRSKO_PARTNER ? "energyKrskoRowHr" : "energyKrskoRowSi"),
+                  halves.a,
+                  halves.b,
+                  halves.b - halves.a,
+                  change(halves.a, halves.b),
+                ],
+              ]
+            : []),
         ]
       : [],
   });
@@ -512,6 +585,7 @@ function YearsCard(props: {
       }
       table={table}
       kit={kit}
+      note={note}
       controls={
         years.length >= 2 ? (
           <>
@@ -624,14 +698,32 @@ function CountriesCard(props: {
       ...techs.map((tech) => each.row.byTech[tech] ?? null),
     ]),
   });
+  const tableWithKrsko = (): Table => {
+    const base = table();
+    if (krskoMwh === null || !krskoCountry) return base;
+    const label = t(krskoCountry === KRSKO_PARTNER ? "energyKrskoRowHr" : "energyKrskoRowSi");
+    return { ...base, rows: [...base.rows, [label, krskoMwh, ...base.header.slice(2).map(() => null)]] };
+  };
   const reportable = unit === "month" && period !== null && period >= REPORTS_FROM;
+  // Croatia's sentence when Croatia is among the countries, else Slovenia's; with the period's figure
+  const krskoCountry = [KRSKO_PARTNER, KRSKO_HOST].find((code) => rows.some((each) => each.code === code));
+  const krskoMwh = krskoCountry && period ? krskoHalfOfPeriod(periods, unit, period) : null;
+  const note = krskoCountry
+    ? krskoPictureNote(
+        i18n,
+        krskoCountry,
+        krskoMwh,
+        rows.find((each) => each.code === krskoCountry)?.row.load ?? null,
+      )
+    : null;
   return (
     <Card
       id="countries"
       title={t("compareCountriesTitle")}
       subtitle={periodName}
-      table={table}
+      table={tableWithKrsko}
       kit={kit}
+      note={note}
       controls={
         <>
           <div className={styles.segmented} role="group" aria-label={t("energyUnit")}>
