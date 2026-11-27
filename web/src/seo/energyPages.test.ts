@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import type { Current } from "../data/current";
 import type { Periods } from "../data/energy";
 import type { Live } from "../data/live";
+import { INSTALLED } from "../data/installed.fixture";
+import { installedCountry } from "../data/installed";
 import { dayPrices, lastComplete, localDate, priceDays, yearRows } from "./energyPages";
 import { buildPages, type SiteData, type StaticPage } from "./pages";
 import { llmsTxt } from "./sitemap";
@@ -187,5 +189,90 @@ describe("day-ahead prices", () => {
     const text = llmsTxt(site);
     expect(text).toContain("(https://karta.example/en/electricity-generation/)");
     expect(text).toContain("(https://karta.example/en/electricity-prices/)");
+  });
+});
+
+describe("installed capacity (ENTSO-E)", () => {
+  const plain = (value: string): string => value.replace(/\p{Zs}/gu, " ");
+  const withInstalled = buildPages({ ...site, installed: INSTALLED });
+  const at = (path: string): StaticPage => {
+    const found = withInstalled.find((p) => p.path === path);
+    if (!found) throw new Error(`no page ${path}`);
+    return found;
+  };
+  const section = (path: string, heading: string): string =>
+    plain(at(path).sections.find((each) => each.heading === heading)?.html ?? "");
+
+  it("takes the country's latest year, its sources largest first, and the year five before", () => {
+    const hr = installedCountry(INSTALLED, "HR");
+    expect(hr?.latest.year).toBe(2026);
+    expect(hr?.earlier?.year).toBe(2021);
+    expect(hr?.sources.map((source) => source.tech)).toEqual([
+      "hydro",
+      "wind",
+      "solar",
+      "gas",
+      "pumped_storage",
+      "battery",
+    ]);
+    // a source the country did not have five years before grew from nothing, not from an unknown
+    expect(hr?.sources.find((source) => source.tech === "battery")?.before).toBe(0);
+    // Slovenia already has 2027, and nothing five years before it
+    expect(installedCountry(INSTALLED, "SI")?.earlier).toBeNull();
+    expect(installedCountry(INSTALLED, "IT")).toBeNull();
+  });
+
+  it("gets a section on the generation page, with the growth of sun and wind and where Krško is counted", () => {
+    const html = section("/proizvodnja/hr/", "Instalirana snaga po izvoru");
+    expect(html).toContain(
+      "<p>Na početku 2026. u Hrvatskoj je bilo instalirano 4,64 GW elektrana, prema podacima koje operator prijenosnog sustava prijavljuje ENTSO-E-u. Najveći izvori: hidroelektrane 1,87 GW, vjetroelektrane 1,31 GW, sunčane elektrane 620 MW.</p>",
+    );
+    expect(html).toContain(
+      "<p>U pet godina (od početka 2021.): sunčane elektrane s 85 MW na 620 MW, vjetroelektrane s 796 MW na 1,31 GW.</p>",
+    );
+    expect(html).toContain(
+      "NE Krško nije u ovom zbroju: ENTSO-E cijelu njezinu snagu (700 MW) vodi u Sloveniji",
+    );
+    expect(html).toContain("oko 350 MW, pripada Hrvatskoj (HEP)");
+    expect(html).toContain("Na početku 2021.");
+    expect(html).toContain("novo"); // the battery
+    expect(html).toContain('<th scope="row">2026</th>');
+    expect(html.indexOf(">2026<")).toBeLessThan(html.indexOf(">2021<"));
+    const si = section("/proizvodnja/si/", "Instalirana snaga po izvoru");
+    expect(si).toContain("Na početku 2027. u Sloveniji je bilo instalirano 2,4 GW elektrana");
+    expect(si).toContain("Nuklearna snaga je cijela NE Krško (700 MW)");
+    expect(si).not.toContain("U pet godina");
+    expect(section("/en/electricity-generation/hr/", "Installed capacity by source")).toContain(
+      "At the start of 2026, Croatia had 4.64 GW of generation capacity installed",
+    );
+  });
+
+  it("puts the section's first sentence in the FAQ and the variable in the Dataset", () => {
+    const ld = at("/proizvodnja/hr/").jsonLd;
+    const faq = ld.find((each) => each["@type"] === "FAQPage") as {
+      mainEntity: { name: string; acceptedAnswer: { text: string } }[];
+    };
+    expect(faq.mainEntity[0]?.name).toBe("Koliko je instalirane snage elektrana u Hrvatskoj?");
+    expect(plain(faq.mainEntity[0]?.acceptedAnswer.text ?? "")).toMatch(/^Na početku 2026\. u Hrvatskoj/);
+    expect(ld.find((each) => each["@type"] === "Dataset")?.variableMeasured).toContain(
+      "instalirana snaga po izvoru (MW)",
+    );
+  });
+
+  it("gets a tile and a sentence on the country page that say why it differs from the map", () => {
+    const hr = at("/zemlja/hr/");
+    expect(plain(hr.figures ?? "")).toContain("Instalirana snaga (ENTSO-E)");
+    expect(plain(hr.figures ?? "")).toContain("na početku 2026., bez polovice NE Krško");
+    const capacity = section("/zemlja/hr/", "Instalirana snaga po tehnologiji");
+    expect(capacity).toContain("Prema ENTSO-E-u, na početku 2026. u Hrvatskoj je bilo instalirano 4,64 GW.");
+    expect(capacity).toContain("male sunčane elektrane na krovovima kojih na karti nema");
+    expect(plain(at("/en/country/si/").figures ?? "")).toContain("at the start of 2027, with all of Krško");
+  });
+
+  it("is left out without the document", () => {
+    expect(page("/proizvodnja/hr/").sections.map((each) => each.heading)).not.toContain(
+      "Instalirana snaga po izvoru",
+    );
+    expect(page("/zemlja/hr/").figures ?? "").not.toContain("ENTSO-E");
   });
 });

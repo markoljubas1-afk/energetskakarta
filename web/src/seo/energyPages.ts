@@ -14,6 +14,7 @@ import { SOURCE_TERMS } from "./license";
 import { ENERGY_COPY } from "./energyCopy";
 import { homeCrumb, PATHS, publisher, type SiteData, type StaticPage } from "./site";
 import { escapeHtml as e, linkedTable, list } from "./markup";
+import { installedSection } from "./installed";
 
 /** Sources counted as renewable; pumped storage returns electricity it consumed, so it is left out. */
 export const RENEWABLE: readonly Technology[] = ["hydro", "wind", "solar", "biomass", "geothermal"];
@@ -178,6 +179,8 @@ function generationDataset(
   description: string,
   path: string,
   country: string | null,
+  /** a further variable the page measures (installed capacity), when it has it */
+  extra?: string,
 ): Record<string, unknown> {
   return {
     "@context": "https://schema.org",
@@ -190,7 +193,11 @@ function generationDataset(
     license: SOURCE_TERMS.entsoe,
     creator: { "@type": "Organization", name: "ENTSO-E", url: "https://www.entsoe.eu/" },
     publisher: publisher(site, createI18n(lang)),
-    variableMeasured: ["electricity generation by source (MWh)", "total load (MWh)"],
+    variableMeasured: [
+      "electricity generation by source (MWh)",
+      "total load (MWh)",
+      ...(extra ? [extra] : []),
+    ],
     ...(country ? { spatialCoverage: { "@type": "Place", name: country } } : {}),
     ...(site.siteUrl ? { url: site.siteUrl + path } : {}),
   };
@@ -259,6 +266,7 @@ function countryPage(site: SiteData, lang: Lang, periods: Periods, code: Country
     half === null
       ? null
       : krskoNote(i18n, code, i18n.energy(half), last.load ? i18n.percent(half / last.load) : null);
+  const installed = site.installed ? installedSection(site.installed, lang, code) : null;
   const path = PATHS[lang].generationCountry(code.toLowerCase());
   const title = copy.countryTitle(where, first, last.year);
   const description = copy.countryDescription(name, first, last.year, total, renewable);
@@ -280,6 +288,7 @@ function countryPage(site: SiteData, lang: Lang, periods: Periods, code: Country
           yearTable +
           (rows.some((row) => row.total !== null && !row.complete) ? `<p>${e(copy.incomplete)}</p>` : ""),
       },
+      ...(installed ? [installed.section] : []),
       {
         heading: "ENTSO-E",
         html:
@@ -293,9 +302,26 @@ function countryPage(site: SiteData, lang: Lang, periods: Periods, code: Country
     ],
     jsonLd: [
       {
-        ...generationDataset(site, lang, title, description, path, name),
+        ...generationDataset(site, lang, title, description, path, name, installed?.variable),
         temporalCoverage: `${first}/${last.year}`,
       },
+      // the section's opening sentence, word for word: structured data never says more than the page
+      ...(installed
+        ? [
+            {
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              inLanguage: lang,
+              mainEntity: [
+                {
+                  "@type": "Question",
+                  name: installed.faq[0],
+                  acceptedAnswer: { "@type": "Answer", text: installed.faq[1] },
+                },
+              ],
+            },
+          ]
+        : []),
     ],
     lastModified: site.energyUpdatedAt ?? site.current.createdAt,
     breadcrumbs: [

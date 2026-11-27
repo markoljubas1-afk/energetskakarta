@@ -7,6 +7,7 @@ import type { PriceMonths } from "../data/priceMonths";
 import type { GasFlows } from "../data/gasFlows";
 import type { GasStorage } from "../data/gasStorage";
 import type { SolarCapita } from "../data/solarCapita";
+import type { Installed } from "../data/installed";
 import type { StorageMonths } from "../data/storageMonths";
 import type { Door } from "./markup";
 import type { CityRegister } from "../data/cities";
@@ -81,6 +82,8 @@ export interface SiteData {
   storageMonths?: StorageMonths | null;
   /** solar electricity per inhabitant by country and year (Eurostat, Faza 46), when the bucket has it */
   solarCapita?: SolarCapita | null;
+  /** installed capacity per source by country and year (ENTSO-E A68), when the bucket has it */
+  installed?: Installed | null;
   /** the gas system's daily flows (ENTSOG) and the storage fill (GIE AGSI), for the gas page (Faza 47) */
   gasFlows?: GasFlows | null;
   gasStorage?: GasStorage | null;
