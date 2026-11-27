@@ -16,7 +16,10 @@ import pytest
 import yaml
 
 WORKFLOWS = Path(__file__).resolve().parents[2] / ".github" / "workflows"
-GATE = re.compile(r"^github\.event_name != 'schedule' \|\| vars\.(SCHEDULE_[A-Z]+) == 'true'$")
+# the switch alone, or in brackets as the first condition of a longer one
+GATE = re.compile(
+    r"^(\()?github\.event_name != 'schedule' \|\| vars\.(?P<switch>SCHEDULE_[A-Z]+) == 'true'(?(1)\) && .+)$"
+)
 # which switch a workflow belongs to: the secrets it needs arrive together
 EXPECTED = {
     "osm-scheduled.yml": "SCHEDULE_OSM",
@@ -70,9 +73,64 @@ def test_every_job_runs_on_schedule_only_when_switched_on(name: str) -> None:
             assert f"vars.{switch} == 'true'" in condition, f"keepalive ignores {switch}"
         return
     for job_id, job in jobs.items():
-        match = GATE.match(str(job.get("if", "")))
+        match = GATE.match(" ".join(str(job.get("if", "")).split()))
         assert match is not None, f"{name}: job {job_id} has no schedule switch"
-        assert match.group(1) == EXPECTED[name]
+        assert match.group("switch") == EXPECTED[name]
+
+
+def test_the_switch_cannot_be_hidden_in_a_longer_condition() -> None:
+    assert GATE.match("github.event_name != 'schedule' || vars.SCHEDULE_OSM == 'true'")
+    assert GATE.match("(github.event_name != 'schedule' || vars.SCHEDULE_OSM == 'true') && always()")
+    # without brackets `&&` binds first and a schedule run would always pass
+    assert not GATE.match("github.event_name != 'schedule' || vars.SCHEDULE_OSM == 'true' && always()")
+    assert not GATE.match("always() || (github.event_name != 'schedule' || vars.SCHEDULE_OSM == 'true')")
+
+
+def steps_running(job: dict[Any, Any], command: str) -> list[int]:
+    return [i for i, step in enumerate(job["steps"]) if command in str(step.get("run", ""))]
+
+
+def test_a_download_that_cannot_reach_geofabrik_is_tried_again_on_another_runner() -> None:
+    """Geofabrik refuses some GitHub runners and not others (L-082; 2026-11-19 and 2026-11-27): a second try
+    on the same runner meets the same refusal, so it runs as a job of its own, on a new machine. The build
+    takes the extracts from this run's cache and never reaches Geofabrik itself."""
+    jobs = load(WORKFLOWS / "osm-scheduled.yml")["jobs"]
+    first, again, update = jobs["download"], jobs["download-again"], jobs["update"]
+    for job in (first, again):
+        download = steps_running(job, "energymap osm download")
+        diagnostic = steps_running(job, "getent ahosts download.geofabrik.de")
+        assert len(download) == 1 and len(diagnostic) == 1
+        assert diagnostic[0] < download[0]
+        assert "|| echo" in job["steps"][diagnostic[0]]["run"]  # the diagnostic never fails the job
+        saves = [s for s in job["steps"] if str(s.get("uses", "")).startswith("actions/cache/save@")]
+        assert len(saves) == 1 and saves[0]["with"]["key"] == "osm-raw-${{ github.run_id }}"
+    # the first try may fail without failing the run; the second may not
+    fetch = first["steps"][steps_running(first, "energymap osm download")[0]]
+    assert fetch["continue-on-error"] is True
+    assert first["outputs"]["ok"] == f"${{{{ steps.{fetch['id']}.outcome == 'success' }}}}"
+    assert "continue-on-error" not in again["steps"][steps_running(again, "energymap osm download")[0]]
+    assert again["needs"] == "download"
+    assert "needs.download.outputs.ok != 'true'" in again["if"]
+    assert set(update["needs"]) == {"download", "download-again"}
+    condition = " ".join(str(update["if"]).split())
+    assert "always()" in condition
+    assert "(needs.download.outputs.ok == 'true' || needs.download-again.result == 'success')" in condition
+    assert steps_running(update, "energymap osm download") == []
+    restore = next(s for s in update["steps"] if str(s.get("uses", "")).startswith("actions/cache/restore@"))
+    assert restore["with"]["key"] == "osm-raw-${{ github.run_id }}"
+    assert restore["with"]["fail-on-cache-miss"] is True
+
+
+def test_a_failed_weekly_update_is_reported_whichever_job_failed() -> None:
+    jobs = load(WORKFLOWS / "osm-scheduled.yml")["jobs"]
+    report = jobs["report"]
+    assert set(report["needs"]) == {"download", "download-again", "update"}
+    condition = " ".join(str(report["if"]).split())
+    assert "always()" in condition and "github.event_name == 'schedule'" in condition
+    assert "needs.update.result != 'success'" in condition
+    assert "needs.download.result != 'skipped'" in condition  # a switched-off schedule is not a failure
+    assert steps_running(report, "gh issue create")
+    assert report["permissions"] == {"issues": "write"}
 
 
 def test_the_pages_deploy_waits_for_its_project_name() -> None:

@@ -537,3 +537,11 @@
 - Pravilo: rad bez mreže sa SW-om provjerava se pravim prekidom (proxy koji se ugasi, ili DevTools u pravom
   pregledniku); u e2e se provjerava ono što se može dokazati (što je spremljeno, i da se čita iz predmemorije), uz
   mutaciju koja pokaže da test pada kad funkcija ne radi.
+
+### L-087 — Predložen popravak koji je lekcija L-082 već isključila (2026-11-27)
+- What happened: nakon dva pada preuzimanja („Network is unreachable”) predložio sam prisilni IPv4; vlasnik je
+  odobrio. Tek tada sam u `tasks/lessons.md` našao L-082: isti simptom 19. 11., a uzrok je bio odbijanje na
+  IPv4. Dijagnostika na runneru 27. 11. potvrdila je da IPv4 radi s jednih runnera, a s drugih ne.
+- Root cause: dijagnozu sam postavio iz poruke greške, bez pretrage lekcija i plana za isti simptom.
+- Rule going forward: prije prijedloga popravka za grešku vanjskog izvora pretražiti `tasks/lessons.md` i
+  `tasks/todo.md` po poruci greške i imenu izvora; ako lekcija postoji, prvo pokrenuti njezinu dijagnostiku.
