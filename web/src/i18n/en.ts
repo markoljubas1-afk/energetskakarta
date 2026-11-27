@@ -591,6 +591,8 @@ export const en: Dictionary = {
   energyPumping: "Pumping in pumped-storage plants (consumption)",
   energyCoverage: "Data for {covered} of {total} days.",
   energyLoadUnknown: "Load is not known for the whole period, so shares of load are not calculated.",
+  energyKrskoRowHr: "Croatia's half of the Krško nuclear plant (in Slovenia, not in the total)",
+  energyKrskoRowSi: "Of which half of the Krško nuclear plant, which is Croatia's",
   energyRangeInvalid: "The start must be before the end, and the period at most three years.",
   energyRangeEmpty: "No data for this period.",
   energyRangeHint: "Choose a start and an end date.",

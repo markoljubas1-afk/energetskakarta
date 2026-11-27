@@ -20,13 +20,14 @@ import {
   type Periods,
 } from "../data/energy";
 import { RENEWABLE } from "../data/greenShare";
+import { KRSKO_HOST, KRSKO_PARTNER, krskoHalfOfPeriod, krskoHalfOfRange, krskoNote } from "../data/krsko";
 import { isOneOf, type Technology } from "../domain";
-import { useI18n } from "../i18n";
+import { useI18n, type I18n } from "../i18n";
 import { PALETTES, type Theme } from "../map/palette";
 import { ChartShare, chartLink } from "../share/ChartShare";
 import type { Table } from "../share/csv";
 import { ENERGY_AREAS, ENERGY_CHARTS, type AppState, type EnergyChart, type EnergyState } from "../state/url";
-import { compareTable, mixTable, rangeTable, ringTable, type CsvLabels } from "./csv";
+import { compareTable, mixTable, rangeTable, ringTable, type CsvLabels, type KrskoRow } from "./csv";
 import styles from "./EnergyView.module.css";
 import { RingChart } from "./RingChart";
 
@@ -361,6 +362,8 @@ function Content({ dataBaseUrl, pointer, periods, energy, update, theme, embedde
         <SourceRing
           data={data}
           techs={techs}
+          area={area}
+          krskoOf={(period) => krskoHalfOfPeriod(periods, energy.unit, period)}
           areaName={areaName}
           energy={energy}
           palette={palette}
@@ -441,6 +444,26 @@ export function ringPeriod(
   };
 }
 
+/** Croatia's half of Krško, for Croatia or Slovenia alone (data/krsko.ts); nothing otherwise. */
+function KrskoNote({ area, mwh, load }: { area: string; mwh: number | null; load: number | null }) {
+  const i18n = useI18n();
+  const note = krskoNote(
+    i18n,
+    area,
+    mwh === null ? null : i18n.energy(mwh),
+    mwh === null || !load ? null : i18n.percent(mwh / load),
+  );
+  return note === null ? null : <p className={styles.muted}>{note}</p>;
+}
+
+/** The same as a row of the range's table: not in its total for Croatia, inside it for Slovenia. */
+function krskoRow(area: string, mwh: number | null, t: I18n["t"]): KrskoRow | null {
+  if (mwh === null) return null;
+  if (area === KRSKO_PARTNER) return { label: t("energyKrskoRowHr"), mwh };
+  if (area === KRSKO_HOST) return { label: t("energyKrskoRowSi"), mwh };
+  return null;
+}
+
 /** The groups of sources beside the ring (Faza 55-1); together they are all of generation. */
 export const SOURCE_GROUPS = ["renewable", "fossil", "nuclear", "other"] as const;
 export type SourceGroup = (typeof SOURCE_GROUPS)[number];
@@ -502,6 +525,9 @@ export function groupShares(
 function SourceRing(props: {
   data: EnergySeries;
   techs: Technology[];
+  area: string;
+  /** Croatia's half of Krško in a period of the series (data/krsko.ts) */
+  krskoOf: (period: string) => number | null;
   areaName: string;
   energy: EnergyState;
   palette: (typeof PALETTES)[Theme];
@@ -510,7 +536,7 @@ function SourceRing(props: {
   ink: string;
   grid: string;
 }) {
-  const { data, techs, areaName, energy, palette, theme, kit, ink, grid } = props;
+  const { data, techs, area, krskoOf, areaName, energy, palette, theme, kit, ink, grid } = props;
   const i18n = useI18n();
   const { t } = i18n;
   const [chosen, setChosen] = useState<string | null>(null);
@@ -628,6 +654,7 @@ function SourceRing(props: {
         {shown.coverage < COMPLETE &&
           ` ${t("energyIncomplete", { share: i18n.number(shown.coverage * 100) })}.`}
       </p>
+      <KrskoNote area={area} mwh={krskoOf(shown.period)} load={shown.load} />
     </Card>
   );
 }
@@ -873,7 +900,8 @@ function RangeTotals(props: {
     );
   } else if (range && files?.status === "ready") {
     const totals = rangeTotals(files.value, area, codes, range.from, range.to);
-    rows = rangeTable(totals, kit.labels);
+    const krsko = krskoHalfOfRange(files.value, range.from, range.to);
+    rows = rangeTable(totals, kit.labels, krskoRow(area, krsko, t));
     if (totals.coveredDays === 0 && totals.total === 0) {
       result = <p className={styles.muted}>{t("energyRangeEmpty")}</p>;
     } else {
@@ -934,6 +962,7 @@ function RangeTotals(props: {
               </tfoot>
             </table>
           </div>
+          <KrskoNote area={area} mwh={krsko} load={totals.load} />
         </>
       );
     }

@@ -274,3 +274,62 @@ describe("EnergyView", () => {
     expect(full.getAttribute("href")).not.toMatch(/embed=1/);
   });
 });
+
+describe("Croatia's half of Krško", () => {
+  // Slovenia's nuclear: 480 MWh in February, 600 MWh over the two June days
+  const nuclear = (values: number[], coverage: number[]) => ({
+    generation: { nuclear: values },
+    consumption: {},
+    load: values.map(() => 1),
+    coverage: { generation: coverage, load: coverage },
+  });
+  const WITH_SI = {
+    ...PERIODS,
+    countries: {
+      ...PERIODS.countries,
+      SI: {
+        months: { periods: months, ...nuclear([500, 480, 300], [1, 1, 0.6]) },
+        years: { periods: ["2025"], ...nuclear([1_280], [0.8]) },
+      },
+    },
+  };
+  const YEAR_SI = { ...YEAR, countries: { ...YEAR.countries, SI: nuclear([300, 300], [1, 1]) } };
+  const stub = () =>
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        routeFetch({
+          "energy/current.json": { ...POINTER, countries: ["HR", "SI"] },
+          "periods-bbbbbbbbbbbb.json": WITH_SI,
+          "daily/2025-aaaaaaaaaaaa.json": YEAR_SI,
+        }),
+      ),
+    );
+
+  it("says beside Croatia's ring how much of it is Croatia's half, with its share of consumption", async () => {
+    stub();
+    renderWithI18n(<Harness initial={{ area: "HR" }} />);
+    await screen.findByRole("img", { name: /Prstenasti grafikon/ });
+    const card = screen.getByRole("region", { name: "Udio izvora u proizvodnji" });
+    // February: 240 MWh of 19 GWh consumed
+    expect(card).toHaveTextContent(
+      /Hrvatskoj pripada i polovica proizvodnje Nuklearne elektrane Krško, oko 240 MWh \(1,3\s%\spotrošnje\)\./,
+    );
+  });
+
+  it("says nothing of the kind for the whole region, which holds both halves", async () => {
+    stub();
+    renderWithI18n(<Harness />);
+    await screen.findByRole("img", { name: /Prstenasti grafikon/ });
+    expect(screen.queryByText(/Krško/)).not.toBeInTheDocument();
+  });
+
+  it("says it under the totals of a chosen range", async () => {
+    stub();
+    renderWithI18n(<Harness initial={{ area: "HR", range: { from: "2025-06-01", to: "2025-06-02" } }} />);
+    await screen.findByText("Podaci za 2 od 2 dana.");
+    const card = screen.getByRole("region", { name: /Zbroj za odabrano razdoblje/ });
+    // 300 MWh of the 2 000 MWh consumed
+    expect(card).toHaveTextContent(/oko 300 MWh \(15\s%\spotrošnje\)\./);
+  });
+});
