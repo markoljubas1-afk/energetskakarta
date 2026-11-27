@@ -552,3 +552,11 @@
 - Root cause: lokalna provjera nije bila ista kao u CI-ju (`mypy src tests`).
 - Rule going forward: u pipelineu uvijek `mypy src tests` (i `ruff check src tests`), isto kao CI; objekt se
   patcha ondje gdje je definiran.
+
+### L-089 — Cijeli skup testova nakon zadnje promjene, i radnih tokova (2026-11-27)
+- What happened: PR #39 je u CI-ju pao na `test_workflow_rules` (novi zakazani `capacity-monthly.yml` nije bio upisan
+  u `EXPECTED`). Lokalno je cijeli pytest prošao, ali pokrenut je prije nego što je radni tok napisan.
+- Root cause: provjera je pokrenuta usred posla, a ne nakon zadnje promjene; radni tokovi imaju svoje testove u
+  `pipeline/tests`.
+- Rule going forward: nakon svake promjene u `.github/workflows` (i prije commita uopće) ponovno cijeli pytest; novi
+  zakazani radni tok dobiva prekidač i u `test_workflow_rules.EXPECTED`.

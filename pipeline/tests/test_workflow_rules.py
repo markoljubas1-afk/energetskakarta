@@ -33,6 +33,7 @@ EXPECTED = {
     "gas-daily.yml": "SCHEDULE_GAS",
     "hep-daily.yml": "SCHEDULE_HEP",
     "prices-daily.yml": "SCHEDULE_ENTSOE",
+    "capacity-monthly.yml": "SCHEDULE_ENTSOE",
 }
 # keepalive keeps every schedule alive, so it runs when any switch is on
 KEEPALIVE = "keepalive.yml"
