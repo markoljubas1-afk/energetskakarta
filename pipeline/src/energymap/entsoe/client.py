@@ -174,6 +174,16 @@ class EntsoeClient:
             raise NoData(f"{params.get('documentType')} {format_time(start)}-{format_time(end)}")
         return parse_document(body, value_element)
 
+    def raw(self, params: Mapping[str, str], start: datetime, end: datetime) -> bytes:
+        """The platform's document for one window (≤ 1 year), unparsed, for documents ``query`` does not
+        read (yearly resolutions, units). Raises NoData for an empty range."""
+        if end - start > timedelta(days=366):
+            raise ValueError("ENTSO-E accepts at most one year per request; use year_windows()")
+        body = self._get({**params, "periodStart": format_time(start), "periodEnd": format_time(end)})
+        if is_no_data(body):
+            raise NoData(f"{params.get('documentType')} {format_time(start)}-{format_time(end)}")
+        return body
+
     def _get(self, params: Mapping[str, str]) -> bytes:
         safe = dict(params)  # the token is only added to the outgoing request below
         for attempt in range(1, MAX_ATTEMPTS + 1):

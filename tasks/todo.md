@@ -3852,3 +3852,21 @@ Stanje: slike izvora (dan, mjesec) imaju napomenu samo u opisu i ispod slike u d
     godina prema godini 2025: 2,26 TWh, 2026: 2,49 TWh (isti mjeseci); zemlje u listopadu 2026.: 258 GWh,
     18,1 % potrošnje.
 
+## ENTSO-E kapaciteti — 2026-11-27 (vlasnik: „može, kreni s ENTSO-E kapacitetima”)
+
+Cilj: službena instalirana snaga po izvoru i zemlji (i po velikim elektranama) uz brojke s karte (OSM, GEM), da
+se popuni redak „ENTSO-E kapaciteti, mjesečno” u rasporedu ažuriranja.
+
+- [x] Korak 1 (2026-11-27): pregled bez objave.
+  - `energymap energy capacity-survey` (`entsoe/capacity.py`) pita ENTSO-E za svaku zemlju, a za Italiju i
+    za svaku zonu, svaku godinu od 2015.: A68 (snaga po vrsti) i A71 (jedinice od 100 MW naviše, s EIC-om i
+    imenom, za zadnju godinu koja ih ima).
+  - Rezultat ide u sažetak posla i `capacity.json` (artefakt); ručni radni tok `capacity-survey.yml`.
+  - Klijent je dobio `raw` za dokumente koje `query` ne čita (godišnja rezolucija, jedinice). Testovi +4.
+  - Lokalno nema tokena, a ručni radni tok mora biti na mainu da se može pokrenuti.
+- [ ] Korak 2 (čeka korak 1): plan proizvoda prema stvarnom odgovoru. Mogućnosti:
+  - tablica „Instalirana snaga po izvoru” po zemlji i godini (stranice zemalja i `/proizvodnja/`) uz zbroj s
+    karte;
+  - jedinice A71 spojene s elektranama na karti (EIC), sa službenom snagom u panelu objekta;
+  - mjesečna provjera u postojećem `energy-daily` (izvor se mijenja jednom godišnje).
+
