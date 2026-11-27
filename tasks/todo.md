@@ -531,7 +531,7 @@ Stanje nakon popravaka: pipeline 462 testa (s tippecanoeom, ništa preskočeno),
 - [ ] **Sloj A — proizvodnja i potrošnja uživo** (satni miks, neto pozicije, traka ključnih brojki iz prototipa):
   napravljeni su tokovi i cijene (6A/6B) i povijest (Faza 3), ali ne i satni miks/potrošnja.
 - [ ] **Planirani projekti mreže (TYNDP / PCI-PMI)**: u opsegu MVP-a, nema koda. Do tada planirano dolazi samo iz OSM-a i GEM-a.
-- [ ] **ENTSO-E kapaciteti, mjesečno**: nema ni koda ni workflowa — napraviti ili maknuti iz tablice rasporeda.
+- [x] **ENTSO-E kapaciteti, mjesečno**: `capacity-monthly.yml` (2026-11-27, vidi „ENTSO-E kapaciteti”).
 - [ ] Faza 1c (`type=site` relacije): odluka tek nakon prvog stvarnog manifesta.
 
 ### Poznato, nije dirano
@@ -2718,7 +2718,7 @@ Serija 3 napravljeno (2026-11-15):
 | OSM | Tjedno | Automatski (cron) |
 | HEP ODS kapaciteti (Faza 15) | U verzijama (provjera svaki dan) | Automatski, `hep-daily` (prekidač `SCHEDULE_HEP`) |
 | Eurostat, službeni udio OIE (Faza 28) | Godišnje (provjera mjesečno) | Automatski, `eurostat-update` (prekidač `SCHEDULE_OSM`) |
-| ENTSO-E kapaciteti | Mjesečno | **Nije napravljeno** (nema ni koda ni workflowa; vidi pregled 2026-09-17) |
+| ENTSO-E kapaciteti (A68) | Godišnje (provjera mjesečno) | Automatski, `capacity-monthly` (prekidač `SCHEDULE_ENTSOE`) |
 | ENTSO-E tokovi (faza 6) | Po satu/dnevno | Automatski |
 | GEM | Kad izađe novo izdanje (nekoliko puta godišnje) | Poluautomatski: preuzmi → pipeline → pregled diffa |
 | TYNDP / PCI / planovi TSO-a | Kvartalno ili pri objavi | Ručni pregled + `overrides` |
@@ -3880,7 +3880,26 @@ se popuni redak „ENTSO-E kapaciteti, mjesečno” u rasporedu ažuriranja.
     - IT ima nemoguće brojke (geotermalna 450.000 MW, sunčane 80.000 MW).
     - HU ima zbirne „jedinice” (MAVIRGYuz 3.934 MW sunca, regulacijski centar 924 MW).
     - RS uključuje TE Kosovo A i B.
-- [ ] Korak 2: PLAN 2026-11-27, čeka potvrdu.
+- [ ] Korak 2: PLAN 2026-11-27, potvrđen („može, kreni po planu”).
+  - Redoslijed (dorada 2026-11-27): KC1 ide u zaseban PR. Novi radni tok može se pokrenuti tek s maina, a
+    lokalno nema tokena, pa KC2/KC3 rade nad stvarno objavljenim `energy/capacity.json` (drugi PR).
+  - Validacija (dorada): umjesto „svaka zemlja ima zadnju godinu” (puca oko Nove godine, kad neki operatori
+    već objave sljedeću, a drugi ne): po zemlji zadnja godina nije starija od objavljene, nijedna objavljena
+    godina ne nestaje (`--allow-drop`), zbroj zadnje godine nije pao više od 50 % prema godini prije.
+    `year` je zadnja godina koju imaju sve zemlje. Nepromijenjen sadržaj (`contentHash`) se ne prepisuje.
+  - Godina Y je snaga na početku godine Y (A33, objava godinu unaprijed): tako i u tekstu.
+  - Pitanje samo područja zemlje (zone Italije su prazne); svaka greška platforme ruši dohvat.
+  - [x] KC1 napravljen (2026-11-27, grana `faza-entsoe-kapaciteti-3`):
+    - `entsoe/installed.py`: `collect` (A68 po zemlji, 2015. do sljedeće godine, vrste u tehnologije karte,
+      0 MW izostavljeno, nepoznata vrsta ruši), pydantic `Installed` (zbroj = suma, godine rastu, pad ispod
+      50 %, `year` = zadnja zajednička, `contentHash`), `publish_installed` (izgubljena objavljena godina
+      odbijena bez `--allow-drop`; isti sadržaj se ne piše).
+    - CLI `energy capacity-fetch | capacity-publish-r2 | capacity-publish-dir` → `energy/capacity.json`
+      (lokalno `data/entsoe/installed.json`; ključ ne dira čišćenje `energy/` jer ga regex ne hvata).
+    - `capacity-monthly.yml`: 3. u mjesecu, prekidač `SCHEDULE_ENTSOE` (već uključen), issue pri padu,
+      ulaz `allow_drop`. `web.yml` gradi stranice i nakon njega.
+    - Testovi +7 (`test_entsoe_installed.py`).
+    - Nakon spajanja: ručno pokretanje `capacity-monthly`, pa KC2/KC3 na novoj grani.
   - **KC1 pipeline:**
     - `energymap energy capacity-fetch` / `capacity-publish-r2` (`entsoe/capacity.py`) čita A68 za svaku
       zemlju i godinu od 2015. i spaja ga u tehnologije karte (`PSR_TECHNOLOGY`).

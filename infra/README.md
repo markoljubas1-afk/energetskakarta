@@ -78,7 +78,7 @@ preuzimanje → build uz usporedbu s objavljenim → izvještaj o promjenama →
 | Varijabla | Što uključuje | Kad je postaviti na `true` |
 |---|---|---|
 | `SCHEDULE_OSM` | `osm-scheduled` (tjedno), `emodnet-update`, `geothermal-update`, `eurostat-update` i `images-update` (mjesečno) | nakon prve uspješne objave (A.6); za `eurostat-update` nakon prvog uspješnog ručnog pokretanja |
-| `SCHEDULE_ENTSOE` | `energy-daily` (dnevno), `live-hourly` (svaki sat), `prices-daily` (dnevno, nakon dražbe dan unaprijed) | nakon uspješnog `energy-backfill` (dio D) |
+| `SCHEDULE_ENTSOE` | `energy-daily` (dnevno), `live-hourly` (svaki sat), `prices-daily` (dnevno, nakon dražbe dan unaprijed), `capacity-monthly` (mjesečno, instalirana snaga) | nakon uspješnog `energy-backfill` (dio D) |
 | `SCHEDULE_GAS` | `gas-daily` (dnevno, 07:40 UTC; ENTSOG, bez ključa) | nakon prvog uspješnog ručnog `gas-daily` (treba samo R2) |
 | `SCHEDULE_HEP` | `hep-daily` (dnevno; HEP ODS slobodni kapaciteti) | nakon prvog uspješnog ručnog `hep-daily` |
 
@@ -179,7 +179,8 @@ token s dozvolom **Account → Cloudflare Pages → Edit**.
 
 Dok `PAGES_PROJECT` nije postavljen, workflow `web` pokreće provjere i e2e testove, a objavu preskače.
 Stranica se objavljuje i nakon svakog uspješnog pokretanja podatkovnih workflowa (`osm-scheduled`,
-`osm-build`, `prices-daily`, `hep-daily`, `geothermal-update`, `eurostat-update`; `workflow_run`), jer statične
+`osm-build`, `prices-daily`, `hep-daily`, `geothermal-update`, `eurostat-update`, `gas-daily`,
+`capacity-monthly`; `workflow_run`), jer statične
 stranice za tražilice (`/o-karti/`, `/zemlja/*`, `/objekt/*`, izvještaji, sitemap) nastaju iz objavljenih
 podataka u trenutku builda. Neuspjelo ili preskočeno pokretanje ne gradi ništa i ne prekida objavu u tijeku.
 Kad je postavljen, a `DATA_BASE_URL` nije, build namjerno pada, da se nikad ne objavi stranica bez podataka.

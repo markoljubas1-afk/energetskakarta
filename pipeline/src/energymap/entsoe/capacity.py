@@ -154,13 +154,13 @@ def fields_of(xml: bytes) -> list[str]:
     return sorted(set(walk(first, "")))
 
 
-def _year_window(year: int) -> tuple[datetime, datetime]:
+def year_window(year: int) -> tuple[datetime, datetime]:
     return datetime(year - 1, 12, 31, 23, tzinfo=UTC), datetime(year, 12, 31, 23, tzinfo=UTC)
 
 
 def _ask(client: EntsoeClient, document: str, eic: str, year: int) -> bytes | None:
     """The platform's answer for one area and year; None when it has nothing."""
-    start, end = _year_window(year)
+    start, end = year_window(year)
     try:
         return client.raw({"documentType": document, "processType": YEAR_AHEAD, "in_Domain": eic}, start, end)
     except NoData:

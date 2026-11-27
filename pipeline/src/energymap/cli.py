@@ -4,6 +4,7 @@ energymap osm download|build|run   OpenStreetMap grid data
 energymap tiles build              PMTiles for a build
 energymap publish r2               upload a build to Cloudflare R2
 energymap eurostat fetch|publish-* official renewable shares (Eurostat)
+energymap energy capacity-*         installed capacity per type and year (ENTSO-E)
 energymap images update            photographs of plants from Wikimedia Commons
 energymap solar fetch|publish-*    solar potential (Global Solar Atlas)
 energymap solar home-*             daily shapes of sun (PVGIS) and of a household (HEP ODS)
@@ -32,6 +33,7 @@ from energymap.cities import read as cities_read
 from energymap.conflate import OverridesError
 from energymap.entsoe import capacity as energy_capacity
 from energymap.entsoe import fetch as energy_fetch
+from energymap.entsoe import installed as energy_installed
 from energymap.entsoe import live as energy_live
 from energymap.entsoe import prices as energy_prices
 from energymap.entsoe import records as live_records
@@ -218,6 +220,27 @@ def parser() -> argparse.ArgumentParser:
         default=list(config.COUNTRIES),
         help="comma separated codes, default: all",
     )
+
+    for name, text in (
+        ("capacity-fetch", "fetch installed capacity per type and year into data/entsoe/installed.json"),
+        ("capacity-publish-r2", "publish data/entsoe/installed.json to Cloudflare R2"),
+        ("capacity-publish-dir", "publish data/entsoe/installed.json to a local mirror"),
+    ):
+        step = energy.add_parser(name, help=text)
+        _data_dir(step)
+        if name == "capacity-fetch":
+            step.add_argument(
+                "--countries",
+                type=_countries,
+                default=list(config.COUNTRIES),
+                help="comma separated codes, default: all",
+            )
+        else:
+            step.add_argument(
+                "--allow-drop", action="store_true", help="publish even if a published year is missing"
+            )
+        if name == "capacity-publish-dir":
+            step.add_argument("--out", type=Path, required=True, help="target directory, e.g. ../web/.data")
 
     pull = energy.add_parser("pull", help="download the published yearly files (fresh machine)")
     _data_dir(pull)
@@ -873,6 +896,39 @@ def run(args: argparse.Namespace) -> None:
             )
         write_json_atomic(paths.root / "entsoe" / "capacity.json", capacity_document)
         print(energy_capacity.markdown(capacity_document), end="")
+    elif args.group == "energy" and args.step.startswith("capacity-"):
+        installed_file = paths.root / "entsoe" / "installed.json"
+        if args.step == "capacity-fetch":
+            with EntsoeClient.from_env() as client:
+                installed = energy_installed.collect(
+                    client, datetime.now(UTC), [c.code for c in args.countries]
+                )
+            write_json_atomic(installed_file, energy_installed.dump(installed), compact=True)
+            print(
+                json.dumps(
+                    {
+                        "year": installed.year,
+                        "totalMw": {code: years[-1].total for code, years in installed.countries.items()},
+                        "lastYear": {code: years[-1].year for code, years in installed.countries.items()},
+                    }
+                )
+            )
+        else:
+            if not installed_file.exists():
+                raise BuildValidationError(
+                    [f"{installed_file} not found; run `energymap energy capacity-fetch` first"]
+                )
+            installed_store: publish.ObjectStore = (
+                publish.R2Store.from_env()
+                if args.step == "capacity-publish-r2"
+                else publish.DirectoryStore(args.out)
+            )
+            installed_changed = energy_installed.publish_installed(
+                installed_store,
+                energy_installed.parse(read_json(installed_file)),
+                allow_drop=args.allow_drop,
+            )
+            print(json.dumps({"changed": installed_changed}))
     elif args.group == "energy" and args.step == "pull":
         with make_client() as client:
             print(json.dumps(energy_release.pull(client, args.baseline_url, paths.root / "energy")))
@@ -1004,6 +1060,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         hep_capacity.HepDataError,
         eurostat_renewables.EurostatSourceError,
         eurostat_renewables.EurostatDataError,
+        energy_installed.InstalledDataError,
         wikimedia.ImagesError,
         solar_potential.SolarDataError,
         solar_home.HomeDataError,
