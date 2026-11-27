@@ -3640,11 +3640,15 @@ Plan:
   (`osm-scheduled`/`osm-build`), a `_redirects` u deployu weba koji ga slijedi (web.yml, `workflow_run`, sa
   `SITE_URL` → čita živi `seo-manifest.json`). Slaba točka: ako se živi manifest u tom deployu ne pročita
   (samo upozorenje), stranice GEM zapisa ispadnu iz manifesta i preusmjeravanje za njih više ne nastaje.
-- [ ] **Nakon sljedećeg builda podataka:** `/zemlja/hu/nuklearne-elektrane/` — 3 zapisa, ≈ 4,5 GW;
+- [x] **Nakon sljedećeg builda podataka:** `/zemlja/hu/nuklearne-elektrane/` — 3 zapisa, ≈ 4,5 GW;
   `curl -sI https://gridatlas.eu/objekt/gem-L100000500197-operating/` (i `/en/asset/…`) → 301 na
   `/objekt/osm-relation-7671467/`; `_redirects` ≈ 58–60 redaka (30 živih GEM stranica, 29 s ciljem); u logu builda
   `matched_by_capacity` ≈ 34 i upozorenje s `relation/19686395`. Ako je upozorenje bučno (multipoligon preko
   granice sastavljen u susjednom izvatku), uspoređivati id-jeve nakon `merge`, ne po izvatku.
+  **Provjereno uživo 2026-11-27** (build 20261127T065206Z, run 45953055868): HU nuklearne 3 zapisa, 4,56 GW
+  (prije 6,56); obje stare adrese Paksa 301 na `osm-relation-7671467`; `moved` u manifestu 62 (svi ciljevi
+  objavljeni); spojeno 1056, od toga 34 po snazi i 4 ručno. Upozorenje: `relation/19686395` (HR i BA izvadak),
+  `relation/6271685` (Đerdap II, RS), `relation/2891012` (AT) — nije bučno, ostaje po izvatku.
 - [x] PR #32, preview provjeren 2026-11-26 (regresije, podaci isti kao na produkciji): početna, /en/, HU nuklearne,
   stara GEM stranica Paksa i stranica `osm-relation-7671467`, hidroelektrane HR, /api/ — sve 200; SEO manifest
   8390 stranica, bez `moved` i bez preusmjeravanja (ništa još nije spojeno, kako se i očekuje).
