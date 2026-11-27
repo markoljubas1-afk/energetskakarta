@@ -175,7 +175,7 @@ jobs:
         run: energymap publish r2 --data-dir data
       - name: Keep the build report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: osm-report
           path: |

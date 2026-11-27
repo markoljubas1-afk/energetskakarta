@@ -37,7 +37,7 @@ jobs:
           ENTSOE_TOKEN: ${{ secrets.ENTSOE_TOKEN }}
           COUNTRIES: ${{ inputs.countries }}
         run: energymap energy capacity-survey --data-dir data --countries "$COUNTRIES" >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: capacity-survey
           path: pipeline/data/entsoe/capacity.json
