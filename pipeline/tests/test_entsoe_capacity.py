@@ -53,6 +53,14 @@ def test_a_year_of_capacity_per_type_and_per_unit() -> None:
     assert "MktPSRType/PowerSystemResources/name" in capacity.fields_of(
         _document(_series(2025, "B14", 1, ("x", "y")))
     )
+    # as the platform sends A71: the unit on the series, beside its type
+    named = _series(2027, "B14", 696).replace(
+        "<MktPSRType>",
+        "<registeredResource.mRID codingScheme='A01'>14W-NEK-K-----1</registeredResource.mRID>"
+        "<registeredResource.name>NEK</registeredResource.name><MktPSRType>",
+    )
+    [unit] = capacity.parse_capacity(_document(named))
+    assert (unit.unit_id, unit.unit_name, unit.year, unit.mw) == ("14W-NEK-K-----1", "NEK", 2027, 696)
     with pytest.raises(EntsoeParseError, match="unexpected document"):
         capacity.parse_capacity(b"<Other/>")
 
