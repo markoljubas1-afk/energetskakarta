@@ -6,6 +6,11 @@ name: capacity-survey
 
 on:
   workflow_dispatch:
+    inputs:
+      countries:
+        description: "Comma separated country codes (default: all)"
+        default: "HR,SI,HU,RS,BA,ME,AT,IT"
+        required: true
 
 permissions:
   contents: read
@@ -13,7 +18,9 @@ permissions:
 jobs:
   survey:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    # the platform answers these in 5 to 15 seconds each: about 2 to 5 minutes per country, Italy (eight
+    # areas) about 25 (run 46012147012, cancelled at 30 minutes after ME)
+    timeout-minutes: 120
     defaults:
       run:
         working-directory: pipeline
@@ -28,7 +35,8 @@ jobs:
       - name: Survey installed capacity
         env:
           ENTSOE_TOKEN: ${{ secrets.ENTSOE_TOKEN }}
-        run: energymap energy capacity-survey --data-dir data >> "$GITHUB_STEP_SUMMARY"
+          COUNTRIES: ${{ inputs.countries }}
+        run: energymap energy capacity-survey --data-dir data --countries "$COUNTRIES" >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with:
           name: capacity-survey
