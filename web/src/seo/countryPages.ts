@@ -35,6 +35,8 @@ import {
   type StaticPage,
 } from "./site";
 import { solarCapitaSentence, transitionLinks } from "./transition";
+import { krskoCountryLead } from "./krsko";
+import { KRSKO_ID } from "../data/krsko";
 import { gasLinks } from "./gasPages";
 import { energyLinks } from "./energyPages";
 import { DATASET_LICENSE } from "./license";
@@ -59,6 +61,13 @@ const COUNTRY_FIGURES = {
     plantForms: ["plant", "plants", "plants"] as Forms,
   },
 } as const;
+
+/** The Krško plant's page, when this build publishes one (a moved or dropped record has none). */
+function krskoPath(site: SiteData, lang: Lang): string | null {
+  const row = site.index.rows.find((each) => each[0] === KRSKO_ID);
+  const hit = row ? toHit(row) : null;
+  return hit && pageWorthy(hit) ? PATHS[lang].asset(assetSlug(hit.id)) : null;
+}
 
 export function countryPage(site: SiteData, lang: Lang, code: CountryCode, hubs: CountryHubs): StaticPage {
   const copy = COPY[lang];
@@ -129,7 +138,8 @@ export function countryPage(site: SiteData, lang: Lang, code: CountryCode, hubs:
     heading: copy.country.heading(name),
     lead:
       `<p>${e(copy.country.intro(name, operating, plants, i18n.km(totalKm)))}</p>` +
-      solarCapitaSentence(site, lang, code),
+      solarCapitaSentence(site, lang, code) +
+      krskoCountryLead(lang, code, krskoPath(site, lang)),
     figures,
     sections: [
       {

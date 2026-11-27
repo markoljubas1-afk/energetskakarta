@@ -130,6 +130,21 @@ describe("monthly reports", () => {
     expect(monthName("en", "2026-02")).toBe("February 2026");
   });
 
+  it("say how much Croatia's half of Krško was, for a month Slovenia reported in full", () => {
+    // Slovenia's nuclear in September 2026: 500 MWh, so 250 MWh of Croatia's 1 200 MWh consumed
+    expect(plain(report("/izvjestaji/2026-09/").lead)).toContain(
+      "Hrvatskoj pripada i polovica proizvodnje Nuklearne elektrane Krško, oko 250 MWh (20,8 % potrošnje). Elektrana je u Sloveniji, pa ENTSO-E njezinu proizvodnju vodi kao slovensku, a dio koji preuzima HEP kao uvoz u Hrvatsku.",
+    );
+    expect(plain(report("/en/reports/2026-09/").lead)).toContain(
+      "Croatia also owns half of the output of the Krško nuclear plant, about 250 MWh (20.8% of consumption).",
+    );
+    // Slovenia reported half of August: no figure, but the method still says how Krško is counted
+    expect(report("/izvjestaji/2026-08/").lead).not.toContain("Krško");
+    expect(html(report("/izvjestaji/2026-08/"))).toContain(
+      "Nuklearna elektrana Krško je u Sloveniji, a pola njezine proizvodnje pripada Hrvatskoj (HEP).",
+    );
+  });
+
   it("open with a citable sentence against the month before and the same month a year earlier", () => {
     // (600×24 + 200×11 + 100×48 + 100×490) / 1 000 = 70.4 g/kWh
     expect(plain(report("/izvjestaji/2026-09/").lead)).toContain(

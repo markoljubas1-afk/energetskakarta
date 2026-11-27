@@ -277,6 +277,15 @@ export const en: Dictionary = {
     "Croatia also owns half of the output of the Krško nuclear plant, about {amount} ({share} of consumption). The plant is in Slovenia, so ENTSO-E counts its generation as Slovenian and the part HEP takes as an import into Croatia.",
   krskoSi:
     "Half of the output of the Krško nuclear plant, about {amount}, belongs to Croatia (HEP). Here, as at ENTSO-E, it is counted in Slovenia's generation.",
+  krskoPlant:
+    "The plant is in Slovenia and is owned in equal halves by Slovenia's GEN energija and Croatia's HEP; each takes half of the electricity it generates. ENTSO-E and Eurostat count its generation as Slovenian, and Croatia's half as an import into Croatia.",
+  krskoPlantYear: "In {year}, Croatia's half was about {amount}.",
+  krskoPlantYearShare: "In {year}, Croatia's half was about {amount}, {share} of Croatia's consumption.",
+  krskoCountryHr:
+    "Croatia also owns half of the Krško nuclear plant in Slovenia. ENTSO-E and Eurostat count its generation as Slovenian, and Croatia's half as an import into Croatia.",
+  krskoCountrySi:
+    "Half of the Krško nuclear plant belongs to Croatia (HEP). ENTSO-E and Eurostat count all of its generation as Slovenian, and so does this site.",
+  krskoMore: "About the plant",
   sourcesFooter:
     "Source: ENTSO-E Transparency Platform · Carbon footprint: calculated with IPCC AR5 factors · gridatlas.eu",
   sourceName_hydro: "Hydropower",

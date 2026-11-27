@@ -3686,15 +3686,31 @@ Ne preuzimamo brojke iz zalijepljenog teksta (15–16 %, 30–40 %), ni tvrdnju 
 
 Rečenica ne kaže „od uvoza”: u satu ili mjesecu kad Hrvatska izvozi to ne bi bilo točno.
 
-- [ ] K1 `web/src/data/krsko.ts`: udio (0,5), zemlje, `krskoHalf(siNuclear)`; i18n ključevi hr/en.
-- [ ] K2 Karta, kartica sastava struje (`MixCard`), sat: HR i SI.
-- [ ] K3 Slika izvora za dijeljenje (dan, mjesec; `sourcesCard`/`sourcesText`): HR i SI.
-- [ ] K4 Energetski pregled (`EnergyView`: prsten i raspon) i CSV raspona: HR i SI.
-- [ ] K5 Javni mjesečni izvještaj (`seo/report.ts`): rečenica uz „pokrila je X potrošnje” i stavka metode.
-- [ ] K6 `/proizvodnja/hr/` i `/proizvodnja/si/` (godina): rečenica u uvodu.
-- [ ] K7 Stranica NE Krško i `/zemlja/hr/`, `/zemlja/si/`: stalna rečenica s poveznicom.
+- [x] K1 `web/src/data/krsko.ts`: udio (0,5), zemlje, `krskoHalf(siNuclear)`; i18n ključevi hr/en.
+- [x] K2 Karta, kartica sastava struje (`MixCard`), sat: HR i SI.
+- [x] K3 Slika izvora za dijeljenje (dan, mjesec; `sourcesCard`/`sourcesText`): HR i SI.
+- [x] K4 Energetski pregled (`EnergyView`: prsten i raspon) i CSV raspona: HR i SI.
+- [x] K5 Javni mjesečni izvještaj (`seo/report.ts`): rečenica uz „pokrila je X potrošnje” i stavka metode.
+- [x] K6 `/proizvodnja/hr/` i `/proizvodnja/si/` (godina): rečenica u uvodu.
+- [x] K7 Stranica NE Krško i `/zemlja/hr/`, `/zemlja/si/`: stalna rečenica s poveznicom.
 - Izvan opsega: usporedba zemalja (nema rečenice o uvozu), zeleno svjetlo i punionice (već kažu „bez
   uvoza”), tablica tokova po granici (sirovi tokovi), stranica Edukacija (opći tekst; priča već ima korak).
 - Razmotreno i odbijeno: prekidač „računaj Krško kao domaće” (dvije inačice svakog izračuna).
 - Provjera: testovi uz svaku točku (TDD), cijeli vitest, tsc, lint, Prettier; preview: kartica na karti,
   energetski pregled za HR i SI, mjesečni izvještaj, `/proizvodnja/hr/`, stranica Krškog, obje jezične inačice.
+- Napravljeno (grana `faza-krsko`):
+  - `data/krsko.ts`: id pogona `osm:way/89819245` (ne GEM-ov planirani blok), pola slovenske nuklearne
+    proizvodnje za sat, dan/raspon (svaki dan potpun, ≥ 0,999) i mjesec/godinu (≥ 0,98); 0 (remont) = bez brojke.
+    Rečenica samo za HR ili SI; zbroj zemalja (ALL) već sadrži obje polovice.
+  - Provjera na stvarnim podacima (periods s R2): pola Krškog 2,7–3,0 TWh godišnje, 15,2 % hrvatske potrošnje
+    u 2025. (14,7–17,8 % od 2015.).
+  - Karta: kartica sastava struje (oba prikaza), bez udjela (u satu nema potrošnje za nazivnik).
+  - Slike za dijeljenje: rečenica u opisu slike i ispod slike u dijalogu; na samu sliku ne stane (široka nema
+    mjesta iznad podnožja, a uska sa šest izvora udara u podnožje) — test drži slike nepromijenjenima.
+  - Energetski pregled: uz prsten i zbroj raspona (s udjelom u potrošnji kad je poznata); CSV raspona ima redak.
+  - Mjesečni izvještaj: odlomak u uvodu i stavka u metodologiji; `/proizvodnja/hr/` i `/si/`: odlomak za godinu.
+  - Stranica Krškog: vlasništvo (GEN energija i HEP, pola-pola), kako statistika broji, zadnja potpuna godina.
+    `/zemlja/hr/` i `/zemlja/si/`: rečenica s poveznicom na Krško samo ako ovo izdanje ima tu stranicu.
+- Provjera: vitest cijeli (951 prolazi; 8 sporih testova u report/topics padaju samo na vremenskom
+  ograničenju lokalno, sami s 60 s prolaze 38/38), tsc, eslint, Prettier; mutacije (pokrivenost, područje,
+  potpuni dani) — svaku hvata test.

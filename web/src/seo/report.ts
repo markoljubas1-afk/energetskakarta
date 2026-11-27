@@ -6,6 +6,7 @@
  * (`COMPLETE_COVERAGE`), so a report never shows half a month. No energy data for Croatia, no reports.
  */
 import { intensity } from "../data/co2";
+import { krskoHalfOfPeriod, krskoNote } from "../data/krsko";
 import { priceMonth } from "../data/priceMonths";
 import { monthEnd } from "../data/storageMonths";
 import { latestShare, RES_TARGET_2030 } from "../data/eurostat";
@@ -459,6 +460,18 @@ function regionSection(lang: Lang, ctx: Context, month: string): Section {
   };
 }
 
+/** Croatia's half of Krško in the month, with its share of the month's load when that is known. */
+function krskoParagraph(site: SiteData, lang: Lang, month: string, row: PeriodRow | undefined): string {
+  if (!site.energy) return "";
+  const half = krskoHalfOfPeriod(site.energy, "month", month);
+  if (half === null) return "";
+  const i18n = createI18n(lang);
+  const load =
+    row && row.load !== null && row.load > 0 && row.loadCoverage >= COMPLETE_COVERAGE ? row.load : null;
+  const note = krskoNote(i18n, "HR", i18n.energy(half), load === null ? null : i18n.percent(half / load));
+  return note === null ? "" : `<p>${e(note)}</p>`;
+}
+
 function reportPage(site: SiteData, lang: Lang, ctx: Context, month: string): StaticPage {
   const copy = REPORT_COPY[lang];
   const i18n = createI18n(lang);
@@ -517,6 +530,7 @@ function reportPage(site: SiteData, lang: Lang, ctx: Context, month: string): St
     lead:
       `<p>${e(leadSentence(lang, ctx, month))}</p>` +
       (row?.total != null ? `<p>${e(copy.totals(i18n.energy(row.total), load))}</p>` : "") +
+      krskoParagraph(site, lang, month, row) +
       callout(copy.compare.month(name), { href: compareLink(lang, month), label: copy.compare.label }),
     ...(figures ? { figures } : {}),
     sections,

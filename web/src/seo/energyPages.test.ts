@@ -107,6 +107,20 @@ describe("generation by year", () => {
     expect(yearRows(energy, "IT")).toBeNull();
   });
 
+  it("say how much of the year was Croatia's half of Krško, on Croatia's page and on Slovenia's", () => {
+    // half of Slovenia's 5.4 TWh of nuclear in 2025, against Croatia's 18.5 TWh consumed
+    const plain = (value: string): string => value.replace(/\p{Zs}/gu, " ");
+    expect(plain(page("/proizvodnja/hr/").lead)).toContain(
+      "<p>Hrvatskoj pripada i polovica proizvodnje Nuklearne elektrane Krško, oko 2,7 TWh (14,6 % potrošnje).",
+    );
+    expect(plain(page("/proizvodnja/si/").lead)).toContain(
+      "<p>Polovica proizvodnje Nuklearne elektrane Krško, oko 2,7 TWh, pripada Hrvatskoj (HEP).",
+    );
+    expect(plain(page("/en/electricity-generation/si/").lead)).toContain(
+      "about 2.7 TWh, belongs to Croatia (HEP)",
+    );
+  });
+
   it("writes a citable line about the latest complete year", () => {
     const hr = page("/proizvodnja/hr/");
     expect(hr.title).toBe("Proizvodnja struje u Hrvatskoj po izvorima (2024.–2025.)");
