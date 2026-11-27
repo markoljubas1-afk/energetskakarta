@@ -123,8 +123,10 @@ def parse_capacity(xml: bytes) -> list[Capacity]:
                         psr_type=_text(psr, "psrType") if psr is not None else None,
                         year=year,
                         mw=mw,
-                        unit_id=_text(resource, "mRID"),
-                        unit_name=_text(resource, "name"),
+                        # the platform names the unit on the series itself (survey of 2026-11-27);
+                        # MktPSRType/PowerSystemResources is the place the standard also allows
+                        unit_id=_text(element, "registeredResource.mRID") or _text(resource, "mRID"),
+                        unit_name=_text(element, "registeredResource.name") or _text(resource, "name"),
                     )
                 )
     return found
