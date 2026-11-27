@@ -11,7 +11,17 @@ on:
   # prices-daily succeeds once a day after the day-ahead auction: the price and generation pages follow.
   # hep-daily succeeds daily and publishes a snapshot only on a new HEP release; rebuilding then is cheap.
   workflow_run:
-    workflows: [osm-scheduled, osm-build, prices-daily, hep-daily, geothermal-update, eurostat-update, gas-daily]
+    workflows:
+      [
+        osm-scheduled,
+        osm-build,
+        prices-daily,
+        hep-daily,
+        geothermal-update,
+        eurostat-update,
+        gas-daily,
+        capacity-monthly,
+      ]
     types: [completed]
 
 permissions:
