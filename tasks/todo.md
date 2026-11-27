@@ -3864,6 +3864,9 @@ se popuni redak „ENTSO-E kapaciteti, mjesečno” u rasporedu ažuriranja.
   - Rezultat ide u sažetak posla i `capacity.json` (artefakt); ručni radni tok `capacity-survey.yml`.
   - Klijent je dobio `raw` za dokumente koje `query` ne čita (godišnja rezolucija, jedinice). Testovi +4.
   - Lokalno nema tokena, a ručni radni tok mora biti na mainu da se može pokrenuti.
+  - Prvo pokretanje (run 46012147012, nakon spajanja PR #37) prekinuto je nakon 30 minuta, kod Crne Gore:
+    platforma odgovara 5–15 s po upitu (2–5 min po zemlji, Italija s osam područja oko 25 min), a sažetak
+    se piše tek na kraju. Popravak: 120 minuta i ulaz `countries` za pokretanje po zemljama.
 - [ ] Korak 2 (čeka korak 1): plan proizvoda prema stvarnom odgovoru. Mogućnosti:
   - tablica „Instalirana snaga po izvoru” po zemlji i godini (stranice zemalja i `/proizvodnja/`) uz zbroj s
     karte;
