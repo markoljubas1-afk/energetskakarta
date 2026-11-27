@@ -3792,6 +3792,16 @@ debljina, oblačić), e2e za sloj plina; ručno pokretanje `gas-daily` i pregled
 - [x] G4 `/plin/`: odjeljak „Koliko plina prelazi granice u regiji?” (rečenica s najvećim prijelazom, trake,
   tablica, napomena o jednoj strani i o Srbiji i BiH), i u FAQ-u; hr i en.
 
+- [x] Preview (2026-11-27, `gas-daily` pokrenut s grane, run 45992807810, objavio 17 granica):
+  - `/plin/` i `/en/gas/` imaju odjeljak; najveći je Mazara 657 GWh (Tunis → Italija) za 25. 11., a Rogatec
+    25,2 i Dravaszerdahely 21,2 GWh iz Hrvatske.
+  - Na karti strelice stoje na granicama i pokazuju dobar smjer (Murfeld prema jugu u Sloveniju; Rogatec i
+    Dravaszerdahely iz Hrvatske); širina raste s GWh.
+  - Natpisi se na previewu ne vide jer nema MapTilerovih fontova (isto kao krugovi); vide se na produkciji.
+  - Ispravljeno: granica bez toka u tablici je pisala smjer; sada „bez toka”.
+  - Poznato: strelica ima stalnu duljinu u stupnjevima, pa je pri jakom približavanju dugačka, a na cijeloj
+    regiji kratka (isto kao lukovi struje).
+
 **Usput odlučeno (2026-11-27, tijekom rada).**
 - Granice na karti: Rogatec, Dravaszerdahely, Murfeld/Ceršak, Gorica/Šempeter, Mosonmagyaróvár,
   Kiskundorozsma/Horgoš (dvije točke FGSZ-a zajedno), Csanádpalota, Balassagyarmat, Bereg, Arnoldstein/Tarvisio,
