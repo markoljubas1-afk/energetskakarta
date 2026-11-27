@@ -288,8 +288,9 @@ describe("gas across the borders on the gas page", () => {
     expect(words).toContain("Rogatec");
     expect(words).toContain("Hrvatska → Slovenija");
     expect(words).toContain("25,2");
-    // nothing went across: a zero, between the border's own two
-    expect(words).toContain("Mosonmagyaróvár");
+    // nothing went across: a zero, and no direction
+    expect(words).toContain("Mosonmagyaróvár 0 GWh bez toka");
+    expect(words).not.toContain("Austrija → Mađarska");
     // a border without a figure that day is not in the list, and not a zero
     expect(words).not.toContain("Silent");
     expect(section("en")?.heading).toBe("How much gas crosses the borders of the region?");

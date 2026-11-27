@@ -398,8 +398,9 @@ function gasPage(site: SiteData, flows: GasFlows, storage: GasStorage | null, la
   const across = borderDay === null ? [] : borderFlows(flows, borderDay);
   const [largest] = across;
   if (borderDay !== null && largest) {
+    // a border through which nothing went has no direction to give
     const way = (flow: (typeof across)[number]): string =>
-      `${i18n.country(flow.from)} → ${i18n.country(flow.to)}`;
+      flow.kwh > 0 ? `${i18n.country(flow.from)} → ${i18n.country(flow.to)}` : i18n.t("gasFlowPointIdle");
     const top = largest.kwh > 0 ? largest.kwh : 1;
     const sentence = copy.borders.answer(
       i18n.date(borderDay),
