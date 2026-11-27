@@ -3,6 +3,7 @@
  * each page says.
  */
 import { type CityRegister, type CityRow, cityRows } from "../data/cities";
+import { krskoPlantLead } from "./krsko";
 import type { SearchHit } from "../data/search";
 import { type ExtractionKind, SCOPE_COUNTRIES, SECTORS } from "../domain";
 import { createI18n, type I18n } from "../i18n";
@@ -264,7 +265,7 @@ export function assetPage(
     title,
     description: copy.asset.description(kind, own, detailText, country),
     heading: named,
-    lead: `<p>${e(kind)}${detailText ? ` · ${e(detailText)}` : ""}${country ? ` · ${e(country)}` : ""}</p>${extras.lead}`,
+    lead: `<p>${e(kind)}${detailText ? ` · ${e(detailText)}` : ""}${country ? ` · ${e(country)}` : ""}</p>${extras.lead}${krskoPlantLead(site.energy, lang, hit.id)}`,
     sections: [
       { heading: kind, html: definitions(rows) },
       ...(hit.kind === "city" && site.cities

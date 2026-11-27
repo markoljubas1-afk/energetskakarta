@@ -7,6 +7,7 @@
 import { series, type EnergySeries, type Periods } from "../data/energy";
 import { COUNTRY_PRICE_ZONE, type Live } from "../data/live";
 import { isOneOf, SCOPE_COUNTRIES, TECHNOLOGIES, type CountryCode, type Technology } from "../domain";
+import { krskoHalfOfPeriod, krskoNote } from "../data/krsko";
 import { createI18n } from "../i18n";
 import { LANGS, type Lang } from "../state/url";
 import { SOURCE_TERMS } from "./license";
@@ -253,6 +254,11 @@ function countryPage(site: SiteData, lang: Lang, periods: Periods, code: Country
         share(value),
       ]),
   );
+  const half = krskoHalfOfPeriod(periods, "year", last.year);
+  const krsko =
+    half === null
+      ? null
+      : krskoNote(i18n, code, i18n.energy(half), last.load ? i18n.percent(half / last.load) : null);
   const path = PATHS[lang].generationCountry(code.toLowerCase());
   const title = copy.countryTitle(where, first, last.year);
   const description = copy.countryDescription(name, first, last.year, total, renewable);
@@ -263,7 +269,9 @@ function countryPage(site: SiteData, lang: Lang, periods: Periods, code: Country
     title,
     description,
     heading: copy.countryHeading(where),
-    lead: `<p>${e(copy.countryLead(name, last.year, total, renewable, mix, last.load === null ? "" : i18n.energy(last.load)))}</p>`,
+    lead:
+      `<p>${e(copy.countryLead(name, last.year, total, renewable, mix, last.load === null ? "" : i18n.energy(last.load)))}</p>` +
+      (krsko === null ? "" : `<p>${e(krsko)}</p>`),
     sections: [
       { heading: copy.lastYearHeading(last.year), html: sourceTable },
       {
