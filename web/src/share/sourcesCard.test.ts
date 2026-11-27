@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { Periods, YearFile } from "../data/energy";
 import { createI18n } from "../i18n";
-import { CARD_FORMATS, CARD_SIZES } from "./dayCard";
+import { CARD_FORMATS, CARD_SIZES, type CardFormat } from "./dayCard";
 import { ringArcs } from "./ring";
 import { COMPLETE_COVERAGE } from "../seo/energyPages";
 import {
@@ -15,6 +15,7 @@ import {
   sourcesCountries,
 } from "./sourcesCard";
 import { sourcesSummary, sourcesText } from "./sourcesText";
+import type { SourcesText } from "./sourcesCard";
 
 /** Three days of Croatia: the last one is still running (62 % reported), the one before lacks its load. */
 const DAYS: YearFile = {
@@ -160,6 +161,64 @@ describe("the sources of a complete day or month", () => {
   });
 });
 
+describe("Croatia's half of Krško on the picture", () => {
+  const nuclear = (values: (number | null)[], cover: number[]) => ({
+    generation: { nuclear: values },
+    consumption: {},
+    load: values.map(() => 1),
+    coverage: { generation: cover, load: cover },
+  });
+  const WITH_SI: Periods = {
+    ...PERIODS,
+    countries: {
+      ...PERIODS.countries,
+      SI: {
+        months: {
+          periods: ["2026-09", "2026-10", "2026-11"],
+          ...nuclear([480000, 460000, 200000], [1, 1, 0.57]),
+        },
+        years: { periods: ["2026"], ...nuclear([1140000], [0.7]) },
+      },
+    },
+  };
+  const DAYS_SI: YearFile = {
+    ...DAYS,
+    countries: { ...DAYS.countries, SI: nuclear([16000, 15800, 9000], [1, 0.9, 0.62]) },
+  };
+
+  it("carries half of Slovenia's nuclear generation in the same month or day", () => {
+    expect(latestMonth(WITH_SI, "HR")?.krskoMwh).toBe(230000);
+    expect(latestMonth(WITH_SI, "SI")?.krskoMwh).toBe(230000);
+    expect(latestDay([DAYS_SI], "HR")?.krskoMwh).toBeNull(); // Slovenia's 16 November lacks hours
+    expect(
+      latestDay(
+        [
+          {
+            ...DAYS_SI,
+            countries: { ...DAYS_SI.countries, SI: nuclear([16000, 15800, 9000], [1, 1, 0.62]) },
+          },
+        ],
+        "HR",
+      )?.krskoMwh,
+    ).toBe(7900);
+    expect(latestMonth(PERIODS, "HR")?.krskoMwh).toBeNull();
+  });
+
+  it("says so in the words for a screen reader, with the share of consumption when it is known", () => {
+    const month = latestMonth(WITH_SI, "HR");
+    if (!month) throw new Error("no month");
+    const text = sourcesText(month, hr);
+    // 230 GWh of 950 GWh
+    expect(text.note).toBe(
+      "Hrvatskoj pripada i polovica proizvodnje Nuklearne elektrane Krško, oko 230 GWh (24 % potrošnje). Elektrana je u Sloveniji, pa ENTSO-E njezinu proizvodnju vodi kao slovensku, a dio koji preuzima HEP kao uvoz u Hrvatsku.",
+    );
+    expect(sourcesSummary(text)).toContain(text.note ?? "?");
+    expect(sourcesText({ ...month, loadMwh: null }, hr).note).toMatch(/oko 230 GWh\. Elektrana/);
+    expect(sourcesText({ ...month, krskoMwh: null }, hr).note).toBeNull();
+    expect(sourcesText({ ...month, country: "HU" }, hr).note).toBeNull();
+  });
+});
+
 describe("the link from a monthly report", () => {
   it("reads the month from the address, and nothing that is not a month", () => {
     expect(askedPictureMonth("?pic=2026-10")).toBe("2026-10");
@@ -185,6 +244,46 @@ describe("the ring", () => {
   });
 });
 
+/** What a picture writes, and where (the x of right-aligned and centred text is its left edge). */
+function drawn(text: SourcesText, format: CardFormat): { text: string; x: number; y: number }[] {
+  const written: { text: string; x: number; y: number }[] = [];
+  let size = 10;
+  let align = "left";
+  const ctx = {
+    createLinearGradient: () => ({ addColorStop: () => undefined }),
+    fillRect: () => undefined,
+    beginPath: () => undefined,
+    closePath: () => undefined,
+    arc: () => undefined,
+    moveTo: () => undefined,
+    lineTo: () => undefined,
+    fill: () => undefined,
+    stroke: () => undefined,
+    measureText: (each: string) => ({ width: each.length * size * 0.55 }),
+    fillText: (each: string, x: number, y: number) => {
+      const width = each.length * size * 0.55;
+      written.push({
+        text: each,
+        x: align === "right" ? x - width : align === "center" ? x - width / 2 : x,
+        y,
+      });
+      expect(x - (align === "left" ? 0 : width)).toBeGreaterThanOrEqual(0);
+    },
+    set font(value: string) {
+      size = Number(/(\d+)px/.exec(value)?.[1] ?? 10);
+    },
+    set textAlign(value: string) {
+      align = value;
+    },
+    fillStyle: "",
+    strokeStyle: "",
+    lineWidth: 1,
+    textBaseline: "",
+  };
+  drawSourcesCard(ctx as unknown as CanvasRenderingContext2D, text, "sans-serif", format);
+  return written;
+}
+
 describe("the drawing", () => {
   it.each(CARD_FORMATS)("writes every text inside the %s picture", (format) => {
     // the fullest picture: six rows of sources, three figures and the sentence
@@ -192,41 +291,7 @@ describe("the drawing", () => {
     if (!day) throw new Error("no day");
     const text = sourcesText({ ...day, loadMwh: 52000 }, hr);
     expect(text.legend).toHaveLength(6);
-    const written: { text: string; x: number; y: number }[] = [];
-    let size = 10;
-    let align = "left";
-    const ctx = {
-      createLinearGradient: () => ({ addColorStop: () => undefined }),
-      fillRect: () => undefined,
-      beginPath: () => undefined,
-      closePath: () => undefined,
-      arc: () => undefined,
-      moveTo: () => undefined,
-      lineTo: () => undefined,
-      fill: () => undefined,
-      stroke: () => undefined,
-      measureText: (each: string) => ({ width: each.length * size * 0.55 }),
-      fillText: (each: string, x: number, y: number) => {
-        const width = each.length * size * 0.55;
-        written.push({
-          text: each,
-          x: align === "right" ? x - width : align === "center" ? x - width / 2 : x,
-          y,
-        });
-        expect(x - (align === "left" ? 0 : width)).toBeGreaterThanOrEqual(0);
-      },
-      set font(value: string) {
-        size = Number(/(\d+)px/.exec(value)?.[1] ?? 10);
-      },
-      set textAlign(value: string) {
-        align = value;
-      },
-      fillStyle: "",
-      strokeStyle: "",
-      lineWidth: 1,
-      textBaseline: "",
-    };
-    drawSourcesCard(ctx as unknown as CanvasRenderingContext2D, text, "sans-serif", format);
+    const written = drawn(text, format);
     const { width, height } = CARD_SIZES[format];
     const all = written.map((each) => each.text).join(" ");
     for (const part of [
@@ -263,5 +328,15 @@ describe("the drawing", () => {
     // nothing is written below the footer, and the footer is the last text down the picture
     const lowest = written.reduce((low, each) => (each.y > low.y ? each : low));
     expect(lowest.text).toContain("gridatlas.eu");
+  });
+});
+
+describe("the drawing with Croatia's half of Krško", () => {
+  it.each(CARD_FORMATS)("leaves the %s picture as it is: there is no room above the footer", (format) => {
+    const day = latestDay([DAYS], "HR");
+    if (!day) throw new Error("no day");
+    const text = sourcesText({ ...day, loadMwh: 52000, krskoMwh: 7900 }, hr);
+    expect(text.note).not.toBeNull();
+    expect(drawn(text, format)).toEqual(drawn({ ...text, note: null }, format));
   });
 });

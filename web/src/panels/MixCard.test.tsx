@@ -24,6 +24,15 @@ describe("MixCard", () => {
     ).toBeInTheDocument();
   });
 
+  it("says how much of the hour is Croatia's half of Krško, in both views", () => {
+    renderWithI18n(<MixCard live={MIX_LIVE} index={0} theme="light" hourLabel={label} mapCenter={null} />);
+    // Slovenia's nuclear: 500 MW in that hour
+    const note = /^Hrvatskoj pripada i polovica proizvodnje Nuklearne elektrane Krško, oko 250 MW\. /;
+    expect(screen.getByText(note)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Proizvodnja" }));
+    expect(screen.getByText(note)).toBeInTheDocument();
+  });
+
   it("switches to production only and falls back to the latest hour with data", () => {
     renderWithI18n(<MixCard live={MIX_LIVE} index={2} theme="dark" hourLabel={label} mapCenter={null} />);
     fireEvent.click(screen.getByRole("button", { name: "Proizvodnja" }));

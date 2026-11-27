@@ -268,6 +268,12 @@ export const hr = {
   sourcesCo2Unit: "g/kWh",
   sourcesImport: "Potrošnja je premašila proizvodnju za {diff}; razlika je namirena uvozom.",
   sourcesExport: "Proizvodnja je premašila potrošnju za {diff}; višak je izvezen ili pohranjen.",
+  krskoHr:
+    "Hrvatskoj pripada i polovica proizvodnje Nuklearne elektrane Krško, oko {amount}. Elektrana je u Sloveniji, pa ENTSO-E njezinu proizvodnju vodi kao slovensku, a dio koji preuzima HEP kao uvoz u Hrvatsku.",
+  krskoHrShare:
+    "Hrvatskoj pripada i polovica proizvodnje Nuklearne elektrane Krško, oko {amount} ({share} potrošnje). Elektrana je u Sloveniji, pa ENTSO-E njezinu proizvodnju vodi kao slovensku, a dio koji preuzima HEP kao uvoz u Hrvatsku.",
+  krskoSi:
+    "Polovica proizvodnje Nuklearne elektrane Krško, oko {amount}, pripada Hrvatskoj (HEP). Ovdje je, kao i u ENTSO-E-u, uračunata u slovensku proizvodnju.",
   sourcesFooter:
     "Izvor: ENTSO-E Transparency Platform · Ugljični otisak: izračun prema faktorima IPCC AR5 · gridatlas.eu",
   sourceName_hydro: "Hidroelektrane",
