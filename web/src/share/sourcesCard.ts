@@ -164,11 +164,12 @@ export interface SourcesText {
   /** the comparison of consumption and generation; null when the load is not known */
   sentence: string | null;
   /**
-   * Croatia's half of Krško, for Croatia and Slovenia (data/krsko.ts). Not drawn: neither picture has room
-   * for it above the footer. The words for a screen reader carry it, and the dialog writes it under the
-   * picture.
+   * Croatia's half of Krško, for Croatia and Slovenia (data/krsko.ts), in full: for a screen reader, and
+   * under the picture in the dialog. Too long for the picture, which draws `badge`.
    */
   note: string | null;
+  /** the same in a few words, drawn under the subtitle, above the ring; null when there is no note */
+  badge: string | null;
   footer: string;
 }
 
@@ -266,6 +267,21 @@ function drawFigure(
   }
 }
 
+/** Croatia's half of Krško in one line, in the accent colour; written smaller rather than cut. */
+function drawBadge(
+  ctx: CanvasRenderingContext2D,
+  words: string,
+  font: string,
+  at: { x: number; y: number; width: number },
+  px: number,
+): void {
+  ctx.fillStyle = accent;
+  ctx.font = `600 ${String(px)}px ${font}`;
+  const needed = ctx.measureText(words).width;
+  if (needed > at.width) ctx.font = `600 ${String(Math.floor((px * at.width) / needed))}px ${font}`;
+  ctx.fillText(words, at.x, at.y);
+}
+
 function drawWide(ctx: CanvasRenderingContext2D, text: SourcesText, font: string): void {
   const { width, height } = CARD_SIZES.wide;
   const margin = 64;
@@ -278,6 +294,7 @@ function drawWide(ctx: CanvasRenderingContext2D, text: SourcesText, font: string
   ctx.fillStyle = muted;
   ctx.font = `400 30px ${font}`;
   ctx.fillText(text.subtitle, margin, 152);
+  if (text.badge) drawBadge(ctx, text.badge, font, { x: margin, y: 190, width: width - 2 * margin }, 21);
 
   const centre = { x: margin + 150, y: 352 };
   drawRing(ctx, centre, { outer: 150, inner: 96 }, text.legend, top);
@@ -328,6 +345,7 @@ function drawStory(ctx: CanvasRenderingContext2D, text: SourcesText, font: strin
   ctx.fillStyle = muted;
   ctx.font = `400 39px ${font}`;
   ctx.fillText(text.subtitle, margin, y + 10);
+  if (text.badge) drawBadge(ctx, text.badge, font, { x: margin, y: y + 64, width: room }, 30);
 
   const centre = { x: width / 2, y: y + 290 };
   drawRing(ctx, centre, { outer: 200, inner: 128 }, text.legend, top);

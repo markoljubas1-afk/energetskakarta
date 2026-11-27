@@ -3,7 +3,16 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { renderWithI18n } from "../test/render";
+import { composeChartPicture } from "./chartImage";
 import { chartEmbedUrl, chartLink, ChartShare, type ChartShareProps } from "./ChartShare";
+
+// jsdom draws nothing: the picture is checked for what it is given, and stops there
+vi.mock("./chartImage", async (original) => ({
+  ...(await original<typeof import("./chartImage")>()),
+  composeChartPicture: vi.fn(() => {
+    throw new Error("no canvas in jsdom");
+  }),
+}));
 
 const props = (over: Partial<ChartShareProps> = {}): ChartShareProps => ({
   title: "Proizvodnja po izvoru i potrošnja",
@@ -41,6 +50,20 @@ describe("chart links", () => {
 });
 
 describe("ChartShare", () => {
+  it("writes the card's note into the picture, under the chart", () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const chart = document.createElement("canvas");
+    renderWithI18n(<ChartShare {...props({ canvas: () => chart, note: "Hrvatskoj pripada i polovica…" })} />);
+    openMenu();
+    fireEvent.click(screen.getByRole("button", { name: "Spremi sliku (PNG)" }));
+    expect(vi.mocked(composeChartPicture)).toHaveBeenCalledWith(
+      chart,
+      expect.objectContaining({ note: "Hrvatskoj pripada i polovica…" }),
+      expect.anything(),
+      expect.any(Number),
+    );
+  });
+
   it("copies a link to the card and offers three ready citations", async () => {
     const writeClipboard = vi.fn(() => Promise.resolve());
     renderWithI18n(<ChartShare {...props({ writeClipboard })} />);

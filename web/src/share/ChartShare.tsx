@@ -30,6 +30,8 @@ export interface ChartShareProps {
   sourceLine: string;
   /** exactly the rows and columns the card shows */
   table: () => Table;
+  /** a sentence the picture carries under the chart (Croatia's half of Krško); none when null */
+  note?: string | null;
   /** the card's chart (null while it shows a table); without it there is no picture to save */
   canvas?: () => HTMLCanvasElement | null;
   /** the value of `ec` that embeds this card alone; without it there is nothing to embed */
@@ -119,7 +121,13 @@ export function ChartShare(props: ChartShareProps) {
     try {
       picture = composeChartPicture(
         chart,
-        { title, subtitle, credits: `${sourceLine} · ${t("appName")}`, link: link() },
+        {
+          title,
+          subtitle,
+          credits: `${sourceLine} · ${t("appName")}`,
+          link: link(),
+          note: props.note ?? null,
+        },
         pictureTheme(chart),
         scale,
       );

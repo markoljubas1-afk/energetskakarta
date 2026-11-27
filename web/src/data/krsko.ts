@@ -67,6 +67,26 @@ export function krskoHalfOfHour(live: Live, index: number): number | null {
  * The sentence for Croatia or Slovenia; null for any other area (a sum of countries already holds both
  * halves) or without a figure. `amount` and `share` are formatted by the caller ("2,8 TWh", "15 %").
  */
+/**
+ * The sentence a picture of a chart carries for Croatia or Slovenia: with Croatia's half when the chart is of
+ * one period that has it (`mwh`, and `load` for the share of consumption), else without a figure; null for
+ * any other area.
+ */
+export function krskoPictureNote(
+  i18n: I18n,
+  area: Area,
+  mwh: number | null,
+  load: number | null,
+): string | null {
+  if (area !== KRSKO_PARTNER && area !== KRSKO_HOST) return null;
+  const amount = mwh === null ? null : i18n.energy(mwh);
+  const share = mwh === null || !load ? null : i18n.percent(mwh / load);
+  return (
+    krskoNote(i18n, area, amount, share) ??
+    i18n.t(area === KRSKO_PARTNER ? "krskoCountryHr" : "krskoCountrySi")
+  );
+}
+
 export function krskoNote(
   i18n: I18n,
   area: Area,

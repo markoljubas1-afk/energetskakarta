@@ -9,6 +9,7 @@
  * with the same months of the other year only.
  */
 import { ALL, series, type Area, type Periods } from "../data/energy";
+import { krskoHalfOfPeriod } from "../data/krsko";
 import { priceMonth, type PriceMonths } from "../data/priceMonths";
 import { SCOPE_COUNTRIES, TECHNOLOGIES, type CountryCode, type Technology } from "../domain";
 import { RENEWABLE, seriesRows, type PeriodRow } from "../seo/energyPages";
@@ -198,4 +199,27 @@ export function countryPeriods(periods: Periods, unit: "month" | "year"): string
     .map(([period]) => period)
     .sort()
     .reverse();
+}
+
+// ---------------------------------------------------------------- Croatia's half of Krško
+
+/** Croatia's half of Krško in each row's period (data/krsko.ts); null for a period Slovenia did not report in full. */
+export function krskoOfRows(
+  periods: Periods,
+  rows: readonly PeriodRow[],
+  unit: "month" | "year",
+): (number | null)[] {
+  return rows.map((row) => krskoHalfOfPeriod(periods, unit, row.period));
+}
+
+/** Croatia's half of Krško over the given months (1–12) of a year; null unless every one of them has it. */
+export function krskoOverMonths(periods: Periods, year: string, months: readonly number[]): number | null {
+  if (months.length === 0) return null;
+  let total = 0;
+  for (const month of months) {
+    const half = krskoHalfOfPeriod(periods, "month", monthKey(year, month));
+    if (half === null) return null;
+    total += half;
+  }
+  return total;
 }

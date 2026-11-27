@@ -11,7 +11,7 @@ import {
   type YearFile,
 } from "../data/energy";
 import type { I18n } from "../i18n";
-import { krskoNote } from "../data/krsko";
+import { KRSKO_HOST, KRSKO_PARTNER, krskoNote } from "../data/krsko";
 import { PALETTES } from "../map/palette";
 import { foldParts, type SourcesCard, type SourcesText } from "./sourcesCard";
 
@@ -116,6 +116,12 @@ export function sourcesText(card: SourcesCard, i18n: I18n): SourcesText {
             i18n.energy(card.krskoMwh),
             card.loadMwh === null ? null : percent(card.krskoMwh / card.loadMwh),
           ),
+    badge:
+      card.krskoMwh === null || (card.country !== KRSKO_PARTNER && card.country !== KRSKO_HOST)
+        ? null
+        : t(card.country === KRSKO_PARTNER ? "krskoBadgeHr" : "krskoBadgeSi", {
+            amount: i18n.energy(card.krskoMwh),
+          }),
     footer: t(card.co2 !== null ? "sourcesFooter" : "dayCardFooter"),
   };
 }

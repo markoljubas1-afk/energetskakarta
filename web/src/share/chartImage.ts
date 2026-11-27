@@ -13,6 +13,8 @@ export interface ChartPictureText {
   credits: string;
   /** the permalink, written out */
   link: string;
+  /** what a reader must know beside the figures (Croatia's half of Krško), above the credits */
+  note?: string | null;
 }
 
 export interface PictureTheme {
@@ -26,10 +28,12 @@ export interface PictureTheme {
 export function pictureLayout(
   scale: number,
   creditLines: number,
+  noteLines = 0,
 ): { pad: number; header: number; footer: number } {
   const pad = 16 * scale;
   const header = pad + 16 * scale * 1.3 + 4 * scale + 12 * scale * 1.3 + 10 * scale;
-  const footer = 12 * scale + (creditLines + 1) * 10.5 * scale * 1.4 + pad;
+  const note = noteLines > 0 ? 6 * scale + noteLines * 10.5 * scale * 1.4 : 0;
+  const footer = 12 * scale + note + (creditLines + 1) * 10.5 * scale * 1.4 + pad;
   return { pad, header, footer };
 }
 
@@ -46,8 +50,10 @@ export function composeChartPicture(
   const credit = 10.5 * scale;
   const width = chart.width + 2 * 16 * scale;
   draw.font = `${String(credit)}px ${theme.font}`;
-  const lines = wrapText(text.credits, width - 2 * 16 * scale, (s) => draw.measureText(s).width);
-  const { pad, header, footer } = pictureLayout(scale, lines.length);
+  const measure = (s: string): number => draw.measureText(s).width;
+  const lines = wrapText(text.credits, width - 2 * 16 * scale, measure);
+  const noteLines = text.note ? wrapText(text.note, width - 2 * 16 * scale, measure) : [];
+  const { pad, header, footer } = pictureLayout(scale, lines.length, noteLines.length);
 
   output.width = width;
   output.height = Math.ceil(header + chart.height + footer);
@@ -65,6 +71,16 @@ export function composeChartPicture(
 
   let y = header + chart.height + 12 * scale;
   draw.font = `${String(credit)}px ${theme.font}`;
+  if (noteLines.length > 0) {
+    // in ink, not muted: it changes how the figures are read
+    draw.fillStyle = theme.ink;
+    for (const line of noteLines) {
+      draw.fillText(line, pad, y);
+      y += credit * 1.4;
+    }
+    y += 6 * scale;
+    draw.fillStyle = theme.muted;
+  }
   for (const line of lines) {
     draw.fillText(line, pad, y);
     y += credit * 1.4;
