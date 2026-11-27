@@ -545,3 +545,10 @@
 - Root cause: dijagnozu sam postavio iz poruke greške, bez pretrage lekcija i plana za isti simptom.
 - Rule going forward: prije prijedloga popravka za grešku vanjskog izvora pretražiti `tasks/lessons.md` i
   `tasks/todo.md` po poruci greške i imenu izvora; ako lekcija postoji, prvo pokrenuti njezinu dijagnostiku.
+
+### L-088 — mypy samo nad `src` propustio grešku u testu (2026-11-27)
+- What happened: PR #37 je pao na CI-ju jer test patcha `cli.EntsoeClient`, ime koje `cli` ne izvozi; lokalno je
+  mypy pokrenut samo nad `src`.
+- Root cause: lokalna provjera nije bila ista kao u CI-ju (`mypy src tests`).
+- Rule going forward: u pipelineu uvijek `mypy src tests` (i `ruff check src tests`), isto kao CI; objekt se
+  patcha ondje gdje je definiran.
